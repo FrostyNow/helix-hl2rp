@@ -241,6 +241,32 @@ ix.command.Add("Revive", {
 	end
 })
 
+ix.command.Add("CharSetName", {
+	description = "@cmdCharSetName",
+	adminOnly = true,
+	arguments = {
+		ix.type.character,
+		bit.bor(ix.type.text, ix.type.optional)
+	},
+	OnRun = function(self, client, target, name)
+		-- display string request panel if no name was specified
+		if (!isstring(name) or !name:find("%S")) then
+			return client:RequestString("@cmdCharSetNameTitle", "@cmdCharSetNameDescription", function(text)
+				ix.command.Run(client, "CharSetName", {target:GetName(), text})
+			end, target:GetName())
+		end
+
+		name = string.Trim(name)
+
+		if (name == "") then
+			return "@invalidArg", 2
+		end
+
+		-- intentionally skip character var length validation for admin-set values
+		target:SetName(name)
+	end
+})
+
 ix.command.Add("CharSetDesc", {
 	description = "@cmdCharDesc",
 	adminOnly = true,
@@ -250,20 +276,20 @@ ix.command.Add("CharSetDesc", {
 	},
 	OnRun = function(self, client, target, description)
 		-- display string request panel if no name was specified
-		if (!description:find("%S")) then
+		if (!isstring(description) or !description:find("%S")) then
 			return client:RequestString("@cmdCharDescTitle", "@cmdCharDescDescription", function(text)
 				ix.command.Run(client, "CharSetDesc", {target:GetName(), text})
-			end, target:GetCharacter():GetDescription())
+			end, target:GetDescription())
 		end
 
-		local info = ix.char.vars.description
-		local result, fault, count = info:OnValidate(description)
+		description = string.Trim(description)
 
-		if (result == false) then
-			return "@" .. fault, count
+		if (description == "") then
+			return "@invalidArg", 2
 		end
 
-		target:GetCharacter():SetDescription(description)
+		-- intentionally skip character var length validation for admin-set values
+		target:SetDescription(description)
 	end
 })
 

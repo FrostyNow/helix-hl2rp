@@ -87,4 +87,8 @@ function PLUGIN:UpdateAllRelations()
 	end
 end
 
-hook.Add( "UpdateAllRelations", "UpdateAllRelations", UpdateAllRelations )
+hook.Add("UpdateAllRelations", "ixUpdateRelationsFix", function()
+    if (PLUGIN) then
+        PLUGIN:UpdateAllRelations()
+    end
+end)

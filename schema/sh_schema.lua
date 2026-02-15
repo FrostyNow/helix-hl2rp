@@ -22,6 +22,7 @@ ix.util.Include("meta/sh_character.lua")
 
 ix.flag.Add("v", "Access to light blackmarket goods.")
 ix.flag.Add("V", "Access to heavy blackmarket goods.")
+ix.flag.Add("b", "Allows using the bodygroup command to edit your own bodygroups.")
 
 ix.anim.SetModelClass("models/eliteghostcp.mdl", "metrocop")
 ix.anim.SetModelClass("models/eliteshockcp.mdl", "metrocop")
@@ -83,10 +84,30 @@ function Schema:IsCombineRank(text, rank)
 	return string.find(text, "[%D+]"..rank.."[%D+]")
 end
 
+local function addNameColoredMessage(color, speaker, formatted)
+	if (!IsValid(speaker)) then
+		chat.AddText(color, formatted)
+		return
+	end
+
+	local name = speaker:Name()
+	local nameStart, nameEnd = formatted:find(name, 1, true)
+
+	if (nameStart and nameEnd) then
+		local beforeName = formatted:sub(1, nameStart - 1)
+		local afterName = formatted:sub(nameEnd + 1)
+
+		chat.AddText(color, beforeName, speaker, color, afterName)
+		return
+	end
+
+	chat.AddText(color, formatted)
+end
+
 do
 	local CLASS = {}
 	CLASS.color = Color(150, 100, 100)
-	CLASS.format = "Dispatch broadcasts \"%s\""
+	CLASS.format = "chatDispatchFormat"
 
 	function CLASS:CanSay(speaker, text)
 		if (!speaker:IsDispatch()) then
@@ -97,7 +118,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, string.format(self.format, text))
+		chat.AddText(self.color, L(self.format, text))
 	end
 
 	ix.chat.Register("dispatch", CLASS)
@@ -106,7 +127,7 @@ end
 do
 	local CLASS = {}
 	CLASS.color = Color(75, 150, 50)
-	CLASS.format = "%s radios in \"%s\""
+	CLASS.format = "chatRadioFormat"
 
 	function CLASS:CanHear(speaker, listener)
 		local character = listener:GetCharacter()
@@ -125,7 +146,7 @@ do
 
 	function CLASS:OnChatAdd(speaker, text)
 		text = speaker:IsCombine() and string.format("<:: %s ::>", text) or text
-		chat.AddText(self.color, string.format(self.format, speaker:Name(), text))
+		addNameColoredMessage(self.color, speaker, L(self.format, speaker:Name(), text))
 	end
 
 	ix.chat.Register("radio", CLASS)
@@ -134,7 +155,7 @@ end
 do
 	local CLASS = {}
 	CLASS.color = Color(255, 255, 175)
-	CLASS.format = "%s radios in \"%s\""
+	CLASS.format = "chatRadioFormat"
 
 	function CLASS:GetColor(speaker, text)
 		if (LocalPlayer():GetEyeTrace().Entity == speaker) then
@@ -156,7 +177,7 @@ do
 
 	function CLASS:OnChatAdd(speaker, text)
 		text = speaker:IsCombine() and string.format("<:: %s ::>", text) or text
-		chat.AddText(self.color, string.format(self.format, speaker:Name(), text))
+		chat.AddText(self.color, L(self.format, speaker:Name(), text))
 	end
 
 	ix.chat.Register("radio_eavesdrop", CLASS)
@@ -165,14 +186,14 @@ end
 do
 	local CLASS = {}
 	CLASS.color = Color(175, 125, 100)
-	CLASS.format = "%s requests \"%s\""
+	CLASS.format = "chatRequestFormat"
 
 	function CLASS:CanHear(speaker, listener)
 		return listener:IsCombine() or speaker:Team() == FACTION_ADMIN
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, string.format(self.format, speaker:Name(), text))
+		chat.AddText(self.color, L(self.format, speaker:Name(), text))
 	end
 
 	ix.chat.Register("request", CLASS)
@@ -181,7 +202,7 @@ end
 do
 	local CLASS = {}
 	CLASS.color = Color(175, 125, 100)
-	CLASS.format = "%s requests \"%s\""
+	CLASS.format = "chatRequestFormat"
 
 	function CLASS:CanHear(speaker, listener)
 		if (ix.chat.classes.request:CanHear(speaker, listener)) then
@@ -195,7 +216,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, string.format(self.format, speaker:Name(), text))
+		chat.AddText(self.color, L(self.format, speaker:Name(), text))
 	end
 
 	ix.chat.Register("request_eavesdrop", CLASS)
@@ -204,7 +225,7 @@ end
 do
 	local CLASS = {}
 	CLASS.color = Color(150, 125, 175)
-	CLASS.format = "%s broadcasts \"%s\""
+	CLASS.format = "chatBroadcastFormat"
 
 	function CLASS:CanSay(speaker, text)
 		if (speaker:Team() != FACTION_ADMIN) then
@@ -215,7 +236,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, string.format(self.format, speaker:Name(), text))
+		chat.AddText(self.color, L(self.format, speaker:Name(), text))
 	end
 
 	ix.chat.Register("broadcast", CLASS)

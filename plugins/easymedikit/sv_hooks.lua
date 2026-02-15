@@ -45,6 +45,8 @@ end
 
 function PLUGIN:SetBleeding(client, status)
 	local character = client:GetCharacter()
+	if (!character) then return end
+	
 	local bStatus = hook.Run("CanCharacterGetBleeding", client, character)
 	if (bStatus) then return end
 

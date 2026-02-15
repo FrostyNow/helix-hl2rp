@@ -6,7 +6,13 @@ PLUGIN.author = "Gary Tate"
 PLUGIN.description = "Allows players and administration to have an easier time customising bodygroups."
 
 ix.lang.AddTable("english", {
-	cmdEditBodygroup = "Customise the bodygroups of a target."
+	cmdEditBodygroup = "Customise the bodygroups of a target.",
+	cmdBodygroup = "Customise your own bodygroups (requires the b flag)."
+})
+
+ix.lang.AddTable("korean", {
+	cmdEditBodygroup = "대상의 바디그룹을 수정합니다.",
+	cmdBodygroup = "자신의 바디그룹을 수정합니다. (b 플래그 필요)"
 })
 
 ix.command.Add("CharEditBodygroup", {
@@ -18,6 +24,21 @@ ix.command.Add("CharEditBodygroup", {
 	OnRun = function(self, client, target)
 		net.Start("ixBodygroupView")
 			net.WriteEntity(target or client)
+		net.Send(client)
+	end
+})
+
+ix.command.Add("Bodygroup", {
+	description = "@cmdBodygroup",
+	OnRun = function(self, client)
+		local character = client:GetCharacter()
+
+		if (!character or !character:HasFlags("b")) then
+			return "@flagNoMatch", "b"
+		end
+
+		net.Start("ixBodygroupView")
+			net.WriteEntity(client)
 		net.Send(client)
 	end
 })

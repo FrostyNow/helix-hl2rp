@@ -84,7 +84,7 @@ if (CLIENT) then
 				char = client:GetCharacter()
 
 				local DFrame = vgui.Create( "DFrame" )	
-				DFrame:SetSize( 700, 350 )
+				DFrame:SetSize(math.floor(math.min(ScrW() * 0.8, 1000)), math.floor(math.min(ScrH() * 0.8, 700)))
 				DFrame:SetTitle( L("editFlags") )
 				DFrame:MakePopup()
 				DFrame:Center()

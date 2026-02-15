@@ -2,11 +2,60 @@ local PLUGIN = PLUGIN
 
 resource.AddWorkshop("2291046370") -- the content addon
 
+local MODE_NORMAL = "normal"
+local MODE_RADIO = "radio"
+local MODE_BROADCAST = "broadcast"
+local MODE_DISPATCH = "dispatch"
+
+local function GetModeFromChatType(chatType)
+	if (chatType == "broadcast") then
+		return MODE_BROADCAST
+	end
+
+	if (chatType == "dispatch") then
+		return MODE_DISPATCH
+	end
+
+	if (chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper"
+	or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell"
+	or chatType == "radio_eavesdrop_whisper" or chatType == "request"
+	or chatType == "request_eavesdrop") then
+		return MODE_RADIO
+	end
+
+	if (chatType == "ic" or chatType == "w" or chatType == "y") then
+		return MODE_NORMAL
+	end
+end
+
+local function IsClassAllowedForMode(className, mode)
+	local lowered = string.lower(className or "")
+
+	if (lowered == "breencast") then
+		return mode == MODE_BROADCAST
+	end
+
+	if (lowered == "dispatch") then
+		return mode == MODE_DISPATCH
+	end
+
+	if (lowered == "overwatch") then
+		return mode == MODE_RADIO
+	end
+
+	return mode == MODE_NORMAL or mode == MODE_RADIO
+end
+
 function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers, rawText)
 	if (chatType == "ic" or chatType == "w" or chatType == "y" or chatType == "dispatch" or chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper" or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell" or chatType == "radio_eavesdrop_whisper" or chatType == "broadcast" or chatType == "request" or chatType == "request_eavesdrop") then
 		local class = self.voices.GetClass(speaker)
+		local mode = GetModeFromChatType(chatType)
 		
 		for _, definition in ipairs(class) do
+			if (!IsClassAllowedForMode(definition, mode)) then
+				continue
+			end
+
 			local sounds, message = self.voices.GetVoiceList(definition, rawText)
 
 			if (sounds) then
@@ -24,18 +73,24 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 					end
 				end
 	
-				if (definition.global) then
-					netstream.Start(nil, "voicePlay", sounds, volume)
+				local isGlobalVoice = definition.global
+					or chatType == "dispatch"
+					or chatType == "broadcast"
+				local isRadioTransmission = mode == MODE_RADIO
+				local voiceClassName = string.lower(definition or "")
+
+				if (isGlobalVoice) then
+					netstream.Start(nil, "voicePlay", sounds, volume, nil, isRadioTransmission, voiceClassName)
 				else
-					netstream.Start(nil, "voicePlay", sounds, volume, speaker:EntIndex())
+					netstream.Start(nil, "voicePlay", sounds, volume, speaker:EntIndex(), isRadioTransmission, voiceClassName)
 	
 					if ((chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper" or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell" or chatType == "radio_eavesdrop_whisper" or chatType == "request" or chatType == "request_eavesdrop") and receivers) then
 						for k, v in pairs(receivers) do
-							if (receivers == speaker) then
+							if (v == speaker) then
 								continue
 							end
 	
-							netstream.Start(nil, "voicePlay", sounds, volume * 0.5, v:EntIndex())
+							netstream.Start(nil, "voicePlay", sounds, volume * 0.9, v:EntIndex(), isRadioTransmission, voiceClassName)
 						end
 					end
 						

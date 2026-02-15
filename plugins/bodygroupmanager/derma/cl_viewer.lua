@@ -19,6 +19,13 @@ function PANEL:Init()
 
 end
 
+function PANEL:OnKeyCodePressed(keyCode)
+	if (keyCode == KEY_TAB) then
+		self:Close()
+		return true
+	end
+end
+
 function PANEL:Display(target)
 
 	local pWidth, pHeight = ScrW() * 0.75, ScrH() * 0.75
@@ -45,31 +52,36 @@ function PANEL:Display(target)
 	self.model:SetModel(target:GetModel())
 	self.model:SetLookAng(Angle(10, 225, 0))
 	self.model:SetCamPos(Vector(40, 40, 50))
+	self.model:SetMouseInputEnabled(true)
+	self.model.ixRotationYaw = 45
+	self.model.ixDragging = false
+	self.model.ixLastMouseX = 0
 
 	function self.model:FirstPersonControls()
-		local x, y = self:CaptureMouse()
+		-- Keep camera static; drag rotation is handled by changing model yaw.
+	end
 
-		local scale = self:GetFOV() / 180
-		x = x * -0.5 * scale
-		y = y * 0.5 * scale
+	function self.model:DragMousePress()
+		self.ixDragging = true
+		self.ixLastMouseX = gui.MouseX()
+		self:MouseCapture(true)
+	end
 
-		-- Look around
-		self.aLookAngle = self.aLookAngle + Angle( y, x, 0 )
+	function self.model:DragMouseRelease()
+		self.ixDragging = false
+		self:MouseCapture(false)
+	end
 
-		local Movement = Vector( 0, 0, 0 )
+	function self.model:OnMousePressed(mouseCode)
+		if (mouseCode == MOUSE_LEFT) then
+			self:DragMousePress()
+		end
+	end
 
-		-- TODO: Use actual key bindings, not hardcoded keys.
-		if ( input.IsKeyDown( KEY_W ) || input.IsKeyDown( KEY_UP ) ) then Movement = Movement + self.aLookAngle:Forward() end
-		if ( input.IsKeyDown( KEY_S ) || input.IsKeyDown( KEY_DOWN ) ) then Movement = Movement - self.aLookAngle:Forward() end
-		if ( input.IsKeyDown( KEY_A ) || input.IsKeyDown( KEY_LEFT ) ) then Movement = Movement - self.aLookAngle:Right() end
-		if ( input.IsKeyDown( KEY_D ) || input.IsKeyDown( KEY_RIGHT ) ) then Movement = Movement + self.aLookAngle:Right() end
-		if ( input.IsKeyDown( KEY_SPACE ) || input.IsKeyDown( KEY_SPACE ) ) then Movement = Movement + self.aLookAngle:Up() end
-		if ( input.IsKeyDown( KEY_LCONTROL ) || input.IsKeyDown( KEY_LCONTROL ) ) then Movement = Movement - self.aLookAngle:Up() end
-
-		local speed = 0.5
-		if ( input.IsShiftDown() ) then speed = 4.0 end
-
-		self.vCamPos = self.vCamPos + Movement * speed
+	function self.model:OnMouseReleased(mouseCode)
+		if (mouseCode == MOUSE_LEFT) then
+			self:DragMouseRelease()
+		end
 	end
 
 	self.target = target
@@ -77,7 +89,28 @@ function PANEL:Display(target)
 	self:SetTitle(target:GetName())
 
 	function self.model:LayoutEntity(Entity)
-		Entity:SetAngles(Angle(0,45,0))
+		if (self.ixDragging) then
+			local mouseX = gui.MouseX()
+			local deltaX = mouseX - (self.ixLastMouseX or mouseX)
+
+			self.ixRotationYaw = (self.ixRotationYaw or 45) - deltaX * 0.5
+			self.ixLastMouseX = mouseX
+		end
+
+		Entity:SetAngles(Angle(0, self.ixRotationYaw or 45, 0))
+
+		-- Keep eye/head pose neutral so some models do not render with flipped white eyes.
+		Entity:SetIK(false)
+		Entity:SetPoseParameter("head_pitch", 0)
+		Entity:SetPoseParameter("head_yaw", 0)
+		Entity:SetPoseParameter("aim_pitch", 0)
+		Entity:SetPoseParameter("aim_yaw", 0)
+		Entity:SetPoseParameter("eyes_pitch", 0)
+		Entity:SetPoseParameter("eyes_yaw", 0)
+
+		local eyeTarget = Entity:GetPos() + Entity:GetForward() * 10000 + Vector(0, 0, 64)
+		Entity:SetEyeTarget(eyeTarget)
+
 		local sequence = Entity:SelectWeightedSequence(ACT_IDLE)
 
 		if (sequence <= 0) then

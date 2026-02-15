@@ -17,7 +17,7 @@ function PANEL:Init()
 		end})
 	end
 
-	wait(3.33, function()
+	wait(30, function()
 		http.Fetch("http://api.steampowered.com/ISteamApps/GetServersAtAddress/v0001?addr="..game.GetIPAddress(), function(json)
 			if not IsValid(self) then
 				return

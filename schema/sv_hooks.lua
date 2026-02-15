@@ -24,9 +24,10 @@ function Schema:PlayerSwitchFlashlight(client, enabled)
 end
 
 function Schema:PlayerUse(client, entity)
-	local inv = client:GetCharacter():GetInventory()
+	local character = client:GetCharacter()
+	local inv = character and character:GetInventory()
 
-	if ((client:IsCombine() or inv:HasItem("comkey") or inv:HasItem("unionkey")) and entity:IsDoor() and IsValid(entity.ixLock) and client:KeyDown(IN_SPEED)) then
+	if ((client:IsCombine() or (inv and (inv:HasItem("comkey") or inv:HasItem("unionkey")))) and entity:IsDoor() and IsValid(entity.ixLock) and client:KeyDown(IN_SPEED)) then
 		entity.ixLock:Toggle(client)
 		return false
 	end
@@ -54,9 +55,10 @@ function Schema:PlayerUse(client, entity)
 end
 
 function Schema:PlayerUseDoor(client, door)
-	local inv = client:GetCharacter():GetInventory()
+	local character = client:GetCharacter()
+	local inv = character and character:GetInventory()
 
-	if ((client:IsCombine() or inv:HasItem("comkey"))) then
+	if ((client:IsCombine() or (inv and inv:HasItem("comkey")))) then
 		if (!door:HasSpawnFlags(256) and !door:HasSpawnFlags(1024)) then
 			door:Fire("open")
 		end
@@ -166,9 +168,10 @@ function Schema:PlayerFootstep(client, position, foot, soundName, volume)
 end
 
 function Schema:PlayerSpawn(client)
-	local inv = client:GetCharacter():GetInventory()
+	local character = client:GetCharacter()
+	local inv = character and character:GetInventory()
 
-	client:SetCanZoom(client:GetCharacter() and (client:IsCombine() or client:IsAdmin() or inv:HasItem("binoculars")))
+	client:SetCanZoom(character and (client:IsCombine() or client:IsAdmin() or (inv and inv:HasItem("binoculars"))))
 end
 
 function Schema:PlayerDeath(client, inflicter, attacker)

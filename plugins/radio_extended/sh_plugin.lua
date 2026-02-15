@@ -9,6 +9,9 @@ ix.util.Include("thirdparty/sh_netstream2.lua")
 
 ix.lang.AddTable("english", {
 	itemHandheldRadioDesc = "",
+	chatRadioExtFormat = "%s radios in \"%s\"",
+	chatRadioExtYellFormat = "%s yells in the radio \"%s\"",
+	chatRadioExtWhisperFormat = "%s whispers in the radio \"%s\""
 })
 ix.lang.AddTable("korean", {
 	["Activate"] = "활성화/비활성화",
@@ -18,6 +21,9 @@ ix.lang.AddTable("korean", {
 	["Silence"] = "음소거",
 	["Handheld Radio"] = "휴대용 무전기",
 	itemHandheldRadioDesc = "",
+	chatRadioExtFormat = "%s의 무전 \"%s\"",
+	chatRadioExtYellFormat = "%s의 무전 외침 \"%s\"",
+	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s\""
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -486,7 +492,7 @@ function PLUGIN:OverwriteClasses()
 	do
 		local CLASS = {}
 		CLASS.color = ix.config.Get("radioColor",Color(164,224,91)) -- Old: Color(75, 150, 50)
-		CLASS.format = "%s radios in: \"%s\""
+		CLASS.format = "chatRadioExtFormat"
 		CLASS.mult = 0 -- Percent multiplier to garbling fraction
 
 		function CLASS:GetColor(speaker, text)
@@ -922,14 +928,14 @@ function PLUGIN:OverwriteClasses()
 			-- If you have more than one radio, and they're on different frequencies, show the frequency next to the name
 			-- Otherwise just show channel
 			if (data.broadcast and !listenWalkie) then
-				chat.AddText(newFreqColor, theFreq, newColor, string.format(self:GetFormat(), name, text))
+				chat.AddText(newFreqColor, theFreq, newColor, L(self:GetFormat(), name, text))
 			elseif (data.broadcast and listenWalkie) then
-				chat.AddText(newChanColor, theChan, newColor, string.format(self:GetFormat(), name, text))
+				chat.AddText(newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
 			elseif (badTally and !listenWalkie) then
 				--print("This one")
-				chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, string.format(self:GetFormat(), name, text))
+				chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
 			else
-				chat.AddText(newChanColor, theChan, newColor, string.format(self:GetFormat(), name, text))
+				chat.AddText(newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
 			end
 			--print("Yeah")
 
@@ -962,8 +968,9 @@ function PLUGIN:OverwriteClasses()
 		local CLASS = ALIAS
 
 		CLASS.color = ix.config.Get("radioYellColor",Color(164+30,224+30,91+30)) -- Old: Color(75, 150, 50)
-		CLASS.format = "%s yells in the radio: \"%s\""
+		CLASS.format = "chatRadioExtYellFormat"
 		CLASS.mult = 0.15
+		CLASS.font = ix.config.Get("radioYellBig", true) and "ixChatFontBig" or "ixChatFont"
 
 		function CLASS:GetColor(speaker, text)
 			local color = ix.config.Get("radioColor",Color(164,224,91))
@@ -1002,8 +1009,9 @@ function PLUGIN:OverwriteClasses()
 		local CLASS = ALIAS
 
 		CLASS.color = ix.config.Get("radioColor",Color(164-35,224-35,91-35)) -- Old: Color(75, 150, 50)
-		CLASS.format = "%s whispers in the radio: \"%s\""
+		CLASS.format = "chatRadioExtWhisperFormat"
 		CLASS.mult = -0.3
+		CLASS.font = ix.config.Get("radioWhisperSmall", true) and "ixChatFontSmall" or "ixChatFont"
 
 		function CLASS:GetColor(speaker, text)
 			local color = ix.config.Get("radioColor",Color(164,224,91))
@@ -1033,7 +1041,7 @@ function PLUGIN:OverwriteClasses()
 	do
 		local CLASS = {}
 		CLASS.color = ix.config.Get("chatColor") -- ix.chat.classes.ic.color Color(255, 255, 175)
-		CLASS.format = "%s radios in: \"%s\""
+		CLASS.format = "chatRadioExtFormat"
 
 		function CLASS:GetColor(speaker, text)
 			local color = ix.config.Get("chatColor")
@@ -1075,7 +1083,19 @@ function PLUGIN:OverwriteClasses()
 				end
 			end
 
-			chat.AddText(self:GetColor(speaker,text), string.format(self.format, speaker:Name(), text))
+			local color = self:GetColor(speaker, text)
+			local formatted = L(self.format, speaker:Name(), text)
+			local name = IsValid(speaker) and speaker:Name() or ""
+			local nameStart, nameEnd = formatted:find(name, 1, true)
+
+			if (nameStart and nameEnd and IsValid(speaker)) then
+				local beforeName = formatted:sub(1, nameStart - 1)
+				local afterName = formatted:sub(nameEnd + 1)
+
+				chat.AddText(color, beforeName, speaker, color, afterName)
+			else
+				chat.AddText(color, formatted)
+			end
 		end
 
 		ix.chat.Register("radio_eavesdrop", CLASS)
@@ -1094,7 +1114,8 @@ function PLUGIN:OverwriteClasses()
 
 		--local CLASS = {}
 		CLASS.color = ix.config.Get("chatColor")
-		CLASS.format = "%s yells in the radio: \"%s\""
+		CLASS.format = "chatRadioExtYellFormat"
+		CLASS.font = ix.config.Get("radioYellBig", true) and "ixChatFontBig" or "ixChatFont"
 
 		function CLASS:GetColor(speaker, text)
 			local color = ix.config.Get("chatColor")
@@ -1148,7 +1169,8 @@ function PLUGIN:OverwriteClasses()
 
 		--local CLASS = {}
 		CLASS.color = ix.config.Get("chatColor")
-		CLASS.format = "%s whispers in the radio: \"%s\""
+		CLASS.format = "chatRadioExtWhisperFormat"
+		CLASS.font = ix.config.Get("radioWhisperSmall", true) and "ixChatFontSmall" or "ixChatFont"
 
 		function CLASS:GetColor(speaker, text)
 			local color = ix.config.Get("chatColor")

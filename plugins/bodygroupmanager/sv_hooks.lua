@@ -7,13 +7,17 @@ ix.log.AddType("bodygroupEditor", function(client, target)
 end)
 
 net.Receive("ixBodygroupTableSet", function(length, client)
-	if (!ix.command.HasAccess(client, "CharEditBodygroup")) then
-		return
-	end
-
 	local target = net.ReadEntity()
 
 	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
+		return
+	end
+
+	local character = client:GetCharacter()
+	local canAdminEdit = ix.command.HasAccess(client, "CharEditBodygroup")
+	local canSelfEdit = character and character:HasFlags("b") and (target == client)
+
+	if (!canAdminEdit and !canSelfEdit) then
 		return
 	end
 

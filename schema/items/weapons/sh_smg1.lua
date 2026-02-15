@@ -1,7 +1,7 @@
 ITEM.name = "MP7"
 ITEM.description = "smg1Desc"
 ITEM.model = "models/weapons/w_smg1.mdl"
-ITEM.class = "weapon_smg1"
+ITEM.class = "arc9_hl2_smg1"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EMP, CLASS_MPU, CLASS_OWS, CLASS_REBEL}
 ITEM.width = 3

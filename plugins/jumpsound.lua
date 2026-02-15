@@ -5,13 +5,9 @@ PLUGIN.author = "enaruu"
 if SERVER then
 	local jumpSounds = {
 		["default"] = {
-			"physics/body/body_medium_impact_soft1.wav",
-			"physics/body/body_medium_impact_soft2.wav",
-			"physics/body/body_medium_impact_soft3.wav",
-			"physics/body/body_medium_impact_soft4.wav",
-			"physics/body/body_medium_impact_soft5.wav",
-			"physics/body/body_medium_impact_soft6.wav",
-			"physics/body/body_medium_impact_soft7.wav"
+			"npc/zombie/foot1.wav",
+			"npc/zombie/foot2.wav",
+			"npc/zombie/foot3.wav"
 		},
 		["vort"] = {
 			"npc/vort/vort_foot1.wav",

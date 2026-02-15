@@ -142,13 +142,13 @@ if CLIENT then
 
 	function GAMEMODE:GetDefaultStepSound(client, side)
 		if client:GetMoveType() == MOVETYPE_LADDER then
-			return side and ladderSurface.stepRightSound or ladderSurface.stepLeftSound, 0.5
+			return side and ladderSurface.stepRightSound or ladderSurface.stepLeftSound, 1.0
 		elseif client:WaterLevel() >= 1 then
 			return side and wadeSurface.stepRightSound or wadeSurface.stepLeftSound, client:IsRunning() and 0.65 or 0.25
 		else
 			local prop = client:GetSurfaceData()
 
-			return side and prop.stepRightSound or prop.stepLeftSound, client:IsRunning() and 0.5 or 0.2
+			return side and prop.stepRightSound or prop.stepLeftSound, client:IsRunning() and 1.0 or 0.5
 		end
 	end
 
@@ -164,7 +164,7 @@ if CLIENT then
 
 			local class = ix.class.Get(character:GetClass())
 
-			if class.ModifyPlayerStep and class:ModifyPlayerStep(client, data) == true then
+			if class and class.ModifyPlayerStep and class:ModifyPlayerStep(client, data) == true then
 				return true
 			end
 		end

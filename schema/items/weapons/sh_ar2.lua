@@ -1,7 +1,7 @@
 ITEM.name = "Overwatch Standard Issue\n(Pulse-Rifle)"
 ITEM.description = "ar2Desc"
 ITEM.model = "models/weapons/w_irifle.mdl"
-ITEM.class = "weapon_ar2"
+ITEM.class = "arc9_hla_irifle"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
 ITEM.width = 4

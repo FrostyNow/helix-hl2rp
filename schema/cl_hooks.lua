@@ -179,18 +179,75 @@ end
 
 function Schema:PopulateHelpMenu(tabs)
 	tabs["voices"] = function(container)
+		local function getClassColor(class)
+			local lowerClass = string.lower(class or "")
+
+			if (lowerClass == "breencast") then
+				return ix.chat.classes.broadcast and ix.chat.classes.broadcast.color or Color(150, 125, 175)
+			elseif (lowerClass == "dispatch") then
+				return ix.chat.classes.dispatch and ix.chat.classes.dispatch.color or Color(150, 100, 100)
+			elseif (lowerClass == "overwatch") then
+				return (FACTION_OTA and ix.faction.indices[FACTION_OTA]) and ix.faction.indices[FACTION_OTA].color or Color(181, 110, 60)
+			end
+
+			return ix.config.Get("color")
+		end
+
+		local function getVoicePreviewText(command, info)
+			if (!istable(info)) then
+				return command
+			end
+
+			if (isstring(info.text) and info.text != "") then
+				return info.text
+			end
+
+			if (istable(info.table) and #info.table > 0) then
+				local variant = info.table[1]
+
+				if (istable(variant) and isstring(variant[1]) and variant[1] != "") then
+					return variant[1]
+				end
+			end
+
+			return command
+		end
+
+		local function splitSuffixNumber(text)
+			local prefix, number = text:match("^(.-)(%d+)$")
+
+			if (prefix) then
+				return prefix, tonumber(number)
+			end
+
+			return text, nil
+		end
+
+		local function naturalCommandLess(a, b)
+			local aLower = string.lower(a)
+			local bLower = string.lower(b)
+			local aPrefix, aNumber = splitSuffixNumber(aLower)
+			local bPrefix, bNumber = splitSuffixNumber(bLower)
+
+			if (aPrefix == bPrefix and aNumber and bNumber and aNumber != bNumber) then
+				return aNumber < bNumber
+			end
+
+			return aLower < bLower
+		end
+
 		local classes = {}
+		local classLookup = {}
 
 		for k, v in pairs(Schema.voices.classes) do
-			if (v.condition(LocalPlayer())) then
-				classes[#classes + 1] = k
-			end
+			classes[#classes + 1] = k
+			classLookup[k] = v
 		end
 
 		if (#classes < 1) then
 			local info = container:Add("DLabel")
 			info:SetFont("ixSmallFont")
-			info:SetText("You do not have access to any voice lines!")
+			info:SetText("No voice lines are available.")
 			info:SetContentAlignment(5)
 			info:SetTextColor(color_white)
 			info:SetExpensiveShadow(1, color_black)
@@ -212,38 +269,55 @@ function Schema:PopulateHelpMenu(tabs)
 		end)
 
 		for _, class in ipairs(classes) do
-			local category = container:Add("Panel")
+			local available = classLookup[class] and classLookup[class].condition(LocalPlayer()) or false
+			local accent = getClassColor(class)
+			local category = container:Add("DCollapsibleCategory")
+
 			category:Dock(TOP)
 			category:DockMargin(0, 0, 0, 8)
-			category:DockPadding(8, 8, 8, 8)
+			category:SetExpanded(false)
+			category:SetLabel(string.upper(class))
 			category.Paint = function(_, width, height)
-				surface.SetDrawColor(Color(0, 0, 0, 66))
+				surface.SetDrawColor(ColorAlpha(accent, 22))
 				surface.DrawRect(0, 0, width, height)
 			end
 
-			local categoryLabel = category:Add("DLabel")
-			categoryLabel:SetFont("ixMediumLightFont")
-			categoryLabel:SetText(class:upper())
-			categoryLabel:Dock(FILL)
-			categoryLabel:SetTextColor(color_white)
-			categoryLabel:SetExpensiveShadow(1, color_black)
-			categoryLabel:SizeToContents()
-			category:SizeToChildren(true, true)
+			if (IsValid(category.Header)) then
+				category.Header:SetTextColor(available and color_white or Color(170, 170, 170))
+			end
 
-			for command, info in SortedPairs(self.voices.stored[class]) do
-				local title = container:Add("DLabel")
+			local content = vgui.Create("DPanel", category)
+			content:DockPadding(8, 8, 8, 8)
+			content.Paint = nil
+			category:SetContents(content)
+
+			local commands = {}
+
+			for command, info in pairs(self.voices.stored[class] or {}) do
+				commands[#commands + 1] = {
+					command = command,
+					info = info
+				}
+			end
+
+			table.sort(commands, function(a, b)
+				return naturalCommandLess(a.command, b.command)
+			end)
+
+			for _, entry in ipairs(commands) do
+				local title = content:Add("DLabel")
 				title:SetFont("ixMediumLightFont")
-				title:SetText(command:upper())
+				title:SetText(entry.command:upper())
 				title:Dock(TOP)
-				title:SetTextColor(ix.config.Get("color"))
+				title:SetTextColor(accent)
 				title:SetExpensiveShadow(1, color_black)
 				title:SizeToContents()
 
-				local description = container:Add("DLabel")
+				local description = content:Add("DLabel")
 				description:SetFont("ixSmallFont")
-				description:SetText(info.text)
+				description:SetText(getVoicePreviewText(entry.command, entry.info))
 				description:Dock(TOP)
-				description:SetTextColor(color_white)
+				description:SetTextColor(available and color_white or Color(180, 180, 180))
 				description:SetExpensiveShadow(1, color_black)
 				description:SetWrap(true)
 				description:SetAutoStretchVertical(true)
@@ -322,3 +396,178 @@ netstream.Hook("ixFLIRToggle", function(bool)
         hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
     end
 end)
+
+local adminAnonHintColor = Color(170, 170, 170)
+
+local function IsAdminViewingAnonymous(target)
+	local localClient = LocalPlayer()
+
+	if (!IsValid(localClient) or !localClient:IsAdmin()) then
+		return false
+	end
+
+	local ourCharacter = localClient:GetCharacter()
+	local targetCharacter = IsValid(target) and target:GetCharacter()
+
+	if (!ourCharacter or !targetCharacter) then
+		return false
+	end
+
+	local recognized = hook.Run("IsCharacterRecognized", ourCharacter, targetCharacter:GetID())
+		or hook.Run("IsPlayerRecognized", target)
+
+	return !recognized
+end
+
+local function CompactText(text, maxLength)
+	text = tostring(text or ""):gsub("%s+", " ")
+
+	if (text:utf8len() > maxLength) then
+		return text:utf8sub(1, maxLength - 3) .. "..."
+	end
+
+	return text
+end
+
+hook.Add("LoadFonts", "ixAdminAnonHintFont", function(font, genericFont)
+	surface.CreateFont("ixAdminAnonHintFont", {
+		font = genericFont,
+		size = math.max(ScreenScale(6), 16),
+		weight = 450,
+		italic = true
+	})
+end)
+
+-- remove legacy hook IDs so autoreload does not stack duplicate rows
+hook.Remove("PopulateImportantCharacterInfo", "ixHL2RPAdminAnonImportantInfo")
+hook.Remove("PopulateImportantCharacterInfo", "ixAdminAnonImportantInfo")
+hook.Remove("PopulateCharacterInfo", "ixHL2RPAdminAnonDescriptionInfo")
+
+hook.Add("PopulateImportantCharacterInfo", "ixAdminAnonImportantInfo", function(client, character, container)
+	if (!IsAdminViewingAnonymous(client)) then
+		return
+	end
+
+	local displayedName = hook.Run("GetCharacterName", client) or character:GetName()
+	local realName = character:GetName()
+	local unknownName = L("unknown")
+
+	if (displayedName == realName or displayedName != unknownName or IsValid(container:GetRow("adminRealName"))) then
+		return
+	end
+
+	local realNameRow = container:AddRowAfter("name", "adminRealName")
+	realNameRow:SetFont("ixAdminAnonHintFont")
+	realNameRow:SetTextColor(adminAnonHintColor)
+	realNameRow:SetText("(" .. CompactText(realName, 64) .. ")")
+	realNameRow:SizeToContents()
+end)
+
+local function PatchScoreboardPanels()
+	local iconTable = vgui.GetControlTable("ixScoreboardIcon")
+
+	if (iconTable and !iconTable.ixAdminAnonPatchApplied) then
+		iconTable.ixAdminAnonPatchApplied = true
+
+		function iconTable:Paint(width, height)
+			if (!self.material) then
+				return
+			end
+
+			surface.SetMaterial(self.material)
+
+			if (self.bHidden) then
+				local row = self:GetParent()
+				local target = IsValid(row) and row.player
+
+				if (IsAdminViewingAnonymous(target)) then
+					surface.SetDrawColor(128, 128, 128, 255)
+				else
+					surface.SetDrawColor(0, 0, 0, 255)
+				end
+			else
+				surface.SetDrawColor(255, 255, 255, 255)
+			end
+
+			surface.DrawTexturedRect(0, 0, width, height)
+		end
+	end
+
+	local rowTable = vgui.GetControlTable("ixScoreboardRow")
+
+	if (rowTable and !rowTable.ixAdminAnonPatchApplied) then
+		rowTable.ixAdminAnonPatchApplied = true
+
+		local oldInit = rowTable.Init
+		local oldUpdate = rowTable.Update
+
+		function rowTable:Init(...)
+			oldInit(self, ...)
+
+			self.realNameHint = self.name:Add("DLabel")
+			self.realNameHint:SetFont("ixAdminAnonHintFont")
+			self.realNameHint:SetTextColor(adminAnonHintColor)
+			self.realNameHint:SetMouseInputEnabled(false)
+			self.realNameHint:SetVisible(false)
+
+			self.realDescriptionHint = self.description:Add("DLabel")
+			self.realDescriptionHint:SetFont("ixAdminAnonHintFont")
+			self.realDescriptionHint:SetTextColor(adminAnonHintColor)
+			self.realDescriptionHint:SetMouseInputEnabled(false)
+			self.realDescriptionHint:SetVisible(false)
+		end
+
+		function rowTable:Update(...)
+			oldUpdate(self, ...)
+
+			local target = self.player
+			local character = IsValid(target) and target:GetCharacter()
+			local showHints = IsAdminViewingAnonymous(target) and character
+
+			if (!showHints) then
+				if (IsValid(self.realNameHint)) then
+					self.realNameHint:SetVisible(false)
+				end
+
+				if (IsValid(self.realDescriptionHint)) then
+					self.realDescriptionHint:SetVisible(false)
+				end
+
+				return
+			end
+
+			local displayedName = self.name:GetText()
+			local realName = character:GetName()
+
+			if (displayedName != realName and IsValid(self.realNameHint)) then
+				self.realNameHint:SetText(" (" .. CompactText(realName, 48) .. ")")
+				self.realNameHint:SizeToContents()
+
+				surface.SetFont(self.name:GetFont())
+				local nameWidth = select(1, surface.GetTextSize(displayedName))
+				self.realNameHint:SetPos(nameWidth + 4, 0)
+				self.realNameHint:SetVisible(true)
+			elseif (IsValid(self.realNameHint)) then
+				self.realNameHint:SetVisible(false)
+			end
+
+			local displayedDescription = self.description:GetText()
+			local realDescription = character:GetDescription() or ""
+
+			if (realDescription != "" and displayedDescription != realDescription and IsValid(self.realDescriptionHint)) then
+				self.realDescriptionHint:SetText(" (" .. CompactText(realDescription, 80) .. ")")
+				self.realDescriptionHint:SizeToContents()
+
+				surface.SetFont(self.description:GetFont())
+				local descriptionWidth = select(1, surface.GetTextSize(displayedDescription))
+				self.realDescriptionHint:SetPos(descriptionWidth + 4, 0)
+				self.realDescriptionHint:SetVisible(true)
+			elseif (IsValid(self.realDescriptionHint)) then
+				self.realDescriptionHint:SetVisible(false)
+			end
+		end
+	end
+end
+
+hook.Add("InitializedSchema", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
+hook.Add("InitPostEntity", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
