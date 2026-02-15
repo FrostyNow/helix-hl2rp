@@ -127,6 +127,13 @@ if (SERVER) then
 			return
 		end
 
+		-- Clear player link from any previous corpses
+		for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+			if (v:GetNetVar("player") == client) then
+				v:SetNetVar("player", nil)
+			end
+		end
+
 		local entity = IsValid(client.ixRagdoll) and client.ixRagdoll or client:CreateServerRagdoll()
 		local decayTime = ix.config.Get("corpseDecayTime", 60)
 		local uniqueID = "ixCorpseDecay" .. entity:EntIndex()

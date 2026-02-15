@@ -213,8 +213,31 @@ if (SERVER) then
 
 	function PLUGIN:GetPlayerPunchDamage(client, damage, context)
 		if (client:GetCharacter()) then
-			-- Add to the total fist damage.
-			context.damage = context.damage + (client:GetCharacter():GetAttribute("str", 0) * ix.config.Get("strengthMeleeMultiplier", 0.3))
+			local strength = client:GetCharacter():GetAttribute("str", 0)
+			local scaledDamage = 1 + (strength * ix.config.Get("strengthMeleeMultiplier", 0.3))
+
+			-- Fists start at 1 damage and are hard-capped to 10.
+			context.damage = math.Clamp(scaledDamage, 1, 10)
+		end
+	end
+
+	function PLUGIN:EntityTakeDamage(entity, dmgInfo)
+		if (!IsValid(entity) or !entity:IsPlayer()) then
+			return
+		end
+
+		local inflictor = dmgInfo:GetInflictor()
+
+		if (!IsValid(inflictor)) then
+			return
+		end
+
+		if (inflictor:GetClass() == "ix_hands") then
+			dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), 1, 10))
+		elseif (inflictor:GetClass() == "ix_stunstick") then
+			local maxDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 20 or 15
+			local minDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 3 or 1
+			dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), minDamage, maxDamage))
 		end
 	end
 

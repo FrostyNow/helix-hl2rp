@@ -101,8 +101,10 @@ if (CLIENT) then
 			if (istable(v) or isstring(v)) then
 				text[#text + 1] = v
 			elseif (isentity(v) and v:IsPlayer()) then
+				local name = hook.Run("GetCharacterName", v, chat_class and chat_class.uniqueID) or v:Name()
+
 				text[#text + 1] = team.GetColor(v:Team())
-				text[#text + 1] = v:Name()
+				text[#text + 1] = name
 			elseif (type(v) != "IMaterial") then
 				text[#text + 1] = tostring(v)
 			end

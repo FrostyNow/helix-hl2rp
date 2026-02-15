@@ -20,8 +20,8 @@ SWEP.Slot					= 5
 SWEP.SlotPos				= 5
 SWEP.Weight					= 5
 SWEP.Spawnable     			= true
-SWEP.AdminSpawnable			= false;
--- SWEP.ViewModel 				= "models/weapons/v_vortbeamvm.mdl"
+SWEP.AdminSpawnable		= false;
+SWEP.ViewModel 				= "models/weapons/v_vortbeamvm.mdl"
 SWEP.WorldModel 			= ""
 SWEP.HoldType 				= "heal"
 
@@ -37,34 +37,28 @@ SWEP.Secondary.Ammo			= "none"
 
 function SWEP:Initialize()
 	self:SetWeaponHoldType(self.HoldType)
+	self.NextNotifyTime = 0 -- Cooldown for notification spam
 end
 
 function SWEP:Deploy()
 	if (SERVER) then
-		self.Owner:DrawViewModel(false)
+		-- Keep weapon raised
+		self.Owner:SetNWBool("ixRaised", true)
 	
 		if (!self.HealSound) then
-		self.HealSound = CreateSound( self.Weapon, "npc/vort/health_charge.wav" );
+			self.HealSound = CreateSound( self.Weapon, "npc/vort/health_charge.wav" );
 		end
-	
-	end
-
-end
-
-function SWEP:Holster()
-	if (SERVER) then
-		self.Owner:DrawViewModel(true)
 	end
 
 	return true
 end
 
+function SWEP:Holster()
+	return true
+end
+
 
 function SWEP:OnRemove()
-	if (SERVER) then
-		self.Owner:DrawViewModel(true)
-	end
-
 	return true
 end
 
@@ -92,19 +86,33 @@ function SWEP:PrimaryAttack()
 	
 	if (!eye.Entity:IsPlayer()) then return end
 	if self.Owner:Health() <= 50 then
-		if (SERVER) then
-		self.Owner:NotifyLocalized("You are too weak to heal someone!")
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("tooWeakToHeal")
+			self.NextNotifyTime = CurTime() + 2
 		end
-	return end
+		return
+	end
+	
+	-- Check stamina
+	if self.Owner:GetLocalVar("stm", 0) < 20 then
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("notEnoughStamina")
+			self.NextNotifyTime = CurTime() + 2
+		end
+		return
+	end
+	
 	local target = eye.Entity
 
 	if target:GetPos():Distance(self.Owner:GetShootPos()) > 105 then return end
 
-	if target:Health() >= target:GetMaxHealth() then 
-		if (SERVER) then
-		self.Owner:NotifyLocalized("The target is perfectly healthy!")
+	if target:Health() >= target:GetMaxHealth() then
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("targetFullHealth")
+			self.NextNotifyTime = CurTime() + 2
 		end
-	return end
+		return
+	end
 
 	self:DispatchEffect("vortigaunt_charge_token")
 
@@ -121,16 +129,18 @@ function SWEP:PrimaryAttack()
 		self.Owner:StopParticles()
 		if (!self.Owner:Alive()) then return end
 		if (SERVER) then
-			print(target:GetPos():Distance(self.Owner:GetShootPos()))
 			if target:GetPos():Distance(self.Owner:GetShootPos()) <= 105 then
 				local randomNum = math.random(ix.config.Get("VortHealMin", 5),ix.config.Get("VortHealMax", 20))
 				target:SetHealth(math.Clamp(target:Health()+randomNum, 0, target:GetMaxHealth()))
+				
+				-- Consume stamina
+				self.Owner:ConsumeStamina(20)
+				
 				self.Owner:StopSound("npc/vort/health_charge.wav") 
 				self.Owner:Freeze(false)
-				print("dziala")
 			else
 				self.Owner:StopSound("npc/vort/health_charge.wav") 
-			self.Owner:Freeze(false)
+				self.Owner:Freeze(false)
 			end	
 		end
 	end)

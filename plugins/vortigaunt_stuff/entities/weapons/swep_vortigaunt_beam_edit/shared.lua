@@ -32,7 +32,9 @@ SWEP.Weight					= 5
 SWEP.Spawnable     			= true
 SWEP.AdminSpawnable  		= true
  
-SWEP.ViewModel 				= "models/weapons/v_vortbeamvm.mdl"
+SWEP.HoldType 				= "beam"
+
+SWEP.ViewModel 				= ""
 SWEP.WorldModel 			= ""
 SWEP.HoldType 				= "beam"
 
@@ -67,6 +69,7 @@ function SWEP:Initialize()
 	self.Healing=false;	//we are not healing!
 	self.HealTime=CurTime();//we can heal
 	self.ChargeTime=CurTime();//we can zap
+	self.NextNotifyTime = 0 -- Cooldown for notification spam
 	self:SetWeaponHoldType("beam")
 	if (CLIENT) then return end
 	self:CreateSounds()			//create the looping sounds	
@@ -94,6 +97,13 @@ end
 function SWEP:Deploy()
 	self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
 	self:SetDeploySpeed( 1 )
+	
+	-- Hide viewmodel and keep weapon raised
+	if (SERVER) then
+		self.Owner:DrawViewModel(false)
+		self.Owner:SetNWBool("ixRaised", true)
+	end
+	
 	return true
 end
 
@@ -113,15 +123,12 @@ end
 function SWEP:ShootEffect(EFFECTSTR,startpos,endpos)
 	local pPlayer=self.Owner;
 	if !pPlayer then return end
-	local view
-	if CLIENT then view=GetViewEntity() else view=pPlayer:GetViewEntity() end
-		if ( !pPlayer:IsNPC() && view:IsPlayer() ) then
-			if CLIENT and pPlayer:CanOverrideView() then return end
-			util.ParticleTracerEx( EFFECTSTR, self.Weapon:GetAttachment( self.Weapon:LookupAttachment( "muzzle" ) ).Pos,endpos, true, pPlayer:GetViewModel():EntIndex(), pPlayer:GetViewModel():LookupAttachment( "muzzle" ) );
-			-- util.ParticleTracerEx( EFFECTSTR, pPlayer:GetAttachment( pPlayer:LookupAttachment( "rightclaw" ) ).Pos,endpos, true,pPlayer:EntIndex(), pPlayer:LookupAttachment( "rightclaw" ) );
-		else
-			util.ParticleTracerEx( EFFECTSTR, pPlayer:GetAttachment( pPlayer:LookupAttachment( "rightclaw" ) ).Pos,endpos, true,pPlayer:EntIndex(), pPlayer:LookupAttachment( "rightclaw" ) );
-		end
+	
+	-- Always use player's hand attachment for beam tracer (viewmodel is hidden)
+	local attachment = pPlayer:GetAttachment(pPlayer:LookupAttachment("rightclaw"))
+	if attachment then
+		util.ParticleTracerEx(EFFECTSTR, attachment.Pos, endpos, true, pPlayer:EntIndex(), pPlayer:LookupAttachment("rightclaw"))
+	end
 end
 	
 function SWEP:ImpactEffect( traceHit )
@@ -223,12 +230,15 @@ end
 
 function SWEP:PrimaryAttack()
 
-	if self.Owner:Health() <= 50 then 
-		if (SERVER) then
-		self.Owner:Notify("You are too weak to perfom a zap attack!")
+	-- Check stamina
+	if self.Owner:GetLocalVar("stm", 0) < 40 then
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("notEnoughStamina")
+			self.NextNotifyTime = CurTime() + 2 -- 2 second cooldown
 		end
-		self.Weapon:SetNextPrimaryFire(CurTime()+2)
-	return end
+		self.Weapon:SetNextPrimaryFire(CurTime()+0.5)
+		return
+	end
 	
 	self:DispatchEffect("vortigaunt_charge_token_b")
 	self:DispatchEffect("vortigaunt_charge_token_c")
@@ -244,6 +254,12 @@ function SWEP:PrimaryAttack()
 			if (!self.Owner:Alive()) then return end
 			-- self.Charging=false;
 			self:Shoot()
+			
+			-- Consume stamina after successful attack
+			if SERVER then
+				self.Owner:ConsumeStamina(40)
+			end
+			
 			self.Weapon:SendWeaponAnim(ACT_VM_SECONDARYATTACK)
 			timer.Simple(0.75,function()if !IsValid(self.Owner) || self.Owner:GetActiveWeapon()!=self || !IsValid(self)  then return end self.Weapon:SendWeaponAnim(ACT_VM_IDLE)end)
 			if SERVER && self.ChargeSound then	
@@ -272,9 +288,32 @@ end
 
 
 function SWEP:SecondaryAttack()
-	if self.Owner:Armor()>=self.ArmorLimit then return end
+	if (!self.Owner:Alive()) then return end
+	
+	local eye = self.Owner:GetEyeTrace()
+	if (!eye.Entity:IsPlayer()) then return end
+	
+	local target = eye.Entity
+	if target:GetPos():Distance(self.Owner:GetShootPos()) > 105 then return end
+	
+	-- Check if target armor is already full
+	if target:Armor() >= target:GetMaxArmor() then
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("targetSuitFull")
+			self.NextNotifyTime = CurTime() + 2
+		end
+		return
+	end
+	
+	-- Check if owner has enough stamina
+	if self.Owner:GetLocalVar("stm", 0) < 20 then
+		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
+			self.Owner:NotifyLocalized("notEnoughStamina")
+			self.NextNotifyTime = CurTime() + 2
+		end
+		return
+	end
 
-	self.HealTime=CurTime()+self.HealDelay;
 	self:DispatchEffect("vortigaunt_charge_token")
 	self.Weapon:SendWeaponAnim(ACT_VM_RELOAD)
 	if SERVER && self.HealingSound then
@@ -283,12 +322,29 @@ function SWEP:SecondaryAttack()
 
 	timer.Simple(1,function()
 		if (!self.Owner:Alive()) then return end
+		if (!IsValid(target)) then return end
+		
+		-- Check distance again
+		if target:GetPos():Distance(self.Owner:GetShootPos()) > 105 then return end
+		
 		if IsValid(self.Owner:GetViewModel())then self.Owner:GetViewModel():StopParticles() end
-			self.Owner:StopParticles()
-		self:GiveArmor()
-		if SERVER && self.HealingSound then	self.HealingSound:Stop() end
-		if !IsValid(self.Owner) || self.Owner:GetActiveWeapon()!=self || !IsValid(self)  then return end self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
-		self.Owner:GetViewModel():EmitSound(self.HealSound)
+		self.Owner:StopParticles()
+		
+		if (SERVER) then
+			-- Give armor to target
+			local arm = math.random(self.MinArmor, self.MaxArmor)
+			local targetArmor = target:Armor()
+			local maxArmor = target:GetMaxArmor()
+			target:SetArmor(math.Clamp(targetArmor + arm, 0, maxArmor))
+			
+			-- Consume stamina
+			self.Owner:ConsumeStamina(20)
+		end
+		
+		if SERVER && self.HealingSound then self.HealingSound:Stop() end
+		if !IsValid(self.Owner) || self.Owner:GetActiveWeapon()!=self || !IsValid(self) then return end
+		self.Weapon:SendWeaponAnim(ACT_VM_IDLE)
+		self.Owner:EmitSound(self.HealSound)
 	end)
 
 	self.Weapon:SetNextPrimaryFire(CurTime()+1)

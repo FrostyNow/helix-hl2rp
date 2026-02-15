@@ -18,6 +18,45 @@ function Schema:PopulateCharacterInfo(client, character, tooltip)
 	end
 end
 
+function Schema:CalcView(client, origin, angles, fov)
+	if (!client:Alive()) then
+		local ragdoll
+		-- Find the active corpse (if one exists with the NetVar)
+		for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+			if (v:GetNetVar("player") == client) then
+				ragdoll = v
+				break
+			end
+		end
+
+		if (IsValid(ragdoll)) then
+			local center = ragdoll:WorldSpaceCenter()
+			local view = {}
+			
+			-- Use the player's eye angles for rotation
+			local angles = client:EyeAngles()
+			
+			view.origin = center + (angles:Forward() * -100) + Vector(0, 0, 10)
+			view.angles = angles
+			
+			-- Collision trace
+			local trace = util.TraceHull({
+				start = center,
+				endpos = view.origin,
+				mins = Vector(-8, -8, -8),
+				maxs = Vector(8, 8, 8),
+				filter = ragdoll
+			})
+			
+			if (trace.Hit) then
+				view.origin = trace.HitPos + trace.HitNormal * 4
+			end
+			
+			return view
+		end
+	end
+end
+
 local COMMAND_PREFIX = "/"
 
 function Schema:ChatTextChanged(text)
@@ -565,6 +604,37 @@ local function PatchScoreboardPanels()
 			elseif (IsValid(self.realDescriptionHint)) then
 				self.realDescriptionHint:SetVisible(false)
 			end
+		end
+	end
+end
+
+
+function Schema:PrePlayerDraw(v)
+	if (v:GetCharacter() and !v:GetNoDraw() and v:Alive()) then
+		local attachment = v:GetAttachment(v:LookupAttachment("eyes"))
+		
+		if (attachment) then
+			local eyePos = attachment.Pos
+			local headForward = attachment.Ang:Forward()
+			local headRight = attachment.Ang:Right()
+			local headUp = attachment.Ang:Up()
+			
+			local aimDir = v:GetAimVector()
+			
+			-- Project aim direction onto head-local axes
+			local dotF = aimDir:Dot(headForward)
+			local dotR = aimDir:Dot(headRight)
+			local dotU = aimDir:Dot(headUp)
+			
+			-- Tight clamping to keep eye movement natural and within model limits
+			dotF = math.max(dotF, 0.7) -- Only look forward (about 45 deg cone)
+			dotR = math.Clamp(dotR, -0.4, 0.4)
+			dotU = math.Clamp(dotU, -0.3, 0.3)
+			
+			local finalDir = (headForward * dotF + headRight * dotR + headUp * dotU):GetNormalized()
+			v:SetEyeTarget(eyePos + finalDir * 1000)
+		else
+			v:SetEyeTarget(v:EyePos() + v:GetAimVector() * 1000)
 		end
 	end
 end

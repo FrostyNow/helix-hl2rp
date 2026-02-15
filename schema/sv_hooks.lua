@@ -172,6 +172,13 @@ function Schema:PlayerSpawn(client)
 	local inv = character and character:GetInventory()
 
 	client:SetCanZoom(character and (client:IsCombine() or client:IsAdmin() or (inv and inv:HasItem("binoculars"))))
+
+	-- Clear name panels from any existing corpses upon spawning
+	for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+		if (v:GetNetVar("player") == client) then
+			v:SetNetVar("player", nil)
+		end
+	end
 end
 
 function Schema:PlayerDeath(client, inflicter, attacker)

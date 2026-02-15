@@ -32,8 +32,9 @@ if SERVER then
 
 			local soundCategory = (ply:GetCharacter():IsVortigaunt() and "vort") or (ply:IsCombine() and "combine") or "default"
 			local jumpSound = jumpSounds[soundCategory]
+			local volume = soundCategory == "vort" and 0.5 or 1
 
-			ply:EmitSound(jumpSound[math.random(1, #jumpSound)])
+			ply:EmitSound(jumpSound[math.random(1, #jumpSound)], 75, 100, volume)
 		end
 	end)
 
@@ -43,8 +44,9 @@ if SERVER then
 
 			local soundCategory = (ply:GetCharacter():IsVortigaunt() and "vort") or (ply:IsCombine() and "combine") or "default"
 			local jumpSound = jumpSounds[soundCategory]
+			local volume = soundCategory == "vort" and 0.5 or 1
 
-			ply:EmitSound(jumpSound[math.random(1, #jumpSound)])
+			ply:EmitSound(jumpSound[math.random(1, #jumpSound)], 75, 100, volume)
 		end
 	end)
 end

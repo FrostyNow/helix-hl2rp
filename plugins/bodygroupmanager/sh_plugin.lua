@@ -7,12 +7,24 @@ PLUGIN.description = "Allows players and administration to have an easier time c
 
 ix.lang.AddTable("english", {
 	cmdEditBodygroup = "Customise the bodygroups of a target.",
-	cmdBodygroup = "Customise your own bodygroups (requires the b flag)."
+	cmdBodygroup = "Customise your own bodygroups (requires the b flag).",
+	cmdSkin = "Customise your own skin (requires the s flag).",
+	bodygroupManager = "Bodygroup Manager",
+	saveChanges = "Save Changes",
+	skin = "Skin",
+	next = "Next",
+	previous = "Previous"
 })
 
 ix.lang.AddTable("korean", {
-	cmdEditBodygroup = "대상의 바디그룹을 수정합니다.",
-	cmdBodygroup = "자신의 바디그룹을 수정합니다. (b 플래그 필요)"
+	cmdEditBodygroup = "대상의 바디그룹/스킨을 수정합니다.",
+	cmdBodygroup = "자신의 바디그룹을 수정합니다. (b 플래그 필요)",
+	cmdSkin = "자신의 스킨을 수정합니다. (s 플래그 필요)",
+	bodygroupManager = "바디그룹 매니저",
+	saveChanges = "변경사항 저장",
+	skin = "스킨",
+	next = "다음",
+	previous = "이전"
 })
 
 ix.command.Add("CharEditBodygroup", {
@@ -43,13 +55,39 @@ ix.command.Add("Bodygroup", {
 	end
 })
 
+ix.command.Add("Skin", {
+	description = "@cmdSkin",
+	OnRun = function(self, client)
+		local character = client:GetCharacter()
+
+		if (!character or !character:HasFlags("s")) then
+			return "@flagNoMatch", "s"
+		end
+
+		net.Start("ixBodygroupView")
+			net.WriteEntity(client)
+		net.Send(client)
+	end
+})
+
 properties.Add("ixEditBodygroups", {
 	MenuLabel = "#Edit Bodygroups",
 	Order = 10,
 	MenuIcon = "icon16/user_edit.png",
 
 	Filter = function(self, entity, client)
-		return (entity:IsPlayer() and #entity:GetBodyGroups() > 1 and ix.command.HasAccess(client, "CharEditBodygroup"))
+		if (!entity:IsPlayer() or !entity:GetCharacter()) then return false end
+
+		if (ix.command.HasAccess(client, "CharEditBodygroup")) then
+			return true
+		end
+
+		if (entity == client) then
+			local character = client:GetCharacter()
+			return character:HasFlags("b") or character:HasFlags("s")
+		end
+
+		return false
 	end,
 
 	Action = function(self, entity)

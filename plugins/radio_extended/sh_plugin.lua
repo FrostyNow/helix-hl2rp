@@ -9,9 +9,9 @@ ix.util.Include("thirdparty/sh_netstream2.lua")
 
 ix.lang.AddTable("english", {
 	itemHandheldRadioDesc = "",
-	chatRadioExtFormat = "%s radios in \"%s\"",
-	chatRadioExtYellFormat = "%s yells in the radio \"%s\"",
-	chatRadioExtWhisperFormat = "%s whispers in the radio \"%s\""
+	chatRadioExtFormat = "%s radios in \"%s.\"",
+	chatRadioExtYellFormat = "%s yells in the radio \"%s.\"",
+	chatRadioExtWhisperFormat = "%s whispers in the radio \"%s.\""
 })
 ix.lang.AddTable("korean", {
 	["Activate"] = "활성화/비활성화",
@@ -21,9 +21,9 @@ ix.lang.AddTable("korean", {
 	["Silence"] = "음소거",
 	["Handheld Radio"] = "휴대용 무전기",
 	itemHandheldRadioDesc = "",
-	chatRadioExtFormat = "%s의 무전 \"%s\"",
-	chatRadioExtYellFormat = "%s의 무전 외침 \"%s\"",
-	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s\""
+	chatRadioExtFormat = "%s의 무전 \"%s.\"",
+	chatRadioExtYellFormat = "%s의 무전 외침 \"%s.\"",
+	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s.\""
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -881,7 +881,7 @@ function PLUGIN:OverwriteClasses()
 			if ((ix.config.Get("enableCallsigns",true)) and (data.callsign) and (data.callsign != "")) then
 				name = data.callsign
 			else
-				name = speaker:Name()
+				name = hook.Run("GetCharacterName", speaker, self.uniqueID) or speaker:Name()
 			end
 			--
 
@@ -889,6 +889,7 @@ function PLUGIN:OverwriteClasses()
 			if repeater then
 				useFreq = repeater:GetOutputFreq()
 			end
+
 			local theFreq = string.format("[%s *MHz*] ", useFreq)
 			local theChan = string.format("[*%s*] ", channelName)
 
@@ -927,15 +928,34 @@ function PLUGIN:OverwriteClasses()
 
 			-- If you have more than one radio, and they're on different frequencies, show the frequency next to the name
 			-- Otherwise just show channel
-			if (data.broadcast and !listenWalkie) then
-				chat.AddText(newFreqColor, theFreq, newColor, L(self:GetFormat(), name, text))
-			elseif (data.broadcast and listenWalkie) then
-				chat.AddText(newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
-			elseif (badTally and !listenWalkie) then
-				--print("This one")
-				chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
+			-- Format the message parts
+			local formatted = L(self:GetFormat(), name, text)
+			local nameStart, nameEnd = formatted:find(name, 1, true)
+			
+			if (nameStart and nameEnd and IsValid(speaker)) then
+				local beforeName = formatted:sub(1, nameStart - 1)
+				local afterName = formatted:sub(nameEnd + 1)
+				
+				if (data.broadcast and !listenWalkie) then
+					chat.AddText(newFreqColor, theFreq, newColor, beforeName, speaker, newColor, afterName)
+				elseif (data.broadcast and listenWalkie) then
+					chat.AddText(newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
+				elseif (badTally and !listenWalkie) then
+					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
+				else
+					chat.AddText(newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
+				end
 			else
-				chat.AddText(newChanColor, theChan, newColor, L(self:GetFormat(), name, text))
+				-- Fallback if name not found in formatted string
+				if (data.broadcast and !listenWalkie) then
+					chat.AddText(newFreqColor, theFreq, newColor, formatted)
+				elseif (data.broadcast and listenWalkie) then
+					chat.AddText(newChanColor, theChan, newColor, formatted)
+				elseif (badTally and !listenWalkie) then
+					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, formatted)
+				else
+					chat.AddText(newChanColor, theChan, newColor, formatted)
+				end
 			end
 			--print("Yeah")
 

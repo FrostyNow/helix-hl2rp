@@ -45,9 +45,53 @@ end
 
 if (SERVER) then
 	local ADMIN_SET_VALUE_MAX = 2000
+	local ADMIN_RECOGNITION_SELF = 1
+	local ADMIN_RECOGNITION_ALL = 2
+	local ADMIN_UNRECOGNITION_ALL = 3
 
 	util.AddNetworkString("ixAdminSetHealth")
 	util.AddNetworkString("ixAdminSetArmor")
+	util.AddNetworkString("ixAdminRecognitionAction")
+
+	local function GetRecognitionState(character)
+		local state = {}
+		local raw = character:GetData("rgn", "")
+
+		if (raw == "") then
+			return state
+		end
+
+		for id in raw:gmatch(",(%d+),") do
+			state[tonumber(id)] = true
+		end
+
+		return state
+	end
+
+	local function SetRecognitionState(character, state)
+		local ids = {}
+
+		for id, recognized in pairs(state) do
+			if (recognized and isnumber(id) and id > 0) then
+				ids[#ids + 1] = id
+			end
+		end
+
+		table.sort(ids)
+
+		if (#ids > 0) then
+			character:SetData("rgn", "," .. table.concat(ids, ",") .. ",")
+		else
+			character:SetData("rgn", "")
+		end
+	end
+
+	local function IsTargetFactionGloballyRecognized(target)
+		local character = IsValid(target) and target:GetCharacter()
+		local faction = character and ix.faction.indices[character:GetFaction()]
+
+		return faction and faction.isGloballyRecognized
+	end
 
 	net.Receive("ixAdminSetHealth", function(_, client)
 		if (!IsValid(client) or !client:IsAdmin()) then
@@ -94,10 +138,77 @@ if (SERVER) then
 		target:SetArmor(value)
 		client:EmitSound("buttons/button14.wav", 65, 100, 1)
 	end)
+
+	net.Receive("ixAdminRecognitionAction", function(_, client)
+		if (!IsValid(client) or !client:IsAdmin()) then
+			return
+		end
+
+		local target = net.ReadEntity()
+		local action = net.ReadUInt(2)
+		local targetCharacter = IsValid(target) and target:GetCharacter()
+		local adminCharacter = client:GetCharacter()
+
+		if (!IsValid(target) or !target:IsPlayer() or !targetCharacter or !adminCharacter) then
+			return
+		end
+
+		if (IsTargetFactionGloballyRecognized(target)) then
+			client:Notify("This target's faction is always recognized.")
+			return
+		end
+
+		local targetID = targetCharacter:GetID()
+
+		if (action == ADMIN_RECOGNITION_SELF) then
+			if (adminCharacter:Recognize(targetID)) then
+				client:Notify("You now recognize this player.")
+			else
+				client:Notify("You already recognize this player.")
+			end
+
+			return
+		end
+
+		local changed = 0
+
+		for _, other in player.Iterator() do
+			if (!IsValid(other) or other == target) then
+				continue
+			end
+
+			local otherCharacter = other:GetCharacter()
+
+			if (!otherCharacter) then
+				continue
+			end
+
+			local state = GetRecognitionState(otherCharacter)
+
+			if (action == ADMIN_RECOGNITION_ALL and !state[targetID]) then
+				state[targetID] = true
+				SetRecognitionState(otherCharacter, state)
+				changed = changed + 1
+			elseif (action == ADMIN_UNRECOGNITION_ALL and state[targetID]) then
+				state[targetID] = nil
+				SetRecognitionState(otherCharacter, state)
+				changed = changed + 1
+			end
+		end
+
+		if (action == ADMIN_RECOGNITION_ALL) then
+			client:Notify(string.format("%s players now recognize the target.", changed))
+		elseif (action == ADMIN_UNRECOGNITION_ALL) then
+			client:Notify(string.format("%s players no longer recognize the target.", changed))
+		end
+	end)
 end
 
 if (CLIENT) then
 	local MAX_POSITIVE_INT = 2000
+	local ADMIN_RECOGNITION_SELF = 1
+	local ADMIN_RECOGNITION_ALL = 2
+	local ADMIN_UNRECOGNITION_ALL = 3
 
 	local function OpenValueSlider(title, initialValue, callback)
 		local frame = vgui.Create("DFrame")
@@ -169,22 +280,24 @@ if (CLIENT) then
 	function Schema:PopulateScoreboardPlayerMenu(target, menu)
 		local client = LocalPlayer()
 		local character = IsValid(target) and target:GetCharacter()
+		local targetFaction = character and ix.faction.indices[character:GetFaction()]
+		local targetIsAlwaysRecognized = targetFaction and targetFaction.isGloballyRecognized
 
 		if (!IsValid(client) or !character) then
 			return
 		end
 
 		if (client:IsAdmin()) then
-			local healthMenu = menu:AddSubMenu("Set Health")
-			healthMenu:AddOption("Set Value...", function()
-				OpenValueSlider("Set Health", target:Health(), function(value)
+			local healthMenu = menu:AddSubMenu(L("scoreboardSetHealth"))
+			healthMenu:AddOption(L("scoreboardSetValue"), function()
+				OpenValueSlider(L("scoreboardSetHealth"), target:Health(), function(value)
 					net.Start("ixAdminSetHealth")
 						net.WriteEntity(target)
 						net.WriteUInt(value, 31)
 					net.SendToServer()
 				end)
 			end)
-			healthMenu:AddOption("Heal to Max Health", function()
+			healthMenu:AddOption(L("scoreboardHealToMax"), function()
 				local maxHealth = math.max(1, math.floor(target:GetMaxHealth() or 1))
 
 				net.Start("ixAdminSetHealth")
@@ -193,19 +306,62 @@ if (CLIENT) then
 				net.SendToServer()
 			end)
 
-			local armorMenu = menu:AddSubMenu("Set Armor")
-			armorMenu:AddOption("Set Value...", function()
-				OpenValueSlider("Set Armor", target:Armor(), function(value)
+			local armorMenu = menu:AddSubMenu(L("scoreboardSetArmor"))
+			armorMenu:AddOption(L("scoreboardSetValue"), function()
+				OpenValueSlider(L("scoreboardSetArmor"), target:Armor(), function(value)
 					net.Start("ixAdminSetArmor")
 						net.WriteEntity(target)
 						net.WriteUInt(value, 31)
 					net.SendToServer()
 				end)
 			end)
+
+			if (!targetIsAlwaysRecognized) then
+				local recognitionMenu = menu:AddSubMenu(L("scoreboardRecognitionMenu"))
+
+				recognitionMenu:AddOption(L("scoreboardRecognitionSelf"), function()
+					net.Start("ixAdminRecognitionAction")
+						net.WriteEntity(target)
+						net.WriteUInt(ADMIN_RECOGNITION_SELF, 2)
+					net.SendToServer()
+				end)
+
+				recognitionMenu:AddOption(L("scoreboardRecognitionAll"), function()
+					net.Start("ixAdminRecognitionAction")
+						net.WriteEntity(target)
+						net.WriteUInt(ADMIN_RECOGNITION_ALL, 2)
+					net.SendToServer()
+				end)
+
+				recognitionMenu:AddOption(L("scoreboardRecognitionClearAll"), function()
+					net.Start("ixAdminRecognitionAction")
+						net.WriteEntity(target)
+						net.WriteUInt(ADMIN_UNRECOGNITION_ALL, 2)
+					net.SendToServer()
+				end)
+			end
+
+			if (!target:Alive()) then
+				if (ix.command.HasAccess(client, "Revive")) then
+					menu:AddOption(L("scoreboardRevive"), function()
+						ix.command.Send("Revive", target:Name())
+					end)
+				end
+
+				if (ix.command.HasAccess(client, "CharSpawn")) then
+					menu:AddOption(L("scoreboardCharSpawn"), function()
+						ix.command.Send("CharSpawn", target:Name())
+					end)
+				end
+			end
 		end
 
-		if (ix.command.HasAccess(client, "CharEditBodygroup") and #target:GetBodyGroups() > 1) then
-			menu:AddOption("Edit Bodygroups", function()
+		local isSelf = (target == client)
+		local canEditBodygroups = ix.command.HasAccess(client, "CharEditBodygroup") or (isSelf and character:HasFlags("b"))
+		local canEditSkin = ix.command.HasAccess(client, "CharEditBodygroup") or (isSelf and character:HasFlags("s"))
+
+		if ((canEditBodygroups or canEditSkin) and (#target:GetBodyGroups() > 1 or target:SkinCount() > 1)) then
+			menu:AddOption(L("scoreboardEditBodygroups"), function()
 				local panel = vgui.Create("ixBodygroupView")
 				panel:Display(target)
 			end)

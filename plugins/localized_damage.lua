@@ -31,7 +31,9 @@ ix.config.Add("StomachScaleDamage", 0.8, "How much should stomach damage be scal
 
 function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 	if (ix.config.Get("localizedDamage")) then
-		ix.log.AddRaw( "Base damage : "..dmginfo:GetDamage().." / HITGROUP : "..hitgroup);
+		if (SERVER) then
+			ix.log.AddRaw("Base damage : "..dmginfo:GetDamage().." / HITGROUP : "..hitgroup);
+		end
 		if (hitgroup == HITGROUP_STOMACH) then
 			dmginfo:ScaleDamage(ix.config.Get("StomachScaleDamage", 0.8))
 		elseif ((hitgroup == HITGROUP_LEFTARM) or (hitgroup == HITGROUP_RIGHTARM)) then
@@ -50,5 +52,7 @@ function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 			dmginfo:ScaleDamage(ix.config.Get("LegsScaleDamage", 0.5))
 		end
 	end
-	ix.log.AddRaw( "Scaled damage : "..dmginfo:GetDamage().." / HITGROUP : "..hitgroup);
+	if (SERVER) then
+		ix.log.AddRaw("Scaled damage : "..dmginfo:GetDamage().." / HITGROUP : "..hitgroup);
+	end
 end

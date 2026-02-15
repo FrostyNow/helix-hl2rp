@@ -36,18 +36,19 @@ SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "none"
 
 function SWEP:Initialize()
-	self:SetWeaponHoldType(self.HoldType)
+	if (self.SetHoldType) then
+		self:SetHoldType("normal")
+	else
+		self:SetWeaponHoldType("normal")
+	end
 end
 
 function SWEP:Deploy()
-	if (SERVER) then
-		self.Owner:DrawViewModel(false)
-	
-
+	if (!IsValid(self.Owner)) then return false end
 	if (!self.Owner:Alive()) then return false end
-	if (!self.Owner:GetCharacter():IsVortigaunt()) then return false end
+	if (!self.Owner:GetCharacter() or !self.Owner:GetCharacter():IsVortigaunt()) then return false end
 
-	
+	if (SERVER) then
 	self.Owner.broomModel = ents.Create("prop_dynamic")
 	self.Owner.broomModel:SetModel("models/props_c17/pushbroom.mdl")
 	self.Owner.broomModel:SetMoveType(MOVETYPE_NONE)
@@ -60,14 +61,23 @@ function SWEP:Deploy()
 
 end
 
-function SWEP:Holster()
-	if (SERVER) then
-		self.Owner:DrawViewModel(true)
+if (CLIENT) then
+	function SWEP:PreDrawViewModel(viewModel, weapon, client)
+		return true
 	end
 
-	if (self.Owner.broomModel) then
-		if (self.Owner.broomModel:IsValid()) then
-			self.Owner.broomModel:Remove()
+	function SWEP:DrawWorldModel()
+		return
+	end
+end
+function SWEP:Holster()
+	if (!IsValid(self.Owner)) then return true end
+
+	if (SERVER) then
+		if (self.Owner.broomModel) then
+			if (self.Owner.broomModel:IsValid()) then
+				self.Owner.broomModel:Remove()
+			end
 		end
 	end
 
@@ -76,14 +86,14 @@ end
 
 
 function SWEP:OnRemove()
-	if (SERVER) then
-		self.Owner:DrawViewModel(true)
-	end
+	if (!IsValid(self.Owner)) then return true end
 
-	if (self.Owner.broomModel) then
-		if (self.Owner.broomModel:IsValid()) then
-			self.Owner.broomModel:Remove()
-		end;
+	if (SERVER) then
+		if (self.Owner.broomModel) then
+			if (self.Owner.broomModel:IsValid()) then
+				self.Owner.broomModel:Remove()
+			end
+		end
 	end
 
 	return true
@@ -91,14 +101,30 @@ end
 
 
 function SWEP:PrimaryAttack()
-	
+	if (!IsValid(self.Owner)) then return false end
 	if (!self.Owner:Alive()) then return false end
-	if (!self.Owner:GetCharacter():IsVortigaunt()) then return false end
+	if (!self.Owner:GetCharacter() or !self.Owner:GetCharacter():IsVortigaunt()) then return false end
+	if (!self.Owner:OnGround()) then return false end
 
 	self:SetNextPrimaryFire( CurTime() + 2 )
 	-- self.Owner:SetAnimation( PLAYER_ATTACK1 )
 
 	if (SERVER) then
+		local soundPath = "physics/cardboard/cardboard_box_scrape_smooth_loop1.wav"
+		self.Owner:EmitSound(soundPath, 70, 100, 0.1)
+
+		timer.Simple(1, function()
+			if (IsValid(self) and IsValid(self.Owner)) then
+				self.Owner:StopSound(soundPath)
+				self.Owner:EmitSound(soundPath, 70, 100, 0.1)
+
+				timer.Simple(0.7, function()
+					if (IsValid(self) and IsValid(self.Owner)) then
+						self.Owner:StopSound(soundPath)
+					end
+				end)
+			end
+		end)
 		self.Owner:ForceSequence("sweep", nil,nil, false)
 	end
 
@@ -109,3 +135,4 @@ end;
 function SWEP:SecondaryAttack()
 	return false
 end
+

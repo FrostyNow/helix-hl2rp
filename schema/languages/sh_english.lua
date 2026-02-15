@@ -59,6 +59,17 @@ LANGUAGE = {
 	cmdRevive = "Revives target player on his/her death spot.",
 	cmdCharSetId = "Sets target player cid or if he/she has id already then gives a new citizen id card.",
 	cmdCharSetNameTitle = "Set Character Name",
+	scoreboardRecognitionMenu = "Recognition",
+	scoreboardRecognitionSelf = "Recognize Target (Me)",
+	scoreboardRecognitionAll = "Make Recognized To Everyone",
+	scoreboardRecognitionClearAll = "Make Unrecognized To Everyone",
+	scoreboardSetHealth = "Set Health",
+	scoreboardSetArmor = "Set Armor",
+	scoreboardSetValue = "Set Value...",
+	scoreboardHealToMax = "Heal to Max Health",
+	scoreboardEditBodygroups = "Edit Bodygroups",
+	scoreboardRevive = "Revive",
+	scoreboardCharSpawn = "CharSpawn",
 
 	charSpawn01 = "You spawned yourself at the spawnpoint.",
 	charSpawn02 = "You spawned %s at the spawnpoint.",
@@ -207,4 +218,7 @@ LANGUAGE = {
 	
 	securitizedItemTooltip = "Class: Securitized",
 	sociocidalItemTooltip = "Class: Sociocidal",
+
+	currencySingular = "token",
+	currencyPlural = "tokens"
 }

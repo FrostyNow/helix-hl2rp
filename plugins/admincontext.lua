@@ -18,9 +18,42 @@ CAMI.RegisterPrivilege({
 })
 
 local MAX_POSITIVE_INT = 2000
+local OpenFlagEditor
 local PromptPositiveInteger
+local ADMIN_RECOGNITION_SELF = 1
+local ADMIN_RECOGNITION_ALL = 2
+local ADMIN_UNRECOGNITION_ALL = 3
 
 if (CLIENT) then
+	local function FitTextToWidth(text, font, maxWidth)
+		text = tostring(text or "")
+		maxWidth = math.max(1, math.floor(tonumber(maxWidth) or 1))
+
+		surface.SetFont(font or "ixMenuButtonFont")
+
+		if (select(1, surface.GetTextSize(text)) <= maxWidth) then
+			return text
+		end
+
+		local ellipsis = "..."
+		local ellipsisWidth = select(1, surface.GetTextSize(ellipsis))
+		local result = ""
+		local length = text:utf8len()
+
+		for i = 1, length do
+			local candidate = text:utf8sub(1, i)
+			local width = select(1, surface.GetTextSize(candidate))
+
+			if (width + ellipsisWidth > maxWidth) then
+				break
+			end
+
+			result = candidate
+		end
+
+		return result != "" and (result .. ellipsis) or ellipsis
+	end
+
 	local function ReverseConcat(tableData)
 		local text = ""
 
@@ -38,7 +71,7 @@ if (CLIENT) then
 		net.SendToServer()
 	end
 
-	local function OpenFlagEditor(targetPlayer)
+	function OpenFlagEditor(targetPlayer)
 		local targetCharacter = IsValid(targetPlayer) and targetPlayer:GetCharacter()
 
 		if (!targetCharacter) then
@@ -68,8 +101,11 @@ if (CLIENT) then
 				row.setting:SetChecked(true)
 			end
 
-			row:SetText("[" .. key .. "] " .. flagData.description)
 			row.setting:SizeToContents()
+
+			local rawText = "[" .. key .. "] " .. tostring(flagData.description or "")
+			local maxTextWidth = math.max(120, flagList:GetWide() - row.setting:GetWide() - 28)
+			row:SetText(FitTextToWidth(rawText, "ixMenuButtonFont", maxTextWidth))
 			row:SizeToContents()
 
 			row.OnValueChanged = function(panel, bEnabled)
@@ -326,6 +362,81 @@ properties.Add("ixSetDescriptionProperty", {
 
 })
 
+properties.Add("ixManageRecognitionProperty", {
+	MenuLabel = "#Recognition",
+	Order = 10,
+	MenuIcon = "icon16/vcard.png",
+
+	Filter = function(self, entity, client)
+		if (!CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil) or !entity:IsPlayer()) then
+			return false
+		end
+
+		local character = entity:GetCharacter()
+		local faction = character and ix.faction.indices[character:GetFaction()]
+
+		return !faction or !faction.isGloballyRecognized
+	end,
+
+	MenuOpen = function(self, option, ent, tr)
+		local submenu = option:AddSubMenu()
+		local target = IsValid(ent.AttachedEntity) and ent.AttachedEntity or ent
+
+		submenu:AddOption("Recognize Target (Me)", function()
+			net.Start("ixAdminRecognitionAction")
+				net.WriteEntity(target)
+				net.WriteUInt(ADMIN_RECOGNITION_SELF, 2)
+			net.SendToServer()
+		end)
+
+		submenu:AddOption("Make Recognized To Everyone", function()
+			net.Start("ixAdminRecognitionAction")
+				net.WriteEntity(target)
+				net.WriteUInt(ADMIN_RECOGNITION_ALL, 2)
+			net.SendToServer()
+		end)
+
+		submenu:AddOption("Make Unrecognized To Everyone", function()
+			net.Start("ixAdminRecognitionAction")
+				net.WriteEntity(target)
+				net.WriteUInt(ADMIN_UNRECOGNITION_ALL, 2)
+			net.SendToServer()
+		end)
+	end,
+
+	Action = function(self, entity)
+		-- not used
+	end
+})
+
+properties.Add("ixRevivePlayerProperty", {
+	MenuLabel = "#Revive",
+	Order = 9,
+	MenuIcon = "icon16/heart_add.png",
+
+	Filter = function(self, entity, client)
+		if (!CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil) or !ix.command.HasAccess(client, "Revive")) then
+			return false
+		end
+
+		if (entity:IsPlayer() and !entity:Alive()) then
+			return true
+		elseif (entity:GetClass() == "prop_ragdoll" and IsValid(entity:GetNetVar("player"))) then
+			return !entity:GetNetVar("player"):Alive()
+		end
+
+		return false
+	end,
+
+	Action = function(self, entity)
+		local target = entity:IsPlayer() and entity or entity:GetNetVar("player")
+
+		if (IsValid(target)) then
+			ix.command.Send("Revive", target:Name())
+		end
+	end
+})
+
 properties.Add("ixViewSteamProfileProperty", {
 	MenuLabel = "#View Steam Profile",
 	Order = 11,
@@ -360,7 +471,8 @@ properties.Add("ixEditFlagsProperty", {
 	MenuIcon = "icon16/key.png",
 
 	Filter = function(self, entity, client)
-		return entity:IsPlayer() and ix.command.HasAccess(client, "CharGiveFlag")
+		return entity:IsPlayer() and (ix.command.HasAccess(client, "CharGiveFlag")
+			or CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil))
 	end,
 
 	Action = function(self, entity)

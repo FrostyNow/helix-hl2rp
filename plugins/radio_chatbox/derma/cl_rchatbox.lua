@@ -106,12 +106,32 @@ function PANEL:AddLine(elements, bShouldScroll)
 	local phrases = elements[#elements]
 	local phraseTable = phrases:split(': "')
 	
-	phraseTable[1] = phraseTable[1] .. ": "
-	phraseTable[2] = '"' .. phraseTable[2]
-	--PrintTable(phraseTable)
-	elements[#elements] = phraseTable[1]
-	elements[#elements + 1] = elements[#elements - 1]
-	elements[#elements + 1] = phraseTable[2]
+	-- Fallback for Radio Extended or other formats
+	if (!phraseTable[2]) then
+		local firstQuote = phrases:find('"')
+		
+		if (firstQuote) then
+			-- Re-adjust split results to match expected structure
+			-- phraseTable[1] will be everything before the first quote
+			-- phraseTable[2] will be the message (between first and last quote)
+			phraseTable[1] = phrases:sub(1, firstQuote - 1)
+			phraseTable[2] = phrases:sub(firstQuote + 1, -2) -- Remove the last "
+		end
+	end
+
+	if (phraseTable[2]) then
+		-- Re-apply formatting
+		-- Ensure there is a separator if it's English/Default, or just use what's there
+		if (!phraseTable[1]:find(": $") and !phraseTable[1]:find("의 무전 $") and !phraseTable[1]:find(" radios in $")) then
+			phraseTable[1] = phraseTable[1] .. ": "
+		end
+		
+		phraseTable[2] = '"' .. phraseTable[2] .. '"'
+		--PrintTable(phraseTable)
+		elements[#elements] = phraseTable[1]
+		elements[#elements + 1] = elements[#elements - 1]
+		elements[#elements + 1] = phraseTable[2]
+	end
 
 	--local ct = 0
 	for _, v in ipairs(elements) do

@@ -14,6 +14,7 @@ ix.config.Add("VortHealMax", 20, "Maximum health value that can be healed by vor
 
 ix.lang.AddTable("english", {
 	vortigauntDesc = "An extra-dimensional creature from Xen.",
+	vortigeseFormat = "%s says in vortigese \"%s.\"",
 	dontKnowVort = "You don't know Vortigese!",
 })
 
@@ -21,7 +22,7 @@ ix.lang.AddTable("korean", {
 	["Enslaved Vortigaunt"] = "노예 보르티곤트",
 	["Vortigaunt"] = "보르티곤트",
 	vortigauntDesc = "젠에서 온 이차원 생물입니다.",
-	vortigeseFormat = "%s의 보르트어 \"%s\"",
+	vortigeseFormat = "%s의 보르트어 \"%s.\"",
 	dontKnowVort = "당신은 보르트어를 모릅니다!",
 })
 
@@ -117,6 +118,7 @@ ix.anim.SetModelClass("models/vortigaunt_ozaxi.mdl", "vort")
 ix.anim.SetModelClass("models/kw/kw_vortigaunt.mdl", "vort")
 ix.anim.SetModelClass("models/kw/vortigaunt_nobgslave.mdl", "vort")
 ALWAYS_RAISED["swep_vortigaunt_sweep"] = true
+ALWAYS_RAISED["swep_vortigaunt_beam_edit"] = true
 ALWAYS_RAISED["swep_vortigaunt_heal"] = true
 
 local CHAR = ix.meta.character
@@ -153,7 +155,7 @@ if CLIENT then
 end
 
 ix.chat.Register("Vortigese", {
-	format = "%s says in vortigese \"%s\"",
+	format = "vortigeseFormat",
 	GetColor = function(self, speaker, text)
 		-- If you are looking at the speaker, make it greener to easier identify who is talking.
 		if (LocalPlayer():GetEyeTrace().Entity == speaker) then
@@ -172,10 +174,10 @@ ix.chat.Register("Vortigese", {
 			return false
 		end
 	end,
-	OnChatAdd = function(self,speaker, text, anonymous, info)
+	OnChatAdd = function(self, speaker, text, anonymous, info)
 		local color = self:GetColor(speaker, text, info)
 		local name = anonymous and
-				L"someone" or hook.Run("GetCharacterName", speaker, chatType) or
+				L"someone" or hook.Run("GetCharacterName", speaker, self.uniqueID) or
 				(IsValid(speaker) and speaker:Name() or "Console")
 		
 		if (!LocalPlayer():GetCharacter():IsVortigaunt()) then

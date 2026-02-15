@@ -115,6 +115,83 @@ function PANEL:TransitionSubpanel(id)
 
 			hook.Run("MenuSubpanelCreated", subpanel.subpanelName, subpanel)
 			subpanel.bPopulated = true
+			
+			if (subpanel.subpanelName == "inv") then
+				timer.Simple(0, function()
+					-- Center the CONTAINER (DTileLayout), not the internal panel
+						-- Center the CONTAINER (DTileLayout), not the internal panel
+					if (IsValid(ix.gui.menuInventoryContainer)) then
+						local container = ix.gui.menuInventoryContainer
+						
+						-- Stop filling the screen
+						container:Dock(NODOCK)
+						
+						-- Custom Layout Manager: Main Inventory + Bag Grid
+						container.PerformLayout = function(s)
+							local children = s:GetChildren()
+							local mainPanel = children[1] -- Assume first child is Main Inventory
+							
+							if (!IsValid(mainPanel)) then return end
+
+							-- Position Main Inventory
+							if (mainPanel.SetPaintedManually) then mainPanel:SetPaintedManually(false) end
+							mainPanel:SetPos(0, 0)
+							
+							local mainW, mainH = mainPanel:GetSize()
+							local spacing = 2
+							local bagStartX = mainW + spacing
+							
+							-- Bag Grid Logic
+							local currentX = bagStartX
+							local currentY = 0
+							local currentRowHeight = 0
+							local maxBagWidth = 0
+							local maxWidthLimit = ScrW() * 0.6 -- Limit to 60% of screen width (Tighter wrapping)
+							
+							for i = 2, #children do
+								local child = children[i]
+								if (IsValid(child) and child:IsVisible()) then
+									local w, h = child:GetSize()
+									
+									-- Wrap if needed
+									if (currentX + w > maxWidthLimit and currentX > bagStartX) then
+										currentX = bagStartX
+										currentY = currentY + currentRowHeight + spacing
+										currentRowHeight = 0
+									end
+									
+									-- Position Bag
+									child:SetPos(currentX, currentY)
+									if (child.SetPaintedManually) then child:SetPaintedManually(false) end
+									
+									-- Update tracking
+									currentX = currentX + w + spacing
+									currentRowHeight = math.max(currentRowHeight, h)
+									maxBagWidth = math.max(maxBagWidth, currentX)
+								end
+							end
+							
+							-- Sizing
+							local totalWidth = math.max(mainW, maxBagWidth)
+							local totalHeight = math.max(mainH, currentY + currentRowHeight)
+							
+							-- Remove trailing spacing
+							if (totalWidth > mainW) then totalWidth = totalWidth - spacing end
+
+							-- Resize & Center
+							if (s:GetWide() != totalWidth or s:GetTall() != totalHeight) then
+								s:SetSize(math.max(1, totalWidth), math.max(1, totalHeight))
+								s:Center()
+							else
+								s:Center()
+							end
+						end
+						
+						-- Trigger initial layout
+						container:InvalidateLayout(true)
+					end
+				end)
+			end
 		end
 
 		-- only play whoosh sound only when the menu was already open
@@ -255,7 +332,7 @@ function PANEL:SetupTab(name, info, sectionParent)
 	subpanel:SetSize(self:GetStandardSubpanelSize())
 
 	subpanel:Center()
-	subpanel:SetY(self:GetTall() - subpanel:GetTall() - self:GetPadding() * 0.75)
+	-- subpanel:SetY(self:GetTall() - subpanel:GetTall() - self:GetPadding() * 0.75)
 
     if not (sectionParent) then
         -- this is called while the subpanel has not been populated
@@ -427,15 +504,15 @@ function PANEL:Paint(width, height)
 		self.manualChildren[i]:PaintManual()
 	end
 
-	if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels) then
-		for i = 1, #ix.gui.inv1.childPanels do
-			local panel = ix.gui.inv1.childPanels[i]
+	-- if (IsValid(ix.gui.inv1) and ix.gui.inv1.childPanels) then
+	-- 	for i = 1, #ix.gui.inv1.childPanels do
+	-- 		local panel = ix.gui.inv1.childPanels[i]
 
-			if (IsValid(panel)) then
-				panel:PaintManual()
-			end
-		end
-	end
+	-- 		if (IsValid(panel)) then
+	-- 			panel:PaintManual()
+	-- 		end
+	-- 	end
+	-- end
 
 	if (bShouldScale) then
 		cam.PopModelMatrix()

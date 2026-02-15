@@ -56,6 +56,34 @@ ix.config.Add("scoreboardflagsPerformance", false, "Adds a 'Save' button to the 
 
 
 if (CLIENT) then
+	local function FitTextToWidth(text, font, maxWidth)
+		text = tostring(text or "")
+		maxWidth = math.max(1, math.floor(tonumber(maxWidth) or 1))
+
+		surface.SetFont(font or "ixMenuButtonFont")
+
+		if (select(1, surface.GetTextSize(text)) <= maxWidth) then
+			return text
+		end
+
+		local ellipsis = "..."
+		local ellipsisWidth = select(1, surface.GetTextSize(ellipsis))
+		local result = ""
+		local length = text:utf8len()
+
+		for i = 1, length do
+			local candidate = text:utf8sub(1, i)
+			local width = select(1, surface.GetTextSize(candidate))
+
+			if (width + ellipsisWidth > maxWidth) then
+				break
+			end
+
+			result = candidate
+		end
+
+		return result != "" and (result .. ellipsis) or ellipsis
+	end
 	
 	local function ReverseConcat(table) -- table.concat but for non-numericle table
 		local string = ""
@@ -96,9 +124,11 @@ if (CLIENT) then
 					if ispanel(v) then continue end
 					local row = flagList:AddRow(ix.type.bool)
 					if char:HasFlags(k) then row.setting:SetChecked(true) end
-					row:SetText("[" .. k .. "] " .. v["description"])
-
 					row.setting:SizeToContents()
+
+					local rawText = "[" .. k .. "] " .. tostring(v["description"] or "")
+					local maxTextWidth = math.max(120, flagList:GetWide() - row.setting:GetWide() - 28)
+					row:SetText(FitTextToWidth(rawText, "ixMenuButtonFont", maxTextWidth))
 					row:SizeToContents()
 
 					row.OnValueChanged = function(panel, bEnabled)
@@ -145,7 +175,8 @@ else
 
 	util.AddNetworkString("SCOREFLAGS:CHANGEFLAG")
 	net.Receive("SCOREFLAGS:CHANGEFLAG", function(len,ply)
-		if ix.command.HasAccess(ply, "CharGiveFlag") then
+		if (ix.command.HasAccess(ply, "CharGiveFlag")
+		or CAMI.PlayerHasAccess(ply, "Helix - Admin Context Options", nil)) then
 			
 			local editchar = tonumber(net.ReadString())
 			editchar = ix.char.loaded[editchar]

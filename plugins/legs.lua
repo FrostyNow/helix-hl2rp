@@ -45,8 +45,28 @@ if (CLIENT) then
 			return false
 		end
 
+		local client = LocalPlayer()
+		if (IsValid(client)) then
+			local model = client:GetModel()
+			if (model and model:lower():find("vortigaunt")) then
+				-- Vortigaunt specific bone hiding
+				Legs.BonesToRemove = {
+					"ValveBiped.head",
+					"ValveBiped.neck1",
+					"ValveBiped.neck2",
+					"ValveBiped.arm1_L",
+					"ValveBiped.arm2_L",
+					"ValveBiped.hand_L",
+					"ValveBiped.arm1_R",
+					"ValveBiped.arm2_R",
+					"ValveBiped.hand_R",
+					"ValveBiped.clavicle_L",
+					"ValveBiped.clavicle_R"
+				}
+			end
+		end
+
 		if (ix.option.Get("legsEnabled", true)) then
-			local client = LocalPlayer()
 			return  IsValid(Legs.LegEnt) and
 					(client:Alive() or (client.IsGhosted and client:IsGhosted())) and
 					!Legs:CheckDrawVehicle() and GetViewEntity() == client and

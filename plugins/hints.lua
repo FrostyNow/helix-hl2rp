@@ -73,6 +73,12 @@ ix.config.Add("hints", true, "Whether or not player hint is enabled.", nil, {
 	default = true,
 })
 
+ix.config.Add("hintsDelay", 300, "The delay between hints in seconds.", nil, {
+	category = "Hint System",
+	data = {min = 30, max = 1800, decimals = 0},
+	default = 300,
+})
+
 ix.option.Add("hints", ix.type.bool, true, {
 	category = "Hint System",
 	default = true,
@@ -81,14 +87,6 @@ ix.option.Add("hints", ix.type.bool, true, {
 ix.option.Add("hintsSound", ix.type.bool, true, {
 	category = "Hint System",
 	default = true,
-})
-
-ix.option.Add("hintsDelay", ix.type.number, 30, {
-	category = "Hint System",
-	min = 30,
-	max = 1800,
-	decimals = 1,
-	default = 30,
 })
 
 ix.hints = ix.hints or {}
@@ -141,7 +139,7 @@ if ( CLIENT ) then
 
 		if ( nextHint < CurTime() ) then
 			hint = ix.hints.stored[math.random(#ix.hints.stored)]
-			nextHint = CurTime() + ( ix.option.Get("hintsDelay") or math.random(60,360) )
+			nextHint = CurTime() + math.max(30, tonumber(ix.config.Get("hintsDelay", 300)) or 300)
 			hintShow = true
 			hintEndRender = CurTime() + 15
 
@@ -162,6 +160,6 @@ if ( CLIENT ) then
 			hintAlpha = Lerp(0.01, hintAlpha, 0)
 		end
 		
-		draw.DrawText(L(hint), "HintFont", ScrW() / 2, 0, ColorAlpha(color_white, hintAlpha), TEXT_ALIGN_CENTER)
+		draw.DrawText(L(hint), "HintFont", ScrW() - 24, 24, ColorAlpha(color_white, hintAlpha), TEXT_ALIGN_RIGHT)
 	end
 end

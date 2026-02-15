@@ -22,7 +22,8 @@ ix.util.Include("meta/sh_character.lua")
 
 ix.flag.Add("v", "Access to light blackmarket goods.")
 ix.flag.Add("V", "Access to heavy blackmarket goods.")
-ix.flag.Add("b", "Allows using the bodygroup command to edit your own bodygroups.")
+ix.flag.Add("b", "Access to edit your own bodygroups.")
+ix.flag.Add("s", "Access to edit your own skin.")
 
 ix.anim.SetModelClass("models/eliteghostcp.mdl", "metrocop")
 ix.anim.SetModelClass("models/eliteshockcp.mdl", "metrocop")

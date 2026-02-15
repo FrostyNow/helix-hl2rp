@@ -59,6 +59,17 @@ LANGUAGE = {
 	cmdRevive = "대상 플레이어를 사망 지점에 부활시킵니다.",
 	cmdCharSetId = "대상 플레이어에게 시민 ID를 부여하거나 이미 있는 경우 새 ID 카드를 발급합니다.",
 	cmdCharSetNameTitle = "캐릭터 이름 설정",
+	scoreboardRecognitionMenu = "인식",
+	scoreboardRecognitionSelf = "대상을 나에게 인식",
+	scoreboardRecognitionAll = "대상을 모두에게 인식",
+	scoreboardRecognitionClearAll = "대상을 모두에게 인식 해제",
+	scoreboardSetHealth = "체력 설정",
+	scoreboardSetArmor = "방어구 설정",
+	scoreboardSetValue = "값 설정...",
+	scoreboardHealToMax = "최대 체력으로 회복",
+	scoreboardEditBodygroups = "바디그룹 수정",
+	scoreboardRevive = "죽은 위치에 부활",
+	scoreboardCharSpawn = "부활",
 
 	charSpawn01 = "당신은 당신 자신을 부활 지점에 부활시켰습니다.",
 	charSpawn02 = "당신은 %s님을 부활 지점에 부활시켰습니다.",
@@ -74,7 +85,7 @@ LANGUAGE = {
 	["Stamina"] = "체력",
 	["Agility"] = "민첩성",
 	["Luck"] = "행운",
-	["Faction"] = "팩션",
+	["Faction"] = "세력",
 	["Ammunition"] = "탄약",
 	["Communication"] = "통신",
 	["Medical"] = "의료 물품",
@@ -468,6 +479,9 @@ LANGUAGE = {
 
 	securitizedItemTooltip = "보안 등급",
 	sociocidalItemTooltip = "반사회 등급",
+
+	currencySingular = "토큰",
+	currencyPlural = "토큰",
 
 	[""] = "",
 	Desc = "",

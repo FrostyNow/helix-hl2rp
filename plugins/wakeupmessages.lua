@@ -32,14 +32,82 @@ local wakeupMessages = {
 	"순간 인기척을 느끼고 뒤를 돌아봅니다",
 }
 
-function PLUGIN:PlayerSpawn(ply)
-	if not ( ply:IsValid() or ply:Alive() or ply:GetCharacter() ) then return end
-	if ply:IsCombine() then return end -- no reason to do some weird actions
+PLUGIN.lastWakeupByPlayer = PLUGIN.lastWakeupByPlayer or {}
+PLUGIN.lastWakeupAtByCharacter = PLUGIN.lastWakeupAtByCharacter or {}
 
-	ply:ConCommand("play music/stingers/hl1_stinger_song16.mp3")
-	ply:ScreenFade(SCREENFADE.IN, color_black, 3, 2)
-	
-	local msg = table.Random(wakeupMessages)
+function PLUGIN:PlayerLoadedCharacter(client, character)
+	if (CLIENT) then
+		return
+	end
 
-	hook.Run("PlayerSay", ply, "/me "..msg)
+	if (!IsValid(client) or !character) then
+		return
+	end
+
+	-- Only fire for the character that has just been loaded.
+	if (client:GetCharacter() != character) then
+		return
+	end
+
+	-- Exclude Combine from this behavior.
+	if (client:IsCombine()) then
+		return
+	end
+
+	local steamID64 = client:SteamID64() or tostring(client:EntIndex())
+	local charID = character:GetID()
+	local timerID = "ixWakeupMessage_" .. steamID64
+
+	-- Prevent duplicate pending callbacks for the same player.
+	if (timer.Exists(timerID)) then
+		timer.Remove(timerID)
+	end
+
+	-- Small delay so name/faction visuals are fully updated clientside.
+	timer.Create(timerID, 0.1, 1, function()
+		if (!IsValid(client)) then
+			return
+		end
+
+		local currentCharacter = client:GetCharacter()
+
+		if (!currentCharacter or currentCharacter:GetID() != charID or client:IsCombine()) then
+			return
+		end
+
+		-- Same character was already processed recently; skip duplicate fire.
+		if (PLUGIN.lastWakeupByPlayer[steamID64] == charID) then
+			return
+		end
+
+		local dedupeKey = steamID64 .. ":" .. tostring(charID)
+		local lastWakeupAt = PLUGIN.lastWakeupAtByCharacter[dedupeKey]
+
+		-- Hard guard against duplicate hook fires in the same load cycle.
+		if (lastWakeupAt and (CurTime() - lastWakeupAt) < 5) then
+			return
+		end
+
+		PLUGIN.lastWakeupByPlayer[steamID64] = charID
+		PLUGIN.lastWakeupAtByCharacter[dedupeKey] = CurTime()
+
+		client:ConCommand("play music/stingers/hl1_stinger_song16.mp3")
+		client:ScreenFade(SCREENFADE.IN, color_black, 3, 2)
+
+		local msg = table.Random(wakeupMessages)
+		ix.chat.Send(client, "me", msg)
+	end)
+end
+
+function PLUGIN:OnCharacterDisconnect(client, character)
+	if (CLIENT) then
+		return
+	end
+
+	if (!IsValid(client)) then
+		return
+	end
+
+	local steamID64 = client:SteamID64() or tostring(client:EntIndex())
+	PLUGIN.lastWakeupByPlayer[steamID64] = nil
 end

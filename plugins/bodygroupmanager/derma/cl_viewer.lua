@@ -4,7 +4,6 @@ local PLUGIN = PLUGIN
 local PANEL = {}
 
 function PANEL:Init()
-
 	local pWidth, pHeight = ScrW() * 0.75, ScrH() * 0.75
 	self:SetSize(pWidth, pHeight)
 	self:Center()
@@ -12,54 +11,84 @@ function PANEL:Init()
 	self:SetDeleteOnClose(true)
 
 	self:MakePopup()
-	self:SetTitle("Bodygroup Manager")
+	self:SetTitle(L("bodygroupManager"))
+	
+	-- Premium fade-in
+	self:SetAlpha(0)
+	self:AlphaTo(255, 0.3, 0)
 
 	self.bodygroups = self:Add("DScrollPanel")
 	self.bodygroups:Dock(RIGHT)
+	self.bodygroups:SetWide(pWidth * 0.4)
+	self.bodygroups:DockPadding(16, 16, 16, 16)
+	self.bodygroups:DockMargin(0, 32, 32, 32)
+	
+	local vBar = self.bodygroups:GetVBar()
+	vBar:SetWide(4)
+	vBar:SetHideButtons(true)
+	vBar.Paint = nil
+	vBar.btnGrip.Paint = function(this, w, h)
+		surface.SetDrawColor(255, 255, 255, 50)
+		surface.DrawRect(0, 0, w, h)
+	end
+end
 
+function PANEL:Paint(w, h)
+	surface.SetDrawColor(0, 0, 0, 200)
+	surface.DrawRect(0, 0, w, h)
+	
+	surface.SetDrawColor(255, 255, 255, 10)
+	surface.DrawOutlinedRect(0, 0, w, h)
+	
+	ix.util.DrawBlur(self, 5)
 end
 
 function PANEL:OnKeyCodePressed(keyCode)
-	if (keyCode == KEY_TAB) then
+	if (keyCode == KEY_TAB or keyCode == KEY_ESCAPE) then
 		self:Close()
 		return true
 	end
 end
 
 function PANEL:Display(target)
+	local pWidth, pHeight = self:GetSize()
 
-	local pWidth, pHeight = ScrW() * 0.75, ScrH() * 0.75
-
-	self.saveButton = self:Add("DButton")
+	self.saveButton = self:Add("ixMenuButton")
 	self.saveButton:Dock(BOTTOM)
-	self.saveButton:DockMargin(0, 4, 0, 0)
-	self.saveButton:SetText("Save Changes")
-	self.saveButton.DoClick = function()
+	self.saveButton:SetTall(64)
+	self.saveButton:SetText(L("saveChanges"):upper())
+	self.saveButton:SetTextColor(color_white)
+	self.saveButton:SetBackgroundColor(Color(0, 0, 0, 150))
+	self.saveButton:SetFont("ixMediumFont")
+	self.saveButton.DoClick = function(this)
 		local bodygroups = {}
 		for _, v in pairs(self.bodygroupIndex) do
-			table.insert(bodygroups, v.index, v.value)
+			bodygroups[v.index] = v.value
 		end
 
 		net.Start("ixBodygroupTableSet")
 			net.WriteEntity(self.target)
 			net.WriteTable(bodygroups)
+			net.WriteUInt(self.skinIndex and self.skinIndex.value or self.target:GetSkin(), 8)
 		net.SendToServer()
+		
+		surface.PlaySound("buttons/button14.wav")
+		self:Close()
 	end
 
 	self.model = self:Add("DAdjustableModelPanel")
-	self.model:SetSize(pWidth * 1/2, pHeight)
+	self.model:SetSize(pWidth * 0.6, pHeight - 64)
 	self.model:Dock(LEFT)
 	self.model:SetModel(target:GetModel())
-	self.model:SetLookAng(Angle(10, 225, 0))
-	self.model:SetCamPos(Vector(40, 40, 50))
+	self.model.Entity:SetSkin(target:GetSkin())
+	self.model:SetLookAng(Angle(2, 225, 0))
+	self.model:SetCamPos(Vector(50, 50, 45))
 	self.model:SetMouseInputEnabled(true)
 	self.model.ixRotationYaw = 45
 	self.model.ixDragging = false
 	self.model.ixLastMouseX = 0
 
-	function self.model:FirstPersonControls()
-		-- Keep camera static; drag rotation is handled by changing model yaw.
-	end
+	function self.model:FirstPersonControls() end
 
 	function self.model:DragMousePress()
 		self.ixDragging = true
@@ -98,21 +127,21 @@ function PANEL:Display(target)
 		end
 
 		Entity:SetAngles(Angle(0, self.ixRotationYaw or 45, 0))
-
-		-- Keep eye/head pose neutral so some models do not render with flipped white eyes.
 		Entity:SetIK(false)
+
+		-- Eye fix
+		local eyeTarget = Entity:GetPos() + Entity:GetForward() * 10000 + Vector(0, 0, 64)
+		Entity:SetEyeTarget(eyeTarget)
+
+		-- Neutral pose
 		Entity:SetPoseParameter("head_pitch", 0)
 		Entity:SetPoseParameter("head_yaw", 0)
 		Entity:SetPoseParameter("aim_pitch", 0)
 		Entity:SetPoseParameter("aim_yaw", 0)
 		Entity:SetPoseParameter("eyes_pitch", 0)
 		Entity:SetPoseParameter("eyes_yaw", 0)
-
-		local eyeTarget = Entity:GetPos() + Entity:GetForward() * 10000 + Vector(0, 0, 64)
-		Entity:SetEyeTarget(eyeTarget)
-
+		
 		local sequence = Entity:SelectWeightedSequence(ACT_IDLE)
-
 		if (sequence <= 0) then
 			sequence = Entity:LookupSequence("idle_unarmed")
 		end
@@ -121,89 +150,129 @@ function PANEL:Display(target)
 			Entity:ResetSequence(sequence)
 		else
 			local found = false
-
 			for _, v in ipairs(Entity:GetSequenceList()) do
 				if ((v:lower():find("idle") or v:lower():find("fly")) and v != "idlenoise") then
 					Entity:ResetSequence(v)
 					found = true
-
 					break
 				end
 			end
-
-			if (!found) then
-				Entity:ResetSequence(4)
-			end
+			if (!found) then Entity:ResetSequence(4) end
 		end
-
 	end
 end
 
+local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext)
+	local row = parent:Add("DPanel")
+	row:Dock(TOP)
+	row:DockMargin(0, 0, 0, 8)
+	row:SetTall(50)
+	
+	local themeColor = ix.config.Get("color")
+	row.Paint = function(this, w, h)
+		surface.SetDrawColor(themeColor.r, themeColor.g, themeColor.b, 10)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(themeColor.r, themeColor.g, themeColor.b, 30)
+		surface.DrawOutlinedRect(0, 0, w, h)
+	end
+
+	local label = row:Add("DLabel")
+	label:SetText(labelText:upper())
+	label:SetFont("ixSmallFont")
+	label:Dock(LEFT)
+	label:DockMargin(16, 0, 0, 0)
+	label:SetWide(150)
+	label:SetTextColor(color_white)
+
+	local rightPanel = row:Add("Panel")
+	rightPanel:Dock(RIGHT)
+	rightPanel:SetWide(150)
+
+	local nextBtn = rightPanel:Add("DButton")
+	nextBtn:SetText(">")
+	nextBtn:SetFont("ixMediumFont")
+	nextBtn:Dock(RIGHT)
+	nextBtn:SetWide(40)
+	nextBtn.DoClick = onNext
+	nextBtn.Paint = function(this, w, h)
+		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
+		surface.DrawRect(0, 0, w, h)
+	end
+	
+	local valueLabel = rightPanel:Add("DLabel")
+	valueLabel:SetText(currentValue)
+	valueLabel:SetFont("ixMediumFont")
+	valueLabel:SetContentAlignment(5)
+	valueLabel:Dock(FILL)
+	valueLabel.value = currentValue
+	
+	local prevBtn = rightPanel:Add("DButton")
+	prevBtn:SetText("<")
+	prevBtn:SetFont("ixMediumFont")
+	prevBtn:Dock(LEFT)
+	prevBtn:SetWide(40)
+	prevBtn.DoClick = onPrev
+	prevBtn.Paint = function(this, w, h)
+		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
+		surface.DrawRect(0, 0, w, h)
+	end
+
+	return valueLabel
+end
+
 function PANEL:PopulateBodygroupOptions()
-	self.bodygroupBox = {}
-	self.bodygroupName = {}
-	self.bodygroupPrevious = {}
-	self.bodygroupNext = {}
 	self.bodygroupIndex = {}
-	self.bodygroups:Dock(FILL)
+	
+	local client = LocalPlayer()
+	local character = client:GetCharacter()
+	local target = self.target
+	local isSelf = (target == client)
+	local canAdmin = ix.command.HasAccess(client, "CharEditBodygroup")
 
-	for k, v in pairs(self.target:GetBodyGroups()) do
-		-- Disregard the model bodygroup.
-		if !(v.id == 0) then
+	local canBodygroup = canAdmin or (isSelf and character:HasFlags("b"))
+	local canSkin = canAdmin or (isSelf and character:HasFlags("s"))
+
+	if (canSkin) then
+		local skinCount = target:SkinCount()
+		if (skinCount > 1) then
+			self.skinIndex = CreateEditorRow(self.bodygroups, L("skin"), target:GetSkin(), function()
+				if (self.skinIndex.value <= 0) then return end
+				self.skinIndex.value = self.skinIndex.value - 1
+				self.skinIndex:SetText(self.skinIndex.value)
+				self.model.Entity:SetSkin(self.skinIndex.value)
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end, function()
+				if (self.skinIndex.value >= target:SkinCount() - 1) then return end
+				self.skinIndex.value = self.skinIndex.value + 1
+				self.skinIndex:SetText(self.skinIndex.value)
+				self.model.Entity:SetSkin(self.skinIndex.value)
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end)
+		end
+	end
+
+	if (canBodygroup) then
+		for k, v in pairs(target:GetBodyGroups()) do
+			if (v.id == 0) then continue end
+			
 			local index = v.id
-
-			self.bodygroupBox[v.id] = self.bodygroups:Add("DPanel")
-			self.bodygroupBox[v.id]:Dock(TOP)
-			self.bodygroupBox[v.id]:DockMargin(20, 20, 20, 0)
-			self.bodygroupBox[v.id]:SetHeight(50)
-
-			self.bodygroupName[v.id] = self.bodygroupBox[v.id]:Add("DLabel")
-			self.bodygroupName[v.id].index = v.id
-			self.bodygroupName[v.id]:SetText(v.name:gsub("^%l", string.upper))
-			self.bodygroupName[v.id]:SetFont("ixMediumFont")
-			self.bodygroupName[v.id]:Dock(LEFT)
-			self.bodygroupName[v.id]:DockMargin(30, 0, 0, 0)
-			self.bodygroupName[v.id]:SetWidth(200)
-
-			self.bodygroupNext[v.id] = self.bodygroupBox[v.id]:Add("DButton")
-			self.bodygroupNext[v.id].index = v.id
-			self.bodygroupNext[v.id]:Dock(RIGHT)
-			self.bodygroupNext[v.id]:SetText("Next")
-			self.bodygroupNext[v.id].DoClick = function()
-				local index = v.id
-				if (self.model.Entity:GetBodygroupCount(index) - 1) <= self.bodygroupIndex[index].value then
-					return
-				end
-
-				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value + 1
-				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
-				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
-			end
-
-			self.bodygroupIndex[v.id] = self.bodygroupBox[v.id]:Add("DLabel")
-			self.bodygroupIndex[v.id].index = v.id
-			self.bodygroupIndex[v.id].value = self.target:GetBodygroup(index)
-			self.bodygroupIndex[v.id]:SetText(self.bodygroupIndex[v.id].value)
-			self.bodygroupIndex[v.id]:SetFont("ixMediumFont")
-			self.bodygroupIndex[v.id]:Dock(RIGHT)
-			self.bodygroupIndex[v.id]:SetContentAlignment(5)
-
-			self.bodygroupPrevious[v.id] = self.bodygroupBox[v.id]:Add("DButton")
-			self.bodygroupPrevious[v.id].index = v.id
-			self.bodygroupPrevious[v.id]:Dock(RIGHT)
-			self.bodygroupPrevious[v.id]:SetText("Previous")
-			self.bodygroupPrevious[v.id].DoClick = function()
-				local index = v.id
-				if 0 == self.bodygroupIndex[index].value then
-					return
-				end
+			self.bodygroupIndex[index] = CreateEditorRow(self.bodygroups, v.name:gsub("^%l", string.upper), target:GetBodygroup(index), function()
+				if (self.bodygroupIndex[index].value <= 0) then return end
 				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value - 1
 				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
 				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
-
-			end
-
-			self.model.Entity:SetBodygroup(index, self.target:GetBodygroup(index))
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end, function()
+				if (self.bodygroupIndex[index].value >= self.model.Entity:GetBodygroupCount(index) - 1) then return end
+				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value + 1
+				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
+				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end)
+			
+			self.bodygroupIndex[index].index = index
+			self.model.Entity:SetBodygroup(index, target:GetBodygroup(index))
 		end
 	end
 end

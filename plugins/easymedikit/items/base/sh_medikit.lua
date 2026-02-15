@@ -50,11 +50,15 @@ ITEM.functions.heal = {
 		local trace = util.TraceLine(data)
 		local entity = trace.Entity
 
+		if (IsValid(entity) and entity:IsRagdoll()) then
+			entity = entity:GetNetVar("player", entity)
+		end
+
 		-- Check if the entity is a valid door.
 		if (IsValid(entity) and entity:IsPlayer()) then
 			if int >= itemTable.medAttr then
 				entity:SetNetworkedFloat("NextBandageuse", 2 + CurTime())
-				entity:SetHealth(math.Clamp(client:Health() + itemTable.healthPoint + int, 0, entity:GetMaxHealth()))
+				entity:SetHealth(math.Clamp(entity:Health() + itemTable.healthPoint + int, 0, entity:GetMaxHealth()))
 				character:SetAttrib("int", int + 0.2)
 				if itemTable.bleeding then
 					PLUGIN:SetBleeding(entity, false)
@@ -62,6 +66,8 @@ ITEM.functions.heal = {
 				if itemTable.fracture then
 					PLUGIN:SetFracture(entity, false)
 				end
+				
+				-- Sound is handled by individual item hooks (selfheal/heal)
 			else
 				client:NotifyLocalized("lackKnowledge")
 				return false
@@ -74,6 +80,6 @@ ITEM.functions.heal = {
 	OnCanRun =  function(item)
 		local ent = item.player:GetEyeTraceNoCursor().Entity
 		
-		return ent:IsRagdoll()
+		return IsValid(ent) and (ent:IsPlayer() or ent:IsRagdoll())
 	end
 }

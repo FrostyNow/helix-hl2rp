@@ -142,7 +142,7 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	ixlootNotEating = "뭔가를 먹고 있을 때는 살펴볼 수 없습니다!",
 	ixlootNoItem = "아무것도 들어있지 않습니다!",
-	ixlootNotFaction = "해당 팩션은 보관함을 살펴볼 수 없습니다.",
+	ixlootNotFaction = "해당 세력은 보관함을 살펴볼 수 없습니다.",
 	ixlootGained = "다음을 얻었습니다: %s.",
 })
 

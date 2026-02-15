@@ -14,24 +14,36 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 	end
 
 	local character = client:GetCharacter()
+	local targetCharacter = target:GetCharacter()
 	local canAdminEdit = ix.command.HasAccess(client, "CharEditBodygroup")
-	local canSelfEdit = character and character:HasFlags("b") and (target == client)
+	local isSelf = (target == client)
 
-	if (!canAdminEdit and !canSelfEdit) then
+	local canEditBodygroups = canAdminEdit or (isSelf and character:HasFlags("b"))
+	local canEditSkin = canAdminEdit or (isSelf and character:HasFlags("s"))
+
+	if (!canEditBodygroups and !canEditSkin) then
 		return
 	end
 
 	local bodygroups = net.ReadTable()
+	local skin = net.ReadUInt(8)
 
-	local groups = {}
+	if (canEditBodygroups) then
+		local groups = {}
 
-	for k, v in pairs(bodygroups) do
-		target:SetBodygroup(tonumber(k) or 0, tonumber(v) or 0)
-		groups[tonumber(k) or 0] = tonumber(v) or 0
+		for k, v in pairs(bodygroups) do
+			target:SetBodygroup(tonumber(k) or 0, tonumber(v) or 0)
+			groups[tonumber(k) or 0] = tonumber(v) or 0
+		end
+
+		targetCharacter:SetData("groups", groups)
 	end
 
-	target:GetCharacter():SetData("groups", groups)
-	target:GetCharacter():Save()
+	if (canEditSkin) then
+		target:SetSkin(skin)
+		targetCharacter:SetData("skin", skin)
+	end
 
+	targetCharacter:Save()
 	ix.log.Add(client, "bodygroupEditor", target)
 end)

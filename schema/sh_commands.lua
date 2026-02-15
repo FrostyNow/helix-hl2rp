@@ -228,9 +228,32 @@ ix.command.Add("Revive", {
 		ix.type.player
 	},
 	OnRun = function(self, client, target)
-		local pos = target:GetPos()
+		local ragdoll = target:GetRagdollEntity()
+
+		if (!IsValid(ragdoll)) then
+			for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+				if (v:GetNetVar("player") == target) then
+					ragdoll = v
+					break
+				end
+			end
+		end
+
+		local pos = IsValid(ragdoll) and ragdoll:GetPos() or target:GetPos()
+		local angles = IsValid(ragdoll) and ragdoll:GetAngles() or target:GetAngles()
+
 		target:Spawn()
-		target:SetPos(pos)
+
+		timer.Simple(0, function()
+			if (IsValid(target)) then
+				target:SetPos(pos)
+				target:SetEyeAngles(Angle(0, angles.y, 0))
+			end
+		end)
+
+		if (IsValid(ragdoll)) then
+			ragdoll:Remove()
+		end
 		
 		if client == target then
 			client:NotifyLocalized("revive01")

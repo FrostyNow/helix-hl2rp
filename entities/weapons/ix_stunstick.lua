@@ -29,7 +29,7 @@ SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = ""
-SWEP.Primary.Damage = 15
+SWEP.Primary.Damage = 10
 SWEP.Primary.Delay = 0.7
 
 SWEP.Secondary.ClipSize = -1
@@ -181,9 +181,13 @@ function SWEP:PrimaryAttack()
 	self:SendWeaponAnim(ACT_VM_HITCENTER)
 
 	local damage = self.Primary.Damage
+	local character = self.Owner:GetCharacter()
+	local strength = (character and character:GetAttribute("str", 0)) or 0
 
 	if (self:GetActivated()) then
-		damage = 5
+		damage = math.Clamp(3 + (strength * 0.35), 3, 20)
+	else
+		damage = math.Clamp(1 + (strength * 0.25), 1, 15)
 	end
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
@@ -214,22 +218,32 @@ function SWEP:PrimaryAttack()
 			if (entity:IsPlayer()) then
 				if (self:GetActivated()) then
 					entity.ixStuns = (entity.ixStuns or 0) + 1
+					entity.ixStunThreshold = entity.ixStunThreshold or math.random(3, 5)
 
 					timer.Simple(10, function()
-						entity.ixStuns = math.max(entity.ixStuns - 1, 0)
+						if (!IsValid(entity)) then
+							return
+						end
+
+						entity.ixStuns = math.max((entity.ixStuns or 0) - 1, 0)
+
+						if (entity.ixStuns == 0) then
+							entity.ixStunThreshold = nil
+						end
 					end)
 				end
 
 				entity:ViewPunch(Angle(-20, math.random(-15, 15), math.random(-10, 10)))
 
-				if (self:GetActivated() and entity.ixStuns > 2) then
+				if (self:GetActivated() and entity.ixStuns >= (entity.ixStunThreshold or 3)) then
 					entity:SetRagdolled(true, 60)
 					entity.ixStuns = 0
+					entity.ixStunThreshold = nil
 
 					return
 				end
 			elseif (entity:IsRagdoll()) then
-				damage = self:GetActivated() and 2 or 10
+				damage = self:GetActivated() and 3 or 10
 			end
 
 			local damageInfo = DamageInfo()
