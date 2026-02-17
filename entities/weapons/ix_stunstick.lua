@@ -1,17 +1,18 @@
 AddCSLuaFile()
 
 if (CLIENT) then
-	SWEP.PrintName = "Stunstick"
+	SWEP.PrintName = L("Stunstick", LocalPlayer())
 	SWEP.Slot = 0
 	SWEP.SlotPos = 5
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = false
+	SWEP.Instructions = L("Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock.")
+	SWEP.Purpose = L("Hitting things and knocking on doors.")
 end
 
 SWEP.Category = "HL2 RP"
 SWEP.Author = "Chessnut"
-SWEP.Instructions = "Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."
-SWEP.Purpose = "Hitting things and knocking on doors."
+
 SWEP.Drop = false
 
 SWEP.HoldType = "melee"
@@ -153,6 +154,15 @@ function SWEP:PrimaryAttack()
 
 	if (self.Owner:KeyDown(IN_WALK)) then
 		if (SERVER) then
+			if (self.Owner:IsOnGround() and self.Owner:GetMoveType() != MOVETYPE_NOCLIP) then
+				self.Owner:Freeze(true)
+
+				timer.Simple(0.5, function()
+					if (!IsValid(self.Owner)) then return end
+					self.Owner:Freeze(false)
+				end)
+			end
+
 			self:SetActivated(!self:GetActivated())
 
 			local state = self:GetActivated()
@@ -160,7 +170,7 @@ function SWEP:PrimaryAttack()
 			if (state) then
 				self.Owner:EmitSound("Weapon_StunStick.Activate")
 
-				if (CurTime() < self.lastRaiseTime + 1.5) then
+				if (CurTime() < (self.lastRaiseTime or 0) + 1.5) then
 					self.Owner:AddCombineDisplayMessage("@cCivilJudgement")
 				end
 			else
@@ -169,7 +179,7 @@ function SWEP:PrimaryAttack()
 
 			local model = string.lower(self.Owner:GetModel())
 
-			if (ix.anim.GetModelClass(model) == "metrocop") then
+			if (ix.anim.GetModelClass(model) == "metrocop" and self.Owner:GetMoveType() != MOVETYPE_NOCLIP) then
 				self.Owner:ForceSequence(state and "activatebaton" or "deactivatebaton", nil, nil, true)
 			end
 		end

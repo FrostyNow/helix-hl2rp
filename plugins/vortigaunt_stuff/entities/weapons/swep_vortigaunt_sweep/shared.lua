@@ -6,13 +6,14 @@ if (CLIENT) then
 	SWEP.Slot = 3;
 	SWEP.SlotPos = 5;
 	SWEP.DrawAmmo = false;
-	SWEP.PrintName = "Broom";
+	SWEP.PrintName = L("Broom", LocalPlayer());
 	SWEP.DrawCrosshair = true;
+	SWEP.Instructions = L("Primary Fire: Sweep\nSecondary Fire: Push/Knock")
+	SWEP.Purpose = L("To sweep up dirt and trash.")
 end
 
 SWEP.Author					= "JohnyReaper"
-SWEP.Instructions 			= "Primary Fire: Sweep";
-SWEP.Purpose 				= "To sweep up dirt and trash.";
+
 SWEP.Contact 				= ""
 
 SWEP.Category				= "Vort Swep" 
@@ -107,10 +108,14 @@ function SWEP:PrimaryAttack()
 	if (!self.Owner:OnGround()) then return false end
 
 	self:SetNextPrimaryFire( CurTime() + 2 )
-	-- self.Owner:SetAnimation( PLAYER_ATTACK1 )
+	self:SetNextSecondaryFire( CurTime() + 2 )
 
 	if (SERVER) then
 		local soundPath = "physics/cardboard/cardboard_box_scrape_smooth_loop1.wav"
+		
+		-- Freeze player to stop footstep sounds
+		self.Owner:Freeze(true)
+		self.Owner:ForceSequence("sweep", nil,nil, false)
 		self.Owner:EmitSound(soundPath, 70, 100, 0.1)
 
 		timer.Simple(1, function()
@@ -121,18 +126,67 @@ function SWEP:PrimaryAttack()
 				timer.Simple(0.7, function()
 					if (IsValid(self) and IsValid(self.Owner)) then
 						self.Owner:StopSound(soundPath)
+						-- Unfreeze player after sweep animation
+						self.Owner:Freeze(false)
 					end
 				end)
 			end
 		end)
-		self.Owner:ForceSequence("sweep", nil,nil, false)
 	end
-
-
 end;
 
 
 function SWEP:SecondaryAttack()
-	return false
+	if (!IsValid(self.Owner)) then return false end
+	if (!self.Owner:Alive()) then return false end
+	if (!self.Owner:GetCharacter() or !self.Owner:GetCharacter():IsVortigaunt()) then return false end
+
+	self.Owner:LagCompensation(true)
+		local data = {}
+			data.start = self.Owner:GetShootPos()
+			data.endpos = data.start + self.Owner:GetAimVector()*72
+			data.filter = self.Owner
+			data.mins = Vector(-8, -8, -30)
+			data.maxs = Vector(8, 8, 10)
+		local trace = util.TraceHull(data)
+		local entity = trace.Entity
+	self.Owner:LagCompensation(false)
+
+	if (SERVER and IsValid(entity)) then
+		local bPushed = false
+
+		if (entity:IsDoor()) then
+			if (hook.Run("PlayerCanKnock", self.Owner, entity) == false) then
+				return
+			end
+
+			self.Owner:ViewPunch(Angle(-1.3, 1.8, 0))
+			self.Owner:EmitSound("physics/wood/wood_crate_impact_hard3.wav")
+			self.Owner:SetAnimation(PLAYER_ATTACK1)
+
+			self:SetNextSecondaryFire(CurTime() + 0.4)
+			self:SetNextPrimaryFire(CurTime() + 1)
+		elseif (entity:IsPlayer()) then
+			local direction = self.Owner:GetAimVector() * (300 + (self.Owner:GetCharacter():GetAttribute("str", 0) * 3))
+				direction.z = 0
+			entity:SetVelocity(direction)
+
+			bPushed = true
+		else
+			local physObj = entity:GetPhysicsObject()
+
+			if (IsValid(physObj)) then
+				physObj:SetVelocity(self.Owner:GetAimVector() * 180)
+			end
+
+			bPushed = true
+		end
+
+		if (bPushed) then
+			self:SetNextSecondaryFire(CurTime() + 1.5)
+			self:SetNextPrimaryFire(CurTime() + 1.5)
+			self.Owner:EmitSound("Weapon_Crossbow.BoltHitBody")
+		end
+	end
 end
 

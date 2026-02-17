@@ -6,13 +6,14 @@ if (CLIENT) then
 	SWEP.Slot = 5;
 	SWEP.SlotPos = 5;
 	SWEP.DrawAmmo = false;
-	SWEP.PrintName = "Heal Ability";
+	SWEP.PrintName = L("vortHealName", LocalPlayer());
 	SWEP.DrawCrosshair = true;
+	SWEP.Instructions = L("vortHealInstructions")
+	SWEP.Purpose = L("vortHealPurpose")
 end
 
 SWEP.Author					= "JohnyReaper"
-SWEP.Instructions 			= "Primary Fire: Heal";
-SWEP.Purpose 				= "To healing people.";
+
 SWEP.Contact 				= ""
 
 SWEP.Category				= "Vort Swep" 
@@ -21,7 +22,7 @@ SWEP.SlotPos				= 5
 SWEP.Weight					= 5
 SWEP.Spawnable     			= true
 SWEP.AdminSpawnable		= false;
-SWEP.ViewModel 				= "models/weapons/v_vortbeamvm.mdl"
+SWEP.ViewModel 			= ""
 SWEP.WorldModel 			= ""
 SWEP.HoldType 				= "heal"
 
@@ -36,13 +37,18 @@ SWEP.Secondary.Automatic	= false
 SWEP.Secondary.Ammo			= "none"
 
 function SWEP:Initialize()
-	self:SetWeaponHoldType(self.HoldType)
+	if (self.SetHoldType) then
+		self:SetHoldType("normal")
+	else
+		self:SetWeaponHoldType("normal")
+	end
 	self.NextNotifyTime = 0 -- Cooldown for notification spam
 end
 
 function SWEP:Deploy()
 	if (SERVER) then
-		-- Keep weapon raised
+		-- Hide viewmodel and keep weapon raised
+		self.Owner:DrawViewModel(false)
 		self.Owner:SetNWBool("ixRaised", true)
 	
 		if (!self.HealSound) then

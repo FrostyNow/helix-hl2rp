@@ -160,9 +160,50 @@ function PANEL:Display(target)
 			if (!found) then Entity:ResetSequence(4) end
 		end
 	end
+		
+	-- Face Closeup Panel
+	self.facePanel = self:Add("DModelPanel")
+	self.facePanel:SetSize(ScreenScale(64), ScreenScale(64))
+	self.facePanel:SetPos(4, pHeight * 0.5 - 64 - ScreenScale(64) - 4)
+	self.facePanel:SetModel(target:GetModel())
+	self.facePanel.Entity:SetSkin(target:GetSkin())
+	for k, v in pairs(target:GetBodyGroups()) do
+		self.facePanel.Entity:SetBodygroup(v.id, target:GetBodygroup(v.id))
+	end
+	self.facePanel:SetMouseInputEnabled(false)
+	self.facePanel.LayoutEntity = function(this, entity)
+		entity:SetAngles(Angle(0, 45, 0))
+		entity:SetIK(false)
+		
+		-- Neutral pose
+		entity:SetPoseParameter("head_pitch", 0)
+		entity:SetPoseParameter("head_yaw", 0)
+		entity:SetPoseParameter("aim_pitch", 0)
+		entity:SetPoseParameter("aim_yaw", 0)
+		entity:SetPoseParameter("eyes_pitch", 0)
+		entity:SetPoseParameter("eyes_yaw", 0)
+		
+		-- Default sequence logic
+		entity:SetSequence(self.model.Entity:GetSequence())
+		entity:SetCycle(self.model.Entity:GetCycle())
+		
+		-- Eye fix for closeup
+		local eyeTarget = entity:GetPos() + entity:GetForward() * 10000 + Vector(0, 0, 64)
+		entity:SetEyeTarget(eyeTarget)
+		local headBone = entity:LookupBone("ValveBiped.Bip01_Head1")
+		if (headBone) then
+			local headPos = entity:GetBonePosition(headBone)
+			this:SetLookAt(headPos)
+			this:SetCamPos(headPos + entity:GetForward() * 45 + entity:GetUp() * -2)
+			this:SetFOV(20)
+		else
+			this:SetCamPos(Vector(20, 0, 60))
+			this:SetLookAt(Vector(0, 0, 60))
+		end
+	end
 end
 
-local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext)
+local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, onValueSet)
 	local row = parent:Add("DPanel")
 	row:Dock(TOP)
 	row:DockMargin(0, 0, 0, 8)
@@ -194,31 +235,70 @@ local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext)
 	nextBtn:SetFont("ixMediumFont")
 	nextBtn:Dock(RIGHT)
 	nextBtn:SetWide(40)
-	nextBtn.DoClick = onNext
 	nextBtn.Paint = function(this, w, h)
 		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
 		surface.DrawRect(0, 0, w, h)
 	end
+		
+	-- Hold to change logic
+	nextBtn.DoClick = onNext
+	nextBtn.nextRun = 0
+	nextBtn.Think = function(this)
+		if (this:IsDown()) then
+			if (this.nextRun == 0) then
+				this.nextRun = RealTime() + 0.3
+			elseif (RealTime() >= this.nextRun) then
+				onNext()
+				this.nextRun = RealTime() + 0.1
+			end
+		else
+			this.nextRun = 0
+		end
+	end
 	
-	local valueLabel = rightPanel:Add("DLabel")
-	valueLabel:SetText(currentValue)
-	valueLabel:SetFont("ixMediumFont")
-	valueLabel:SetContentAlignment(5)
-	valueLabel:Dock(FILL)
-	valueLabel.value = currentValue
+	local valueEntry = rightPanel:Add("DTextEntry")
+	valueEntry:SetText(currentValue)
+	valueEntry:SetFont("ixMediumFont")
+	valueEntry:SetNumeric(true)
+	valueEntry:Dock(FILL)
+	valueEntry:SetPaintBackground(false)
+	valueEntry:SetTextColor(color_white)
+	valueEntry:SetContentAlignment(5) -- Center alignment support depends on skin/font
+	valueEntry.value = currentValue
+		
+	valueEntry.OnEnter = function(this)
+		if (onValueSet) then
+			onValueSet(tonumber(this:GetValue()) or 0)
+		end
+	end
 	
 	local prevBtn = rightPanel:Add("DButton")
 	prevBtn:SetText("<")
 	prevBtn:SetFont("ixMediumFont")
 	prevBtn:Dock(LEFT)
 	prevBtn:SetWide(40)
-	prevBtn.DoClick = onPrev
 	prevBtn.Paint = function(this, w, h)
 		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
 		surface.DrawRect(0, 0, w, h)
 	end
+		
+	-- Hold to change logic
+	prevBtn.DoClick = onPrev
+	prevBtn.nextRun = 0
+	prevBtn.Think = function(this)
+		if (this:IsDown()) then
+			if (this.nextRun == 0) then
+				this.nextRun = RealTime() + 0.3
+			elseif (RealTime() >= this.nextRun) then
+				onPrev()
+				this.nextRun = RealTime() + 0.1
+			end
+		else
+			this.nextRun = 0
+		end
+	end
 
-	return valueLabel
+	return valueEntry
 end
 
 function PANEL:PopulateBodygroupOptions()
@@ -241,12 +321,21 @@ function PANEL:PopulateBodygroupOptions()
 				self.skinIndex.value = self.skinIndex.value - 1
 				self.skinIndex:SetText(self.skinIndex.value)
 				self.model.Entity:SetSkin(self.skinIndex.value)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetSkin(self.skinIndex.value) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end, function()
 				if (self.skinIndex.value >= target:SkinCount() - 1) then return end
 				self.skinIndex.value = self.skinIndex.value + 1
 				self.skinIndex:SetText(self.skinIndex.value)
 				self.model.Entity:SetSkin(self.skinIndex.value)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetSkin(self.skinIndex.value) end
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end, function(val)
+				val = math.Clamp(math.Round(val), 0, target:SkinCount() - 1)
+				self.skinIndex.value = val
+				self.skinIndex:SetText(val)
+				self.model.Entity:SetSkin(val)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetSkin(val) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end)
 		end
@@ -262,12 +351,21 @@ function PANEL:PopulateBodygroupOptions()
 				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value - 1
 				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
 				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, self.bodygroupIndex[index].value) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end, function()
 				if (self.bodygroupIndex[index].value >= self.model.Entity:GetBodygroupCount(index) - 1) then return end
 				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value + 1
 				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
 				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, self.bodygroupIndex[index].value) end
+				surface.PlaySound("buttons/lightswitch2.wav")
+			end, function(val)
+				val = math.Clamp(math.Round(val), 0, self.model.Entity:GetBodygroupCount(index) - 1)
+				self.bodygroupIndex[index].value = val
+				self.bodygroupIndex[index]:SetText(val)
+				self.model.Entity:SetBodygroup(index, val)
+				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, val) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end)
 			

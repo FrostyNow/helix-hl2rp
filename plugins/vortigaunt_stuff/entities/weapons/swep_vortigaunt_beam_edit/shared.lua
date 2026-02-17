@@ -14,13 +14,13 @@ end
 
 if ( CLIENT ) then
 	SWEP.DrawAmmo			= true
-	SWEP.PrintName			= "Vortigaunt Beam Edited"
+	SWEP.PrintName			= L("vortBeamName", LocalPlayer())
 	SWEP.Author				= "Jvs & JohnyReaper"
 	SWEP.DrawCrosshair		= true
 	SWEP.ViewModelFOV		= 54
 
-	SWEP.Purpose		= "Zap everything! Vortigaunt Style"
-	SWEP.Instructions	= "Primary: Vortigaunt zap.\nSecondary: Self battery healing."
+	SWEP.Purpose		= L("vortBeamPurpose", LocalPlayer())
+	SWEP.Instructions	= L("vortBeamInstructions", LocalPlayer())
 
 	killicon.Add("swep_vortigaunt_beam","VGUI/killicons/swep_vortigaunt_beam",Color(255,255,255));
 end
@@ -36,7 +36,6 @@ SWEP.HoldType 				= "beam"
 
 SWEP.ViewModel 				= ""
 SWEP.WorldModel 			= ""
-SWEP.HoldType 				= "beam"
 
 SWEP.Range					= 2*GetConVarNumber( "sk_vortigaunt_zap_range",100)*12//because it's in feet,we convert it.
 SWEP.DamageForce			= 48000	 //12000 is the force done by two vortigaunts claws zap attack
@@ -65,15 +64,18 @@ SWEP.Secondary.Ammo 		= false
 SWEP.Secondary.Automatic 	= false
 
 function SWEP:Initialize()
-	self.Charging=false;//we are not charging!
-	self.Healing=false;	//we are not healing!
-	self.HealTime=CurTime();//we can heal
-	self.ChargeTime=CurTime();//we can zap
+	if (self.SetHoldType) then
+		self:SetHoldType("normal")
+	else
+		self:SetWeaponHoldType("normal")
+	end
 	self.NextNotifyTime = 0 -- Cooldown for notification spam
-	self:SetWeaponHoldType("beam")
-	if (CLIENT) then return end
-	self:CreateSounds()			//create the looping sounds	
-end 
+	self.Charging=false
+	self.Healing=false
+	self.HealTime=CurTime()
+	self.ChargeTime=CurTime()
+	self:CreateSounds()
+end
 
 function SWEP:Precache()
 	PrecacheParticleSystem( "vortigaunt_beam" );		//the zap beam

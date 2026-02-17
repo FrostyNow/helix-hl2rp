@@ -15,7 +15,7 @@ function PANEL:Init()
 	self.model:SetLookAt(Vector(0, 0, 38))
 	
 	-- Initial setup
-	self.model.currentAngles = Angle(0, 45, 0)
+	self.model.currentAngles = Angle(0, 15, 0)
 	self.model.isDragging = false
 	self.model.lastMouseX = 0
 

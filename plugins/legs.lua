@@ -46,25 +46,6 @@ if (CLIENT) then
 		end
 
 		local client = LocalPlayer()
-		if (IsValid(client)) then
-			local model = client:GetModel()
-			if (model and model:lower():find("vortigaunt")) then
-				-- Vortigaunt specific bone hiding
-				Legs.BonesToRemove = {
-					"ValveBiped.head",
-					"ValveBiped.neck1",
-					"ValveBiped.neck2",
-					"ValveBiped.arm1_L",
-					"ValveBiped.arm2_L",
-					"ValveBiped.hand_L",
-					"ValveBiped.arm1_R",
-					"ValveBiped.arm2_R",
-					"ValveBiped.hand_R",
-					"ValveBiped.clavicle_L",
-					"ValveBiped.clavicle_R"
-				}
-			end
-		end
 
 		if (ix.option.Get("legsEnabled", true)) then
 			return  IsValid(Legs.LegEnt) and
@@ -233,8 +214,25 @@ if (CLIENT) then
 			self.LegEnt:ManipulateBonePosition(i, vector_origin)
 		end
 
-		self.BonesToRemove =
-		{
+		-- Universal bone hiding list - includes both Vortigaunt and citizen_male bones
+		-- Non-existent bones are automatically ignored by the engine
+		self.BonesToRemove = {
+			-- Vortigaunt bones
+			"ValveBiped.head",
+			"ValveBiped.neck1",
+			"ValveBiped.spine4",
+			"ValveBiped.spine3",
+			"ValveBiped.spine2",
+			"ValveBiped.spine1",
+			"ValveBiped.hlp_ulna_R",
+			"ValveBiped.hlp_ulna_L",
+			"ValveBiped.arm1_L",
+			"ValveBiped.arm1_R",
+			"ValveBiped.arm2_L",
+			"ValveBiped.arm2_R",
+			"ValveBiped.hand_L",
+			"ValveBiped.hand_R",
+			-- Citizen_male bones
 			"ValveBiped.Bip01_Head1",
 			"ValveBiped.Bip01_L_Hand",
 			"ValveBiped.Bip01_L_Forearm",
@@ -275,7 +273,7 @@ if (CLIENT) then
 			"ValveBiped.Bip01_R_Finger01",
 			"ValveBiped.Bip01_R_Finger02",
 			"ValveBiped.Bip01_Spine4",
-			"ValveBiped.Bip01_Spine2",
+			"ValveBiped.Bip01_Spine2"
 		}
 
 		if (LocalPlayer():InVehicle()) then
