@@ -46,30 +46,68 @@ end
 function ITEM:GetDescription()
 	local enabled = self:GetData("enabled")
 	local notWalkie = !self.walkietalkie
-	--local noWalkieEnable = enabled and notWalkie
 	local duplexTrue = self:GetData("duplex",self.duplex)
-	local displayFreq = string.format(" and %s %s MHz", duplexTrue and "receiving on" or "tuned to", duplexTrue and self:GetData("listenfrequency", "100.0") or self:GetData("frequency","100.0"))
-	local ret = string.format(self.description, notWalkie and " with a frequency tuner" or "", enabled and "on" or "off", (enabled and notWalkie) and displayFreq or "")
-	
+
+	-- Extremely safe L wrapper
+	local function safeL(key, ...)
+		local args = {...}
+		for i = 1, 10 do
+			if (args[i] == nil) then args[i] = "" end
+			args[i] = tostring(args[i])
+		end
+		
+		local success, result = pcall(L, key, unpack(args))
+		if (success and result) then
+			return result
+		end
+		
+		return tostring(key)
+	end
+
+	local displayFreq = string.format(" and %s %s MHz",
+		safeL(duplexTrue and "itemRadioReceiving" or "itemRadioTuned"),
+		tostring(duplexTrue and self:GetData("listenfrequency", "100.0") or self:GetData("frequency","100.0"))
+	)
+
+	local ret = safeL(self.description,
+		notWalkie and safeL("itemRadioFreqTuner") or "",
+		enabled and safeL("itemRadioOn") or safeL("itemRadioOff")
+	)
+	ret = ret .. " (" .. (duplexTrue and self:GetData("listenfrequency", "100.0") or self:GetData("frequency","100.0")) .. "MHz)"
+
 	if enabled then
 		if self.hybrid then
-			ret = string.format("%s\nIt is operating in %s mode.", ret, self:GetData("duplex",self.duplex) and "duplex" or "simplex")
+			local mode = self:GetData("duplex", self.duplex) and safeL("itemRadioDuplex") or safeL("itemRadioSimplex")
+			ret = ret .. safeL("itemRadioModeDesc", mode)
 		end
 		if self:GetData("scanning", false) then
-			ret = string.format("%s%s%s.",ret,"\nYou are listening to all channels", notWalkie and " on this frequency" or "")
+			ret = ret .. safeL("itemRadioListenAll") .. (notWalkie and safeL("itemRadioOnFreq") or "") .. "."
 		end
-		local defCh = "CH"..self:GetData("channel","1")
-		local adStr = self:GetData("ch"..self:GetData("channel","1").."name",defCh)
-		ret = ret.."\nIt is set to channel "..self:GetData("channel","1")..( (adStr != defCh) and ", known as "..adStr.."." or ".")
+
+		local chan = tostring(self:GetData("channel") or "1")
+		local defCh = "CH"..chan
+		local adStr = self:GetData("ch"..chan.."name")
+
+		ret = ret .. safeL("itemRadioSetChan", chan)
+
+		if (adStr and adStr != "" and adStr != defCh) then
+			ret = ret .. safeL("itemRadioKnownAs", tostring(adStr))
+		else
+			ret = ret .. "."
+		end
 	end
 	if (self:GetData("silenced") and enabled) then
-		ret = ret .. " \nRadio tones are currently silenced."
+		ret = ret .. safeL("itemRadioSilenced")
 	end
 	if self:GetData("active") then
-		local brdcastStr = ", and broadcasting on all channels!"
-		ret = string.format("%s \nYou are transmitting on this radio%s%s", ret, (notWalkie and duplexTrue) and (" at "..self:GetData("frequency","100.0").. " MHz") or "", self:GetData("broadcast") and brdcastStr or ".")
+		local brdcastStr = safeL("itemRadioBroadcastAll")
+		local atFreq = ""
+		if (notWalkie and duplexTrue) then
+			atFreq = safeL("itemRadioAtFreq", tostring(self:GetData("frequency") or "100.0"))
+		end
+		ret = ret .. safeL("itemRadioTransmitting") .. atFreq .. (self:GetData("broadcast") and brdcastStr or ".")
 	end
-	
+
 	return ret
 end
 
@@ -104,7 +142,7 @@ function ITEM.postHooks.Synchronize(item, status)
 			itemTable:SetData("frequency",transFreq)
 			character:SetData("frequency",transFreq)
 			itemTable:SetData("listenfrequency",receiveFreq)
-			itemTable.player:Notify("Successfully synchronized with a repeater.")
+			itemTable.player:NotifyLocalized("itemRadioSyncSuccess")
 			
 			-- Hybrid stuff
 			if itemTable.hybrid then
@@ -147,7 +185,7 @@ function ITEM.postHooks.Synchronize(item, status)
 		itemTable:SetData("channel","1")
 		character:SetData("frequency",randFreq)
 		character:SetData("channel","1")
-		itemTable.player:Notify("Failed to synchronize with a repeater.")
+		itemTable.player:NotifyLocalized("itemRadioSyncFail")
 	end
 	
 	--print(item:GetData("channel"))
@@ -198,7 +236,7 @@ function ITEM.postHooks.Scan(item, status)
 						for _,radio in ipairs(radios) do
 							--PrintTable(v)
 							if radio:GetData("active") and !radio:GetData("duplex", radio.duplex) then
-								local freq,chan = chr:GetData("frequency"),chr:GetData("channel") or otherFreq,"1"
+								local freq, chan = chr:GetData("frequency"), chr:GetData("channel", "1")
 								if freq == item:GetData("frequency") then
 									freq,chan = otherFreq,"1"
 								end
@@ -208,10 +246,10 @@ function ITEM.postHooks.Scan(item, status)
 								character:SetData("channel",chan)
 								
 								lockedOn = true
-								if (freq == otherFreq) then 
-									itemTable.player:Notify("Locked on to a weak signal on channel 1.")
+								if (freq == otherFreq) then
+									itemTable.player:NotifyLocalized("itemRadioWeakSignal")
 								elseif (freq != otherFreq) then
-									itemTable.player:Notify("Locked on to a strong signal on channel "..chan..".")
+									itemTable.player:NotifyLocalized("itemRadioStrongSignal", chan)
 								end
 								break
 							end
@@ -228,7 +266,7 @@ function ITEM.postHooks.Scan(item, status)
 		itemTable:SetData("channel","1")
 		character:SetData("frequency",randFreq)
 		character:SetData("channel","1")
-		itemTable.player:Notify("Locked on to a weak signal on channel 1.")
+		itemTable.player:NotifyLocalized("itemRadioWeakSignal")
 	end
 	
 	--print(item:GetData("channel"))
@@ -305,7 +343,9 @@ ITEM.functions.AdMode = { -- Sorry, ordering
 		if itemTable:GetData("duplex",itemTable.duplex) then 
 			itemTable:SetData("frequency", itemTable:GetData("storefrequency",itemTable:GetData("frequency"))) -- Resets transmitting frequency to previously synchronized one
 		end
-		itemTable.player:Notify(string.format("Your radio is now in %s.%s", itemTable:GetData("duplex",itemTable.duplex) and "duplex mode" or "simplex mode",(itemTable:GetData("storefrequency") and itemTable:GetData("duplex")) and "\nYour frequency has been restored." or ""))
+		local modeStr = itemTable:GetData("duplex",itemTable.duplex) and L("itemRadioDuplexMode") or L("itemRadioSimplexMode")
+		local restoredStr = (itemTable:GetData("storefrequency") and itemTable:GetData("duplex")) and L("itemRadioFreqRestored") or ""
+		itemTable.player:Notify(L("itemRadioModeNotify", modeStr) .. restoredStr)
 		return false
 	end,
 	

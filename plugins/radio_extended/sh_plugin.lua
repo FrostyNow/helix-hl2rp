@@ -8,22 +8,193 @@ PLUGIN.description = "A standalone radio plugin with extended functionality over
 ix.util.Include("thirdparty/sh_netstream2.lua")
 
 ix.lang.AddTable("english", {
-	itemHandheldRadioDesc = "",
-	chatRadioExtFormat = "%s radios in \"%s.\"",
-	chatRadioExtYellFormat = "%s yells in the radio \"%s.\"",
-	chatRadioExtWhisperFormat = "%s whispers in the radio \"%s.\""
+	itemHandheldRadioDesc = "A shiny handheld radio with a frequency tuner.\nIt is currently turned %s%s.",
+	itemWalkieTalkieDesc = "A shiny walkie talkie%s.\nIt is currently turned %s%s.",
+	itemDuplexRadioDesc = "A shiny duplex radio%s.\nIt is currently turned %s%s.",
+	itemDuplexWalkieDesc = "A shiny duplex walkie%s.\nIt is currently turned %s%s.",
+	itemHybridRadioDesc = "A shiny hybrid radio%s.\nIt is currently turned %s%s.",
+	itemHybridWalkieDesc = "A shiny hybrid walkie%s.\nIt is currently turned %s%s.",
+	itemLongRangeRadioDesc = "A shiny long range radio%s.\nIt is currently turned %s%s.",
+
+	itemRadioFreqTuner = " with a frequency tuner",
+	itemRadioReceiving = "receiving on",
+	itemRadioTuned = "tuned to",
+	itemRadioOn = "on",
+	itemRadioOff = "off",
+	itemRadioModeDesc = "\nIt is operating in %s mode.",
+	itemRadioListenAll = "\nYou are listening to all channels",
+	itemRadioOnFreq = " on this frequency",
+	itemRadioSetChan = "\nIt is set to channel %s",
+	itemRadioKnownAs = ", known as %s.",
+	itemRadioSilenced = "\nRadio tones are currently silenced.",
+	itemRadioTransmitting = "\nYou are transmitting on this radio",
+	itemRadioAtFreq = " at %s MHz",
+	itemRadioBroadcastAll = ", and broadcasting on all channels!",
+	itemRadioModeNotify = "Your radio is now in %s.",
+	itemRadioFreqRestored = "\nYour frequency has been restored.",
+	itemRadioDuplex = "duplex",
+	itemRadioSimplex = "simplex",
+	itemRadioDuplexMode = "duplex mode",
+	itemRadioSimplexMode = "simplex mode",
+
+	itemRadioSyncSuccess = "Successfully synchronized with a repeater.",
+	itemRadioSyncFail = "Failed to synchronize with a repeater.",
+	itemRadioWeakSignal = "Locked on to a weak signal on channel 1.",
+	itemRadioStrongSignal = "Locked on to a strong signal on channel %s.",
+
+	itemRadioRepeaterMenuTitle = "Radio Repeater Control",
+	itemRadioRepeaterMenuDesc = "Choose operation to perform",
+	itemRadioRepeaterChangeInput = "Change Input Frequency (%s MHz)",
+	itemRadioRepeaterChangeOutput = "Change Output Frequency (%s MHz)",
+	itemRadioRepeaterTogglePower = "Toggle Power",
+	itemRadioRepeaterInputRequestTitle = "Frequency",
+	itemRadioRepeaterInputRequestDesc = "Current input frequency: %s MHz\nWhat would you like to set the new frequency to?",
+	itemRadioRepeaterOutputRequestDesc = "Current output frequency: %s MHz\nWhat would you like to set the new frequency to?",
+
+	itemRadioMenuChannelTitle = "Channel selection",
+	itemRadioMenuChannelDesc = "Left click to choose your channel\nRight click to rename the channel",
+	itemRadioMenuChannelName = "Channel Name",
+	itemRadioMenuChannelNameDesc = "What would you like the new name to be?\nEnter a space to reset channel name to default",
+	itemRadioMenuFreqTitle = "Frequency",
+	itemRadioMenuFreqDesc = "What would you like to set the frequency to?",
+	itemRadioMenuDuplexTitle = "Duplex Frequency Control",
+	itemRadioMenuDuplexDesc = "Choose operation to perform",
+	itemRadioMenuDuplexChangeTrans = "Change Transmitting Frequency (%s MHz)",
+	itemRadioMenuDuplexChangeRecv = "Change Receiving Frequency (%s MHz)",
+	itemRadioMenuDuplexTransDesc = "Current transmitting frequency: %s MHz\nWhat would you like to set the new frequency to?",
+	itemRadioMenuDuplexRecvDesc = "Current receiving frequency: %s MHz\nWhat would you like to set the new frequency to?",
+
+	securitizedItemTooltip = "Authorized personnel only",
+	chatRadioExtFormat = "%s radios in \"%s\"",
+	chatRadioExtYellFormat = "%s yells in the radio \"%s\"",
+	chatRadioExtWhisperFormat = "%s whispers in the radio \"%s\"",
+
+	radioNoTransmitOnListen = "You cannot transmit on a radio you are listening to!",
+	radioNoActive = "You do not have an active radio.",
+	radioNoActiveMulti = "None of your radios are currently active.",
+	radioActivateOne = "Activate one of your radios to set the frequency.",
+	radioNoDirectFreq = "You cannot directly change the frequency of this radio.",
+	radioNoSameFreq = "Your transmitting and receiving frequencies cannot be the same!",
+	radioFreqSet = "You have set your radio frequency to %s MHz.",
+	radioListenFreqSet = "You have set your receiving frequency to %s MHz.",
+	radioNotCapable = "None of your radios are capable of this action.",
+	radioInvalidChannel = "Invalid channel specification.",
+	radioNameTooLong = "Your channel name is too long!",
+	radioChannelSet = "You have set your radio channel to %s.",
+	radioChannelNameSet = "You have set channel %s's name to %s.",
+	radioCallsignSet = "You have set %s's callsign to %s",
+	radioCallsignSetBy = "Your callsign has been set to %s by %s",
+	radioCallsignsDisabled = "Callsigns are currently disabled!",
+	radioBroadcastOn = "You are now broadcasting over all channels%s.",
+	radioBroadcastOff = "You are no longer broadcasting over all channels.",
+	radioNoBroadcastCapability = "Your radio is not capable of broadcasting.",
+	radioBroadcastDisabled = "Radio broadcasting has been disabled.",
+	radioListenOn = "You are now listening to all channels%s.",
+	radioListenOff = "You are no longer listening to all channels.",
+	radioRepeaterRemoved = "Successfully removed all radio repeaters.",
+	radioRepeaterNoRemove = "No radio repeaters to remove!"
 })
+
 ix.lang.AddTable("korean", {
 	["Activate"] = "활성화/비활성화",
 	["Channel"] = "채널 설정",
 	["Frequency"] = "주파수",
 	["Listen"] = "듣기 모드",
 	["Silence"] = "음소거",
+
 	["Handheld Radio"] = "휴대용 무전기",
-	itemHandheldRadioDesc = "",
-	chatRadioExtFormat = "%s의 무전 \"%s.\"",
-	chatRadioExtYellFormat = "%s의 무전 외침 \"%s.\"",
-	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s.\""
+	itemHandheldRadioDesc = "주파수 조정이 가능한 휴대용 무전기입니다.\n현재 %s%s 상태입니다.",
+	["Walkie Talkie"] = "워키토키",
+	itemWalkieTalkieDesc = "제한적인 무전이 가능한 워키토키%s입니다.\n현재 %s%s 상태입니다.",
+	["Duplex Radio"] = "듀플렉스 무전기",
+	itemDuplexRadioDesc = "송신과 수신에 서로 다른 주파수를 사용할 수 있는 듀플렉스 무전기%s입니다.\n현재 %s%s 상태입니다.",
+	["Duplex Walkie Talkie"] = "듀플렉스 워키토키",
+	itemDuplexWalkieDesc = "송신과 수신에 서로 다른 주파수를 사용할 수 있는 제한적인 무전이 가능한 듀플렉스 워키토키%s입니다.\n현재 %s%s 상태입니다.",
+	["Hybrid Radio"] = "하이브리드 무전기",
+	itemHybridRadioDesc = "송수신 주파수를 자유롭게 변경할 수 있는 하이브리드 무전기%s입니다.\n현재 %s%s 상태입니다.",
+	["Hybrid Walkie Talkie"] = "하이브리드 워키토키",
+	itemHybridWalkieDesc = "송수신 주파수를 자유롭게 변경할 수 있는 제한적인 무전이 가능한 하이브리드 워키토키%s입니다.\n현재 %s%s 상태입니다.",
+	["Long Range Radio"] = "장거리 무전기",
+	itemLongRangeRadioDesc = "훨씬 먼 거리까지도 통신이 가능한 무전기%s입니다.\n현재 %s%s 상태입니다.",
+
+	itemRadioFreqTuner = "(주파수 튜너 포함) ",
+	itemRadioReceiving = "수신 중",
+	itemRadioTuned = "조정됨",
+	itemRadioOn = "켜짐",
+	itemRadioOff = "꺼짐",
+	itemRadioModeDesc = "\n현재 %s 모드로 동작 중입니다.",
+	itemRadioListenAll = "\n모든 채널을 청취하고 있습니다",
+	itemRadioOnFreq = " (이 주파수에서)",
+	itemRadioSetChan = "\n%s 채널로 설정되어 있습니다",
+	itemRadioKnownAs = " (%s(으)로 알려짐).",
+	itemRadioSilenced = "\n무전 대기음이 현재 음소거 상태입니다.",
+	itemRadioTransmitting = "\n이 무전기로 송신하고 있습니다",
+	itemRadioAtFreq = " (%s MHz에서)",
+	itemRadioBroadcastAll = ", 모든 채널에 방송 중입니다!",
+	itemRadioModeNotify = "무전기가 이제 %s 상태입니다.",
+	itemRadioFreqRestored = "\n주파수가 복구되었습니다.",
+	itemRadioDuplex = "듀플렉스",
+	itemRadioSimplex = "심플렉스",
+	itemRadioDuplexMode = "듀플렉스 모드",
+	itemRadioSimplexMode = "심플렉스 모드",
+
+	itemRadioSyncSuccess = "중계기와의 동기화에 성공했습니다.",
+	itemRadioSyncFail = "중계기와의 동기화에 실패했습니다.",
+	itemRadioWeakSignal = "채널 1의 약한 신호에 고정되었습니다.",
+	itemRadioStrongSignal = "채널 %s의 강한 신호에 고정되었습니다.",
+
+	["Radio Repeater"] = "무전기 중계기",
+	itemRadioRepeaterMenuTitle = "무전 중계기 제어",
+	itemRadioRepeaterMenuDesc = "수행할 작업을 선택하세요.",
+	itemRadioRepeaterChangeInput = "입력 주파수 변경 (%s MHz)",
+	itemRadioRepeaterChangeOutput = "출력 주파수 변경 (%s MHz)",
+	itemRadioRepeaterTogglePower = "전원 토글",
+	itemRadioRepeaterInputRequestTitle = "주파수",
+	itemRadioRepeaterInputRequestDesc = "현재 입력 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
+	itemRadioRepeaterOutputRequestDesc = "현재 출력 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
+
+	itemRadioMenuChannelTitle = "채널 선택",
+	itemRadioMenuChannelDesc = "왼쪽 클릭으로 채널 선택\n오른쪽 클릭으로 채널 이름 변경",
+	itemRadioMenuChannelName = "채널 이름",
+	itemRadioMenuChannelNameDesc = "새 이름을 무엇으로 하시겠습니까?\n공백 입력 시 기본 채널 이름으로 초기화됩니다.",
+	itemRadioMenuFreqTitle = "주파수",
+	itemRadioMenuFreqDesc = "주파수를 무엇으로 설정하시겠습니까?",
+	itemRadioMenuDuplexTitle = "듀플렉스 주파수 제어",
+	itemRadioMenuDuplexDesc = "수행할 작업을 선택하세요.",
+	itemRadioMenuDuplexChangeTrans = "송신 주파수 변경 (%s MHz)",
+	itemRadioMenuDuplexChangeRecv = "수신 주파수 변경 (%s MHz)",
+	itemRadioMenuDuplexTransDesc = "현재 송신 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
+	itemRadioMenuDuplexRecvDesc = "현재 수신 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
+
+	securitizedItemTooltip = "비인가자 사용 불가",
+	chatRadioExtFormat = "%s의 무전 \"%s\"",
+	chatRadioExtYellFormat = "%s의 무전 외침 \"%s\"",
+	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s\"",
+
+	radioNoTransmitOnListen = "청취 중인 무전기로는 송신할 수 없습니다!",
+	radioNoActive = "활성화된 무전기가 없습니다.",
+	radioNoActiveMulti = "현재 활성화된 무전기가 없습니다.",
+	radioActivateOne = "주파수를 설정하려면 무전기 중 하나를 활성화하세요.",
+	radioNoDirectFreq = "이 무전기의 주파수는 직접 변경할 수 없습니다.",
+	radioNoSameFreq = "송신 및 수신 주파수는 같을 수 없습니다!",
+	radioFreqSet = "무전기 주파수를 %s MHz로 설정했습니다.",
+	radioListenFreqSet = "수신 주파수를 %s MHz로 설정했습니다.",
+	radioNotCapable = "이 작업을 수행할 수 있는 무전기가 없습니다.",
+	radioInvalidChannel = "잘못된 채널 지정입니다.",
+	radioNameTooLong = "채널 이름이 너무 깁니다!",
+	radioChannelSet = "무전기 채널을 %s(으)로 설정했습니다.",
+	radioChannelNameSet = "%s 채널의 이름을 %s(으)로 설정했습니다.",
+	radioCallsignSet = "%s의 호출부호를 %s(으)로 설정했습니다",
+	radioCallsignSetBy = "당신의 호출부호가 %s에 의해 %s(으)로 설정되었습니다",
+	radioCallsignsDisabled = "호출부호 기능이 현재 비활성화되어 있습니다!",
+	radioBroadcastOn = "이제 모든 채널에 방송합니다%s.",
+	radioBroadcastOff = "더 이상 모든 채널에 방송하지 않습니다.",
+	radioNoBroadcastCapability = "당신의 무전기는 방송할 수 없습니다.",
+	radioBroadcastDisabled = "무전 방송 기능이 비활성화되었습니다.",
+	radioListenOn = "이제 모든 채널을 청취합니다%s.",
+	radioListenOff = "더 이상 모든 채널을 청취하지 않습니다.",
+	radioRepeaterRemoved = "모든 무전 중계기를 성공적으로 제거했습니다.",
+	radioRepeaterNoRemove = "제거할 무전 중계기가 없습니다!"
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -106,7 +277,7 @@ if (CLIENT) then
 			end
 		end
 
-		local quer = Derma_Query("Left click to choose your channel\nRight click to rename the channel", "Channel selection",
+		local quer = Derma_Query(L("itemRadioMenuChannelDesc"), L("itemRadioMenuChannelTitle"),
 		dispNames[1], function()
 			setTheChannel("1")
 		end,
@@ -123,7 +294,7 @@ if (CLIENT) then
 		-- Overwriting functionality
 		local ch1panel = quer:GetChildren()[6]:GetChildren()[1]
 		function ch1panel:DoRightClick()
-			Derma_StringRequest("Channel Name", "What would you like the new name to be?\nEnter a space to reset channel name to default", names[1], function(text)
+			Derma_StringRequest(L("itemRadioMenuChannelName"), L("itemRadioMenuChannelNameDesc"), names[1], function(text)
 				if text == " " then
 					setTheName("1","CH1")
 				else
@@ -134,7 +305,7 @@ if (CLIENT) then
 		end
 		local ch2panel = quer:GetChildren()[6]:GetChildren()[2]
 		function ch2panel:DoRightClick()
-			Derma_StringRequest("Channel Name", "What would you like the new name to be?\nEnter a space to reset channel name to default", names[2], function(text)
+			Derma_StringRequest(L("itemRadioMenuChannelName"), L("itemRadioMenuChannelNameDesc"), names[2], function(text)
 				if text == " " then
 					setTheName("2","CH2")
 				else
@@ -145,7 +316,7 @@ if (CLIENT) then
 		end
 		local ch3panel = quer:GetChildren()[6]:GetChildren()[3]
 		function ch3panel:DoRightClick()
-			Derma_StringRequest("Channel Name", "What would you like the new name to be?\nEnter a space to reset channel name to default", names[3], function(text)
+			Derma_StringRequest(L("itemRadioMenuChannelName"), L("itemRadioMenuChannelNameDesc"), names[3], function(text)
 				if text == " " then
 					setTheName("3","CH3")
 				else
@@ -156,7 +327,7 @@ if (CLIENT) then
 		end
 		local ch4panel = quer:GetChildren()[6]:GetChildren()[4]
 		function ch4panel:DoRightClick()
-			Derma_StringRequest("Channel Name", "What would you like the new name to be?\nEnter a space to reset channel name to default", names[4], function(text)
+			Derma_StringRequest(L("itemRadioMenuChannelName"), L("itemRadioMenuChannelNameDesc"), names[4], function(text)
 				if text == " " then
 					setTheName("4","CH4")
 				else
@@ -192,9 +363,8 @@ if (CLIENT) then
 		-- end)
 	-- end)
 
-	-- Frequency handling
 	netstream.Hook("Frequency", function(oldFrequency)
-		Derma_StringRequest("Frequency", "What would you like to set the frequency to?", oldFrequency, function(text)
+		Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuFreqDesc"), oldFrequency, function(text)
 			ix.command.Send("SetFreq", text)
 		end)
 	end)
@@ -208,15 +378,15 @@ if (CLIENT) then
 		local oldTransmit = oldFreqs[1]
 		local oldListen = oldFreqs[2]
 
-		Derma_Query("Choose operation to perform", "Duplex Frequency Control",
-		"Change Transmitting Frequency ("..oldTransmit.." MHz)",function()
-			Derma_StringRequest("Frequency", "Current transmitting frequency: "..oldTransmit.." MHz".."\nWhat would you like to set the new frequency to?", oldTransmit, function(text)
+		Derma_Query(L("itemRadioMenuDuplexDesc"), L("itemRadioMenuDuplexTitle"),
+		L("itemRadioMenuDuplexChangeTrans", oldTransmit),function()
+			Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuDuplexTransDesc", oldTransmit), oldTransmit, function(text)
 			--repeater("I"..text)
 			ix.command.Send("SetFreq", text)
 			end)
 		end,
-		"Change Receiving Frequency ("..oldListen.." MHz)",function()
-			Derma_StringRequest("Frequency", "Current receiving frequency: "..oldListen.." MHz".."\nWhat would you like to set the new frequency to?", oldListen, function(text)
+		L("itemRadioMenuDuplexChangeRecv", oldListen),function()
+			Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuDuplexRecvDesc", oldListen), oldListen, function(text)
 			--repeater("O"..text)
 			ix.command.Send("SetListenFreq", text)
 			end)
@@ -875,15 +1045,28 @@ function PLUGIN:OverwriteClasses()
 			local garbleOffset = ix.config.Get("garbleOffset",0)
 			local frac = math.min(math.max(0, frac+garbleOffset), 100)
 
+			local lastChar = text:sub(-1)
+			if (lastChar != "." and lastChar != "!" and lastChar != "?") then
+				text = text .. "."
+			end
+
 			if (ix.config.Get("garbleRadio",true)) then text = mangleString(text, frac) else text = text end -- Garbling happens here
 
-			-- Callsign handling
-			if ((ix.config.Get("enableCallsigns",true)) and (data.callsign) and (data.callsign != "")) then
-				name = data.callsign
-			else
-				name = hook.Run("GetCharacterName", speaker, self.uniqueID) or speaker:Name()
+			-- Recognition Logic
+			local bRecognized = false
+			local lp = LocalPlayer()
+			if IsValid(speaker) and speaker:IsPlayer() then
+				local localChar = lp:GetCharacter()
+				local char = speaker:GetCharacter()
+				if (speaker == lp) or (char and localChar and (char:GetID() == localChar:GetID() or localChar:DoesRecognize(char))) then
+					bRecognized = true
+				end
 			end
-			--
+
+
+			-- Callsign determination
+			local useCallsign = (ix.config.Get("enableCallsigns", true) and data.callsign and data.callsign != "")
+			local callsignName = useCallsign and data.callsign or nil
 
 			local useFreq = data.freq
 			if repeater then
@@ -903,8 +1086,6 @@ function PLUGIN:OverwriteClasses()
 				--newFreqColor = ix.config.Get("activeFreqColor",Color(255,255,255)) -- New LR freq color
 			end
 
-			--print(useFreq)
-			--print(activeListenFreq)
 			if (data.freq == character:GetData("frequency","100.0")) or (activeListenFreq == useFreq) then
 				newFreqColor = ix.config.Get("activeFreqColor",Color(245,245,245)) -- New LR freq color
 				if (data.chan == LocalPlayer():GetCharacter():GetData("channel","1")) then
@@ -916,45 +1097,52 @@ function PLUGIN:OverwriteClasses()
 				newFreqColor = ix.config.Get("radioFreqColor",Color(175,175,175))
 				newChanColor = ix.config.Get("radioFreqColor",Color(175,175,175))
 			end
-			-- if (data.chan == LocalPlayer():GetCharacter():GetData("channel","1")) then
-				-- newChanColor = ix.config.Get("activeFreqColor",Color(245,245,245)) -- New LR freq color
-			-- else
-				-- newChanColor = ix.config.Get("radioFreqColor",Color(175,175,175))
-			-- end
 
-			-- Sound handling
-			--radioSilence(LocalPlayer(), dist, data.freq)
-			--
+			-- Placeholder strategy for robust splitting
+			local placeholder = "@@NAME@@"
+			local formatted = L(self:GetFormat(), placeholder, text)
+			local nameStart, nameEnd = formatted:find(placeholder, 1, true)
 
-			-- If you have more than one radio, and they're on different frequencies, show the frequency next to the name
-			-- Otherwise just show channel
-			-- Format the message parts
-			local formatted = L(self:GetFormat(), name, text)
-			local nameStart, nameEnd = formatted:find(name, 1, true)
-			
-			if (nameStart and nameEnd and IsValid(speaker)) then
+			if (nameStart and nameEnd) then
 				local beforeName = formatted:sub(1, nameStart - 1)
 				local afterName = formatted:sub(nameEnd + 1)
+
+				local color1 = (data.broadcast and !listenWalkie) and newFreqColor or newChanColor
+				local theTag = (data.broadcast and !listenWalkie) and theFreq or theChan
+				local outerColor = (badTally and !listenWalkie) and newColor or newColor -- Consistently radio color for outer text
 				
-				if (data.broadcast and !listenWalkie) then
-					chat.AddText(newFreqColor, theFreq, newColor, beforeName, speaker, newColor, afterName)
-				elseif (data.broadcast and listenWalkie) then
-					chat.AddText(newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
-				elseif (badTally and !listenWalkie) then
-					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
+				-- Prepare the name part
+				local nameContent
+				local nameColor = newColor -- Default to radio color
+
+				if bRecognized then
+					-- Manually resolve name and color to ensure consistency regardless of chatbox quirks
+					nameContent = speaker:Name()
+					nameColor = team.GetColor(speaker:Team())
 				else
-					chat.AddText(newChanColor, theChan, newColor, beforeName, speaker, newColor, afterName)
+					nameContent = L("someone") 
+				end
+
+				-- Output
+				if (badTally and !listenWalkie) then
+					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, outerColor, beforeName, nameColor, nameContent, outerColor, afterName)
+				else
+					chat.AddText(color1, theTag, outerColor, beforeName, nameColor, nameContent, outerColor, afterName)
 				end
 			else
-				-- Fallback if name not found in formatted string
+				-- Fallback (Placeholder not found? Should not happen if format is correct)
+				-- If we can't split, we just print the formatted text with the placeholder replaced by anonymous name
+				local fallbackName = L("someone")
+				local finalSafeText = formatted:gsub(placeholder, fallbackName)
+				
 				if (data.broadcast and !listenWalkie) then
-					chat.AddText(newFreqColor, theFreq, newColor, formatted)
+					chat.AddText(newFreqColor, theFreq, newColor, finalSafeText)
 				elseif (data.broadcast and listenWalkie) then
-					chat.AddText(newChanColor, theChan, newColor, formatted)
+					chat.AddText(newChanColor, theChan, newColor, finalSafeText)
 				elseif (badTally and !listenWalkie) then
-					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, formatted)
+					chat.AddText(newFreqColor, theFreq, newChanColor, theChan, newColor, finalSafeText)
 				else
-					chat.AddText(newChanColor, theChan, newColor, formatted)
+					chat.AddText(newChanColor, theChan, newColor, finalSafeText)
 				end
 			end
 			--print("Yeah")
@@ -1104,17 +1292,56 @@ function PLUGIN:OverwriteClasses()
 			end
 
 			local color = self:GetColor(speaker, text)
-			local formatted = L(self.format, speaker:Name(), text)
-			local name = IsValid(speaker) and speaker:Name() or ""
-			local nameStart, nameEnd = formatted:find(name, 1, true)
 
-			if (nameStart and nameEnd and IsValid(speaker)) then
+			-- Recognition
+			local bRecognized = false
+			local lp = LocalPlayer()
+			if IsValid(speaker) and speaker:IsPlayer() then
+				local localChar = lp:GetCharacter()
+				local char = speaker:GetCharacter()
+				if (speaker == lp) or (char and localChar and (char:GetID() == localChar:GetID() or localChar:DoesRecognize(char))) then
+					bRecognized = true
+				end
+			end
+			if bAnonymous then bRecognized = false end
+
+			local placeholder = "@@NAME@@"
+			local formatted = L(self.format, placeholder, text)
+			local nameStart, nameEnd = formatted:find(placeholder, 1, true)
+
+			if (nameStart and nameEnd) then
 				local beforeName = formatted:sub(1, nameStart - 1)
 				local afterName = formatted:sub(nameEnd + 1)
+				
+				local nameColor = color
+				local nameContent = L("someone")
+				
+				if bRecognized then
+					nameContent = speaker:Name()
+					nameColor = team.GetColor(speaker:Team())
+				else
+					local desc = speaker:GetCharacter():GetDescription()
+					if (desc and #desc > 0) then
+						nameContent = desc:sub(1, math.min(#desc, 64))
+						if #desc > 64 then nameContent = nameContent .. "..." end
+					else
+						nameContent = L("someone")
+					end
+					nameContent = "[" .. nameContent .. "]"
+				end
 
-				chat.AddText(color, beforeName, speaker, color, afterName)
+				chat.AddText(color, beforeName, nameColor, nameContent, color, afterName)
 			else
-				chat.AddText(color, formatted)
+				local fallbackName = L("someone")
+				if (!bRecognized and IsValid(speaker) and speaker:IsPlayer()) then
+					local desc = speaker:GetCharacter():GetDescription()
+					if (desc and #desc > 0) then
+						fallbackName = desc:sub(1, math.min(#desc, 64))
+						if #desc > 64 then fallbackName = fallbackName .. "..." end
+					end
+					fallbackName = fallbackName
+				end
+				chat.AddText(color, formatted:gsub(placeholder, fallbackName))
 			end
 		end
 
@@ -1307,6 +1534,10 @@ function PLUGIN:OverwriteClasses()
 		COMMAND.alias = {"r"} -- NEW
 
 		function COMMAND:OnRun(client, message)
+			if (!message or message == "") then
+				client:NotifyLocalized("invalidArg", 1)
+				return
+			end
 			local character = client:GetCharacter()
 			local inventory = character:GetInventory()
 
@@ -1381,21 +1612,15 @@ function PLUGIN:OverwriteClasses()
 			-- You can't listen to your active radio and transmit on it at the same time, unless you are broadcasting on that same frequency
 			if ( (item) and !item:GetData("scanning",false) ) or ( (item) and item:GetData("scanning",false) and item:GetData("broadcast",false) ) then
 				if (!client:IsRestricted()) then
-					--print("Check 1",item:GetData("duplex",item.duplex) and bRepeater != false)
-					--print("Check 2",!item:GetData("duplex",item.duplex))
-					--if ( item:GetData("duplex",item.duplex) and bRepeater != false ) or ( !item:GetData("duplex",item.duplex) ) then
-						ix.chat.Send(client, "radio", message,nil,nil,{repeater = bRepeater, broadcast = broadcasting, callsign=call, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
-					--end
-						ix.chat.Send(client, "radio_eavesdrop", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie })
-					--endChatter(client,0)
-					--playSound(client, "npc/metropolice/vo/on", true)
+					ix.chat.Send(client, "radio", message,nil,nil,{repeater = bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+					ix.chat.Send(client, "radio_eavesdrop", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie })
 				else
 					return "@notNow"
 				end
 			elseif (item) and item:GetData("scanning",false) then
-				client:Notify("You cannot transmit on a radio you are listening to!")
+				client:NotifyLocalized("radioNoTransmitOnListen")
 			elseif (#radios > 0 and enabl and (!client:GetCharacter():GetData("frequency") or client:GetCharacter():GetData("frequency") == "")) then
-				client:Notify("You do not have an active radio.")
+				client:NotifyLocalized("radioNoActive")
 			elseif (#radios > 0 and !enabl) then
 				return "@radioNotOn"
 			else
@@ -1416,6 +1641,10 @@ function PLUGIN:OverwriteClasses()
 		COMMAND.alias = {"ry"} -- NEW
 
 		function COMMAND:OnRun(client, message)
+			if (!message or message == "") then
+				client:NotifyLocalized("invalidArg", 1)
+				return
+			end
 			local character = client:GetCharacter()
 			local inventory = character:GetInventory()
 
@@ -1490,18 +1719,16 @@ function PLUGIN:OverwriteClasses()
 				if (!client:IsRestricted()) then
 
 					if (item:GetData("duplex",item.duplex) and bRepeater != false) or (!item:GetData("duplex",item.duplex)) then
-						ix.chat.Send(client, "radio_yell", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, callsign=call, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+						ix.chat.Send(client, "radio_yell", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
 					end
 						ix.chat.Send(client, "radio_eavesdrop_yell", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie})
-					--endChatter(client,0)
-					--playSound(client, "npc/metropolice/vo/on", true)
 				else
 					return "@notNow"
 				end
 			elseif (item) and item:GetData("scanning",false) then
-				client:Notify("You cannot transmit on a radio you are listening to!")
+				client:NotifyLocalized("radioNoTransmitOnListen")
 			elseif (#radios > 0 and enabl and (!client:GetCharacter():GetData("frequency") or client:GetCharacter():GetData("frequency") == "")) then
-				client:Notify("You do not have an active radio.")
+				client:NotifyLocalized("radioNoActive")
 			elseif (#radios > 0 and !enabl) then
 				return "@radioNotOn"
 			else
@@ -1519,6 +1746,10 @@ function PLUGIN:OverwriteClasses()
 		COMMAND.alias = {"rw"} -- NEW
 
 		function COMMAND:OnRun(client, message)
+			if (!message or message == "") then
+				client:NotifyLocalized("invalidArg", 1)
+				return
+			end
 			local character = client:GetCharacter()
 			local inventory = character:GetInventory()
 
@@ -1594,18 +1825,16 @@ function PLUGIN:OverwriteClasses()
 				if (!client:IsRestricted()) then
 
 					if (item:GetData("duplex",item.duplex) and bRepeater != false) or (!item:GetData("duplex",item.duplex)) then
-						ix.chat.Send(client, "radio_whisper", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, callsign=call, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+						ix.chat.Send(client, "radio_whisper", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
 					end
 						ix.chat.Send(client, "radio_eavesdrop_whisper", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie})
-					--endChatter(client,0)
-					--playSound(client, "npc/metropolice/vo/on", true)
 				else
 					return "@notNow"
 				end
 			elseif (item) and item:GetData("scanning",false) then
-				client:Notify("You cannot transmit on a radio you are listening to!")
+				client:NotifyLocalized("radioNoTransmitOnListen")
 			elseif (#radios > 0 and enabl and (!client:GetCharacter():GetData("frequency") or client:GetCharacter():GetData("frequency") == "")) then
-				client:Notify("You do not have an active radio.")
+				client:NotifyLocalized("radioNoActive")
 			elseif (#radios > 0 and !enabl) then
 				return "@radioNotOn"
 			else
@@ -1651,7 +1880,7 @@ function PLUGIN:OverwriteClasses()
 			local itemTable
 			local numEnabled = 0
 			if (self:TableLength(radios) < 1) then
-				client:Notify("You do not have a radio!")
+				client:NotifyLocalized("radioNoActive")
 			else
 				for k, v in ipairs(radios) do
 					if (v:GetData("enabled", false)) then
@@ -1669,9 +1898,9 @@ function PLUGIN:OverwriteClasses()
 				end
 
 				if itemTable.walkietalkie then
-					client:Notify("You cannot directly change the frequency of this radio.")
+					client:NotifyLocalized("radioNoDirectFreq")
 				elseif itemTable:GetData("duplex",itemTable.duplex) and !notSame then
-					client:Notify("Your transmitting and receiving frequencies cannot be the same!")
+					client:NotifyLocalized("radioNoSameFreq")
 				elseif (active == 1) then
 					if string.find(frequency, "^%d%d%d%.%d$") then
 						character:SetData("frequency", frequency)
@@ -1681,7 +1910,7 @@ function PLUGIN:OverwriteClasses()
 						--	itemTable:SetData("listenfrequency", "990.1") -- TESTING STUFFS
 						--end
 
-						client:Notify(string.format("You have set your radio frequency to %s MHz.", frequency))
+						client:NotifyLocalized("radioFreqSet", frequency)
 					end
 				elseif (itemTable and (numEnabled == 1) and (active == 0)) then
 					if string.find(frequency, "^%d%d%d%.%d$") then
@@ -1690,10 +1919,10 @@ function PLUGIN:OverwriteClasses()
 						itemTable:SetData("active", true)
 						itemTable:SetData("frequency", frequency)
 
-						client:Notify(string.format("You have set your radio frequency to %s MHz.", frequency))
+						client:NotifyLocalized("radioFreqSet", frequency)
 					end
 				elseif (numEnabled > 1) then
-					client:Notify("Activate one of your radios to set the frequency.")
+					client:NotifyLocalized("radioActivateOne")
 					-- for k, v in ipairs(radios) do
 						-- if (v:GetData("enabled", false)) then
 
@@ -1850,7 +2079,7 @@ function PLUGIN:OverwriteClasses()
 				end
 			end
 			if !validchan then
-				client:Notify("Invalid channel specification.")
+				client:NotifyLocalized("radioInvalidChannel")
 				return
 			end
 
@@ -1870,7 +2099,7 @@ function PLUGIN:OverwriteClasses()
 
 			local itemTable
 			if (self:TableLength(radios) < 1) then
-				client:Notify("You do not have a radio!")
+				client:NotifyLocalized("radioNoActive")
 			else
 				for k, v in ipairs(radios) do
 					if (v:GetData("enabled", false) and v:GetData("active")) then
@@ -1885,9 +2114,9 @@ function PLUGIN:OverwriteClasses()
 
 					itemTable:SetData("channel", chan)
 
-					client:Notify(string.format("You have set your radio channel to %s.", chan))
+					client:NotifyLocalized("radioChannelSet", chan)
 				else
-					client:Notify("You do not have an active radio.")
+					client:NotifyLocalized("radioNoActive")
 				end
 			end
 		end
@@ -1929,7 +2158,7 @@ function PLUGIN:OverwriteClasses()
 			local itemTable
 			local chan
 			if (self:TableLength(radios) < 1) then
-				client:Notify("You do not have a radio!")
+				client:NotifyLocalized("radioNoActive")
 			else
 				for k, v in ipairs(radios) do
 					if (v:GetData("enabled", false) and v:GetData("active")) then
@@ -1946,9 +2175,9 @@ function PLUGIN:OverwriteClasses()
 
 					itemTable:SetData("channel", chan)
 
-					client:Notify(string.format("You have set your radio channel to %s.", chan))
+					client:NotifyLocalized("radioChannelSet", chan)
 				else
-					client:Notify("You do not have an active radio.")
+					client:NotifyLocalized("radioNoActive")
 				end
 			end
 		end
@@ -1982,10 +2211,10 @@ function PLUGIN:OverwriteClasses()
 				end
 			end
 			if !validchan then
-				client:Notify("Invalid channel specification.")
+				client:NotifyLocalized("radioInvalidChannel")
 				return
 			elseif (string.len(chanName) > maxChars) then
-				client:Notify("Your channel name is too long!")
+				client:NotifyLocalized("radioNameTooLong")
 				return
 			end
 
@@ -2005,7 +2234,7 @@ function PLUGIN:OverwriteClasses()
 
 			local itemTable
 			if (self:TableLength(radios) < 1) then
-				client:Notify("You do not have a radio!")
+				client:NotifyLocalized("radioNoActive")
 			else
 				for k, v in ipairs(radios) do
 					if (v:GetData("enabled", false) and v:GetData("active")) then
@@ -2021,9 +2250,9 @@ function PLUGIN:OverwriteClasses()
 					local store = "ch"..chan.."name"
 					itemTable:SetData(store, chanName)
 
-					client:Notify(string.format("You have set channel %s's name to %s.", chan,chanName))
+					client:NotifyLocalized("radioChannelNameSet", chan, chanName)
 				else
-					client:Notify("You do not have an active radio.")
+					client:NotifyLocalized("radioNoActive")
 				end
 			end
 		end
@@ -2033,33 +2262,7 @@ function PLUGIN:OverwriteClasses()
 
 	--
 
-	do
-		local COMMAND = {}
-		COMMAND.adminOnly = true
-		COMMAND.arguments = {
-			ix.type.character,
-			ix.type.text
-		}
 
-		function COMMAND:OnRun(client, target, callsign)
-			local call
-			if (callsign == "") then
-				call = nil
-			else
-				call = string.format("*%s*",callsign)
-			end
-
-			if (ix.config.Get("enableCallsigns")) then
-				target:SetData("callsign",call)
-				client:Notify(string.format("You have set %s's callsign to %s",target:GetName(),callsign))
-				target:GetPlayer():Notify(string.format("Your callsign has been set to %s by %s",callsign,client:Name()))
-			else
-				client:Notify("Callsigns are currently disabled!")
-			end
-		end
-
-		ix.command.Add("SetCallsign", COMMAND)
-	end
 
 	--
 
@@ -2119,10 +2322,10 @@ function PLUGIN:OverwriteClasses()
 								legal = true
 								if v:GetData("broadcast") then
 									local nowalkie = !v.walkietalkie
-									local show = string.format("You are now broadcasting over all channels%s.",nowalkie and " on "..v:GetData("frequency","100.0").." MHz" or "")
-									client:NotifyLocalized(show)
+									local show = "radioBroadcastOn" -- string.format("You are now broadcasting over all channels%s.",nowalkie and " on "..v:GetData("frequency","100.0").." MHz" or "")
+									client:NotifyLocalized(show, nowalkie and " on "..v:GetData("frequency","100.0").." MHz" or "")
 								else
-									client:NotifyLocalized("You are no longer broadcasting over all channels.")
+									client:NotifyLocalized("radioBroadcastOff")
 								end
 								break
 							end
@@ -2130,16 +2333,16 @@ function PLUGIN:OverwriteClasses()
 					end
 
 					if !found then
-						client:NotifyLocalized("None of your radios are currently active.")
+						client:NotifyLocalized("radioNoActiveMulti")
 					elseif !legal then
-						client:NotifyLocalized("Your radio is not capable of broadcasting.")
+						client:NotifyLocalized("radioNoBroadcastCapability")
 					end
 				else
-					client:NotifyLocalized("You do not have a radio!")
+					client:NotifyLocalized("radioNoActive")
 				end
 
 			else
-				client:NotifyLocalized("Radio broadcasting has been disabled.")
+				client:NotifyLocalized("radioBroadcastDisabled")
 			end
 		end
 
@@ -2186,10 +2389,10 @@ function PLUGIN:OverwriteClasses()
 						if v:GetData("scanning",false) then
 							local nowalkie = !v.walkietalkie
 							local preShow = string.format(" on %s MHz", v:GetData("duplex",v.duplex) and v:GetData("listenfrequency","100.0") or v:GetData("frequency","100.0"))
-							local show = string.format("You are now listening to all channels%s.",nowalkie and preShow or "")
-							client:NotifyLocalized(show)
+							-- local show = string.format("You are now listening to all channels%s.",nowalkie and preShow or "")
+							client:NotifyLocalized("radioListenOn", nowalkie and preShow or "")
 						else
-							client:NotifyLocalized("You are no longer listening to all channels.")
+							client:NotifyLocalized("radioListenOff")
 						end
 						break
 						--end
@@ -2197,10 +2400,10 @@ function PLUGIN:OverwriteClasses()
 				end
 
 				if !found then
-					client:NotifyLocalized("None of your radios are currently active.")
+					client:NotifyLocalized("radioNoActiveMulti")
 				end
 			else
-				client:NotifyLocalized("You do not have a radio!")
+				client:NotifyLocalized("radioNoActive")
 			end
 
 			--else
@@ -2246,9 +2449,9 @@ function PLUGIN:OverwriteClasses()
 				for _, v in ipairs(radioEnts) do
 					v:Remove()
 				end
-				client:Notify("Successfully removed all radio repeaters.")
+				client:NotifyLocalized("radioRepeaterRemoved")
 			else
-				client:Notify("No radio repeaters to remove!")
+				client:NotifyLocalized("radioRepeaterNoRemove")
 			end
 		end
 

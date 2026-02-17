@@ -1,7 +1,5 @@
-
 ITEM.name = "Handheld Radio"
---ITEM.model = Model("models/deadbodies/dead_male_civilian_radio.mdl")
---ITEM.description = "A shiny handheld radio with a frequency tuner.\nIt is currently turned %s%s."
+ITEM.description = "itemHandheldRadioDesc"
 --ITEM.cost = 50
 --ITEM.classes = {CLASS_EMP, CLASS_EOW}
 --ITEM.flag = "v"
@@ -10,6 +8,14 @@ ITEM.name = "Handheld Radio"
 
 -- Inventory drawing
 if (CLIENT) then
+	function ITEM:PopulateTooltip(tooltip)
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(Color(85, 127, 242))
+		data:SetText(L("securitizedItemTooltip"))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+
 	function ITEM:PaintOver(item, w, h)
 	
 		if (item:GetData("enabled")) then

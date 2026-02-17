@@ -21,7 +21,7 @@ if (SERVER) then
 			return false
 		end
 
-		ix.item.Spawn(uniqueID, pos + Vector( 0, 0, 10 ))
+		ix.item.Spawn(uniqueID, pos + Vector( 0, 0, 1 ))
 		ix.log.Add(ply, "itemListSpawnedItem", uniqueID)
 
 		hook.Run("PlayerSpawnedItem", ply, pos, uniqueID)
@@ -57,14 +57,23 @@ if (SERVER) then
 	end)
 else
 	local icons = {
+		["Alcohol"] = "emoticon_tongue",
 		["Ammo"] = "box",
+		["Ammunition"] = "box",
 		["Clothing"] = "user_suit",
+		["Outfit"] = "user_suit",
 		["Consumeables"] = "cake",
+		["Containers"] = "briefcase",
+		["Storage"] = "briefcase",
+		["Food"] = "cake",
 		["Junk"] = "bin",
 		["Medical Items"] = "heart",
+		["Medical"] = "heart",
 		["misc"] = "brick",
 		["Weapons"] = "gun",
 		["Tools"] = "wrench",
+		["Utility"] = "find",
+		["Permits"] = "book",
 	}
 
 	spawnmenu.AddContentType("ixItem", function(container, data)

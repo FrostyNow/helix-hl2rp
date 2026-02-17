@@ -485,4 +485,9 @@ LANGUAGE = {
 
 	[""] = "",
 	Desc = "",
+	
+	facial_hair = "수염",
+	
+	Stunstick = "진압봉",
+	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "왼쪽 클릭: 휘두르기.\nALT + 왼쪽 클릭: 전원 켜기/끄기.\n오른쪽 클릭: 밀기/노크하기.",
 }

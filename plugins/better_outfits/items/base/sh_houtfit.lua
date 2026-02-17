@@ -75,7 +75,11 @@ function ITEM:RemoveOutfit(client)
 	-- restore the original bodygroups
 	if (character:GetData("oldGroups" .. self.outfitCategory)) then
 		for k, v in pairs(character:GetData("oldGroups" .. self.outfitCategory, {})) do
-			client:SetBodygroup(k, v)
+			local index = tonumber(k) or client:FindBodygroupByName(k)
+
+			if (index and index > -1) then
+				client:SetBodygroup(index, tonumber(v) or 0)
+			end
 		end
 
 		character:SetData("groups", character:GetData("oldGroups" .. self.outfitCategory, {}))

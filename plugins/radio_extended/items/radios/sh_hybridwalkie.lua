@@ -1,11 +1,18 @@
-
 ITEM.name = "Hybrid Walkie Talkie"
-ITEM.description = "A shiny simplex/duplex walkie talkie%s.\nIt is currently turned %s%s."
+ITEM.description = "itemHybridWalkieDesc"
 ITEM.hybrid = true
 ITEM.walkietalkie = true
 
 -- Inventory drawing
 if (CLIENT) then
+	function ITEM:PopulateTooltip(tooltip)
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(Color(85, 127, 242))
+		data:SetText(L("securitizedItemTooltip"))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+	
 	function ITEM:PaintOver(item, w, h)
 	
 		if (item:GetData("enabled")) then

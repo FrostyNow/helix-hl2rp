@@ -167,20 +167,20 @@ else
 			local oldInputFreq = theEntity:GetInputFreq()
 			local oldOutputFreq = theEntity:GetOutputFreq()
 			
-			Derma_Query("Choose operation to perform", "Radio Repeater Control",
-			"Change Input Frequency ("..oldInputFreq.." MHz)",function()
-				Derma_StringRequest("Frequency", "Current input frequency: "..oldInputFreq.." MHz".."\nWhat would you like to set the new frequency to?", oldInputFreq, function(text)
+			Derma_Query(L("itemRadioRepeaterMenuDesc"), L("itemRadioRepeaterMenuTitle"),
+			L("itemRadioRepeaterChangeInput", oldInputFreq),function()
+				Derma_StringRequest(L("itemRadioRepeaterInputRequestTitle"), L("itemRadioRepeaterInputRequestDesc", oldInputFreq), oldInputFreq, function(text)
 				repeater("I"..text)
 				--ix.command.Send("SetFreq", text)
 				end)
 			end,
-			"Change Output Frequency ("..oldOutputFreq.." MHz)",function()
-				Derma_StringRequest("Frequency", "Current output frequency: "..oldOutputFreq.." MHz".."\nWhat would you like to set the new frequency to?", oldOutputFreq, function(text)
+			L("itemRadioRepeaterChangeOutput", oldOutputFreq),function()
+				Derma_StringRequest(L("itemRadioRepeaterInputRequestTitle"), L("itemRadioRepeaterOutputRequestDesc", oldOutputFreq), oldOutputFreq, function(text)
 				repeater("O"..text)
 				--ix.command.Send("SetFreq", text)
 				end)
 			end,
-			"Toggle Power", function()
+			L("itemRadioRepeaterTogglePower"), function()
 				repeaterpower(theEntity:GetEnabled())
 			end, 
 			nil,nil) 

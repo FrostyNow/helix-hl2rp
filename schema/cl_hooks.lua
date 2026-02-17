@@ -401,39 +401,39 @@ netstream.Hook("ixNVToggle", function(bool)
 		return
 	end
 
-    NV_Status = bool
+	NV_Status = bool
 	NV_NIGHTTYPE = 1
-    
-    if bool then        
-        CurScale = 0.2
-        surface.PlaySound( sndOn )
-        hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
-        hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)    
-    else
-        surface.PlaySound( sndOff )
-        hook.Remove("RenderScreenspaceEffects", "NV_FX")
-        hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
-    end
+		
+	if bool then		
+		CurScale = 0.2
+		surface.PlaySound( sndOn )
+		hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
+		hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)	
+	else
+		surface.PlaySound( sndOff )
+		hook.Remove("RenderScreenspaceEffects", "NV_FX")
+		hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
+	end
 end)
 
 netstream.Hook("ixFLIRToggle", function(bool)
 	if not LocalPlayer():Alive() then
 		return
 	end
-    
-    NV_Status = bool
+		
+	NV_Status = bool
 	NV_NIGHTTYPE = 2
-    
-    if bool then        
-        CurScale = 0.2
-        surface.PlaySound( sndOn )
-        hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
-        hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)
-    else
-        surface.PlaySound( sndOff )
-        hook.Remove("RenderScreenspaceEffects", "NV_FX")
-        hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
-    end
+		
+	if bool then		
+		CurScale = 0.2
+		surface.PlaySound( sndOn )
+		hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
+		hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)
+	else
+		surface.PlaySound( sndOff )
+		hook.Remove("RenderScreenspaceEffects", "NV_FX")
+		hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
+	end
 end)
 
 local adminAnonHintColor = Color(170, 170, 170)
@@ -641,3 +641,246 @@ end
 
 hook.Add("InitializedSchema", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
 hook.Add("InitPostEntity", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
+
+-- GLOBAL FIX: Detour character:GetData to sanitize groups on the fly
+-- This ensures cl_charload.lua receives clean data regardless of when it asks
+hook.Add("InitPostEntity", "ixHL2RPfixBodygroups", function()
+	if (ix and ix.meta and ix.meta.character) then
+		local oldGetData = ix.meta.character.GetData
+		
+		ix.meta.character.GetData = function(self, key, default)
+			local data = oldGetData(self, key, default)
+			
+			if (key == "groups" and istable(data)) then
+				local clean = {}
+				for k, v in pairs(data) do
+					if (isnumber(k)) then
+						clean[k] = v
+					end
+				end
+				return clean
+			end
+			
+			return data
+		end
+	end
+end)
+
+-- Safe wrapper for SetBodygroup to prevent crashes
+local function SafeSetBodygroup(entity, bodygroups)
+	if (!IsValid(entity) or !istable(bodygroups)) then return end
+		
+	for k, v in pairs(bodygroups) do
+		if (isnumber(k)) then
+			entity:SetBodygroup(k, v)
+		end
+	end
+end
+
+function Schema:OnCharacterMenuCreated(panel)
+	-- Sanitize character data (Fix for corrupted characters preventing deletion)
+	if (ix.char and ix.char.loaded) then
+		for id, char in pairs(ix.char.loaded) do
+			local data = char:GetVar("data")
+			if (data and data.groups) then
+				local clean = {}
+				local dirty = false
+				
+				for k, v in pairs(data.groups) do
+					if (isnumber(k)) then
+						clean[k] = v
+					elseif (isstring(k)) then
+						dirty = true
+					end
+				end
+				
+				if (dirty) then
+					data.groups = clean
+				end
+			end
+		end
+	end
+
+	-- Detour SetCharacter on the load panel models if they exist
+	if (IsValid(panel.loadCharacterPanel)) then
+		local loadPanel = panel.loadCharacterPanel
+		
+		-- Helper to patch a model entity
+		local function PatchModelEntity(ent)
+			if (!IsValid(ent)) then return end
+			
+			-- We can't easily detour the local function SetCharacter in cl_charload.lua
+			-- But we can overwrite the method on the entity instance!
+			local oldSetCharacter = ent.SetCharacter
+			
+			ent.SetCharacter = function(self, character)
+				-- 1. Sanitize data before calling original (if original uses it)
+				-- Original calls: local bodygroups = character:GetData("groups", nil)
+				-- and iterates it.
+				-- We already sanitized ix.char.loaded above, so hopefully that's enough.
+				
+				-- BUT, if the error persists, it means cl_charload is using unsanitized data?
+				-- Or maybe our sanitization didn't propagate?
+				
+				-- Let's try to wrap the SetBodygroup call itself?
+				-- No, SetBodygroup is a C function on the entity.
+				
+				-- The issue is cl_charload.lua:22 calls self:SetBodygroup(k, v)
+				-- We can override SetBodygroup on this entity!
+				
+				local oldSetBodygroup = self.SetBodygroup
+				self.SetBodygroup = function(miniself, index, value)
+					if (isnumber(index)) then
+						oldSetBodygroup(miniself, index, value)
+					end
+				end
+				
+				if (oldSetCharacter) then
+					oldSetCharacter(self, character)
+				end
+				
+				-- Restore SetBodygroup? Maybe keep it safe.
+			end
+		end
+		
+		PatchModelEntity(loadPanel.activeCharacter)
+		PatchModelEntity(loadPanel.lastCharacter)
+		
+		-- Also patch the carousel models if they are created later?
+		-- The carousel creates ixModelPanels.
+	end
+	-- Helper function to layout the entity (Straight ahead, neutral pose)
+	-- Based on bodygroup manager viewer
+	local function LayoutEntity(this, Entity)
+		if (this.bScripted) then
+			this:ScriptedLayoutEntity(Entity)
+			return
+		end
+		
+		local yaw = this.ixRotationYaw or 45
+		if (this.ixDragging) then
+			local mouseX = gui.MouseX()
+			local deltaX = mouseX - (this.ixLastMouseX or mouseX)
+			yaw = yaw - deltaX * 0.5
+			this.ixRotationYaw = yaw
+			this.ixLastMouseX = mouseX
+		end
+		
+		Entity:SetAngles(Angle(0, yaw, 0))
+		Entity:SetIK(false)
+
+		-- Eye fix (Look forward)
+		local arrow = Entity:GetForward() * 100
+		local eyeTarget = Entity:GetPos() + arrow + Vector(0, 0, 64)
+		Entity:SetEyeTarget(eyeTarget)
+
+		-- Neutral pose parameters
+		Entity:SetPoseParameter("head_pitch", 0)
+		Entity:SetPoseParameter("head_yaw", 0)
+		Entity:SetPoseParameter("aim_pitch", 0)
+		Entity:SetPoseParameter("aim_yaw", 0)
+		Entity:SetPoseParameter("eyes_pitch", 0)
+		Entity:SetPoseParameter("eyes_yaw", 0)
+		
+		-- Default sequence logic
+		if (this.RunAnimation) then
+			this:RunAnimation(Entity)
+		else
+			-- Fallback if no RunAnimation (e.g. ixModelPanel default)
+			Entity:FrameAdvance((RealTime() - (this.lastPaint or 0)) * 0.5)
+			this.lastPaint = RealTime()
+		end
+	end
+
+	-- 1. Character Creation Panels
+	if (IsValid(panel.newCharacterPanel)) then
+		local createPanel = panel.newCharacterPanel
+		
+		-- Override LayoutEntity for all model panels in creation
+		if (IsValid(createPanel.factionModel)) then
+			createPanel.factionModel.LayoutEntity = LayoutEntity
+		end
+		
+		if (IsValid(createPanel.descriptionModel)) then
+			-- Enable drag-to-rotate
+			local modelPanel = createPanel.descriptionModel
+			modelPanel:SetMouseInputEnabled(true)
+			modelPanel.ixRotationYaw = 45
+			
+			modelPanel.OnMousePressed = function(this, code)
+				if (code == MOUSE_LEFT) then
+					this.ixDragging = true
+					this.ixLastMouseX = gui.MouseX()
+					this:MouseCapture(true)
+				end
+			end
+			
+			modelPanel.OnMouseReleased = function(this, code)
+				if (code == MOUSE_LEFT) then
+					this.ixDragging = false
+					this:MouseCapture(false)
+				end
+			end
+
+			modelPanel.LayoutEntity = LayoutEntity
+		end
+		
+		if (IsValid(createPanel.attributesModel)) then
+			createPanel.attributesModel.LayoutEntity = LayoutEntity
+		end
+		
+		 -- Face closeup (keep custom camera, just fix eyes/pose)
+		if (IsValid(createPanel.descriptionFace)) then
+			local OldLayout = createPanel.descriptionFace.LayoutEntity
+			createPanel.descriptionFace.LayoutEntity = function(this, entity)
+				-- Call original to setup camera/head focus
+				if (OldLayout) then OldLayout(this, entity) end
+				
+				-- Force neutral expression after
+				entity:SetPoseParameter("head_pitch", 0)
+				entity:SetPoseParameter("head_yaw", 0)
+				entity:SetPoseParameter("aim_pitch", 0)
+				entity:SetPoseParameter("aim_yaw", 0)
+				entity:SetPoseParameter("eyes_pitch", 0)
+				entity:SetPoseParameter("eyes_yaw", 0)
+				
+				-- Eye fix for closeup (Look at camera or slightly forward from head)
+				local headBone = entity:LookupBone("ValveBiped.Bip01_Head1")
+				if (headBone) then
+					local headPos = entity:GetBonePosition(headBone)
+					-- Camera is at headPos + forward*45 + up*-2 (approx)
+					-- Let's just project forward from head
+					local eyeTarget = headPos + entity:GetForward() * 50
+					entity:SetEyeTarget(eyeTarget)
+				end
+			end
+		end
+	end
+
+	-- 2. Character Load Panel (Carousel)
+	if (IsValid(panel.loadCharacterPanel)) then
+		local loadPanel = panel.loadCharacterPanel
+		if (IsValid(loadPanel.carousel)) then
+			-- Override the carousel's LayoutEntity which handles active/last character
+			loadPanel.carousel.LayoutEntity = function(this, model)
+				model:SetIK(false)
+				
+				-- Eye fix (Look forward)
+				-- Note: Carousel rotates the camera, not the model usually, but let's ensure model looks "forward" relative to itself
+				local arrow = model:GetForward() * 100
+				local eyeTarget = model:GetPos() + arrow + Vector(0, 0, 64)
+				model:SetEyeTarget(eyeTarget)
+
+				-- Neutral pose
+				model:SetPoseParameter("head_pitch", 0)
+				model:SetPoseParameter("head_yaw", 0)
+				model:SetPoseParameter("aim_pitch", 0)
+				model:SetPoseParameter("aim_yaw", 0)
+				model:SetPoseParameter("eyes_pitch", 0)
+				model:SetPoseParameter("eyes_yaw", 0)
+				
+				this:RunAnimation(model)
+			end
+		end
+	end
+end

@@ -220,5 +220,10 @@ LANGUAGE = {
 	sociocidalItemTooltip = "Class: Sociocidal",
 
 	currencySingular = "token",
-	currencyPlural = "tokens"
+	currencyPlural = "tokens",
+
+	facial_hair = "Facial Hair",
+	
+	Stunstick = "Stunstick",
+	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock.",
 }
