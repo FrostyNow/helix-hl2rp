@@ -22,6 +22,9 @@ if (CLIENT) then
 		})
 	end
 
+	-- we can't rely on matching non-alphanumeric characters (i.e %W) due to patterns matching single bytes and not UTF-8 chars
+	local symbolPattern = "[~`!@#$%%%^&*()_%+%-={}%[%]|;:'\",%./<>?]"
+
 	function PLUGIN:ChatTextChanged(text)
 		if (!IsValid(LocalPlayer())) then
 			return
@@ -63,9 +66,9 @@ if (CLIENT) then
 	end
 
 	function PLUGIN:GetTypingIndicator(character, text)
-		local prefix = text:sub(1, 1)
+		local prefix = text:utf8sub(1, 1)
 
-		if (prefix:find("%w") and text:len() > 1) then
+		if (!prefix:find(symbolPattern) and (text:utf8len() > 1 or #prefix > 1)) then
 			return "ic"
 		else
 			local chatType = ix.chat.Parse(nil, text)

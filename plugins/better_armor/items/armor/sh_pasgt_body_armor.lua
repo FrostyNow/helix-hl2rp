@@ -26,6 +26,7 @@ ITEM.bodyGroups = {
 }
 ITEM.outfitCategory = "torso"
 ITEM.noResetBodyGroups = true
+ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 ITEM.maxDurability = 150
 ITEM.allowedModels = {
 	"models/wichacks/erdimnovest.mdl",

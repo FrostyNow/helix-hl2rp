@@ -493,4 +493,9 @@ LANGUAGE = {
 	
 	Stunstick = "진압봉",
 	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "왼쪽 클릭: 휘두르기.\nALT + 왼쪽 클릭: 전원 켜기/끄기.\n오른쪽 클릭: 밀기/노크하기.",
+	
+	broadcastConsole = "방송 콘솔",
+	["Broadcast Console"] = "방송 콘솔",
+	broadcastConsoleDesc = "공공 방송을 하는 데 사용되는 콘솔입니다.",
+	broadcastConsoleUse = "/Broadcast 명령어를 입력하여 방송을 할 수 있습니다.",
 }

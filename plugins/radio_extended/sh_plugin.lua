@@ -92,7 +92,12 @@ ix.lang.AddTable("english", {
 	radioListenOn = "You are now listening to all channels%s.",
 	radioListenOff = "You are no longer listening to all channels.",
 	radioRepeaterRemoved = "Successfully removed all radio repeaters.",
-	radioRepeaterNoRemove = "No radio repeaters to remove!"
+	radioRepeaterNoRemove = "No radio repeaters to remove!",
+
+	["Stationary Radio"] = "Stationary Radio",
+	stationaryRadioDesc = "A large radio fixed in place.\nTransmits what is being said nearby to the radio channel.",
+	radioOn = "On",
+	radioOff = "Off",
 })
 
 ix.lang.AddTable("korean", {
@@ -193,7 +198,12 @@ ix.lang.AddTable("korean", {
 	radioListenOn = "이제 모든 채널을 청취합니다%s.",
 	radioListenOff = "더 이상 모든 채널을 청취하지 않습니다.",
 	radioRepeaterRemoved = "모든 무전 중계기를 성공적으로 제거했습니다.",
-	radioRepeaterNoRemove = "제거할 무전 중계기가 없습니다!"
+	radioRepeaterNoRemove = "제거할 무전 중계기가 없습니다!",
+
+	["Stationary Radio"] = "고정식 무전기",
+	stationaryRadioDesc = "한 곳에 고정된 대형 무전기입니다.\n근처에서 하는 말을 무전 채널로 전송합니다.",
+	radioOn = "켜짐",
+	radioOff = "꺼짐",
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -757,6 +767,17 @@ function PLUGIN:OverwriteClasses()
 			--local duplex = false
 			local radioSelect
 			if (togetherDistance > self:GetRange()) then
+				-- Stationary Radio Logic
+				local stationaryRadios = ents.FindInSphere(listener:GetPos(), ix.config.Get("chatRange", 280))
+				for _, ent in pairs(stationaryRadios) do
+					if (ent:GetClass() == "ix_stationary_radio" and ent:GetNetVar("active", false)) then
+						if (tonumber(ent:GetNetVar("frequency", "100.0")) == tonumber(data.freq)) then
+							bHasRadio = true
+							break
+						end
+					end
+				end
+
 				if test1 and speaker != listener then -- Don't even do all these checks
 					bHasRadio = true
 				else
@@ -1896,6 +1917,28 @@ function PLUGIN:OverwriteClasses()
 					end
 				end
 
+
+				-- Check if looking at stationary radio if no handheld is valid/active
+				if (active == 0) then
+					local trace = client:GetEyeTrace()
+					local entity = trace.Entity
+					if (IsValid(entity) and entity:GetClass() == "ix_stationary_radio") then
+						if (string.find(frequency, "^%d%d%d%.%d$")) then
+							entity:SetNetVar("frequency", frequency)
+							client:NotifyLocalized("radioFreqSet", frequency)
+							return
+						else
+							client:NotifyLocalized("invalidArg", 1)
+							return
+						end
+					end
+				end
+
+				if not itemTable then
+					client:NotifyLocalized("radioNoActive")
+					return
+				end
+
 				if itemTable.walkietalkie then
 					client:NotifyLocalized("radioNoDirectFreq")
 				elseif itemTable:GetData("duplex",itemTable.duplex) and !notSame then
@@ -1946,6 +1989,34 @@ function PLUGIN:OverwriteClasses()
 		ix.command.Add("SetFreq", COMMAND)
 	end
 
+	do
+		local COMMAND = {}
+		COMMAND.arguments = ix.type.number
+
+		function COMMAND:OnRun(client, frequency)
+			frequency = tostring(frequency)
+			if string.len(frequency) < 4 then
+				frequency = frequency .. '.0'
+			end
+			
+			local trace = client:GetEyeTrace()
+			local entity = trace.Entity
+
+			if (IsValid(entity) and entity:GetClass() == "ix_stationary_radio") then
+				if (string.find(frequency, "^%d%d%d%.%d$")) then
+					entity:SetNetVar("frequency", frequency)
+					client:NotifyLocalized("radioFreqSet", frequency)
+				else
+					client:NotifyLocalized("invalidArg", 1)
+				end
+			else
+				client:NotifyLocalized("radioRequired")
+			end
+		end
+
+		ix.command.Add("StationaryFreq", COMMAND)
+	end
+	
 	--
 
 		-----
@@ -2544,3 +2615,89 @@ end
 		-- ix.chat.Send(player.GetAll()[2], "radio_overhear", "*"..info.text.."*", nil, nil, nil)
 	-- end
 -- end
+
+function PLUGIN:PlayerSay(client, text)
+	if (client.ixSendingRadio) then return end
+
+	local entity = nil
+	local range = ix.config.Get("chatRange", 280)
+	-- Find nearby active stationary radio
+	for _, ent in pairs(ents.FindInSphere(client:GetPos(), range * 0.5)) do -- Check close range
+		if (ent:GetClass() == "ix_stationary_radio" and ent:GetNetVar("active", false)) then
+			entity = ent
+			break
+		end
+	end
+
+	if (entity) then
+		local chatType = "radio"
+		local msgFormatted = text
+		local valid = false
+
+		-- Check for whisper/yell prefixes
+		if (text:sub(1, 4) == "/w " or text:sub(1, 9) == "/whisper ") then
+			chatType = "radio_whisper"
+			msgFormatted = text:gsub("^/[wW]%S*%s*", "")
+			valid = true
+		elseif (text:sub(1, 4) == "/y " or text:sub(1, 6) == "/yell ") then
+			chatType = "radio_yell"
+			msgFormatted = text:gsub("^/[yY]%S*%s*", "")
+			valid = true
+		elseif (text:sub(1, 1) != "/" and text:sub(1, 1) != "@") then -- Standard chat (IC), ignore other commands
+			chatType = "radio"
+			valid = true
+		end
+
+		if (valid and msgFormatted and msgFormatted != "") then
+			client.ixSendingRadio = true
+			
+			local freq = entity:GetNetVar("frequency", "100.0")
+			local data = {
+				freq = freq,
+				chan = "1",
+				stationary = true,
+				entity = entity
+			}
+			
+			ix.chat.Send(client, chatType, msgFormatted, false, nil, data)
+			
+			client.ixSendingRadio = nil
+		end
+	end
+end
+
+if (SERVER) then
+	function PLUGIN:SaveData()
+		local data = {}
+
+		for _, v in ipairs(ents.FindByClass("ix_stationary_radio")) do
+			data[#data + 1] = {
+				pos = v:GetPos(),
+				angles = v:GetAngles(),
+				frequency = v:GetNetVar("frequency", "100.0"),
+				active = v:GetNetVar("active", false)
+			}
+		end
+
+		ix.data.Set("stationary_radios", data)
+	end
+
+	function PLUGIN:LoadData()
+		local data = ix.data.Get("stationary_radios") or {}
+
+		for _, v in ipairs(data) do
+			local entity = ents.Create("ix_stationary_radio")
+			entity:SetPos(v.pos)
+			entity:SetAngles(v.angles)
+			entity:Spawn()
+			entity:SetNetVar("frequency", v.frequency)
+			entity:SetNetVar("active", v.active)
+
+			local physicsObject = entity:GetPhysicsObject()
+
+			if (IsValid(physicsObject)) then
+				physicsObject:Wake()
+			end
+		end
+	end
+end

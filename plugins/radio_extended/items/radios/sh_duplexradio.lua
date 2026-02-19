@@ -1,5 +1,6 @@
 ITEM.name = "Duplex Radio"
 ITEM.description = "itemDuplexRadioDesc"
+ITEM.cost = 200
 ITEM.duplex = true
 
 -- Inventory drawing

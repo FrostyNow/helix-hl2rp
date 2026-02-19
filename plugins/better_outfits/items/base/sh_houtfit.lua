@@ -1,5 +1,13 @@
 
+
+if (SERVER) then
+	util.AddNetworkString("ixBagDrop")
+end
+
 ITEM.name = "hOutfit"
+ITEM.isBag = false
+ITEM.invWidth = 2
+ITEM.invHeight = 2
 ITEM.description = "A Better Outfit Base."
 ITEM.category = "Outfit"
 ITEM.model = "models/Gibs/HGIBS.mdl"
@@ -34,7 +42,30 @@ if (CLIENT) then
 			surface.SetDrawColor(110, 255, 110, 100)
 			surface.DrawRect(w - 14, h - 14, 8, 8)
 		end
+
+		if (item.isBag) then
+			local panel = ix.gui["inv" .. item:GetData("id", "")]
+
+			if (!IsValid(panel)) then
+				return
+			end
+
+			if (vgui.GetHoveredPanel() == self) then
+				panel:SetHighlighted(true)
+			else
+				panel:SetHighlighted(false)
+			end
+		end
 	end
+
+	net.Receive("ixBagDrop", function()
+		local index = net.ReadUInt(32)
+		local panel = ix.gui["inv"..index]
+
+		if (panel and panel:IsVisible()) then
+			panel:Close()
+		end
+	end)
 end
 
 function ITEM:RemoveOutfit(client)
@@ -125,6 +156,49 @@ ITEM:Hook("drop", function(item)
 		item:RemoveOutfit(item:GetOwner())
 	end
 end)
+
+ITEM.functions.View = {
+	icon = "icon16/briefcase.png",
+	OnClick = function(item)
+		local index = item:GetData("id", "")
+
+		if (index) then
+			local panel = ix.gui["inv"..index]
+			local inventory = ix.item.inventories[index]
+			local parent = IsValid(ix.gui.menuInventoryContainer) and ix.gui.menuInventoryContainer or ix.gui.openedStorage
+
+			if (IsValid(panel)) then
+				panel:Remove()
+			end
+
+			if (inventory and inventory.slots) then
+				panel = vgui.Create("ixInventory", IsValid(parent) and parent or nil)
+				panel:SetInventory(inventory)
+				panel:ShowCloseButton(true)
+				panel:SetTitle(item.GetName and item:GetName() or L(item.name))
+
+				if (parent != ix.gui.menuInventoryContainer) then
+					panel:Center()
+
+					if (parent == ix.gui.openedStorage) then
+						panel:MakePopup()
+					end
+				else
+					panel:MoveToFront()
+				end
+
+				ix.gui["inv"..index] = panel
+			else
+				ErrorNoHalt("[Helix] Attempt to view an uninitialized inventory '"..index.."'\n")
+			end
+		end
+
+		return false
+	end,
+	OnCanRun = function(item)
+		return item.isBag and !IsValid(item.entity) and item:GetData("id") and !IsValid(ix.gui["inv" .. item:GetData("id", "")])
+	end
+}
 
 ITEM.functions.EquipUn = { -- sorry, for name order.
 	name = "Unequip",
@@ -246,14 +320,54 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 		return false
 	end
 
+	if (self.isBag) then
+		if (newInventory) then
+			if (newInventory.vars and newInventory.vars.isBag) then
+				return false
+			end
+
+			local index = self:GetData("id")
+			local index2 = newInventory:GetID()
+
+			if (index == index2) then
+				return false
+			end
+
+			local myInv = self:GetInventory()
+			if (myInv) then
+				for _, v in pairs(myInv:GetItems()) do
+					if (v:GetData("id") == index2) then
+						return false
+					end
+				end
+			end
+		end
+	end
+
 	return true
 end
 
 function ITEM:OnRemoved()
 	if (self.invID != 0 and self:GetData("equip")) then
 		self.player = self:GetOwner()
-			self:RemoveOutfit(self.player)
+        if (self.player) then
+		    self:RemoveOutfit(self.player)
+        end
 		self.player = nil
+	end
+
+	if (self.isBag) then
+		local index = self:GetData("id")
+
+		if (index) then
+			local query = mysql:Delete("ix_items")
+				query:Where("inventory_id", index)
+			query:Execute()
+
+			query = mysql:Delete("ix_inventories")
+				query:Where("inventory_id", index)
+			query:Execute()
+		end
 	end
 end
 
@@ -265,4 +379,117 @@ end
 
 function ITEM:CanEquipOutfit()
 	return true
+end
+
+-- Bag Functionality
+function ITEM:OnInstanced(invID, x, y)
+	if (self.isBag) then
+		local inventory = ix.item.inventories[invID]
+
+		ix.item.NewInv(inventory and inventory.owner or 0, self.uniqueID, function(inv)
+			local client = inv:GetOwner()
+
+			inv.vars.isBag = self.uniqueID
+			self:SetData("id", inv:GetID())
+
+			if (IsValid(client)) then
+				inv:AddReceiver(client)
+			end
+		end)
+	end
+end
+
+function ITEM:GetInventory()
+	if (self.isBag) then
+		local index = self:GetData("id")
+
+		if (index) then
+			return ix.item.inventories[index]
+		end
+	end
+end
+ITEM.GetInv = ITEM.GetInventory
+
+function ITEM:OnSendData()
+	if (self.isBag) then
+		local index = self:GetData("id")
+
+		if (index) then
+			local inventory = ix.item.inventories[index]
+
+			if (inventory) then
+				inventory.vars.isBag = self.uniqueID
+				inventory:Sync(self.player)
+				inventory:AddReceiver(self.player)
+			else
+				local owner = self.player:GetCharacter():GetID()
+
+				ix.item.RestoreInv(self:GetData("id"), self.invWidth, self.invHeight, function(inv)
+					inv.vars.isBag = self.uniqueID
+					inv:SetOwner(owner, true)
+
+					if (!inv.owner) then
+						return
+					end
+
+					for client, character in ix.util.GetCharacters() do
+						if (character:GetID() == inv.owner) then
+							inv:AddReceiver(client)
+							break
+						end
+					end
+				end)
+			end
+		else
+			ix.item.NewInv(self.player:GetCharacter():GetID(), self.uniqueID, function(inv)
+				self:SetData("id", inv:GetID())
+			end)
+		end
+	end
+end
+
+function ITEM:OnTransferred(curInv, inventory)
+	if (self.isBag) then
+		local bagInventory = self:GetInventory()
+		if (bagInventory) then
+			if (isfunction(curInv.GetOwner)) then
+				local owner = curInv:GetOwner()
+				if (IsValid(owner)) then
+					bagInventory:RemoveReceiver(owner)
+				end
+			end
+
+			if (isfunction(inventory.GetOwner)) then
+				local owner = inventory:GetOwner()
+				if (IsValid(owner)) then
+					bagInventory:AddReceiver(owner)
+					bagInventory:SetOwner(owner)
+				end
+			else
+				bagInventory:SetOwner(nil)
+			end
+		end
+	end
+end
+
+function ITEM:OnRegistered()
+	if (self.isBag) then
+		ix.inventory.Register(self.uniqueID, self.invWidth, self.invHeight, true)
+	end
+end
+
+ITEM.postHooks = ITEM.postHooks or {}
+ITEM.postHooks.drop = function(item, result)
+	if (item.isBag) then
+		local index = item:GetData("id")
+
+		local query = mysql:Update("ix_inventories")
+			query:Update("character_id", 0)
+			query:Where("inventory_id", index)
+		query:Execute()
+
+		net.Start("ixBagDrop")
+			net.WriteUInt(index, 32)
+		net.Send(item.player)
+	end
 end

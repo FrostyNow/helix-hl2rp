@@ -10,6 +10,16 @@ ix.util.Include("sh_configs.lua")
 ix.util.Include("sv_hooks.lua")
 ix.util.Include("sv_plugin.lua")
 
+ix.lang.AddTable("english", {
+	["Camera Terminal"] = "Camera Terminal",
+	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
+})
+
+ix.lang.AddTable("korean", {
+	["Camera Terminal"] = "카메라 단말기",
+	cameraTerminalDesc = "감시 카메라와 연결된 단말기입니다.",
+})
+
 PLUGIN.sociostatusColors = {
 	GREEN = Color(0, 255, 0),
 	BLUE = Color(0, 128, 255),
@@ -37,4 +47,38 @@ PLUGIN.CAMERA_ENABLE = 2
 
 function PLUGIN:isCameraEnabled(camera)
 	return camera:GetSequenceName(camera:GetSequence()) == "idlealert"
+end
+
+if (SERVER) then
+	function PLUGIN:SaveData()
+		local data = {}
+
+		for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+			data[#data + 1] = {	
+				pos = v:GetPos(),
+				angles = v:GetAngles(),
+				color = v:GetColor(),
+			}
+		end
+
+		ix.data.Set("camera_terminals", data)
+	end
+
+	function PLUGIN:LoadData()
+		local data = ix.data.Get("camera_terminals") or {}
+
+		for _, v in ipairs(data) do
+			local entity = ents.Create("ix_ctocameraterminal")
+			entity:SetPos(v.pos)
+			entity:SetAngles(v.angles)
+			entity:SetColor(v.color)
+			entity:Spawn()
+
+			local physicsObject = entity:GetPhysicsObject()
+
+			if (IsValid(physicsObject)) then
+				physicsObject:Wake()
+			end
+		end
+	end
 end

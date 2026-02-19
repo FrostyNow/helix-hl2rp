@@ -2,6 +2,7 @@ ITEM.name = "Hybrid Walkie Talkie"
 ITEM.description = "itemHybridWalkieDesc"
 ITEM.hybrid = true
 ITEM.walkietalkie = true
+ITEM.cost = 120
 
 -- Inventory drawing
 if (CLIENT) then

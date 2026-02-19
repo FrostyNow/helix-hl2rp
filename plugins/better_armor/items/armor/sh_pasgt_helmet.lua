@@ -22,6 +22,7 @@ ITEM.bodyGroups = {
 }
 ITEM.outfitCategory = "head"
 ITEM.noResetBodyGroups = true
+ITEM.hitGroups = {HITGROUP_HEAD}
 ITEM.maxDurability = 100
 ITEM.allowedModels = {
 	"models/wichacks/erdimnovest.mdl",

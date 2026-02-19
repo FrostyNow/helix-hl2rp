@@ -52,11 +52,7 @@ ix.util.Include("cl_plugin.lua")
 function PLUGIN:EntityTakeDamage( target, dmginfo )
 	if ( target:IsPlayer() ) then
 		if ( target:GetNetVar("resistance") == true ) then
-			if (dmginfo:IsDamageType(DMG_BULLET)) then
-				dmginfo:ScaleDamage(target:GetNWFloat("dmg_bullet"))
-			elseif (dmginfo:IsDamageType(DMG_SLASH)) then
-				dmginfo:ScaleDamage(target:GetNWFloat("dmg_slash"))
-			elseif (dmginfo:IsDamageType(DMG_SHOCK)) then
+			if (dmginfo:IsDamageType(DMG_SHOCK)) then
 				dmginfo:ScaleDamage(target:GetNWFloat("dmg_shock"))
 			elseif (dmginfo:IsDamageType(DMG_BURN)) then
 				dmginfo:ScaleDamage(target:GetNWFloat("dmg_burn"))
@@ -71,22 +67,88 @@ function PLUGIN:EntityTakeDamage( target, dmginfo )
 	end
 end
 
+function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
+	if (!client:GetCharacter()) then return end
+	local character = client:GetCharacter()
+	local inventory = character:GetInventory()
+	local items = inventory:GetItems()
+	
+	local bestScale = 1
+	local foundArmor = false
+
+	for k, v in pairs(items) do
+		if (v:GetData("equip") and v.base == "base_armor" and v.resistance) then
+			-- Check if item covers this hitgroup
+			-- If hitGroups is nil, it covers everything (backward compatibility/suits)
+			if (v.hitGroups and !table.HasValue(v.hitGroups, hitgroup or 0)) then
+				continue
+			end
+
+			local durability = v:GetData("Durability", v.maxDurability)
+			local fraction = 1
+	
+			if (durability <= 0) then
+				fraction = 0.5
+			end
+	
+			local function GetEffectiveScale(base, frac)
+				return base * frac + (1 - frac)
+			end
+			
+			local dmg = v.damage or {1,1,1,1,1,1,1}
+			local scale = 1
+
+			if (dmginfo:IsDamageType(DMG_BULLET)) then
+				foundArmor = true
+				scale = dmg[1]
+			elseif (dmginfo:IsDamageType(DMG_SLASH)) then
+				foundArmor = true
+				scale = dmg[2]
+			elseif (dmginfo:IsDamageType(DMG_CLUB)) then
+				foundArmor = true
+				scale = dmg[2] -- Treat club as slash/melee
+			end
+			
+			if (foundArmor) then
+				scale = GetEffectiveScale(scale, fraction)
+				if (scale < bestScale) then
+					bestScale = scale
+				end
+			end
+		end
+	end
+
+	if (foundArmor) then
+		dmginfo:ScaleDamage(bestScale)
+	end
+end
+
 function PLUGIN:PlayerHurt( client, attacker, health, damageTaken )
 	if (client:IsPlayer()) then
 		local character = client:GetCharacter()
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()
 		
+		local hitgroup = client:LastHitGroup()
+
 		for k, v in pairs(items) do
 			if (v:GetData("equip")) then
-				if (v.base == "base_armor") then
+				if (v.base == "base_armor" and v.resistance) then
+					-- Durability loss only if hitgroup matches
+					if (v.hitGroups and !table.HasValue(v.hitGroups, hitgroup or 0)) then
+						continue
+					end
+
 					local durability = v:GetData("Durability", 100)
 					
 					if (durability > 0) then
 						v:SetData("Durability", math.max(durability - (damageTaken/2)))
-					elseif (durability == 0 or durability < 0) then
-						v:RemoveOutfit(client)
+					elseif (durability <= 0) then
 						v:SetData("Durability", 0)
+					end
+					
+					if (v.UpdateResistance) then
+						v:UpdateResistance(client)
 					end
 				end
 			end

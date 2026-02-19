@@ -1,6 +1,6 @@
 ITEM.name = "Handheld Radio"
 ITEM.description = "itemHandheldRadioDesc"
---ITEM.cost = 50
+ITEM.cost = 100
 --ITEM.classes = {CLASS_EMP, CLASS_EOW}
 --ITEM.flag = "v"
 

@@ -18,6 +18,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 }
 ITEM.outfitCategory = "torso"
 ITEM.noResetBodyGroups = true
+ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 ITEM.bodyGroups = {
 	["torso"] = 12
 }

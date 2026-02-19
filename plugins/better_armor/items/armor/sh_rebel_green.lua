@@ -18,6 +18,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			1, -- Acid
 			1, -- Explosion
 }
+ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH, HITGROUP_LEFTARM, HITGROUP_LEFTLEG, HITGROUP_RIGHTLEG}
 ITEM.outfitCategory = "outfit"
 ITEM.pacData = {}
 ITEM.bodyGroups = {

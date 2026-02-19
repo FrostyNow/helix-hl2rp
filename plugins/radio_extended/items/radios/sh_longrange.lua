@@ -1,6 +1,7 @@
 ITEM.name = "Long Range Radio"
 ITEM.description = "itemLongRangeRadioDesc"
 ITEM.longrange = true
+ITEM.cost = 200
 
 -- Inventory drawing
 if (CLIENT) then

@@ -90,6 +90,16 @@ function Schema:SavePepsiMachines()
 	ix.data.Set("pepsiMachines", data)
 end
 
+function Schema:SaveBroadcastConsoles()
+	local data = {}
+
+	for _, v in ipairs(ents.FindByClass("ix_broadcast_console")) do
+		data[#data + 1] = {v:GetPos(), v:GetAngles()}
+	end
+
+	ix.data.Set("broadcastConsoles", data)
+end
+
 -- data loading
 function Schema:LoadRationDispensers()
 	for _, v in ipairs(ix.data.Get("rationDispensers") or {}) do
@@ -158,6 +168,16 @@ function Schema:LoadPepsiMachines()
 		vendor:SetAngles(v[2])
 		vendor:Spawn()
 		vendor:SetStock(v[3])
+	end
+end
+
+function Schema:LoadBroadcastConsoles()
+	for _, v in ipairs(ix.data.Get("broadcastConsoles") or {}) do
+		local console = ents.Create("ix_broadcast_console")
+
+		console:SetPos(v[1])
+		console:SetAngles(v[2])
+		console:Spawn()
 	end
 end
 

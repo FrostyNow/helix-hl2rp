@@ -1,6 +1,6 @@
 ITEM.name = "Armor"
 ITEM.description = "An Armor Base."
-ITEM.category = "Clothing"
+ITEM.category = "Outfit"
 ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
 ITEM.width = 1
 ITEM.armorAmount = 1
@@ -64,7 +64,6 @@ function ITEM:RemoveOutfit(client)
 	local character = client:GetCharacter()
 			
 	client:SetNetVar("gasmask", false)
-	client:SetNetVar("resistance", false)
 
 	armorPlayer(client, client, 0)
 
@@ -144,6 +143,69 @@ function ITEM:RemoveAttachment(id, client)
 
 	attachments[id] = nil
 	self:SetData("outfitAttachments", attachments)
+    
+    self:UpdateResistance(client)
+end
+
+function ITEM:UpdateResistance(client)
+	local char = client:GetCharacter()
+	if (!char) then return end
+	local items = char:GetInventory():GetItems()
+	
+	local bestDamage = {1, 1, 1, 1, 1, 1, 1}
+	local anyResistance = false
+	local anyGasmask = false
+	
+	for _, item in pairs(items) do
+		if (item:GetData("equip") and item.base == "base_armor") then
+			if (item.gasmask) then anyGasmask = true end
+			
+			if (item.resistance) then
+				anyResistance = true
+				
+				local durability = item:GetData("Durability", item.maxDurability)
+				local fraction = 1
+		
+				if (durability <= 0) then
+					fraction = 0.5
+				end
+		
+				local function GetEffectiveScale(base, frac)
+					return base * frac + (1 - frac)
+				end
+				
+				local dmg = item.damage or {1,1,1,1,1,1,1}
+				
+				for i = 1, 7 do
+					local val = GetEffectiveScale(dmg[i], fraction)
+					if (val < bestDamage[i]) then
+						bestDamage[i] = val
+					end
+				end
+			end
+		end
+	end
+
+	if (anyResistance) then
+		client:SetNetVar("resistance", true)
+		client:SetNWFloat("dmg_bullet", bestDamage[1])
+		client:SetNWFloat("dmg_slash", bestDamage[2])
+		client:SetNWFloat("dmg_shock", bestDamage[3])
+		client:SetNWFloat("dmg_burn", bestDamage[4])
+		client:SetNWFloat("dmg_radiation", bestDamage[5])
+		client:SetNWFloat("dmg_acid", bestDamage[6])
+		client:SetNWFloat("dmg_explosive", bestDamage[7])
+	else
+		client:SetNetVar("resistance", false)
+	end
+	
+	-- also update gasmask state to be safe (though usually handled by Equip/Unequip logic, checking all items is safer)
+	-- Note: RemoveOutfit sets gasmask false blindly, so this restores it if other mask is present.
+	if (anyGasmask) then
+		client:SetNetVar("gasmask", true)
+	else
+		client:SetNetVar("gasmask", false)
+	end
 end
 
 function ITEM:OnInstanced(client)
@@ -187,7 +249,6 @@ ITEM.functions.Equip = {
 	tip = "equipTip",
 	icon = "icon16/tick.png",
 	OnRun = function(item)
-		if (item:GetData("Durability", item.maxDurability) >= 20) then
 			local client = item.player
 			local char = client:GetCharacter()
 			local items = char:GetInventory():GetItems()
@@ -211,22 +272,15 @@ ITEM.functions.Equip = {
 				client:SetNetVar("gasmask", false)
 			end
 			
-			if (item.resistance == true) then
-				client:SetNetVar("resistance", true)
-			else
-				client:SetNetVar("resistance", false)
-			end
-			
-			client:SetNWFloat("dmg_bullet", item.damage[1])
-			client:SetNWFloat("dmg_slash", item.damage[2])
-			client:SetNWFloat("dmg_shock", item.damage[3])
-			client:SetNWFloat("dmg_burn", item.damage[4])
-			client:SetNWFloat("dmg_radiation", item.damage[5])
-			client:SetNWFloat("dmg_acid", item.damage[6])
-			client:SetNWFloat("dmg_explosive", item.damage[7])
+			item:UpdateResistance(client)
 			
 			item.player:EmitSound("snd_jack_clothequip.wav", 80)
-			armorPlayer(item.player, item.player, item.armorAmount)
+			
+			local armorAmount = item.armorAmount
+			if (item:GetData("Durability", item.maxDurability) <= 0) then
+				armorAmount = armorAmount * 0.5
+			end
+			armorPlayer(item.player, item.player, armorAmount)
 
 			if (type(item.OnGetReplacement) == "function") then
 				char:SetData("oldModel" .. item.outfitCategory, char:GetData("oldModel" .. item.outfitCategory, item.player:GetModel()))
@@ -292,10 +346,7 @@ ITEM.functions.Equip = {
 			end
 
 			item:OnEquipped()
-		return false
-	else
-		return false
-	end
+			return false
 	end,
 	OnCanRun = function(item)
 		local client = item.player
@@ -321,6 +372,7 @@ ITEM.functions.Repair = {
 		for k, v in pairs(items) do
 			if (v.uniqueID == "repair_tools") then
 				item:SetData("Durability", math.min(item:GetData("Durability") + item:GetRepairAmount(client), item.maxDurability))
+				item:UpdateResistance(client)
 				character:SetAttrib("int", math.Clamp(int + 0.2, 0, 10))
 				client:EmitSound(randomsound)
 				v:Remove()
@@ -379,9 +431,5 @@ function ITEM:OnUnequipped()
 end
 
 function ITEM:CanEquipOutfit()
-	if (self:GetData("Durability", self.maxDurability) <= 20) then
-		return false
-	else
-		return true
-	end
+	return true
 end

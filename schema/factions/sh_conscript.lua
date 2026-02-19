@@ -6,21 +6,26 @@ FACTION.pay = 7
 FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
-FACTION.models = {
-	"models/wichacks/erdimnovest.mdl",
-	"models/wichacks/ericnovest.mdl",
-	"models/wichacks/joenovest.mdl",
-	"models/wichacks/mikenovest.mdl",
-	"models/wichacks/sandronovest.mdl",
-	"models/wichacks/tednovest.mdl",
-	"models/wichacks/vannovest.mdl",
-	"models/wichacks/vancenovest.mdl",
-	"models/models/army/female_01.mdl",
-	"models/models/army/female_02.mdl",
-	"models/models/army/female_03.mdl",
-	"models/models/army/female_04.mdl",
-	"models/models/army/female_06.mdl",
-	"models/models/army/female_07.mdl"
+
+FACTION.genderModels = {
+	male = {
+		"models/wichacks/erdimnovest.mdl",
+		"models/wichacks/ericnovest.mdl",
+		"models/wichacks/joenovest.mdl",
+		"models/wichacks/mikenovest.mdl",
+		"models/wichacks/sandronovest.mdl",
+		"models/wichacks/tednovest.mdl",
+		"models/wichacks/vannovest.mdl",
+		"models/wichacks/vancenovest.mdl",
+	},
+	female = {
+		"models/models/army/female_01.mdl",
+		"models/models/army/female_02.mdl",
+		"models/models/army/female_03.mdl",
+		"models/models/army/female_04.mdl",
+		"models/models/army/female_06.mdl",
+		"models/models/army/female_07.mdl"
+	}
 }
 
 function FACTION:OnCharacterCreated(client, character)

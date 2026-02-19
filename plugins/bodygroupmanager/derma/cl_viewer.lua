@@ -20,7 +20,7 @@ function PANEL:Init()
 	self.bodygroups = self:Add("DScrollPanel")
 	self.bodygroups:Dock(RIGHT)
 	self.bodygroups:SetWide(pWidth * 0.4)
-	self.bodygroups:DockPadding(16, 16, 48, 16)
+	self.bodygroups:DockPadding(16, 16, 0, 16)
 	self.bodygroups:DockMargin(0, 32, 0, 32)
 	
 	local vBar = self.bodygroups:GetVBar()
@@ -206,7 +206,7 @@ end
 local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, onValueSet)
 	local row = parent:Add("DPanel")
 	row:Dock(TOP)
-	row:DockMargin(0, 0, 0, 8)
+	row:DockMargin(0, 0, 16, 8)
 	row:SetTall(50)
 	
 	local themeColor = ix.config.Get("color")

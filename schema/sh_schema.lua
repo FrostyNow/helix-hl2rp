@@ -229,7 +229,22 @@ do
 	CLASS.format = "chatBroadcastFormat"
 
 	function CLASS:CanSay(speaker, text)
-		if (speaker:Team() != FACTION_ADMIN) then
+		local address = "ix_broadcast_console"
+		local range = 120 * 120
+		local bCanBroadcast = false
+
+		if (speaker:Team() == FACTION_ADMIN) then
+			bCanBroadcast = true
+		else
+			for k, v in ipairs(ents.FindByClass(address)) do
+				if (v:GetPos():DistToSqr(speaker:GetPos()) <= range) then
+					bCanBroadcast = true
+					break
+				end
+			end
+		end
+
+		if (!bCanBroadcast) then
 			speaker:NotifyLocalized("notAllowed")
 
 			return false

@@ -2,6 +2,10 @@
 ITEM.name = "Combine Battery"
 ITEM.model = Model("models/Items/battery.mdl")
 ITEM.description = "batteryDesc"
+ITEM.cost = 75
+ITEM.category = "Utility"
+
+ITEM.classes = {CLASS_MPU, CLASS_EMP, CLASS_OWS, CLASS_EOW}
 
 ITEM.functions.Use = {
 	OnRun = function(item)

@@ -20,3 +20,22 @@ function ENT:GetEntityMenu(client)
 
 	return options
 end
+
+if (CLIENT) then
+	function ENT:OnPopulateEntityInfo(container)
+		local camera = self:GetNWEntity("camera")
+
+		if (IsValid(camera) and camera != self) then
+			return
+		end
+
+		local name = container:AddRow("name")
+		name:SetImportant()
+		name:SetText(L("Camera Terminal"))
+		name:SizeToContents()
+
+		local desc = container:AddRow("desc")
+		desc:SetText(L("cameraTerminalDesc"))
+		desc:SizeToContents()
+	end
+end
