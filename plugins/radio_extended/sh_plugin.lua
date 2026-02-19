@@ -166,7 +166,6 @@ ix.lang.AddTable("korean", {
 	itemRadioMenuDuplexTransDesc = "현재 송신 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
 	itemRadioMenuDuplexRecvDesc = "현재 수신 주파수: %s MHz\n새로운 주파수를 무엇으로 설정하시겠습니까?",
 
-	securitizedItemTooltip = "비인가자 사용 불가",
 	chatRadioExtFormat = "%s의 무전 \"%s\"",
 	chatRadioExtYellFormat = "%s의 무전 외침 \"%s\"",
 	chatRadioExtWhisperFormat = "%s의 무전 속삭임 \"%s\"",

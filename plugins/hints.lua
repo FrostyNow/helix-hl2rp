@@ -42,6 +42,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
+	["Hint System"] = "도움말 시스템",
 	optHints = "도움말 켜기/끄기",
 	optHintsSound = "도움말 효과음 켜기/끄기",
 	optHintsDelay = "도움말 재출력 시간",

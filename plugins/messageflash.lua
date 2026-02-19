@@ -35,6 +35,11 @@ ix.lang.AddTable("english", {
 	optdFlashWindow = "Whether your Garry's Mod Application should flash when a message is posted in the chat."
 })
 
+ix.lang.AddTable("korean", {
+	optFlashWindow = "창 깜빡임",
+	optdFlashWindow = "채팅 메시지가 수신되었을 때 게임 창이 깜빡일지 여부를 설정합니다."
+})
+
 ix.option.Add("flashWindow", ix.type.bool, true, {
 	category = "chat"
 })

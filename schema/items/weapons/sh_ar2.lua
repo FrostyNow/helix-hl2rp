@@ -22,7 +22,7 @@ ITEM.functions.Equip = {
 	OnRun = function(item)
 		local client = item.player
 
-		if (!client:IsCombine() and item.lock == 1) then
+		if (!client:IsCombine() and item:GetData("locked", true)) then
 			client:NotifyLocalized("needComkey")
 			return false
 		else
@@ -46,9 +46,9 @@ ITEM.functions.Unlock = {
 		local inventory = character:GetInventory()
 		local hasItem = inventory:HasItem("comkey")
 
-		if (item.lock) then
+		if (item:GetData("locked", true)) then
 			if (client:IsCombine() or hasItem) then
-				item.lock = 0
+				item:SetData("locked", false)
 				client:EmitSound("weapons/ar2/ar2_reload_push.wav")
 				return false
 			end
@@ -61,7 +61,7 @@ ITEM.functions.Unlock = {
 	OnCanRun = function(item)
 		local client = item.player
 
-		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item.lock != 0
+		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:GetData("locked", true) == true
 	end
 }
 
@@ -72,5 +72,13 @@ if (CLIENT) then
 		data:SetText(L("securitizedItemTooltip"))
 		data:SetExpensiveShadow(0.5)
 		data:SizeToContents()
+
+		if (!LocalPlayer():IsCombine() and self:GetData("locked", true)) then
+			local lockedData = tooltip:AddRow("lockedData")
+			lockedData:SetBackgroundColor(Color(49, 62, 71))
+			lockedData:SetText(L("itemLockedTooltip"))
+			lockedData:SetExpensiveShadow(0.5)
+			lockedData:SizeToContents()
+		end
 	end
 end

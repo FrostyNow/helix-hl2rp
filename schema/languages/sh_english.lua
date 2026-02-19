@@ -218,6 +218,7 @@ LANGUAGE = {
 	
 	securitizedItemTooltip = "Class: Securitized",
 	sociocidalItemTooltip = "Class: Sociocidal",
+	itemLockedTooltip = "Security Locked",
 
 	currencySingular = "token",
 	currencyPlural = "tokens",

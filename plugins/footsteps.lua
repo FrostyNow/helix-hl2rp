@@ -33,7 +33,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
-	footsteps = "Footsteps",
+	footsteps = "발소리",
 	optFootstepVolume = "발소리 음량",
 	optdFootstepVolume = "발소리 음량을 조절합니다. 서버에서 이 기능을 비활성화했다면 적용되지 않습니다."
 })

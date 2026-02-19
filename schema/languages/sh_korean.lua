@@ -197,6 +197,8 @@ LANGUAGE = {
 	sidearm = "보조무기",
 	Unlock = "잠금 해제하기",
 
+	["Utility"] = "유틸리티",
+
 	[".9mm Pistol"] = "9mm 권총",
 	pistolDesc = "9mm 탄약을 사용하는 자동권총입니다.",
 	["MP7"] = "기관단총",
@@ -479,6 +481,7 @@ LANGUAGE = {
 
 	securitizedItemTooltip = "보안 등급",
 	sociocidalItemTooltip = "반사회 등급",
+	itemLockedTooltip = "보안 잠금",
 
 	currencySingular = "토큰",
 	currencyPlural = "토큰",
