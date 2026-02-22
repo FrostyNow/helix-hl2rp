@@ -13,11 +13,13 @@ ix.util.Include("sv_plugin.lua")
 ix.lang.AddTable("english", {
 	["Camera Terminal"] = "Camera Terminal",
 	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
+	notCombine = "You are not the Combine!",
 })
 
 ix.lang.AddTable("korean", {
 	["Camera Terminal"] = "카메라 단말기",
 	cameraTerminalDesc = "감시 카메라와 연결된 단말기입니다.",
+	notCombine = "당신은 콤바인이 아닙니다!",
 })
 
 PLUGIN.sociostatusColors = {

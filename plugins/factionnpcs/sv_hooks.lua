@@ -65,6 +65,15 @@ local rebelNPCs = {
 	"npc_vortigaunt",
 	"npc_alyx",
 	"npc_barney",
+	"npc_turret_floor_resistance",
+	"npc_rollermine_hacked",
+	"npc_fisherman",
+	"npc_eli",
+	"npc_odessa",
+	"npc_kleiner",
+	"npc_magnusson",
+	"npc_mossman",
+	"npc_dog",
 
 	--custom
 	"npc_sniper_rebel",
@@ -84,14 +93,22 @@ function PLUGIN:IsNPCRebel(npc)
 	if (table.HasValue(rebelNPCs, string.lower(npc:GetClass()))) then
 		return true;
 	else
-		return false;
+		if (npc:GetClass() == "npc_turret_floor") and (npc:GetSkin() == 1 or npc:GetSkin() == 2) then
+			return true;
+		else
+			return false;
+		end
 	end
 end
 
 -- A function to get whether or not an NPC belongs to the Combine faction.
 function PLUGIN:IsNPCCombine(npc)
 	if(table.HasValue(combineNPCs, string.lower(npc:GetClass()))) then
-		return true;
+		if (npc:GetClass() == "npc_turret_floor") and (npc:GetSkin() == 1 or npc:GetSkin() == 2) then
+			return false;
+		else
+			return true;
+		end
 	else
 		return false;
 	end

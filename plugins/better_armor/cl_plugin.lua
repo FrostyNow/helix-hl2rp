@@ -7,6 +7,19 @@ function PLUGIN:RenderScreenspaceEffects()
 	local ran1 = math.random(1,table.getn(Warning1))
 
 	if (LocalPlayer():GetNetVar("gasmask") == true) then
+		local colorModify = {}
+		colorModify["$pp_colour_colour"] = 0.77
+
+		if (system.IsWindows()) then
+			colorModify["$pp_colour_brightness"] = -0.02
+			colorModify["$pp_colour_contrast"] = 1.2
+		else
+			colorModify["$pp_colour_brightness"] = 0
+			colorModify["$pp_colour_contrast"] = 1
+		end
+
+		DrawColorModify(colorModify)
+
 		local character = LocalPlayer():GetCharacter()
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()
@@ -16,18 +29,19 @@ function PLUGIN:RenderScreenspaceEffects()
 				armorHealth = v:GetData("Durability", 100)
 			end
 		end
+		DrawMaterialOverlay( "nco/cinover", 0.1 )
 		if (armorHealth <= 10) then
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask6", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask6", 0.5 )
 		elseif (armorHealth <= 20) then
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask5", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask5", 0.5 )
 		elseif (armorHealth <= 40) then
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask4", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask4", 0.5 )
 		elseif (armorHealth < 60) then
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask3", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask3", 0.5 )
 		elseif (armorHealth < 80) then
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask2", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask2", 0.5 )
 		else
-			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask1", 0.2 )
+			DrawMaterialOverlay( "morganicism/metroredux/gasmask/metromask1", 0.5 )
 		end
 
 		if !LocalPlayer().enresp then

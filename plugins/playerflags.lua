@@ -34,6 +34,16 @@ CAMI.RegisterPrivilege({
 	MinAccess = "superadmin"
 })
 
+ix.lang.AddTable("english", {
+	flagGiveAll = "%s has given %s all available flags!",
+	flagTakeAll = "%s has cleared all flags of %s!",
+})
+
+ix.lang.AddTable("korean", {
+	flagGiveAll = "%s이(가) %s에게 모든 플래그를 부여했습니다!",
+	flagTakeAll = "%s이(가) %s의 모든 플래그를 제거했습니다!",
+})
+
 --[[-------------------------------------------------------------------------
 Functions
 ---------------------------------------------------------------------------]]
@@ -221,7 +231,7 @@ ix.command.Add("PlyGiveAllFlags", {
 
 		for _, v in ipairs(player.GetAll()) do
 			if (self:OnCheckAccess(v) or v == target) then
-				v:Notify(client:SteamName() .. " has given " .. target:SteamName() .. " all available flags!")
+				v:NotifyLocalized("flagGiveAll", client:SteamName(), target:SteamName())
 			end
 		end
 	end
@@ -239,7 +249,7 @@ ix.command.Add("PlyClearFlags", {
 
 		for _, v in ipairs(player.GetAll()) do
 			if (self:OnCheckAccess(v) or v == target) then
-				v:Notify(client:SteamName() .. " has cleared all flags of " .. target:SteamName() .. "!")
+				v:NotifyLocalized("flagTakeAll", client:SteamName(), target:SteamName())
 			end
 		end
 	end

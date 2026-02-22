@@ -4,10 +4,12 @@ FACTION.description = "A metropolice unit working as Civil Protection."
 FACTION.color = Color(85, 127, 242)
 FACTION.pay = 10
 FACTION.models = {"models/dpfilms/metropolice/hdpolice.mdl"}
-FACTION.weapons = {"ix_stunstick"}
+-- FACTION.weapons = {"ix_stunstick"}
 FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
+
+FACTION.canSeeWaypoints = true
 
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
@@ -17,6 +19,7 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("pistol", 1)
 	inventory:Add("pistolammo", 2)
 	inventory:Add("health_vial", 1)
+	inventory:Add("stunstick", 1)
 end
 
 function FACTION:GetDefaultName(client)

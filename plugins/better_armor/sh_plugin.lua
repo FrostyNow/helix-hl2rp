@@ -20,6 +20,7 @@ ix.lang.AddTable("english", {
 	radiationResistance = "\n  Radiation Resistance: ",
 	poisonResistance = "\n  Poison Resistance: ",
 	shockResistance = "\n  Shock Resistance: ",
+	cannotActionWhileSuit = "You cannot unequip, drop, or move this item while wearing a suit.",
 })
 ix.lang.AddTable("korean", {
 	["Intelligence"] = "지능",
@@ -45,6 +46,7 @@ ix.lang.AddTable("korean", {
 	radiationResistance = "\n  방사선 피폭 저항: ",
 	poisonResistance = "\n  독성 저항: ",
 	shockResistance = "\n  충격 저항: ",
+	cannotActionWhileSuit = "전신 의상을 입고 있는 동안에는 이 아이템을 벗거나, 버리거나, 옮길 수 없습니다.",
 })
 
 ix.util.Include("cl_plugin.lua")
@@ -70,6 +72,7 @@ end
 function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 	if (!client:GetCharacter()) then return end
 	local character = client:GetCharacter()
+	if (!character:GetInventory()) then return end
 	local inventory = character:GetInventory()
 	local items = inventory:GetItems()
 	
@@ -156,23 +159,88 @@ function PLUGIN:PlayerHurt( client, attacker, health, damageTaken )
 	end
 end
 
-ix.command.Add("Gasmask", {
-	description = "Wear or unwear your gasmask.",
-	adminOnly = false,
-	OnRun = function(self, client)
-		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
-		local items = inventory:GetItems()
-		for k, v in pairs(items) do
-			if (v.gasmask == true) then
-				if client:GetNetVar("gasmask") then
-					client:SetNetVar("gasmask", false)
-					client:NotifyLocalized("gasmaskRemoved")
-				else
-					client:SetNetVar("gasmask", true)
-					client:NotifyLocalized("gasmaskEquipped")
-				end
+-- ix.command.Add("Gasmask", {
+-- 	description = "Wear or unwear your gasmask.",
+-- 	adminOnly = false,
+-- 	OnRun = function(self, client)
+-- 		local character = client:GetCharacter()
+-- 		local inventory = character:GetInventory()
+-- 		local items = inventory:GetItems()
+-- 		for k, v in pairs(items) do
+-- 			if (v.gasmask == true) then
+-- 				if client:GetNetVar("gasmask") then
+-- 					client:SetNetVar("gasmask", false)
+-- 					client:NotifyLocalized("gasmaskRemoved")
+-- 				else
+-- 					client:SetNetVar("gasmask", true)
+-- 					client:NotifyLocalized("gasmaskEquipped")
+-- 				end
+-- 			end
+-- 		end
+-- 	end
+-- })
+
+local function IsWearingSuit(client)
+	if (!IsValid(client)) then return false end
+	local char = client:GetCharacter()
+	if (!char) then return false end
+	local inv = char:GetInventory()
+	if (!inv) then return false end
+
+	for _, v in pairs(inv:GetItems()) do
+		if (v:GetData("equip")) then
+			local itemTable = ix.item.list[v.uniqueID]
+			local category = v.outfitCategory or (itemTable and itemTable.outfitCategory)
+			if (category == "suit") then
+				return true
 			end
 		end
 	end
-})
+	return false
+end
+
+function PLUGIN:CanPlayerUnequipItem(client, item)
+	local itemTable = ix.item.list[item.uniqueID]
+	local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+
+	if (category != "suit" and IsWearingSuit(client)) then
+		client:NotifyLocalized("cannotActionWhileSuit")
+		return false
+	end
+end
+
+function PLUGIN:CanTransferItem(item, curInv, inventory)
+	if (item:GetData("equip")) then
+		local client = item.player or item:GetOwner() or (CLIENT and LocalPlayer() or nil)
+		if (IsValid(client)) then
+			local itemTable = ix.item.list[item.uniqueID]
+			local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+			
+			if (category != "suit" and IsWearingSuit(client)) then
+				-- We can't easily notify here without spamming during drag, 
+				-- but item:Transfer will handle the notification if it fails via an action.
+				return false
+			end
+		end
+	end
+end
+
+function PLUGIN:CanPlayerInteractItem(client, action, item, data)
+	if (action == "drop" or action == "EquipUn") then
+		local itemInstance = item
+		if (isnumber(item)) then
+			itemInstance = ix.item.instances[item]
+		end
+
+		if (!itemInstance) then return end
+
+		local itemTable = ix.item.list[itemInstance.uniqueID]
+		local category = itemInstance.outfitCategory or (itemTable and itemTable.outfitCategory)
+
+		-- Only block if the item being actioned is EQUIPPED and isn't a suit itself
+		if (category != "suit" and itemInstance:GetData("equip") and IsWearingSuit(client)) then
+			client:NotifyLocalized("cannotActionWhileSuit")
+			return false
+		end
+	end
+end

@@ -1,7 +1,7 @@
 ITEM.name = "Combine Soldier Suit"
 ITEM.description = "itemCombineSoldierDesc"
 -- ITEM.category = "Outfit"
-ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
+ITEM.model = "models/props_combine/soldier_armor.mdl"
 ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
@@ -18,7 +18,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			.9, -- Explosion
 }
 ITEM.maxDurability = 500
-ITEM.outfitCategory = "torso"
+ITEM.outfitCategory = "suit"
 ITEM.pacData = {}
 ITEM.replacements = "models/combine_soldier.mdl"
 

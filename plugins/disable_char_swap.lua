@@ -19,11 +19,15 @@ ix.config.Add("charSwapDisabled", false, "Should switching characters be disable
 })
 
 ix.lang.AddTable("english", {
-	cmdToggleCharSwap = "Toggle character swapping."
+	cmdToggleCharSwap = "Toggle character swapping.",
+	charSwapDisabled = "Character swapping is now disabled.",
+	charSwapEnabled = "Character swapping has been re-enabled. You are free to switch characters."
 })
 
 ix.lang.AddTable("korean", {
-	cmdToggleCharSwap = "캐릭터 변경 토글."
+	cmdToggleCharSwap = "캐릭터 변경 토글.",
+	charSwapDisabled = "캐릭터 변경이 비활성화되었습니다.",
+	charSwapEnabled = "캐릭터 변경이 활성화되었습니다. 자유롭게 캐릭터를 변경할 수 있습니다."
 })
 
 do
@@ -36,7 +40,7 @@ do
 		local newValue = !ix.config.Get("charSwapDisabled")
 
 		ix.config.Set("charSwapDisabled", newValue)
-		ix.util.Notify(newValue and "Character swapping is now disabled." or "Character swapping has been re-enabled. You are free to switch characters.")
+		ix.util.Notify(newValue and "@charSwapDisabled" or "@charSwapEnabled")
 	end
 
 	ix.command.Add("ToggleCharSwap", COMMAND)

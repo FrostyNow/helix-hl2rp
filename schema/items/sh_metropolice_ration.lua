@@ -3,6 +3,7 @@ ITEM.name = "High-class Ration"
 ITEM.model = Model("models/weapons/w_packatm.mdl")
 ITEM.description = "rationDesc"
 ITEM.items = {"metropolice_supplements", "biscuits", "purified_water"}
+ITEM.price = 200
 
 ITEM.functions.Open = {
 	OnRun = function(itemTable)

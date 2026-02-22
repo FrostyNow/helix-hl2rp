@@ -316,8 +316,8 @@ ix.command.Add("CharSetDesc", {
 	end
 })
 
-ix.command.Add("CharSetId", {
-	description = "@cmdCharSetId",
+ix.command.Add("GiveCID", {
+	description = "@cmdGiveCID",
 	adminOnly = true,
 	arguments = {
 		ix.type.player,
@@ -338,7 +338,22 @@ ix.command.Add("CharSetId", {
 			})
 		end
 		
+		for _, v in pairs(inventory:GetItems()) do
+			if (v.id == "cid") then
+				v:SetData("name", character:GetName())
+				v:SetData("id", id)
+				if character:GetClass() == CLASS_CWU then
+					v:SetData("class", "Civil Worker's Union")
+				elseif character:GetClass() == CLASS_ELITE_CITIZEN then
+					v:SetData("class", "First Class Citizen")
+				else
+					v:SetData("class", "Second Class Citizen")
+				end
+			end
+		end
+		
 		character:SetData("cid", id)
-		client:NotifyLocalized(id)
+		client:NotifyLocalized("givenCID", target:GetName(), id)
+		target:NotifyLocalized("givenCIDTarget", client:GetName(), id)
 	end
 })

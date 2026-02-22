@@ -568,7 +568,7 @@ if (SERVER) then
 				end
 
 				client:GetCharacter():GiveMoney(price)
-				client:NotifyLocalized("businessSell", name, ix.currency.Get(price))
+				client:NotifyLocalized("businessSell", name, ix.currency.Get(price, client))
 				entity:TakeMoney(price)
 				entity:AddStock(uniqueID)
 
@@ -592,7 +592,7 @@ if (SERVER) then
 				local name = L(ix.item.list[uniqueID].name, client)
 
 				client:GetCharacter():TakeMoney(price)
-				client:NotifyLocalized("businessPurchase", name, ix.currency.Get(price))
+				client:NotifyLocalized("businessPurchase", name, ix.currency.Get(price, client))
 
 				entity:GiveMoney(price)
 

@@ -7,6 +7,8 @@ FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
 
+FACTION.canSeeWaypoints = true
+
 FACTION.genderModels = {
 	male = {
 		"models/wichacks/erdimnovest.mdl",
@@ -42,6 +44,7 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("bandage", 2)
 	inventory:Add("health_vial", 1)
 	inventory:Add("flashlight", 1)
+	inventory:Add("stunstick", 1)
 end
 
 function FACTION:ModifyPlayerStep(client, data)

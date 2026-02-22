@@ -149,7 +149,9 @@ local function DefineCitizenClothing()
 	}
 
 	for _, v in ipairs(items) do
+		local oldITEM = ITEM
 		local ITEM = ix.item.Register(v.id, v.base or "base_houtfit", false, nil, true)
+		ITEM.base = v.base or "base_houtfit"
 		ITEM.name = v.id
 		ITEM.description = v.id .. "_desc"
 		ITEM.model = v.model
@@ -164,11 +166,11 @@ local function DefineCitizenClothing()
 		ITEM.allowedModels = citizenModels
 
 		ITEM.isBag = v.isBag or false
-		if (v.invWidth) then
-			ITEM.invWidth = v.invWidth
-		end
-		if (v.invHeight) then
-			ITEM.invHeight = v.invHeight
+		ITEM.invWidth = v.invWidth or 2
+		ITEM.invHeight = v.invHeight or 2
+
+		if (ITEM.isBag) then
+			ITEM:OnRegistered()
 		end
 		
 		if (v.noBusiness) then
@@ -181,7 +183,7 @@ local function DefineCitizenClothing()
 			ITEM.armorAmount = v.armorAmount or 0
 			ITEM.damage = v.damage or {1, 1, 1, 1, 1, 1, 1}
 			ITEM.gasmask = v.gasmask or false
-			if (v.gasmask) then
+			if (v.gasmask or v.damage) then
 				ITEM.resistance = true
 			end
 			ITEM.hitGroups = v.hitGroups
@@ -209,6 +211,8 @@ local function DefineCitizenClothing()
 				end
 			end
 		end
+
+		_G.ITEM = oldITEM
 	end
 end
 

@@ -36,12 +36,15 @@ FACTION.models = {
 FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 
+FACTION.canSeeWaypoints = true
+
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
 
 	inventory:Add("357", 1)
 	inventory:Add("357ammo", 2)
 	inventory:Add("handheld_radio", 1)
+	inventory:Add("stunstick", 1)
 end
 
 FACTION_ADMIN = FACTION.index

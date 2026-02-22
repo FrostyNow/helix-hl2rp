@@ -125,7 +125,7 @@ if (SERVER) then
 				self:EmitSound("buttons/button2.wav", 50)
 				self.nextUseTime = CurTime() + 1
 
-				client:NotifyLocalized("vendingNeedMoney", ix.currency.Get(price))
+				client:NotifyLocalized("vendingNeedMoney", ix.currency.Get(price, client))
 				return false
 			end
 
@@ -134,7 +134,7 @@ if (SERVER) then
 					self:EmitSound("buttons/button4.wav", 60)
 
 					character:TakeMoney(price)
-					client:NotifyLocalized("vendingPurchased", ix.currency.Get(price))
+					client:NotifyLocalized("vendingPurchased", ix.currency.Get(price, client))
 
 					self:RemoveStock(buttonID)
 					self.nextUseTime = CurTime() + 1

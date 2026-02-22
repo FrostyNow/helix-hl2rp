@@ -10,6 +10,8 @@ FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.RunFootstepRight"}
 
+FACTION.canSeeWaypoints = true
+
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
 

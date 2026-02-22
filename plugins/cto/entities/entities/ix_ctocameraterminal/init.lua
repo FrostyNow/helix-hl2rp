@@ -25,8 +25,10 @@ function ENT:PhysicsUpdate(physicsObject)
 end
 
 function ENT:OnOptionSelected(client, option, data)
-	if (!client:IsCombine()) then
-		client:Notify("You are not the Combine!")
+	local comkey = client:GetCharacter():GetInventory():HasItem("comkey")
+
+	if (!client:IsCombine() and client:Team() != FACTION_ADMIN and !comkey) then
+		client:NotifyLocalized("notCombine")
 
 		return
 	end

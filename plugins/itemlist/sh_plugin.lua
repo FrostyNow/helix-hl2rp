@@ -14,14 +14,24 @@ if (SERVER) then
 		if (!IsValid(ply)) then return end
 		if (!CAMI.PlayerHasAccess(ply, "Helix - Item Menu")) then return end
 
-		local pos = ply:GetEyeTraceNoCursor().HitPos
+		local trace = ply:GetEyeTraceNoCursor()
+		local pos = trace.HitPos
 
 		if (uniqueID == "goldgnome") and not (ply:SteamID() == "STEAM_0:1:1395956") then
 			ply:Notify(ply:Nick().." don't you even dare spawn that shit.")
 			return false
 		end
 
-		ix.item.Spawn(uniqueID, pos + Vector( 0, 0, 1 ))
+		ix.item.Spawn(uniqueID, pos, function(item, ent)
+			if (IsValid(ent)) then
+				local min = ent:OBBMins()
+				
+				-- Adjust Z position based on the bounding box to prevent it from clipping into the ground
+				-- without dropping it from the air
+				ent:SetPos(pos - Vector(0, 0, min.z))
+			end
+		end)
+
 		ix.log.Add(ply, "itemListSpawnedItem", uniqueID)
 
 		hook.Run("PlayerSpawnedItem", ply, pos, uniqueID)
@@ -83,7 +93,7 @@ else
 
 		icon:SetContentType("ixItem")
 		icon:SetSpawnName(data.uniqueID)
-		icon:SetName(data.name)
+		icon:SetName(L(data.name))
 
 		icon.model = vgui.Create("ModelImage", icon)
 		icon.model:SetMouseInputEnabled(false)
@@ -91,6 +101,10 @@ else
 		icon.model:StretchToParent(16, 16, 16, 16)
 		icon.model:SetModel(data:GetModel(), data:GetSkin(), "000000000")
 		icon.model:MoveToBefore(icon.Image)
+
+		icon:SetHelixTooltip(function(tooltip)
+			ix.hud.PopulateItemTooltip(tooltip, data)
+		end)
 
 		function icon:DoClick()
 			netstream.Start("MenuItemSpawn", data.uniqueID)
@@ -132,7 +146,7 @@ else
 			if (!categories[v.category] and not string.match( v.name, "Base" )) then
 				categories[v.category] = true
 
-				local category = tree:AddNode(v.category, icons[v.category] and ("icon16/" .. icons[v.category] .. ".png") or "icon16/brick.png")
+				local category = tree:AddNode(L(v.category), icons[v.category] and ("icon16/" .. icons[v.category] .. ".png") or "icon16/brick.png")
 
 				function category:DoPopulate()
 					if (self.Container) then return end

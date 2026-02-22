@@ -23,6 +23,7 @@ local weps = { -- this table is for the weapons printnames, to be shown correctl
 function CombHUD()
 	
 	if !LocalPlayer():IsValid() or !LocalPlayer():Alive() then return end -- you can fix this yourself, it errors and i cba to find the solution because it doesn't really matter since the hud still works
+	if !LocalPlayer():GetCharacter() then return end
 	if LocalPlayer():IsCombine() then
 		local tsin = TimedSin(.68, 200, 255, 0)
 		local area = LocalPlayer():GetArea() or "Unknown" -- fyi if you step out of an area and there's no new area this won't update
@@ -32,7 +33,7 @@ function CombHUD()
 		local pos = LocalPlayer():GetPos()
 		local grid = math.Round(pos.x / 100).."/"..math.Round(pos.y / 100)
 		local weapon = LocalPlayer():GetActiveWeapon()
-	local money = LocalPlayer():GetCharacter():GetMoney() or 0
+		local money = LocalPlayer():GetCharacter():GetMoney() or 0
 		if !weapon:IsValid() then return end
 		local clip = weapon:Clip1()
 		local clipMax = weapon:GetMaxClip1()

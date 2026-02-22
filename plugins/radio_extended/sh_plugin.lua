@@ -98,6 +98,9 @@ ix.lang.AddTable("english", {
 	stationaryRadioDesc = "A large radio fixed in place.\nTransmits what is being said nearby to the radio channel.",
 	radioOn = "On",
 	radioOff = "Off",
+
+	itemRadioRepeaterDesc = "A repeater that receives one frequency and transmits it on another frequency.",
+	itemRadioRepeaterFreqs = "Receive Frequency: %s MHz\nTransmit Frequency: %s MHz",
 })
 
 ix.lang.AddTable("korean", {
@@ -204,6 +207,9 @@ ix.lang.AddTable("korean", {
 	stationaryRadioDesc = "한 곳에 고정된 대형 무전기입니다.\n근처에서 하는 말을 무전 채널로 전송합니다.",
 	radioOn = "켜짐",
 	radioOff = "꺼짐",
+
+	itemRadioRepeaterDesc = "한 주파수를 받아서 다른 주파수로 연장하여 신호를 보내주는 증폭기입니다.",
+	itemRadioRepeaterFreqs = "수신 주파수: %s MHz\n송신 주파수: %s MHz",
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -1082,8 +1088,10 @@ function PLUGIN:OverwriteClasses()
 					bRecognized = true
 				end
 			end
-
-
+			
+			if bAnonymous then
+				bRecognized = false
+			end
 			-- Callsign determination
 			local useCallsign = (ix.config.Get("enableCallsigns", true) and data.callsign and data.callsign != "")
 			local callsignName = useCallsign and data.callsign or nil
@@ -1138,7 +1146,7 @@ function PLUGIN:OverwriteClasses()
 				if bRecognized then
 					-- Manually resolve name and color to ensure consistency regardless of chatbox quirks
 					nameContent = speaker:Name()
-					nameColor = team.GetColor(speaker:Team())
+					nameColor = speaker:GetClassColor() or team.GetColor(speaker:Team())
 				else
 					nameContent = L("someone") 
 				end
@@ -1338,7 +1346,7 @@ function PLUGIN:OverwriteClasses()
 				
 				if bRecognized then
 					nameContent = speaker:Name()
-					nameColor = team.GetColor(speaker:Team())
+					nameColor = speaker:GetClassColor() or team.GetColor(speaker:Team())
 				else
 					local desc = speaker:GetCharacter():GetDescription()
 					if (desc and #desc > 0) then
@@ -1359,9 +1367,9 @@ function PLUGIN:OverwriteClasses()
 						fallbackName = desc:sub(1, math.min(#desc, 64))
 						if #desc > 64 then fallbackName = fallbackName .. "..." end
 					end
-					fallbackName = fallbackName
+					fallbackName = "[" .. fallbackName .. "]"
 				end
-				chat.AddText(color, formatted:gsub(placeholder, fallbackName))
+				chat.AddText(color, formatted:gsub(placeholder, fallbackName, 1))
 			end
 		end
 
@@ -2664,6 +2672,46 @@ function PLUGIN:PlayerSay(client, text)
 			client.ixSendingRadio = nil
 		end
 	end
+end
+
+do
+	local COMMAND = {}
+	COMMAND.arguments = ix.type.text
+	COMMAND.adminOnly = true
+	COMMAND.description = "Test radio messages with different states (recognized/unrecognized, near/far, normal/yell/whisper)"
+
+	function COMMAND:OnRun(client, message)
+		if (!message or message == "") then
+			message = "Testing radio transmission formatting and colors."
+		end
+		
+		client:ChatPrint("--- 1. Recognized, Near, Normal ---")
+		ix.chat.Send(client, "radio", message, false, {client}, {freq="100.0", chan="1"})
+		
+		client:ChatPrint("--- 2. Unrecognized, Near, Normal ---")
+		ix.chat.Send(client, "radio", message, true, {client}, {freq="100.0", chan="1"})
+		
+		client:ChatPrint("--- 3. Recognized, Near, Yell ---")
+		ix.chat.Send(client, "radio_yell", message, false, {client}, {freq="100.0", chan="1"})
+		
+		client:ChatPrint("--- 4. Unrecognized, Near, Whisper ---")
+		ix.chat.Send(client, "radio_whisper", message, true, {client}, {freq="100.0", chan="1"})
+		
+		client:ChatPrint("--- 5. Recognized, Far, Normal (Eavesdrop) ---")
+		ix.chat.Send(client, "radio_eavesdrop", message, false, {client}, {freq="100.0", chan="1", quiet=true})
+		
+		client:ChatPrint("--- 6. Unrecognized, Far, Normal (Eavesdrop) ---")
+		ix.chat.Send(client, "radio_eavesdrop", message, true, {client}, {freq="100.0", chan="1", quiet=true})
+		
+		client:ChatPrint("--- 7. Recognized, Far, Yell (Eavesdrop) ---")
+		ix.chat.Send(client, "radio_eavesdrop_yell", message, false, {client}, {freq="100.0", chan="1", quiet=true})
+
+		client:ChatPrint("--- 8. Unrecognized, Far, Whisper (Eavesdrop) ---")
+		ix.chat.Send(client, "radio_eavesdrop_whisper", message, true, {client}, {freq="100.0", chan="1", quiet=true})
+
+		client:ChatPrint("--- END OF RADIO TEST ---")
+	end
+	ix.command.Add("radiotest", COMMAND)
 end
 
 if (SERVER) then

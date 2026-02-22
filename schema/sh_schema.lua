@@ -51,17 +51,17 @@ ix.anim.SetModelClass("models/armacham/security/enemy/guard_1.mdl", "overwatch")
 ALWAYS_RAISED["gmod_gphone"] = true
 ALWAYS_RAISED["weapon_portalgun"] = true
 
-game.AddAmmoType({name = "5.56x45mm"})
-game.AddAmmoType({name = "7.62x51mm"})
-game.AddAmmoType({name = "9x19mm"})
-game.AddAmmoType({name = ".45 ACP"})
-game.AddAmmoType({name = "5.45x39mm"})
-game.AddAmmoType({name = "7.62x39mm"})
-game.AddAmmoType({name = "9x18mm"})
-game.AddAmmoType({name = "12 Gauge"})
-game.AddAmmoType({name = ".357 Magnum"})
-game.AddAmmoType({name = "7.62x25mm"})
-game.AddAmmoType({name = "Flares"})
+game.AddAmmoType({name = "5.56x45mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "7.62x51mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "9x19mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = ".45 ACP", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "5.45x39mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "7.62x39mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "9x18mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "12 Gauge", dmgtype = DMG_BUCKSHOT, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = ".357 Magnum", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "7.62x25mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
+game.AddAmmoType({name = "Flares", dmgtype = DMG_BURN, tracer = TRACER_NONE})
 
 ix.ammo.Register("5.56x45mm")
 ix.ammo.Register("7.62x51mm")
@@ -75,6 +75,55 @@ ix.ammo.Register(".357 Magnum")
 ix.ammo.Register("7.62x25mm")
 ix.ammo.Register("Flares")
 ix.ammo.Register("PanzerFaust3 Rocket")
+
+hook.Add("Initialize", "ixhl2rp_weapon_override", function()
+	local swep = weapons.GetStored("arc9_rtb_akm")
+	if (swep) then
+		swep.DamageMax = 7
+		swep.DamageMin = 5
+		swep.Primary.Ammo = "7.62x39mm"
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("arc9_hla_irifle")
+	if (swep) then
+		swep.DamageMax = 8
+		swep.DamageMin = 6
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("arc9_hl2_smg1")
+	if (swep) then
+		swep.DamageMax = 6
+		swep.DamageMin = 4
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("arc9_hla_hmg")
+	if (swep) then
+		swep.DamageMax = 8
+		swep.DamageMin = 6
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("weapon_vj_hlr2_rpg")
+	if (swep) then
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("weapon_rtbr_oicw")
+	if (swep) then
+		swep.Damage = 8
+		swep.Primary.Ammo = "5.56x45mm"
+		swep.Primary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("weapon_rtbr_flaregun")
+	if (swep) then
+		swep.Primary.Ammo = "Flares"
+		swep.Primary.DefaultClip = 0
+	end
+end)
 
 function Schema:ZeroNumber(number, length)
 	local amount = math.max(0, length - string.len(number))
@@ -97,8 +146,14 @@ local function addNameColoredMessage(color, speaker, formatted)
 	if (nameStart and nameEnd) then
 		local beforeName = formatted:sub(1, nameStart - 1)
 		local afterName = formatted:sub(nameEnd + 1)
+		local classColor = speaker:GetClassColor()
 
-		chat.AddText(color, beforeName, speaker, color, afterName)
+		if (classColor) then
+			chat.AddText(color, beforeName, classColor, name, color, afterName)
+		else
+			chat.AddText(color, beforeName, speaker, color, afterName)
+		end
+		
 		return
 	end
 

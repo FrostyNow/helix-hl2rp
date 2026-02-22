@@ -30,7 +30,7 @@ ix.command.Add("DisallowItemTaking", {
 			end
 		end
 
-		client:Notify("Something went wrong")
+		client:NotifyLocalized("unknownError")
 	end
 })
 
@@ -50,7 +50,7 @@ ix.command.Add("AllowItemTaking", {
 			end
 		end
 
-		client:Notify("Something went wrong")
+		client:NotifyLocalized("unknownError")
 	end
 })
 

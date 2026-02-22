@@ -4,13 +4,13 @@ ITEM.class = "ix_oicw"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
 ITEM.price = 1750
-ITEM.model = "models/weapons/w_ar2.mdl"
+ITEM.model = "models/rtbr/weapons/oicw/w_oicw.mdl"
 ITEM.width = 4
 ITEM.height = 2
 ITEM.iconCam = {
-	pos = Vector(9.5, 200, 3),
-	ang = Angle(0, 270, 0),
-	fov = 10,
+	pos = Vector(0, 200, 0),
+	ang = Angle(-0.01, 269.19, 0),
+	fov = 11.38
 }
 ITEM.exRender = true
 

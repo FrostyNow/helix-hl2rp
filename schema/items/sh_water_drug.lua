@@ -1,6 +1,7 @@
 ITEM.name = "Water Drug"
 ITEM.model = "models/props_lab/jar01b.mdl"
 ITEM.description = "itemWaterDrugDesc"
+ITEM.price = 1
 
 ITEM.functions.Use = {
 	text = "Swallow",

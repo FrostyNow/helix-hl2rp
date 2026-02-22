@@ -17,7 +17,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			.9, -- Explosion
 }
 ITEM.replacements = "models/ddok1994/1980_hazmat.mdl"
-ITEM.outfitCategory = "torso"
+ITEM.outfitCategory = "suit"
 ITEM.maxDurability = 100
 
 if (CLIENT) then

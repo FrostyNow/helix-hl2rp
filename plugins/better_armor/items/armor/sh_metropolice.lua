@@ -17,7 +17,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			.9, -- Explosion
 }
 ITEM.maxDurability = 150
-ITEM.outfitCategory = "torso"
+ITEM.outfitCategory = "suit"
 ITEM.pacData = {}
 ITEM.replacements = "models/dpfilms/metropolice/hdpolice.mdl"
 

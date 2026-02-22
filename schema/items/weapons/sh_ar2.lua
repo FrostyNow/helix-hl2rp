@@ -51,10 +51,12 @@ ITEM.functions.Unlock = {
 				item:SetData("locked", false)
 				client:EmitSound("weapons/ar2/ar2_reload_push.wav")
 				return false
+			else
+				client:NotifyLocalized("needComkey")
+				return false
 			end
 		else
-			client:NotifyLocalized("needComkey")
-
+			client:NotifyLocalized("unknownError")
 			return false
 		end
 	end,

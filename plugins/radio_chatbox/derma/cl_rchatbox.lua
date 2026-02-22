@@ -131,7 +131,7 @@ function PANEL:AddLine(elements, bShouldScroll)
 		elseif (istable(v) and v.r and v.g and v.b) then
 			buffer[#buffer + 1] = string.format("<color=%d,%d,%d>", v.r, v.g, v.b)
 		elseif (type(v) == "Player") then
-			local color = team.GetColor(v:Team())
+			local color = v:GetClassColor() or team.GetColor(v:Team())
 
 			buffer[#buffer + 1] = string.format("<color=%d,%d,%d>%s", color.r, color.g, color.b,
 				v:GetName():gsub("<", "&lt;"):gsub(">", "&gt;"))

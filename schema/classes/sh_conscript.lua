@@ -1,0 +1,4 @@
+CLASS.name = "Conscript"
+CLASS.faction = FACTION_CONSCRIPT
+
+CLASS_CONSCRIPT = CLASS.index

@@ -236,4 +236,32 @@ else
 			-- render.PopFilterMag()
 		-- cam.End3D2D()
 	end
+
+	function ENT:OnPopulateEntityInfo(container)
+		local name = container:AddRow("name")
+		name:SetImportant()
+		name:SetText(L("itemRadioRepeaterMenuTitle"))
+		name:SizeToContents()
+
+		local desc = container:AddRow("desc")
+		desc:SetText(L("itemRadioRepeaterDesc"))
+		desc:SizeToContents()
+
+		local freq = container:AddRow("freq")
+		freq:SetText(L("itemRadioRepeaterFreqs", self:GetInputFreq(), self:GetOutputFreq()))
+		freq:SetBackgroundColor(Color(85, 127, 242, 50))
+		freq:SizeToContents()
+
+		local status = container:AddRow("status")
+		status:SetText(self:GetEnabled() and L("radioOn") or L("radioOff"))
+		status:SetBackgroundColor(self:GetEnabled() and Color(0, 255, 0, 50) or Color(255, 0, 0, 50))
+		status:SizeToContents()
+		
+		status.Think = function(panel)
+			local isActive = self:GetEnabled()
+			panel:SetText(isActive and L("radioOn") or L("radioOff"))
+			panel:SetBackgroundColor(isActive and Color(0, 255, 0, 50) or Color(255, 0, 0, 50))
+			panel:SizeToContents()
+		end
+	end
 end

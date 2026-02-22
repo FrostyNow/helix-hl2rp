@@ -16,10 +16,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ix.lang.AddTable("english", {
 	optHints = "Toggle hints",
-	optHintsSound = "Toggle hints Sound",
 	optHintsDelay = "Hints delay",
 	optdHints = "Wether or not hints should be shown.",
-	optdHintsSound = "Wether or not hints should play a sound.",
 	optdHintsDelay = "The delay between hints.",
 	hintWater = "Don't drink the water; they put something in it, to make you forget.",
 	hintConversation = "Bored? Try striking up a conversation with someone or creating a plot!",
@@ -39,15 +37,16 @@ ix.lang.AddTable("english", {
 	hintCP = "Civil Protection is protecting civilized society, not you.",
 	hintCook = "Why don't you try cooking something every now and then? All you need is a stove and the right ingredients.",
 	hintPiss = "Don't piss off Civil Protection, or you'll find yourself being re-educated, or worse..",
+	hintCommand = "You can check a random hint immediately by typing /hint.",
+	
+	cmdHintDesc = "Shows a random hint immediately.",
 })
 
 ix.lang.AddTable("korean", {
 	["Hint System"] = "도움말 시스템",
 	optHints = "도움말 켜기/끄기",
-	optHintsSound = "도움말 효과음 켜기/끄기",
 	optHintsDelay = "도움말 재출력 시간",
 	optdHints = "도움말 표시 여부.",
-	optdHintsSound = "도움말 효과음 재생 여부.",
 	optdHintsDelay = "도움말 재출력 시간.",
 	hintWater = "물을 마시지 마십시오. 저들이 물에 기억을 잃게 만드는 뭔가를 탔습니다.",
 	hintConversation = "지루하십니까? 다른 사람과 대화하거나 일거리를 찾아 보십시오!",
@@ -67,6 +66,9 @@ ix.lang.AddTable("korean", {
 	hintCP = "시민 보호 기동대는 문명사회를 보호합니다. 당신이 아니라.",
 	hintCook = "요리를 해보는 건 어떻습니까? 가스레인지와 적절한 재료만 있으면 됩니다.",
 	hintPiss = "시민 보호 기동대의 눈밖에 나지 마십시오. 재교육을 받거나 더 나쁜 일에 처할 수 있습니다..",
+	hintCommand = "/hint를 입력하여 무작위 도움말 중 하나를 즉시 확인할 수 있습니다.",
+
+	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
 
 ix.config.Add("hints", true, "Whether or not player hint is enabled.", nil, {
@@ -81,11 +83,6 @@ ix.config.Add("hintsDelay", 300, "The delay between hints in seconds.", nil, {
 })
 
 ix.option.Add("hints", ix.type.bool, true, {
-	category = "Hint System",
-	default = true,
-})
-
-ix.option.Add("hintsSound", ix.type.bool, true, {
 	category = "Hint System",
 	default = true,
 })
@@ -115,52 +112,41 @@ ix.hints.Register("hintObey")
 ix.hints.Register("hintCP")
 ix.hints.Register("hintCook")
 ix.hints.Register("hintPiss")
+ix.hints.Register("hintCommand")
+
+ix.command.Add("Hint", {
+	description = "@cmdHintDesc",
+	OnRun = function(self, client)
+		net.Start("ixHintForce")
+		net.Send(client)
+	end
+})
+
+if ( SERVER ) then
+	util.AddNetworkString("ixHintForce")
+end
 
 if ( CLIENT ) then
-	function PLUGIN:LoadFonts(font, genericFont)
-		surface.CreateFont("HintFont", {
-			font = font,
-			size = 20,
-			extended = true,
-			weight = 500,
-			blursize = 0.5,
-			shadow = true,
-		})
-	end
-	
 	local nextHint = 0
-	local hintEndRender = 0
-	local bInHint = false
-	local hint = nil
-	local hintShow = false
-	local hintAlpha = 0
-	function PLUGIN:HUDPaint()
+
+	net.Receive("ixHintForce", function()
+		local hint = ix.hints.stored[math.random(#ix.hints.stored)]
+		ix.util.NotifyLocalized(hint)
+
+		nextHint = CurTime() + math.max(30, tonumber(ix.config.Get("hintsDelay", 300)) or 300)
+	end)
+
+	function PLUGIN:Think()
 		if not ( ix.config.Get("hints", true) ) then return end
 		if not ( ix.option.Get("hints", true) ) then return end
 
 		if ( nextHint < CurTime() ) then
-			hint = ix.hints.stored[math.random(#ix.hints.stored)]
-			nextHint = CurTime() + math.max(30, tonumber(ix.config.Get("hintsDelay", 300)) or 300)
-			hintShow = true
-			hintEndRender = CurTime() + 15
-
-			if ( ix.option.Get("hintsSound", true) ) then
-				LocalPlayer():EmitSound("ui/hint.wav", 40, 100, 0.1)
+			if ( nextHint != 0 ) then
+				local hint = ix.hints.stored[math.random(#ix.hints.stored)]
+				ix.util.NotifyLocalized(hint)
 			end
+			
+			nextHint = CurTime() + math.max(30, tonumber(ix.config.Get("hintsDelay", 300)) or 300)
 		end
-		
-		if not ( hint ) then return end
-		
-		if ( hintEndRender < CurTime() ) then
-			hintShow = false
-		end
-		
-		if ( hintShow == true ) then
-			hintAlpha = Lerp(0.01, hintAlpha, 255)
-		else
-			hintAlpha = Lerp(0.01, hintAlpha, 0)
-		end
-		
-		draw.DrawText(L(hint), "HintFont", ScrW() - 24, 24, ColorAlpha(color_white, hintAlpha), TEXT_ALIGN_RIGHT)
 	end
 end

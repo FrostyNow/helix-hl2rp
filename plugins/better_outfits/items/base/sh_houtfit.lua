@@ -1,5 +1,4 @@
 
-
 if (SERVER) then
 	util.AddNetworkString("ixBagDrop")
 end
@@ -66,6 +65,17 @@ if (CLIENT) then
 			panel:Close()
 		end
 	end)
+
+	function ITEM:PopulateTooltip(tooltip)
+		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
+			local warning = tooltip:AddRow("warning")
+			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
+			warning:SetText(L("modelNotSupported"))
+			warning:SetFont("DermaDefault")
+			warning:SetExpensiveShadow(1, color_black)
+			warning:SizeToContents()
+		end
+	end
 end
 
 function ITEM:RemoveOutfit(client)
@@ -316,7 +326,7 @@ ITEM.functions.Equip = {
 }
 
 function ITEM:CanTransfer(oldInventory, newInventory)
-	if (newInventory and self:GetData("equip")) then
+	if (self:GetData("equip")) then
 		return false
 	end
 

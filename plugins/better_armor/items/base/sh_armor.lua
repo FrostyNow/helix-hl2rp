@@ -12,6 +12,7 @@ ITEM.resistance = false
 ITEM.pacData = {}
 ITEM.damage = {1, 1, 1, 1, 1, 1, 1}
 ITEM.maxDurability = 100
+ITEM.intAttr = 1
 
 --[[
 -- This will change a player's skin after changing the model. Keep in mind it starts at 0.
@@ -58,6 +59,16 @@ if (CLIENT) then
 		end
 	end
 
+	function ITEM:PopulateTooltip(tooltip)
+		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
+			local warning = tooltip:AddRow("warning")
+			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
+			warning:SetText(L("modelNotSupported"))
+			warning:SetFont("DermaDefault")
+			warning:SetExpensiveShadow(1, color_black)
+			warning:SizeToContents()
+		end
+	end
 end
 
 function ITEM:RemoveOutfit(client)
@@ -108,7 +119,7 @@ function ITEM:RemoveOutfit(client)
 		end
 
 		character:SetData("groups", character:GetData("oldGroups" .. self.outfitCategory, {}))
-		character:GetData("oldGroups" .. self.outfitCategory, nil)
+		character:SetData("oldGroups" .. self.outfitCategory, nil)
 	end
 
 	if (self.attribBoosts) then
@@ -309,7 +320,7 @@ ITEM.functions.Equip = {
 			local groups = char:GetData("groups", {})
 
 			if (!table.IsEmpty(groups)) then
-				char:SetData("oldGroups" .. item.outfitCategory, groups)
+				char:SetData("oldGroups" .. item.outfitCategory, table.Copy(groups))
 	
 				if !item.noResetBodyGroups then
 					client:ResetBodygroups()
@@ -365,20 +376,25 @@ ITEM.functions.Repair = {
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()
 		local number = 0
-		local repairSounds = {"ui/craft1.mp3", "ui/craft2.mp3"}
+		local repairSounds = {"interface/inv_repair_kit.ogg", "interface/inv_repair_kit_with_brushes.ogg"}
 		local randomsound = table.Random(repairSounds)
 		local int = character:GetAttribute("int", 0)
-
-		for k, v in pairs(items) do
-			if (v.uniqueID == "repair_tools") then
-				item:SetData("Durability", math.min(item:GetData("Durability") + item:GetRepairAmount(client), item.maxDurability))
-				item:UpdateResistance(client)
-				character:SetAttrib("int", math.Clamp(int + 0.2, 0, 10))
-				client:EmitSound(randomsound)
-				v:Remove()
-				
-				break
+		
+		if int >= item.intAttr then
+			for k, v in pairs(items) do
+				if (v.uniqueID == "repair_tools") then
+					item:SetData("Durability", math.min(item:GetData("Durability") + item:GetRepairAmount(client), item.maxDurability))
+					item:UpdateResistance(client)
+					character:SetAttrib("int", math.Clamp(int + 0.2, 0, 10))
+					client:EmitSound(randomsound)
+					v:Remove()
+					
+					break
+				end
 			end
+		else
+			client:NotifyLocalized("lackKnowledge")
+			return false
 		end
 		
 		return false
@@ -409,7 +425,7 @@ function ITEM:GetRepairAmount(client)
 end
 		
 function ITEM:CanTransfer(oldInventory, newInventory)
-	if (newInventory and self:GetData("equip")) then
+	if (self:GetData("equip")) then
 		return false
 	end
 

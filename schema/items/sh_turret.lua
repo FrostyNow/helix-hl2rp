@@ -1,7 +1,7 @@
 
 ITEM.name = "Combine Turret"
 ITEM.description = "turretDesc"
-ITEM.model = Model("models/Items/item_item_crate.mdl")
+ITEM.model = Model("models/zekkirels/floor_turret_undeployed.mdl")
 ITEM.width = 2
 ITEM.height = 2
 ITEM.price = 200
@@ -17,9 +17,9 @@ ITEM.functions.Use = {
 		for k, v in pairs(ents.GetAll()) do
 			if(v:IsPlayer()) then
 				if(v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
-					ent:AddEntityRelationship(v, 3)
+					ent:AddEntityRelationship(v, D_LI, 99)
 				else
-					ent:AddEntityRelationship(v, 1)
+					ent:AddEntityRelationship(v, D_HT, 99)
 				end
 			end
 		end

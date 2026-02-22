@@ -27,7 +27,7 @@ function ENT:Use(ply)
     
     if ( combineAvailable) then
         if not ( ply:IsCombine() ) then
-            if ( ply:IsCitizen() or ply:IsCWU() or ply:IsVortigaunt() ) then
+            if ( ply:GetCharacter():GetInventory():HasItem("cid") ) then
                 local area = ply:GetArea()
                 
                 if ( !area or area == "" ) then

@@ -190,7 +190,7 @@ if (CLIENT) then
 			local value = math.floor(tonumber(entry:GetValue()) or slider:GetValue() or 0)
 
 			if (value < 1) then
-				LocalPlayer():Notify("Please enter a positive integer (>= 1).")
+				LocalPlayer():Notify(L"positiveIntegerRequired")
 				return
 			end
 

@@ -4,6 +4,7 @@ ITEM.description = "ScannerDesc"
 ITEM.model = Model("models/Combine_Scanner.mdl")
 ITEM.width = 2
 ITEM.height = 2
+ITEM.price = 100
 
 ITEM.functions.Use = {
 	name = "Place It",

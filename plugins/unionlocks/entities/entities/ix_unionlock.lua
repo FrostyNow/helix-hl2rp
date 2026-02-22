@@ -152,6 +152,14 @@ if (SERVER) then
 		local comkey = client:GetCharacter():GetInventory():HasItem("comkey")
 		local unionkey = client:GetCharacter():GetInventory():HasItem("unionkey")
 
+		for _, v in pairs(client:GetCharacter():GetInventory():GetItems()) do
+			if (v.id == "cid") then
+				if (v.GetData("class") == "Civil Worker's Union") then
+					unionkey = true
+				end
+			end
+		end
+
 		-- 2 is the index for cwu
 		if (!client:IsCombine() and client:Team() != FACTION_ADMIN and !comkey and !unionkey) then
 			self:DisplayError()
@@ -169,19 +177,19 @@ if (SERVER) then
 	end
 else
 	local glowMaterial = ix.util.GetMaterial("sprites/glow04_noz")
-	local color_purple = Color(255, 125, 0, 255)
-	local color_green = Color(224, 208, 117)
+	local color_orange = Color(255, 125, 0, 255)
+	local color_yellow = Color(224, 208, 117)
 	local color_red = Color(255, 50, 50, 255)
 
 	function ENT:Draw()
 		self:DrawModel()
 
-		local color = color_green
+		local color = color_yellow
 
 		if (self:GetDisplayError()) then
 			color = color_red
 		elseif (self:GetLocked()) then
-			color = color_purple
+			color = color_orange
 		end
 
 		local position = self:GetPos() + self:GetUp() * -8.7 + self:GetForward() * -3.85 + self:GetRight() * -6

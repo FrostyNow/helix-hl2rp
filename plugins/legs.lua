@@ -106,6 +106,27 @@ if (CLIENT) then
 			return
 		end
 
+		if (IsValid(self.LegEnt)) then
+			local client = LocalPlayer()
+			local bChanged = false
+
+			if (self.LegEnt:GetSkin() != client:GetSkin()) then
+				bChanged = true
+			else
+				for _, v in pairs(client:GetBodyGroups()) do
+					if (self.LegEnt:GetBodygroup(v.id) != client:GetBodygroup(v.id)) then
+						bChanged = true
+						break
+					end
+				end
+			end
+			
+			if (bChanged) then
+				self:Setup()
+				self:FixBones()
+			end
+		end
+
 		self:Update(maxSeqGroundSpeed)
 	end
 

@@ -278,7 +278,7 @@ if (SERVER) then
 				ix.currency.Spawn(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), 5), amount)
 				
 				-- timer.Simple(ix.config.Get("spawnTime", 5) + 1, function()
-					client:NotifyLocalized( "moneyLost", ix.currency.Get(amount) )
+					client:NotifyLocalized( "moneyLost", ix.currency.Get(amount, client) )
 				-- end)
 			end
 		end

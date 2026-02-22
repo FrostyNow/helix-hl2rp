@@ -1,7 +1,7 @@
 ITEM.name = "Hybrid Radio"
 ITEM.description = "itemHybridRadioDesc"
 ITEM.hybrid = true
-ITEM.cost = 200
+ITEM.price = 200
 
 -- Inventory drawing
 if (CLIENT) then

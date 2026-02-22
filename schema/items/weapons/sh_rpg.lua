@@ -1,7 +1,7 @@
 ITEM.name = "RPG Launcher"
 ITEM.description = "rpgDesc"
 ITEM.model = "models/weapons/w_rocket_launcher.mdl"
-ITEM.class = "weapon_rpg"
+ITEM.class = "weapon_vj_hlr2_rpg"
 ITEM.weaponCategory = "grenade"
 ITEM.width = 3
 ITEM.height = 1

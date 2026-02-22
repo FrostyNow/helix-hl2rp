@@ -31,6 +31,9 @@ LANGUAGE = {
 	cantChangeClassTied = "You cannot change classes when you are restrained!",
 	cantChangeCharTied = "You cannot change characters when you are restrained!",
 	needComkey = "You need a Combine keycard to do this.",
+	positiveIntegerRequired = "A positive integer (>= 1) is required.",
+	notCombine = "You are not the Combine!",
+	notCitizen = "%s is not a citizen!",
 
 	-- combine display messages
 	cViewData = "Downloading citizen profile data...",
@@ -57,7 +60,9 @@ LANGUAGE = {
 
 	cmdCharSpawn = "Spawns target player on spawnpoint.",
 	cmdRevive = "Revives target player on his/her death spot.",
-	cmdCharSetId = "Sets target player cid or if he/she has id already then gives a new citizen id card.",
+	cmdGiveCID = "Sets target player cid or if he/she has id already then gives a new citizen id card.",
+	givenCID = "You gave %s a citizen ID. The target's ID is %s.",
+	givenCIDTarget = "%s gave you a citizen ID. Your ID is %s.",
 	cmdCharSetNameTitle = "Set Character Name",
 	scoreboardRecognitionMenu = "Recognition",
 	scoreboardRecognitionSelf = "Recognize Target (Me)",
@@ -130,6 +135,7 @@ LANGUAGE = {
 	zipTieDesc = "An orange zip-tie used to restrict people.",
 	manhackDesc = "A flying, gyroscopic device with three razor-sharp blades that constantly spin at extremely high speeds.",
 	turretDesc = "A fully autonomous tripodal pulse weapon used by the Combine to guard choke points and vital areas.",
+	resistanceTurretDesc = "A fully autonomous tripodal pulse weapon used by the Combine to guard choke points and vital areas.\nThe Resistance has hacked it to reverse the IFF.",
 	batteryDesc = "A means of supplying power to devices, such as various Combine technology, and many other things.",
 	cidDesc = "A citizen identification card.",
 	cidDesc2 = "\n ID #",
@@ -232,4 +238,5 @@ LANGUAGE = {
 	["Broadcast Console"] = "Broadcast Console",
 	broadcastConsoleDesc = "A console used to make public announcements.",
 	broadcastConsoleUse = "Type /Broadcast to make an announcement.",
+	modelNotSupported = "Your model is not supported by this item.",
 }
