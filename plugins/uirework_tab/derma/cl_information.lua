@@ -123,7 +123,40 @@ function PANEL:Init()
 	hook.Run("CanCreateCharacterInfo", suppress)
 
 	if (!suppress.time) then
-		local format = ix.option.Get("24hourTime", false) and "%A, %B %d, %Y. %H:%M" or "%A, %B %d, %Y. %I:%M %p"
+		local function GetLocalizedTime()
+			local langKey = ix.option.Get("language", "english")
+			local langTable = ix.lang.stored[langKey] or ix.lang.stored["english"]
+
+			local formatStr24 = (langTable and langTable["dateFormat24"]) or (ix.lang.stored["english"] and ix.lang.stored["english"]["dateFormat24"]) or "%A, %B %d, %Y. %H:%M"
+			local formatStr12 = (langTable and langTable["dateFormat12"]) or (ix.lang.stored["english"] and ix.lang.stored["english"]["dateFormat12"]) or "%A, %B %d, %Y. %I:%M %p"
+
+			local formatStr = ix.option.Get("24hourTime", false) and formatStr24 or formatStr12
+			local formatted = ix.date.GetFormatted(formatStr)
+
+			local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+			local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+
+			for i = 1, #days do
+				local localizedDay = L(days[i])
+				if localizedDay != days[i] then
+					formatted = string.gsub(formatted, days[i], localizedDay)
+				end
+			end
+			for i = 1, #months do
+				local localizedMonth = L(months[i])
+				if localizedMonth != months[i] then
+					formatted = string.gsub(formatted, months[i], localizedMonth)
+				end
+			end
+
+			local localizedAM = L("AM")
+			if localizedAM != "AM" then formatted = string.gsub(formatted, "AM", localizedAM) end
+			
+			local localizedPM = L("PM")
+			if localizedPM != "PM" then formatted = string.gsub(formatted, "PM", localizedPM) end
+
+			return formatted
+		end
 
 		self.time = self.infoScroll:Add("DLabel")
 		self.time:SetFont("ixMediumFont")
@@ -133,10 +166,10 @@ function PANEL:Init()
 		self.time:SetTextColor(color_white)
 		self.time:SetExpensiveShadow(1, Color(0, 0, 0, 150))
 		self.time:DockMargin(0, 0, 0, 32)
-		self.time:SetText(ix.date.GetFormatted(format))
+		self.time:SetText(GetLocalizedTime())
 		self.time.Think = function(this)
 			if ((this.nextTime or 0) < CurTime()) then
-				this:SetText(ix.date.GetFormatted(format))
+				this:SetText(GetLocalizedTime())
 				this.nextTime = CurTime() + 0.5
 			end
 		end
@@ -441,9 +474,10 @@ function PANEL:Update(character)
 		self.money:SizeToContents()
 	end
 
-	hook.Run("UpdateCharacterInfo", self.characterInfo, character)
-
-	self.characterInfo:SizeToContents()
+	if (IsValid(self.characterInfo)) then
+		hook.Run("UpdateCharacterInfo", self.characterInfo, character)
+		self.characterInfo:SizeToContents()
+	end
 
 	hook.Run("UpdateCharacterInfoCategory", self, character)
 end
