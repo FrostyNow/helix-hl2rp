@@ -75,7 +75,84 @@ function SitAnywhere.CheckValidAngForSit(pos, surfaceAng, ang)
 	return hor_trace.StartPos:Distance(hor_trace.HitPos) > 20 and trace2.StartPos:Distance(trace2.HitPos) > 14
 end
 
-local SitOnEntsMode = CreateConVar("sitting_ent_mode","3", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "0 = No entities\n1 = World entities only\n2 = Self-Owned, World, Unowned\n3 = Any Entity", 0, 3)
+ix.config.Add("sittingEntMode", 3, "Which entities players are allowed to sit on.\n0 = No entities\n1 = World entities only\n2 = Self-Owned, World, Unowned\n3 = Any Entity", nil, {
+	data = {min = 0, max = 3},
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingCanSitOnPlayers", false, "Allows players to sit on SitAnywhere sitting players", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingCanSitOnPlayerEnt", false, "Allows players to sit on actual player entities", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingCanDamagePlayersSitting", true, "Allows damaging sitting players", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAdminOnly", false, "Locks sitting to admins only", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAntiPropSurf", true, "Disables the use of the physgun on contraptions with someone sitting on them", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAntiToolAbuse", true, "Disables the use of the toolgun on contraptions with someone sitting on them", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAllowTightPlaces", false, "Allows sitting in places where a player cannot physically stand", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingForceNoWalk", false, "Disables the need for using walk to sit anywhere", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAllowGroundSit", true, "Allows people to sit on the ground", nil, {
+	category = "sitAnywhere"
+})
+
+ix.option.Add("sittingGroundSit", ix.type.bool, true, {
+	category = "sitAnywhere",
+	default = true,
+	bNetworked = true
+})
+ix.option.Add("sittingUseWalk", ix.type.bool, true, {
+	category = "sitAnywhere",
+	default = true
+})
+ix.option.Add("sittingForceLeftAlt", ix.type.bool, false, {
+	category = "sitAnywhere",
+	default = false
+})
+ix.option.Add("sittingAllowOnMe", ix.type.bool, true, {
+	category = "sitAnywhere",
+	default = true,
+	bNetworked = true
+})
+
+if (SERVER) then
+	-- Fix for ply:GetInfoNum compatibility with new options if called in sv_plugin
+	util.AddNetworkString("ix_sitanywhere_dummy")
+end
+
+ix.lang.AddTable("english", {
+	optSittingGroundSit = "Enable Ground Sit",
+	optdSittingGroundSit = "Toggles the ability for you to sit on the ground.",
+	optSittingUseWalk = "Require Walk to Sit",
+	optdSittingUseWalk = "Makes sitting require the use of the walk key. Disable to sit with 'USE' only.",
+	optSittingForceLeftAlt = "Force Left Alt",
+	optdSittingForceLeftAlt = "Forces Left Alt to always act as a walk key for sitting.",
+	optSittingAllowOnMe = "Allow Sitting on Me",
+	optdSittingAllowOnMe = "Allows other people to sit on you."
+})
+
+ix.lang.AddTable("korean", {
+	["sitAnywhere"] = "어디에나 앉기",
+	optSittingGroundSit = "바닥에 앉기 활성화",
+	optdSittingGroundSit = "바닥에 앉는 기능을 사용할지 켜고 끕니다.",
+	optSittingUseWalk = "앉을 때 걷기 키 필요",
+	optdSittingUseWalk = "앉으려면 걷기 키를 누른 채 상호작용해야 합니다. 체크 해제 시 'USE'키만으로도 바로 앉습니다.",
+	optSittingForceLeftAlt = "왼쪽 Alt 강제",
+	optdSittingForceLeftAlt = "왼쪽 Alt 키를 앉기용 걷기 키로 항상 강제로 사용합니다.",
+	optSittingAllowOnMe = "내 위에 앉기 허용",
+	optdSittingAllowOnMe = "다른 플레이어가 내 캐릭터 위에 앉는 것을 허용합니다."
+})
 
 local blacklist = SitAnywhere.ClassBlacklist
 local model_blacklist = SitAnywhere.ModelBlacklist
@@ -88,19 +165,19 @@ function SitAnywhere.ValidSitTrace(ply, EyeTrace)
 		return t
 	end
 
-	if not EyeTrace.HitWorld and SitOnEntsMode:GetInt() == 0 then return false end
+	if not EyeTrace.HitWorld and ix.config.Get("sittingEntMode", 3) == 0 then return false end
 	if not EyeTrace.HitWorld and blacklist[string.lower(EyeTrace.Entity:GetClass())] then return false end
 	if not EyeTrace.HitWorld and EyeTrace.Entity:GetModel() and model_blacklist[string.lower(EyeTrace.Entity:GetModel())] then return false end
 
-	if EMETA.CPPIGetOwner and SitOnEntsMode:GetInt() >= 1 then
-		if SitOnEntsMode:GetInt() == 1 then
+	if EMETA.CPPIGetOwner and ix.config.Get("sittingEntMode", 3) >= 1 then
+		if ix.config.Get("sittingEntMode", 3) == 1 then
 			if not EyeTrace.HitWorld then
 				local owner = EyeTrace.Entity:CPPIGetOwner()
 				if type(owner) == "Player" and owner ~= nil and owner:IsValid() and owner:IsPlayer() then
 					return false
 				end
 			end
-		elseif SitOnEntsMode:GetInt() == 2 then
+		elseif ix.config.Get("sittingEntMode", 3) == 2 then
 			if not EyeTrace.HitWorld then
 				local owner = EyeTrace.Entity:CPPIGetOwner()
 				if type(owner) == "Player" and owner ~= nil and owner:IsValid() and owner:IsPlayer() and owner ~= ply then
@@ -250,9 +327,8 @@ hook.Add("CalcMainActivity", "SitAnywhere_ChairFix", function(ply, velocity)
 end)
 
 if SERVER then
-	local AllowGroundSit = CreateConVar("sitting_allow_ground_sit", "1", {FCVAR_ARCHIVE}, "Allows people to sit on the ground on your server", 0, 1)
 	hook.Add("HandleSit", "GroundSit", function(ply, dists, EyeTrace)
-		if #dists == 0 and ply:GetInfoNum("sitting_ground_sit", 1) == 1 and AllowGroundSit:GetBool() and ply:EyeAngles().p > 80 then
+		if #dists == 0 and ix.option.Get(ply, "sittingGroundSit", true) and ix.config.Get("sittingAllowGroundSit", true) and ply:EyeAngles().p > 80 then
 			local t = hook.Run("OnGroundSit", ply, EyeTrace)
 			if t == false then
 				return
@@ -267,11 +343,9 @@ if SERVER then
 	end)
 
 	concommand.Add("ground_sit", function(ply)
-		if AllowGroundSit:GetBool() and (not ply.LastSit or ply.LastSit < CurTime()) then
+		if ix.config.Get("sittingAllowGroundSit", true) and (not ply.LastSit or ply.LastSit < CurTime()) then
 			ply:SetNWBool(TAG, not ply:GetNWBool(TAG))
 			ply.LastSit = CurTime() + 1
 		end
 	end)
-else
-	CreateClientConVar("sitting_ground_sit", "1.00", true, true, "Toggles the ability for you to sit on the ground", 0, 1)
 end

@@ -2,12 +2,6 @@ local PLUGIN = PLUGIN
 local SitAnywhere = PLUGIN
 
 local TAG = "SitAny_"
-local useAlt = CreateClientConVar("sitting_use_walk", "1.00", true, true, "Makes sitting require the use of walk, disable this to sit simply by using use", 0, 1)
-local forceBinds = CreateClientConVar("sitting_force_left_alt", "0", true, true, "Forces left alt to always act as a walk key for sitting", 0, 1)
-local SittingNoAltServer = CreateConVar("sitting_force_no_walk", "0", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Disables the need for using walk to sit anywhere on the server", 0, 1)
-
-CreateClientConVar("sitting_allow_on_me", "1.00", true, true, "Allows people to sit on you", 0, 1)
-
 local function ShouldSit(ply)
 	return hook.Run("ShouldSit", ply)
 end
@@ -117,20 +111,20 @@ hook.Add("KeyPress", TAG .. "KeyPress", function(ply, key)
 	if currSit then return end
 
 	if key ~= IN_USE then return end
-	local good = not useAlt:GetBool()
+	local good = not ix.option.Get("sittingUseWalk", true)
 	local alwaysSit = ShouldSit(ply)
 
-	if forceBinds:GetBool() then
-		if useAlt:GetBool() and input.IsKeyDown(KEY_LALT) then
+	if ix.option.Get("sittingForceLeftAlt", false) then
+		if ix.option.Get("sittingUseWalk", true) and input.IsKeyDown(KEY_LALT) then
 			good = true
 		end
 	else
-		if useAlt:GetBool() and (ply:KeyDown(IN_WALK) or input.IsKeyDown(KEY_LALT)) then
+		if ix.option.Get("sittingUseWalk", true) and (ply:KeyDown(IN_WALK) or input.IsKeyDown(KEY_LALT)) then
 			good = true
 		end
 	end
 
-	if SittingNoAltServer:GetBool() then
+	if ix.config.Get("sittingForceNoWalk", false) then
 		good = true
 	end
 

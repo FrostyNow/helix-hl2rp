@@ -124,16 +124,6 @@ local TAG = "SitAny_"
 --Oh my god I can sit anywhere! by Xerasin--
 local NextUse = setmetatable({}, {__mode = 'k', __index = function() return 0 end})
 
-local SittingOnPlayer = CreateConVar("sitting_can_sit_on_players","1",{FCVAR_ARCHIVE}, "Allows players to sit on SitAnywhere sitting players", 0, 1)
-local SittingOnPlayer2 = CreateConVar("sitting_can_sit_on_player_ent","1",{FCVAR_ARCHIVE}, "Allows players to sit on actual player entities", 0, 1)
-local PlayerDamageOnSeats = CreateConVar("sitting_can_damage_players_sitting","0",{FCVAR_ARCHIVE}, "Allows damaging sitting players (hacky, not a true solution)", 0, 1)
-local AllowWeaponsInSeat = CreateConVar("sitting_allow_weapons_in_seat","0",{FCVAR_ARCHIVE}, "Allows the use of weapons in SitAnywhere sitting", 0, 1)
-local AdminOnly = CreateConVar("sitting_admin_only","0",{FCVAR_ARCHIVE}, "Locks sitting to admins only (uses PLAYER:IsAdmin)", 0, 1)
-local AntiPropSurf = CreateConVar("sitting_anti_prop_surf","1",{FCVAR_ARCHIVE}, "Disables the use of the physgun on contraptions with someone sitting on them", 0, 1)
-local AntiToolAbuse = CreateConVar("sitting_anti_tool_abuse","1",{FCVAR_ARCHIVE}, "Disables the use of the toolgun on contraptions with someone sitting on them", 0, 1)
-local AllowSittingTightPlaces = CreateConVar("sitting_allow_tight_places","0",{FCVAR_ARCHIVE}, "Allows sitting in places where a player cannot physically stand, allows easier clipping", 0, 1)
-CreateConVar("sitting_force_no_walk","0", {FCVAR_NOTIFY, FCVAR_ARCHIVE, FCVAR_REPLICATED}, "Disables the need for using walk to sit anywhere on your server", 0, 1)
-
 local META = FindMetaTable("Player")
 
 util.AddNetworkString("SitAnywhere")
@@ -189,7 +179,7 @@ local function Sit(ply, pos, ang, parent, parentbone, func, exit)
 	end
 
 	vehicle:SetAngles(ang)
-	pos = pos + vehicle:GetUp() * 18 - vehicle:GetForward() * 10
+	pos = pos + vehicle:GetUp() * 18 - vehicle:GetForward() * 1
 	vehicle:SetPos(pos)
 
 	vehicle.playerdynseat = true
@@ -265,15 +255,12 @@ local function Sit(ply, pos, ang, parent, parentbone, func, exit)
 	local prev = ply:GetAllowWeaponsInVehicle()
 	if prev then
 		ply.sitting_allowswep = nil
-	elseif AllowWeaponsInSeat:GetBool() then
-		ply.sitting_allowswep = prev
-		ply:SetAllowWeaponsInVehicle(true)
 	end
 
 	ply:EnterVehicle(vehicle)
 
-	if PlayerDamageOnSeats:GetBool() then
-		ply:SetCollisionGroup(COLLISION_GROUP_WEAPON)
+	if ix.config.Get("sittingCanDamagePlayersSitting", false) then
+		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
 		ply:CollisionRulesChanged()
 	end
 
@@ -399,7 +386,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 		return Sit(ply, EyeTrace.HitPos + backDir - Vector(0, 0, 23), ang, ent, EyeTrace.PhysicsBone or 0)
 	end
 
-	if SittingOnPlayer:GetBool() then -- Sitting on SITTING Players
+	if ix.config.Get("sittingCanSitOnPlayers", true) then -- Sitting on SITTING Players
 		local veh
 		if not EyeTrace.HitWorld and IsValid(EyeTrace.Entity) and EyeTrace.Entity:IsPlayer() and IsValid(EyeTrace.Entity:GetVehicle()) and EyeTrace.Entity:GetVehicle().playerdynseat then
 			local safe = 256
@@ -443,7 +430,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 			end
 			if findSeat(veh) then return end
 
-			if veh:GetDriver():GetInfoNum("sitting_allow_on_me", 1) == 0 then
+			if not ix.option.Get(veh:GetDriver(), "sittingAllowOnMe", true) then
 				ply:ChatPrint(("%s has disabled sitting!"):format(veh:GetDriver():Name()))
 				return false
 			end
@@ -481,7 +468,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 	end
 
 	local shouldSitOnPlayer = (ply.IsFlying and ply:IsFlying()) or EyeTrace.Entity == ply:GetGroundEntity() or ply:GetMoveType() == MOVETYPE_NOCLIP
-	if IsValid( EyeTrace.Entity ) and EyeTrace.Entity:IsPlayer() and SittingOnPlayer2:GetBool() and shouldSitOnPlayer then
+	if IsValid( EyeTrace.Entity ) and EyeTrace.Entity:IsPlayer() and ix.config.Get("sittingCanSitOnPlayerEnt", true) and shouldSitOnPlayer then
 		ent = EyeTrace.Entity
 		if IsValid(ent:GetVehicle()) then return end
 		--if IsValid(ent.holder) and ent.GetTargetPlayer and ent:GetTargetPlayer() == ent then return end
@@ -553,14 +540,14 @@ local function checkAllowSit(ply)
 	local diff = top.Z - bottom.Z
 	local trace = util.QuickTrace(ply:GetPos(), Vector(0, 0, diff), player.GetAll())
 
-	if not AllowSittingTightPlaces:GetBool() and trace.HitWorld then return false end
+	if not ix.config.Get("sittingAllowTightPlaces", false) and trace.HitWorld then return false end
 	if allowSit == false or allowSit == true then
 		return allowSit
 	end
 
 	--if ply:Crouching() then return false end
 
-	if AdminOnly:GetBool() and not ply:IsAdmin() then
+	if ix.config.Get("sittingAdminOnly", false) and not ply:IsAdmin() then
 		return false
 	end
 
@@ -599,7 +586,7 @@ local function UndoSitting(ply)
 		ply:SetAllowWeaponsInVehicle(prev)
 	end
 
-	if PlayerDamageOnSeats:GetBool() then
+	if ix.config.Get("sittingCanDamagePlayersSitting", false) then
 		ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
 		ply:CollisionRulesChanged()
 	end
@@ -667,14 +654,14 @@ local PickupAllowed = {
 }
 for _,v in next, PickupAllowed do
 	hook.Add(v, TAG .. v, function(ply, ent)
-		if AntiPropSurf:GetBool() and CheckSeat2(ply, ent) == false then
+		if ix.config.Get("sittingAntiPropSurf", true) and CheckSeat2(ply, ent) == false then
 			return false
 		end
 	end)
 end
 
 hook.Add("CanTool", TAG .. "CanTool", function(ply, tr)
-	if AntiToolAbuse:GetBool() and IsValid(tr.Entity) and CheckSeat2(ply, tr.Entity) == false then
+	if ix.config.Get("sittingAntiToolAbuse", true) and IsValid(tr.Entity) and CheckSeat2(ply, tr.Entity) == false then
 		return false
 	end
 end)
@@ -745,8 +732,8 @@ hook.Add("OnPlayerSit", TAG .. "HandleBadParentEntities", function(ply, pos, ang
 	if IsValid(parent) and parent ~= game.GetWorld() then
 		if parent:GetModel():sub(1, 6) ~= "models" then return false end -- Parenting to brush models causes crashes
 		if parent:IsPlayer() then
-			if not SittingOnPlayer2:GetBool() then return false end
-			if parent:GetInfoNum("sitting_allow_on_me", 1) == 0 then
+			if not ix.config.Get("sittingCanSitOnPlayerEnt", true) then return false end
+			if not ix.option.Get(parent, "sittingAllowOnMe", true) then
 				ply:ChatPrint(("%s has disabled sitting!"):format(parent:Name()))
 				return false
 			end
