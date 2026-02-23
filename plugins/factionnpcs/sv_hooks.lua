@@ -120,14 +120,26 @@ function PLUGIN:UpdateRelations(client)
 			if(self:IsNPCCombine(v)) then
 				if(client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT) then
 					v:AddEntityRelationship(client, D_LI, 99)
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(client, "override_disposition", D_LI)
+					end
 				else
 					v:AddEntityRelationship(client, D_HT, 99)
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(client, "override_disposition", D_HT)
+					end
 				end
 			elseif(self:IsNPCRebel(v)) then
 				if(client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT) then
 					v:AddEntityRelationship(client, D_HT, 99)
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(client, "override_disposition", D_HT)
+					end
 				else
 					v:AddEntityRelationship(client, D_LI, 99)
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(client, "override_disposition", D_LI)
+					end
 				end
 			end
 		end
