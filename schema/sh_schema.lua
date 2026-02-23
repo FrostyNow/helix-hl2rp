@@ -76,55 +76,6 @@ ix.ammo.Register("7.62x25mm")
 ix.ammo.Register("Flares")
 ix.ammo.Register("PanzerFaust3 Rocket")
 
-hook.Add("Initialize", "ixhl2rp_weapon_override", function()
-	local swep = weapons.GetStored("arc9_rtb_akm")
-	if (swep) then
-		swep.DamageMax = 7
-		swep.DamageMin = 5
-		swep.Primary.Ammo = "7.62x39mm"
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("arc9_hla_irifle")
-	if (swep) then
-		swep.DamageMax = 8
-		swep.DamageMin = 6
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("arc9_hl2_smg1")
-	if (swep) then
-		swep.DamageMax = 6
-		swep.DamageMin = 4
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("arc9_hla_hmg")
-	if (swep) then
-		swep.DamageMax = 8
-		swep.DamageMin = 6
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("weapon_vj_hlr2_rpg")
-	if (swep) then
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("weapon_rtbr_oicw")
-	if (swep) then
-		swep.Damage = 8
-		swep.Primary.Ammo = "5.56x45mm"
-		swep.Primary.DefaultClip = 0
-	end
-
-	local swep = weapons.GetStored("weapon_rtbr_flaregun")
-	if (swep) then
-		swep.Primary.Ammo = "Flares"
-		swep.Primary.DefaultClip = 0
-	end
-end)
-
 function Schema:ZeroNumber(number, length)
 	local amount = math.max(0, length - string.len(number))
 	return string.rep("0", amount)..tostring(number)

@@ -204,7 +204,7 @@ LANGUAGE = {
 
 	["Utility"] = "유틸리티",
 
-	[".9mm Pistol"] = "9mm 권총",
+	["9mm Pistol"] = "9mm 권총",
 	pistolDesc = "9mm 탄약을 사용하는 자동권총입니다.",
 	["MP7"] = "기관단총",
 	smg1Desc = "휴대하기 편하고 완전자동 사격이 가능한 기관단총입니다.",
@@ -256,8 +256,8 @@ LANGUAGE = {
 	shotgunammoDesc = "산탄 %s발이 든 상자입니다.",
 	["SMG Bullets"] = "기관단총 탄약",
 	smg1ammoDesc = "기관단총 탄약 %s발이 든 상자입니다.",
-	["SMG Grenade"] = "기관단총 유탄",
-	smg1grenadeammoDesc = "기관단총에 사용하는 유탄입니다.",
+	["HEAB"] = "공중폭발 고폭탄",
+	smg1grenadeammoDesc = "공중에서 폭발하여 강력한 위력을 자랑하는 20mm 고폭유탄입니다.",
 	["Sniper Rifle Ammo"] = "저격소총 탄약",
 	sniperammoDesc = "저격소총 탄 %s발이 든 상자입니다.",
 	["5.45mm Ammo Box"] = "5.45 mm 탄약 상자",
@@ -266,6 +266,8 @@ LANGUAGE = {
 	item556AmmoDesc = "5.56 × 45 mm NATO 소총탄 %s발이 든 탄약 상자입니다.",
 	["7.62×39mm Ammo Box"] = "7.62 × 39 mm 탄약 상자",
 	item762x39AmmoDesc = "7.62 × 39 mm M43 소총탄 %s발이 든 탄약 상자입니다.",
+	["Flares"] = "조명탄",
+	flareammoDesc = "조명탄 권총용 조명탄 %s발이 든 상자입니다.",
 
 	["Consumables Permit"] = "일용품 보급 허가증",
 	itemPermitConsumablesDesc = "일용품을 사고 팔 수 있도록 허가하는 증명서입니다.",

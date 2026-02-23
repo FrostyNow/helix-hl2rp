@@ -1,4 +1,4 @@
-ITEM.name = "SMG Grenade"
+ITEM.name = "HEAB"
 ITEM.model = "models/Items/AR2_Grenade.mdl"
 ITEM.ammo = "smg1_grenade" -- type of the ammo
 ITEM.ammoAmount = 1 -- amount of the ammo

@@ -118,6 +118,7 @@ LANGUAGE = {
 	item545AmmoDesc = "An Ammo Box that contains %s of 5.45×39mm M74 Rifle Rounds.",
 	item556AmmoDesc = "An Ammo Box that contains %s of 5.56×45mm NATO Rifle Rounds.",
 	item762x39AmmoDesc = "An Ammo Box that contains %s of 7.62×39mm M43 Rifle Rounds.",
+	flareammoDesc = "A box contains five flares for Flaregun.",
 
 	itemPermitConsumablesDesc = "A permit allowing you to sell consumable goods.",
 	itemPermitAlcoholDesc = "A permit allowing you to sell alcohol drinks.",
