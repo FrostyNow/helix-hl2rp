@@ -426,6 +426,8 @@ LANGUAGE = {
 	itemOilDesc = "인화성의 미끄러운 액체가 들어 있는 병입니다.",
 	["Glass"] = "유리",
 	itemGlassDesc = "단단하고 부서지기 쉬우며 투명한 재질로 다양한 품목을 만드는 데 사용되는 재료입니다.",
+	["Plastic Bottle"] = "플라스틱 병",
+	itemPlasticBottleDesc = "내용물이 없는 빈 플라스틱 병입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

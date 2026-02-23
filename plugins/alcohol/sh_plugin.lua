@@ -11,6 +11,7 @@ ix.lang.AddTable("english", {
 	itemVodkaDesc = "A clear distilled alcoholic liquor made from grain mash.",
 	itemWhiskeyDesc = "A liquor distilled from the fermented mash of grain (as rye, corn, or barley).",
 	itemWineDesc = "An alcoholic beverage made by fermenting the juice of grapes.",
+	itemGinDesc = "A distilled liquor with a strong aroma, frequently used in making cocktails.",
 })
 ix.lang.AddTable("korean", {
 	["Alcohol"] = "주류",
@@ -32,6 +33,10 @@ ix.lang.AddTable("korean", {
 	["Wine"] = "포도주",
 	itemWineDesc = "포도를 으깨서 나온 즙을 발효시킨 과실주로, 상류층이 주로 즐깁니다.",
 	["Canned Beer"] = "캔맥주",
+	["Ale"] = "에일",
+	itemAleDesc = "과일향이 강한 방식으로 양조된 맥주입니다.",
+	["Gin"] = "진",
+	itemGinDesc = "향이 강하고 칵테일을 만드는 데 많이 쓰였던 증류주입니다.",
 })
 
 function PLUGIN:Drunk(client)

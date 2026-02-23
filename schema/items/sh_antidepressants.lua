@@ -2,7 +2,7 @@
 ITEM.name = "Anti-Depressants"
 ITEM.description = "itemAntiDepressantsDesc"
 ITEM.category = "Medical"
-ITEM.model = Model("models/props_junk/garbage_metalcan001a.mdl")
+ITEM.model = "models/hlvr/props/bottles/medicine_bottle_2.mdl"
 ITEM.price = 15
 ITEM.functions.Use = {
 	text = "Swallow",

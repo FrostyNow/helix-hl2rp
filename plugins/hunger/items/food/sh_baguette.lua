@@ -1,6 +1,6 @@
-ITEM.name = "Bread"
-ITEM.model = "models/hlvr/food/bread03a.mdl"
-ITEM.description = "itemBreadDesc"
+ITEM.name = "Baguette"
+ITEM.model = "models/hlvr/food/bread01a.mdl"
+ITEM.description = "itemBaguetteDesc"
 ITEM.hunger = 40
 ITEM.thirst = -10
 ITEM.price = 5

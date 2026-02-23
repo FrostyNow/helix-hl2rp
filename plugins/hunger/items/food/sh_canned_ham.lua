@@ -1,7 +1,7 @@
-ITEM.name = "Bread"
-ITEM.model = "models/hlvr/food/bread03a.mdl"
-ITEM.description = "itemBreadDesc"
-ITEM.hunger = 40
+ITEM.name = "Canned Ham"
+ITEM.model = "models/hlvr/food/can_square.mdl"
+ITEM.description = "itemCannedHamDesc"
+ITEM.hunger = 20
 ITEM.thirst = -10
 ITEM.price = 5
 
@@ -10,7 +10,7 @@ ITEM:Hook("Eat", function(item)
 	
 	client:EmitSound("npc/barnacle/barnacle_gulp2.wav")
 
-	for i = 1, 5 do
+	for i = 1, 10 do
 		timer.Simple(i, function()
 			client:SetHealth(math.Clamp(client:Health() + 1, 0, client:GetMaxHealth()))
 		end)

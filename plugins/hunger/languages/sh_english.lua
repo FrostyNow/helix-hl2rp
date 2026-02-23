@@ -32,4 +32,9 @@ LANGUAGE = {
 	itemPizzaDesc = "A cheese pizza with pepperonis.",
 	itemSausageDesc = "A long, salty sausage.",
 	itemFriedEggDesc = "An egg that is cooked with vegetable oil.",
+	itemBaguetteDesc = "A long, thin bread that is often used as a sandwich.",
+	itemCabbageDesc = "A head of cabbage that is canned.",
+	itemCannedHamDesc = "A can of ham that is canned.",
+	itemMineralWaterDesc = "A bottle of mineral water that is bottled.",
+	itemWashingDetergentDesc = "A bottle of washing detergent that is bottled.",
 }

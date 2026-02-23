@@ -1,5 +1,5 @@
 ITEM.name = "Water Drug"
-ITEM.model = "models/props_lab/jar01b.mdl"
+ITEM.model = "models/hlvr/props/bottles/medicine_bottle_0.mdl"
 ITEM.description = "itemWaterDrugDesc"
 ITEM.price = 1
 

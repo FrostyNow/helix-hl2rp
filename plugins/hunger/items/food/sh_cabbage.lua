@@ -1,13 +1,13 @@
-ITEM.name = "Biscuits"
-ITEM.model = "models/hlvr/food/biscuits_box_1.mdl"
-ITEM.description = "itemBiscuitsDesc"
+ITEM.name = "Cabbage"
+ITEM.model = "models/hlvr/food/cabbage01a.mdl"
+ITEM.description = "itemCabbageDesc"
+ITEM.price = 10
 ITEM.hunger = 10
-ITEM.price = 3
 
 ITEM:Hook("Eat", function(item)
 	local client = item.player
 	
-	client:EmitSound("interface/inv_eat_paperwrap.ogg")
+	client:EmitSound("npc/barnacle/barnacle_gulp2.wav")
 
 	for i = 1, 5 do
 		timer.Simple(i, function()

@@ -1,6 +1,6 @@
-ITEM.name = "Vodka"
-ITEM.description = "itemVodkaDesc"
-ITEM.model = "models/hlvr/props/bottles/bottle_vodka.mdl"
+ITEM.name = "Gin"
+ITEM.description = "itemGinDesc"
+ITEM.model = "models/hlvr/props/bottles/bottle_o_gin.mdl"
 ITEM.force = 10
 ITEM.thirst = 25
 ITEM.price = 20

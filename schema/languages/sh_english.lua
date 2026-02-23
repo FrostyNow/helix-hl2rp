@@ -190,6 +190,7 @@ LANGUAGE = {
 	itemPlasticDesc = "A lightweight, synthetic material made from natural polymers, plastic is a component used to make various items.",
 	itemOilDesc = "A bottle that contains flammable and/or slippery liquid.",
 	itemGlassDesc = "A hard, brittle, transparent material used for crafting various items.",
+	itemPlasticBottleDesc = "An empty plastic bottle.",
 
 	itemMetropoliceDesc = "An uniform that metropolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",
