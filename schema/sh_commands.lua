@@ -248,6 +248,25 @@ ix.command.Add("Revive", {
 			if (IsValid(target)) then
 				target:SetPos(pos)
 				target:SetEyeAngles(Angle(0, angles.y, 0))
+
+				if (target.ixDeathAmmo) then
+					for ammoID, amount in pairs(target.ixDeathAmmo) do
+						target:SetAmmo(amount, ammoID)
+					end
+					target.ixDeathAmmo = nil
+				end
+
+				if (target.ixDeathWeapons) then
+					for _, v in ipairs(target:GetWeapons()) do
+						local data = target.ixDeathWeapons[v:GetClass()]
+						
+						if (data) then
+							v:SetClip1(data.clip1 or -1)
+							v:SetClip2(data.clip2 or -1)
+						end
+					end
+					target.ixDeathWeapons = nil
+				end
 			end
 		end)
 

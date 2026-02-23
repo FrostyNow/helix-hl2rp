@@ -55,7 +55,7 @@ function PLUGIN:InitializedPlugins()
 		// Raising the Bar Redux
 		local swep = weapons.GetStored("weapon_rtbr_oicw")
 		if (swep) then
-			swep.Damage = 8
+			swep.BulletDamage = 8
 			swep.Primary.Ammo = "5.56x45mm"
 			swep.Primary.DefaultClip = 0
 		end
@@ -68,6 +68,7 @@ function PLUGIN:InitializedPlugins()
 
 		local swep = weapons.GetStored("weapon_rtbr_pistol")
 		if (swep) then
+			swep.BulletDamage = 5
 			swep.Primary.DefaultClip = 0
 		end
 
@@ -78,6 +79,13 @@ function PLUGIN:InitializedPlugins()
 
 		local swep = weapons.GetStored("weapon_rtbr_hmg")
 		if (swep) then
+			swep.BulletDamage = 8
+			swep.Primary.DefaultClip = 0
+		end
+
+		local swep = weapons.GetStored("weapon_rtbr_357")
+		if (swep) then
+			swep.BulletDamage = 10
 			swep.Primary.DefaultClip = 0
 		end
 	end

@@ -183,6 +183,18 @@ function Schema:PlayerSpawn(client)
 	end
 end
 
+function Schema:DoPlayerDeath(client, attacker, damageinfo)
+	client.ixDeathAmmo = client:GetAmmo()
+	client.ixDeathWeapons = {}
+	
+	for _, v in ipairs(client:GetWeapons()) do
+		client.ixDeathWeapons[v:GetClass()] = {
+			clip1 = v:Clip1(),
+			clip2 = v:Clip2()
+		}
+	end
+end
+
 function Schema:PlayerDeath(client, inflicter, attacker)
 	if (client:IsCombine()) then
 		local location = client:GetArea() or "unknown location"
