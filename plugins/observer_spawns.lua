@@ -5,6 +5,21 @@ PLUGIN.name = "Observer Spawns"
 PLUGIN.author = "Frosty with Antigravity"
 PLUGIN.description = "Displays spawn points while in observer mode."
 
+ix.lang.AddTable("english", {
+	optObserverSpawnpointESP = "Show Spawnpoint ESP",
+	optdObserverSpawnpointESP = "Shows the names and locations of each faction spawnpoint in the server.",
+})
+ix.lang.AddTable("korean", {
+	optObserverSpawnpointESP = "시작지점 ESP 켜기",
+	optdObserverSpawnpointESP = "서버에 있는 각 세력의 시작지점의 이름과 위치를 표시합니다.",
+})
+
+ix.option.Add("observerSpawnpointESP", ix.type.bool, true, {
+	category = "observer",
+	hidden = function()
+		return !CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Observer", nil)
+	end
+})
 
 if (SERVER) then
 	util.AddNetworkString("ixSpawnSync")
@@ -76,8 +91,8 @@ else
 	function PLUGIN:HUDPaint()
 		local client = LocalPlayer()
 
-		if (ix.option.Get("observerESP", true) and client:GetMoveType() == MOVETYPE_NOCLIP and
-			!client:InVehicle() and CAMI.PlayerHasAccess(client, "Helix - Observer", nil)) then
+		if (ix.option.Get("observerSpawnpointESP", true) and client:GetMoveType() == MOVETYPE_NOCLIP and
+			!client:InVehicle() and CAMI.PlayerHasAccess(client, "Helix - Observer", nil) and ix.option.Get("observerSpawnpointESP", true)) then
 			
 			local clientPos = client:GetPos()
 			local scrW, scrH = ScrW(), ScrH()

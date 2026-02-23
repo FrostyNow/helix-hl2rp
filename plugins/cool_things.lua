@@ -53,12 +53,22 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 						local itemTable = v:GetItemTable()
 						local espcols = {
 							["Weapons"] = Color(255,50,50),
+							["Ammo"] = Color(155,50,50),
 							["Ammunition"] = Color(155,50,50),
 							["Food"] = Color(100,255,100),
+							["Alcohol"] = Color(100,255,100),
 							["Crafting"] = Color(150,200,50),
+							["Clothing"] = Color(65,200,150),
 							["Clothes"] = Color(65,200,150),
+							["Outfit"] = Color(65,200,150),
 							["Attachments"] = Color(50,255,175),
-							["Survival"] = Color(50,255,175)
+							["Survival"] = Color(50,255,175),
+							["Medical"] = Color(29,43,124),
+							["Permits"] = Color(163,108,45),
+							["Utility"] = Color(116,82,160),
+							["Storage"] = Color(116,82,160),
+							["Containers"] = Color(116,82,160),
+							["Tools"] = Color(116,82,160)
 						}
 
 						for k2, v2 in pairs(espcols) do
@@ -66,7 +76,7 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 								espcol = v2
 							end
 						end
-						ix.util.DrawText(itemTable.name, x2, y2 - size2, espcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha2)
+						ix.util.DrawText(L(itemTable.name) or itemTable.name, x2, y2 - size2, espcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha2)
 						--ix.util.DrawText(itemTable.category, x2, y2 - size2 + 15, espcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha2)
 					end
 				end
