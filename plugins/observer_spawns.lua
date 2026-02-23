@@ -54,8 +54,18 @@ if (SERVER) then
 			end
 		end
 	end
+
+	function PLUGIN:InitPostEntity()
+		self:SyncSpawns()
+	end
+
+	function PLUGIN:OnReloaded()
+		timer.Simple(0.1, function()
+			self:SyncSpawns()
+		end)
+	end
 else
-	PLUGIN.spawns = {}
+	PLUGIN.spawns = PLUGIN.spawns or {}
 
 	net.Receive("ixSpawnSync", function()
 		PLUGIN.spawns = net.ReadTable()
@@ -79,8 +89,16 @@ else
 				local factionName = faction and L(faction.name) or factionID
 
 				for classID, points in pairs(classes) do
-					local class = ix.class.list[classID]
+					local class
+					for _, v in pairs(ix.class.list) do
+						if (v.uniqueID == classID) then
+							class = v
+							break
+						end
+					end
+
 					local className = class and L(class.name) or classID
+					local drawColor = (class and class.color) and class.color or factionColor
 
 					for _, pos in pairs(points) do
 						local distance = clientPos:Distance(pos)
@@ -95,7 +113,7 @@ else
 						local size = math.max(10, 32 * factor)
 						local alpha = math.max(255 * factor, 80)
 
-						surface.SetDrawColor(factionColor.r, factionColor.g, factionColor.b, alpha)
+						surface.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, alpha)
 						surface.DrawOutlinedRect(x - size / 2, y - size / 2, size, size)
 						surface.DrawOutlinedRect(x - size / 2 + 1, y - size / 2 + 1, size - 2, size - 2)
 
@@ -104,10 +122,8 @@ else
 						if (classID != "default" and className:lower() != "default") then
 							text = string.format("%s (%s)", factionName, className)
 						end
-						surface.SetFont("ixGenericFont")
-						local textWidth, textHeight = surface.GetTextSize(text)
 
-						ix.util.DrawText(text, x, y - size, ColorAlpha(factionColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha)
+						ix.util.DrawText(text, x, y - size, ColorAlpha(drawColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha)
 					end
 				end
 			end
