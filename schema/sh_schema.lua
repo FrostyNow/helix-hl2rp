@@ -263,3 +263,43 @@ do
 
 	ix.chat.Register("broadcast", CLASS)
 end
+
+function ix.date.GetLocalizedTime(client)
+	local langKey = SERVER and ix.option.Get(client, "language", "english") or ix.option.Get("language", "english")
+	local langTable = ix.lang.stored[langKey] or ix.lang.stored["english"]
+
+	local formatStr24 = (langTable and langTable["dateFormat24"]) or (ix.lang.stored["english"] and ix.lang.stored["english"]["dateFormat24"]) or "%A, %B %d, %Y. %H:%M"
+	local formatStr12 = (langTable and langTable["dateFormat12"]) or (ix.lang.stored["english"] and ix.lang.stored["english"]["dateFormat12"]) or "%A, %B %d, %Y. %I:%M %p"
+
+	local is24Hour
+	if SERVER then
+		is24Hour = ix.option.Get(client, "24hourTime", false)
+	else
+		is24Hour = ix.option.Get("24hourTime", false)
+	end
+	
+	local formatStr = is24Hour and formatStr24 or formatStr12
+	local formatted = ix.date.GetFormatted(formatStr)
+
+	local days = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"}
+	local months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"}
+
+	local translate = SERVER and function(key) return L(key, client) end or function(key) return L(key) end
+
+	for i = 1, #days do
+		local localizedDay = translate(days[i])
+		if localizedDay != days[i] then formatted = string.gsub(formatted, days[i], localizedDay) end
+	end
+	for i = 1, #months do
+		local localizedMonth = translate(months[i])
+		if localizedMonth != months[i] then formatted = string.gsub(formatted, months[i], localizedMonth) end
+	end
+
+	local localizedAM = translate("AM")
+	if localizedAM != "AM" then formatted = string.gsub(formatted, "AM", localizedAM) end
+	
+	local localizedPM = translate("PM")
+	if localizedPM != "PM" then formatted = string.gsub(formatted, "PM", localizedPM) end
+
+	return formatted
+end

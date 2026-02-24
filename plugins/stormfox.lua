@@ -30,23 +30,29 @@ local function PerformTimeSync()
 end
 
 if SERVER then
-	hook.Add("StormFox2.InitPostEntity", "ix_StormFox2_AutoSync", function()
-		PerformTimeSync()
+	local bHasSync = false
+	hook.Add("PlayerInitialSpawn", "ix_StormFox2_AutoSync", function(client)
+		if not bHasSync then
+			PerformTimeSync()
+			bHasSync = true
+		end
 	end)
 end
 
 ix.lang.AddTable("english", {
 	timeSync = "StormFox and Helix time has been synchronized.",
-	cmdTimeSync = "Sync StormFox and Helix time."
+	cmdTimeSync = "Sync StormFox and Helix time.",
+	cmdTime = "Check current Helix time.",
 })
 
 ix.lang.AddTable("korean", {
 	timeSync = "StormFox와 Helix의 시간이 동기화되었습니다.",
-	cmdTimeSync = "StormFox의 시간과 배수를 Helix 시스템에 동기화합니다."
+	cmdTimeSync = "StormFox의 시간과 배수를 Helix 시스템에 동기화합니다.",
+	cmdTime = "Helix 시간을 확인합니다.",
 })
 
 ix.command.Add("TimeSync", {
-	description = "cmdTimeSync",
+	description = "@cmdTimeSync",
 	adminOnly = true,
 	OnRun = function(self, client)
 		if (not StormFox2) then return client:NotifyLocalized("noStormFox") end
@@ -54,5 +60,14 @@ ix.command.Add("TimeSync", {
 		PerformTimeSync()
 		
 		return client:NotifyLocalized("timeSync")
+	end
+})
+
+ix.command.Add("Time", {
+	description = "@cmdTime",
+	OnRun = function(self, client)
+		if (not client:GetCharacter()) then return client:NotifyLocalized("unknownError") end
+		
+		return client:NotifyLocalized(ix.date.GetLocalizedTime(client))
 	end
 })
