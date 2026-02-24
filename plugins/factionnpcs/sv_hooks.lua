@@ -57,7 +57,12 @@ local combineNPCs = {
 	"npc_vj_c_officer3",
 	"npc_vj_c_officer",
 	"npc_vj_c_officer2",
-	"npc_vj_c_officer5"
+	"npc_vj_c_officer5",
+	"npc_vj_hlvr_heavy",
+	"npc_vj_hlvr_grunt",
+	"npc_vj_hlvr_grunt_police",
+	"npc_vj_hlvr_captain",
+	"npc_vj_hlvr_suppressor",
 }
 
 local rebelNPCs = {
