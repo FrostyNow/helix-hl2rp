@@ -28,9 +28,9 @@ if (SERVER) then
 		local spawnsPlugin = ix.plugin.list["spawns"]
 		if (!spawnsPlugin) then return end
 
-		net.Start("ixSpawnSync")
-			net.WriteTable(spawnsPlugin.spawns or {})
 		if (client) then
+			net.Start("ixSpawnSync")
+				net.WriteTable(spawnsPlugin.spawns or {})
 			net.Send(client)
 		else
 			local admins = {}
@@ -41,6 +41,8 @@ if (SERVER) then
 			end
 
 			if (#admins > 0) then
+				net.Start("ixSpawnSync")
+					net.WriteTable(spawnsPlugin.spawns or {})
 				net.Send(admins)
 			end
 		end
