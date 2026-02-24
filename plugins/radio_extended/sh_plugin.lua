@@ -2643,11 +2643,11 @@ function PLUGIN:PlayerSay(client, text)
 		local valid = false
 
 		-- Check for whisper/yell prefixes
-		if (text:sub(1, 4) == "/w " or text:sub(1, 9) == "/whisper ") then
+		if (text:sub(1, 3) == "/w " or text:sub(1, 9) == "/whisper ") then
 			chatType = "radio_whisper"
 			msgFormatted = text:gsub("^/[wW]%S*%s*", "")
 			valid = true
-		elseif (text:sub(1, 4) == "/y " or text:sub(1, 6) == "/yell ") then
+		elseif (text:sub(1, 3) == "/y " or text:sub(1, 6) == "/yell ") then
 			chatType = "radio_yell"
 			msgFormatted = text:gsub("^/[yY]%S*%s*", "")
 			valid = true
