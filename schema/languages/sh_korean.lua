@@ -49,12 +49,14 @@ LANGUAGE = {
 	cCombineLoaded = "지역 병력 정보 갱신 중...",
 	cLostBiosignal = "단절된 생체 신호 내려받는 중...",
 	cLostBiosignalLocation = "위험! 병력 생체 신호가 %s에서 두절되었음...",
-	cTrauma = "위험! %s 외상 감지됨...",
+	cTrauma = "위험! %s 부상 감지됨...",
 	cDroppingVitals = "위험! 생체 신호 감소 중, 즉각 의료 지원이 필요함",
 	cStaminaLost = "주의: 사용자 동력 고갈, 자극제 투여 중...",
 	cStaminaGained = "자극제 투여됨",
 	cLosingContact = "두절된 무전 통신 정보 내려받는 중...",
 	cLostContact = "위험! 무전 통신이 두절되었음...",
+	cDamageExternal = "외적",
+	cDamageSevere = "심각한",
 
 	voices = "음성 대사",
 

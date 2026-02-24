@@ -55,6 +55,8 @@ LANGUAGE = {
 	cStaminaGained = "STIMULANT ADMINISTERED",
 	cLosingContact = "Downloading lost radio contact information...",
 	cLostContact = "WARNING! Radio contact lost for unit at unknown location...",
+	cDamageExternal = "External",
+	cDamageSevere = "Severe",
 
 	voices = "Voices",
 
