@@ -12,6 +12,8 @@ function PLUGIN:EntityTakeDamage(entity, dmgInfo)
 			local client = dmgInfo:GetAttacker()
 			local position = dmgInfo:GetDamagePosition()
 
+			if (!IsValid(client) or !client:IsPlayer()) then return end
+
 			if (client:GetEyeTrace().Entity != entity or client:GetPos():Distance(position) > SHOOT_DISTANCE) then
 				return
 			end
