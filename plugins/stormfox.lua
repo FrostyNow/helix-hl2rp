@@ -1,6 +1,6 @@
 PLUGIN.name = "StormFox 2 Support"
-PLUGIN.description = "Something new thing"
-PLUGIN.author = "Bilwin, heavily modified by Frosty"
+PLUGIN.description = "Something new thing, now supports proper time sync."
+PLUGIN.author = "Bilwin, Totally rewritten by Frosty"
 PLUGIN.schema = "Any"
 PLUGIN.version = 1.0
 

@@ -1,6 +1,7 @@
 
 ITEM.name = "Binoculars"
 ITEM.model = Model("models/gibs/shield_scanner_gib1.mdl")
+ITEM.category = "Utility"
 ITEM.description = "itemBinocularsDesc"
 ITEM.price = 100
 

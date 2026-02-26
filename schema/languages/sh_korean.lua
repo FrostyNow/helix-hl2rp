@@ -84,6 +84,7 @@ LANGUAGE = {
 	revive01 = "당신은 당신 자신을 죽은 위치에 부활시켰습니다.",
 	revive02 = "당신은 %s님을 죽은 위치에 부활시켰습니다.",
 	revive03 = "%s님이 당신을 죽은 위치에 부활시켰습니다.",
+	targetHealed = "%s님을 회복시켰습니다.",
 	
 	["Intelligence"] = "지능",
 	["Endurance"] = "지구력",
@@ -184,6 +185,7 @@ LANGUAGE = {
 	Use = "사용하기",
 	["Use Forward"] = "앞에 사용",
 	Load = "사용",
+	["Load All"] = "모두 사용",
 	Eat = "먹기",
 	Examine = "조사하기",
 	View = "보기",

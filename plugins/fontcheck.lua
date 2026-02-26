@@ -1,3 +1,5 @@
+PLUGIN.name = "Font Checker"
+
 if CLIENT then
     local asccistring = ""
     for i=48,122 do

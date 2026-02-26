@@ -1,11 +1,12 @@
 ITEM.name = "9mm Pistol Bullets"
 ITEM.model = "models/Items/BoxSRounds.mdl"
 ITEM.ammo = "pistol" -- type of the ammo
-ITEM.ammoAmount = 30 -- amount of the ammo
+ITEM.ammoAmount = 90 -- amount of the ammo
+ITEM.ammoClip = 18
 ITEM.description = "pistolammoDesc"
 ITEM.classes = {CLASS_REBEL}
 ITEM.factions = {FACTION_MPF, FACTION_CONSCRIPT}
-ITEM.price = 30
+ITEM.price = 90
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

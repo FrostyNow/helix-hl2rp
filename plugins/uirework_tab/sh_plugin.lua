@@ -2,7 +2,7 @@ local PLUGIN = PLUGIN
 
 PLUGIN.name = "User Interface Rework (Tab Menu)"
 PLUGIN.description = ""
-PLUGIN.author = "Riggs"
+PLUGIN.author = "Riggs | Modified by Frosty"
 PLUGIN.schema = "Any"
 PLUGIN.license = [[
 Copyright 2022 Riggs Mackay

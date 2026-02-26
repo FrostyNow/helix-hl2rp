@@ -1,5 +1,5 @@
 PLUGIN.name = "Alcohol"
-PLUGIN.author = "AleXXX_007"
+PLUGIN.author = "AleXXX_007 | Modified by Frosty"
 PLUGIN.description = "Adds alcohol with effects."
 
 ix.lang.AddTable("english", {

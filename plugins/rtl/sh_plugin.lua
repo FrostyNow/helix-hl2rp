@@ -8,8 +8,19 @@ PLUGIN.author = "Reece™"
 RunConsoleCommand("r_flashlightdepthres", "8192")
 
 ix.option.Add("realTimeLightingEnabled", ix.type.bool, true, {
-    category = "Real Time Lighting",
-    default = true,
+	category = "Real Time Lighting",
+	default = true,
+})
+
+ix.lang.AddTable("english", {
+	optRealTimeLightingEnabled = "Enabled",
+	optdRealTimeLightingEnabled = "Wether or not you would like Real Time Lighting enabled.",
+})
+
+ix.lang.AddTable("korean", {
+	["Real Time Lighting"] = "실시간 조명",
+	optRealTimeLightingEnabled = "실시간 조명",
+	optdRealTimeLightingEnabled = "실시간 조명(Real Time Lighting)을 적용합니다.",
 })
 
 ix.util.Include("cl_plugin.lua")

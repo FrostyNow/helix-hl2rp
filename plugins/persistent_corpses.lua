@@ -10,7 +10,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Persistent Corpses"
-PLUGIN.author = "`impulse"
+PLUGIN.author = "`impulse | Modified by Frosty"
 PLUGIN.description = "Makes player corpses stay on the map after the player has respawned."
 PLUGIN.hardCorpseMax = 64
 

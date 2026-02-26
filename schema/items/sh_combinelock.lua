@@ -2,6 +2,7 @@
 ITEM.name = "Combine Lock"
 ITEM.description = "combineLockDesc"
 ITEM.model = Model("models/props_combine/combine_lock01.mdl")
+ITEM.category = "Utility"
 ITEM.width = 1
 ITEM.height = 2
 ITEM.price = 500

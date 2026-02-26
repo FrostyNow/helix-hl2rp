@@ -50,8 +50,6 @@ function PLUGIN:GetPlayerPainSound(client)
 		end
 	end
 
-	if (char and char:IsVortigaunt()) then return false end
-
 	if (client:WaterLevel() >= 3) then
 		return drownSounds[math.random(1, #drownSounds)]
 	end

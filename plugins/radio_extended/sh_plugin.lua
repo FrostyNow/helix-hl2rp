@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Extended Radio"
-PLUGIN.author = "faust"
+PLUGIN.author = "faust | Modified by Frosty"
 PLUGIN.description = "A standalone radio plugin with extended functionality over the default."
 
 ix.util.Include("thirdparty/sh_netstream2.lua")

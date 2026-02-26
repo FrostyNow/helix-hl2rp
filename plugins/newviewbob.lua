@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
-PLUGIN.name = 'ViewBob'
-PLUGIN.schema = 'Any'
+PLUGIN.name = "ViewBob"
+PLUGIN.schema = "Any | Modified by Ronald and Frosty"
 PLUGIN.version = 1.0
 
 ix.lang.AddTable("english", {

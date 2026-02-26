@@ -44,8 +44,8 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 	-- Alert all other units.
-	Schema:AddCombineDisplayMessage("Downloading lost biosignal...", Color(255, 255, 255, 255))
-	Schema:AddCombineDisplayMessage("WARNING! Biosignal lost for protection team unit " .. digits .. " at " .. location .. "...", Color(255, 0, 0, 255))
+	Schema:AddCombineDisplayMessage(L("DownloadingLostBiosignal"), Color(255, 255, 255, 255))
+	Schema:AddCombineDisplayMessage(string.format(L("BiosignalLostForUnit"), digits, location), Color(255, 0, 0, 255))
 
 	local soundQueue = {
 		"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -97,13 +97,13 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 				local location = client:GetArea() != "" and client:GetArea() or "unknown location"
 
-				client:AddCombineDisplayMessage("Connection restored...", Color(0, 255, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage(L("ConnectionRestored", client), Color(0, 255, 0, 255)) -- Alert this unit.
 
 				local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 				-- Alert all units.
-				Schema:AddCombineDisplayMessage("Downloading found biosignal...", Color(255, 255, 255, 255))
-				Schema:AddCombineDisplayMessage("ALERT! Noncohesive biosignal found for protection team unit " .. digits.." at " .. location .. "...", Color(0, 255, 0, 255))
+				Schema:AddCombineDisplayMessage(L("DownloadingFoundBiosignal"), Color(255, 255, 255, 255))
+				Schema:AddCombineDisplayMessage(string.format(L("NoncohesiveBiosignalFound"), digits, location), Color(0, 255, 0, 255))
 
 				local soundQueue = {
 					"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -117,7 +117,7 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 					end
 				end
 			else
-				client:AddCombineDisplayMessage("ERROR! Shutting down...", Color(255, 0, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage(L("ErrorShuttingDown", client), Color(255, 0, 0, 255)) -- Alert this unit.
 
 				self:DoPostBiosignalLoss(client)
 			end
@@ -150,5 +150,5 @@ function PLUGIN:DispatchRequestSignal(client, text)
 		net.WriteString(text)
 	net.Send(players)
 
-	Schema:AddCombineDisplayMessage("Assistance request received...", Color(175, 125, 100, 255))
+	Schema:AddCombineDisplayMessage(L("AssistanceRequestRecv"), Color(175, 125, 100, 255))
 end

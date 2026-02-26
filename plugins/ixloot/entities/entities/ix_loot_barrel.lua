@@ -8,7 +8,7 @@ ENT.PrintName        = "Loot Barrel"
 ENT.Author            = "Riggs Mackay"
 ENT.Purpose            = "Allows you to take loot from it."
 ENT.Instructions    = "Press E"
-ENT.Category         = "IX:HL2RP"
+ENT.Category         = "HL2 RP: Lootables"
 
 ENT.AutomaticFrameAdvance = true
 ENT.Spawnable = true

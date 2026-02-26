@@ -1,6 +1,6 @@
 
 PLUGIN.name = "Attribute System"
-PLUGIN.author = "Hoooldini and Frosty"
+PLUGIN.author = "Hoooldini | Modified by Frosty"
 PLUGIN.description = "Implementation of an attribute system for roleplay."
 
 -- [[ CONFIGURATION OPTIONS ]] --

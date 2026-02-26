@@ -11,11 +11,7 @@ function PLUGIN:RenderScreenspaceEffects()
 		colorModify["$pp_colour_colour"] = 0.77
 
 		if (system.IsWindows()) then
-			colorModify["$pp_colour_brightness"] = -0.02
-			colorModify["$pp_colour_contrast"] = 1.2
-		else
-			colorModify["$pp_colour_brightness"] = 0
-			colorModify["$pp_colour_contrast"] = 1
+			colorModify["$pp_colour_brightness"] = -0.08
 		end
 
 		DrawColorModify(colorModify)

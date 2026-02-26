@@ -86,31 +86,32 @@ ix.command.Add("ForceCleanUpItems", {
 	end
 })
 
-ix.command.Add("ARespawn", {
-	description = "Automatically respawn a character. Leave field blank to respawn yourself.",
-	arguments = {bit.bor(ix.type.player, ix.type.optional)},
-	adminOnly = true,
-	OnRun = function(self, client, ply)
+-- Use /revive instead, by Frosty
+-- ix.command.Add("ARespawn", {
+-- 	description = "Automatically respawn a character. Leave field blank to respawn yourself.",
+-- 	arguments = {bit.bor(ix.type.player, ix.type.optional)},
+-- 	adminOnly = true,
+-- 	OnRun = function(self, client, ply)
 
-		if !IsValid(ply) then
-			if client:Alive() then
-				return "You are not dead!"
+-- 		if !IsValid(ply) then
+-- 			if client:Alive() then
+-- 				return "You are not dead!"
 
-			end
+-- 			end
 
-			client:SetNetVar("deathTime", CurTime() + .1)
+-- 			client:SetNetVar("deathTime", CurTime() + .1)
 
-		else
-			if ply:Alive() then
-				return "You are not dead!"
+-- 		else
+-- 			if ply:Alive() then
+-- 				return "You are not dead!"
 
-			end
+-- 			end
 
-			ply:SetNetVar("deathTime", CurTime() + .1)
+-- 			ply:SetNetVar("deathTime", CurTime() + .1)
 
-		end
+-- 		end
 
-		return "Respawning..."
+-- 		return "Respawning..."
 
-	end
-})
+-- 	end
+-- })

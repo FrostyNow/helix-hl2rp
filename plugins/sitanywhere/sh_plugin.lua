@@ -1,7 +1,7 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Sit Anywhere"
-PLUGIN.author = "Ported from Sit Anywhere by Xerasin"
-PLUGIN.description = "Allows players to sit anywhere."
+PLUGIN.author = "Frosty"
+PLUGIN.description = "Allows players to sit anywhere. Ported and modified from Sit Anywhere addon by Xerasin."
 
 ix.util.Include("sv_plugin.lua", "server")
 ix.util.Include("cl_plugin.lua", "client")

@@ -2,6 +2,7 @@
 ITEM.name = "Combine Turret"
 ITEM.description = "turretDesc"
 ITEM.model = Model("models/zekkirels/floor_turret_undeployed.mdl")
+ITEM.category = "Utility"
 ITEM.width = 2
 ITEM.height = 2
 ITEM.price = 200
@@ -33,7 +34,7 @@ ITEM.functions.Use = {
 	OnCanRun = function(item)
 		local client = item.player
 
-		return IsValid(client) and (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT)
+		return !IsValid(item.entity) and IsValid(client) and item.invID == client:GetCharacter():GetInventory():GetID() and (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT or client:GetCharacter():GetInventory():HasItem("comkey"))
 	end
 }
 

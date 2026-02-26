@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN or {}
 
 PLUGIN.name = "Context Menu Options"
-PLUGIN.author = "Gary Tate"
+PLUGIN.author = "Gary Tate | Modified by Frosty"
 PLUGIN.description = "Adds several context options on players."
 PLUGIN.license = [[
 The MIT License (MIT)

@@ -2,6 +2,7 @@
 ITEM.name = "Union Keycard"
 ITEM.model = Model("models/dorado/tarjeta3.mdl")
 ITEM.description = "itemUnionKeycardDesc"
+ITEM.category = "Utility"
 ITEM.price = 300
 
 if (CLIENT) then

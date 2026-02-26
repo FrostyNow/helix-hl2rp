@@ -1,5 +1,5 @@
 
-ix.currency.symbol = ""
+ix.currency.symbol = "₮"
 ix.currency.singular = "currencySingular"
 ix.currency.plural = "currencyPlural"
 

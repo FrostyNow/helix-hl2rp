@@ -153,7 +153,7 @@ if (SERVER) then
 		local unionkey = client:GetCharacter():GetInventory():HasItem("unionkey")
 
 		for _, v in pairs(client:GetCharacter():GetInventory():GetItems()) do
-			if (v.id == "cid") then
+			if (v.uniqueID == "cid") then
 				if (v.GetData("class") == "Civil Worker's Union") then
 					unionkey = true
 				end

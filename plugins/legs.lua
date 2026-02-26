@@ -1,7 +1,7 @@
 
 PLUGIN.name = "Legs"
-PLUGIN.author = "Valkyrie, blackops7799"
-PLUGIN.description = "Renders the characters legs to the local player."
+PLUGIN.author = "Valkyrie, blackops7799 | Modified by Frosty"
+PLUGIN.description = "Renders the characters legs to the local player. Now supports Vortigaunts by Frosty!"
 
 ix.lang.AddTable("english", {
 	legs = "Legs",

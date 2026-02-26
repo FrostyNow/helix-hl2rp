@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN
 -- credits to neb.cloud dev team, not taking credit for most of this code.
 PLUGIN.name = "Union Locks"
-PLUGIN.author = "Nforce"
+PLUGIN.author = "Nforce | Modified by Frosty"
 PLUGIN.description = "Adds locks for civil workers."
 
 ix.util.Include("sv_hooks.lua")

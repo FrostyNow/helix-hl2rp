@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Quiz"
-PLUGIN.author = "Qemist (Ported)"
+PLUGIN.author = "Qemist | Ported and Modified by Frosty"
 PLUGIN.description = "A quiz which will be shown the first time a player joins your server."
 
 ix.util.Include("sh_config.lua")

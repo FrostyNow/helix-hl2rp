@@ -2,6 +2,7 @@
 ITEM.name = "Resistance Turret"
 ITEM.description = "resistanceTurretDesc"
 ITEM.model = Model("models/zekkirels/floor_turret_undeployed.mdl")
+ITEM.category = "Utility"
 ITEM.width = 2
 ITEM.height = 2
 ITEM.price = 200

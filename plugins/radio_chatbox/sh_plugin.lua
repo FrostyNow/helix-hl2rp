@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Radio Chatbox"
-PLUGIN.author = "faust"
+PLUGIN.author = "faust | Modified by Frosty"
 PLUGIN.description = "Creates another chatbox above the regular one for radio chatter only."
 
 ix.config.Add("enableRadioChatbox", true, "Whether or not to show radio messages in their own chatbox.", nil, {

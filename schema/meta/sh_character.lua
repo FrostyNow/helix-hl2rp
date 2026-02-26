@@ -7,7 +7,7 @@ function CHAR:IsCombine()
 	local mimic = false
 	
 	for k, v in pairs(items) do
-		if ((v.id == "combine_soldier" or v.id == "metropolice" or v.id == "hazmat_suit_citizen") and v:GetData("equip")) then
+		if ((v.uniqueID == "combine_soldier" or v.uniqueID == "metropolice" or v.uniqueID == "hazmat_suit_citizen") and v:GetData("equip")) then
 			mimic = true
 			break
 		end

@@ -2,7 +2,7 @@ local PLUGIN = PLUGIN
 
 PLUGIN.name = "Hint System"
 PLUGIN.description = "Adds hints which might help you every now and then."
-PLUGIN.author = "Riggs Mackay"
+PLUGIN.author = "Riggs Mackay | Modified by Frosty"
 PLUGIN.schema = "Any"
 PLUGIN.license = [[
 Copyright 2022 Riggs Mackay

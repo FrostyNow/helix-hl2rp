@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Helios Outfits"
-PLUGIN.author = "Helios"
+PLUGIN.author = "Helios | Modified by Frosty"
 PLUGIN.desc = "Fixes some issues with Helix's builtin outfit system."
 
 function PLUGIN:CharacterVarChanged(character, key, oldValue, value)

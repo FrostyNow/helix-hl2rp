@@ -1,7 +1,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Menu Voces"
-PLUGIN.author = "UltraDev"
+PLUGIN.author = "UltraDev | Modified by Frosty"
 PLUGIN.description = "View menu voices press [N]."
 
 PLUGIN.bind = KEY_N

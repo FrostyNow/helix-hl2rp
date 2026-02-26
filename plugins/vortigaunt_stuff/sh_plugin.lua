@@ -15,7 +15,25 @@ ix.config.Add("VortHealMax", 20, "Maximum health value that can be healed by vor
 ix.lang.AddTable("english", {
 	vortigauntDesc = "An extra-dimensional creature from Xen.",
 	vortigeseFormat = "%s says in vortigese \"%s.\"",
+	vortessenceFormat = "%s connects through Vortessence \"%s.\"",
 	dontKnowVort = "You don't know Vortigese!",
+	notVortigaunt = "You are not a Vortigaunt!",
+	vortDescription = "Says in vortigaunt language",
+	vortIndicator = "Vortigesing",
+	vortessenceDescription = "Communicates through Vortessence.",
+	vortessenceIndicator = "Connecting to Vortessence...",
+	vortWords = {
+		"Agorr",
+		"Taarr",
+		"Rit",
+		"Lon-ga",
+		"Gon",
+		"Galanga",
+		"Gala-lon",
+		"Churr galing churr ala gon",
+		"Churr lon gon challa gurr"
+	},
+	vortessenceName = "Vortessence"
 })
 
 ix.lang.AddTable("korean", {
@@ -23,7 +41,25 @@ ix.lang.AddTable("korean", {
 	["Vortigaunt"] = "보르티곤트",
 	vortigauntDesc = "젠에서 온 이차원 생물입니다.",
 	vortigeseFormat = "%s의 보르트어 \"%s.\"",
+	vortessenceFormat = "%s의 보르티곤트 정수 연결 \"%s.\"",
 	dontKnowVort = "당신은 보르트어를 모릅니다!",
+	notVortigaunt = "당신은 보르티곤트가 아닙니다!",
+	vortDescription = "보르트어로 말합니다.",
+	vortIndicator = "보르트어로 말하는 중",
+	vortessenceDescription = "보르티곤트 정수를 통해 대화합니다.",
+	vortessenceIndicator = "보르티곤트 정수에 연결 중...",
+	vortWords = {
+		"아고르",
+		"타아르",
+		"릿",
+		"롱가",
+		"공",
+		"갈랑가",
+		"갈라롱",
+		"추르 갈링 추르 알라 공",
+		"추르 롱 공 챌라 구르"
+	},
+	vortessenceName = "보르티곤트 정수"
 })
 
 
@@ -148,10 +184,17 @@ end
 
 
 if CLIENT then
-	randomVortWords = {"ahglah", "ahhhr", "alla", "allu", "baah", "beh", "bim", "buu", "chaa", "chackt", "churr", "dan", "darr", "dee", "eeya", "ge", "ga", "gaharra",
-"gaka", "galih", "gallalam", "gerr", "gog", "gram", "gu", "gunn", "gurrah", "ha", "hallam", "harra", "hen", "hi", "jah", "jurr", "kallah", "keh", "kih",
-"kurr", "lalli", "llam", "lih", "ley", "lillmah", "lurh", "mah", "min", "nach", "nahh", "neh", "nohaa", "nuy", "raa", "ruhh", "rum", "saa", "seh", "sennah",
-"shaa", "shuu", "surr", "taa", "tan", "tsah", "turr", "uhn", "ula", "vahh", "vech", "veh", "vin", "voo", "vouch", "vurr", "xkah", "xih", "zurr"}
+	randomVortSounds = {
+		"vo/npc/vortigaunt/vortigese02.wav",
+		"vo/npc/vortigaunt/vortigese03.wav",
+		"vo/npc/vortigaunt/vortigese04.wav",
+		"vo/npc/vortigaunt/vortigese05.wav",
+		"vo/npc/vortigaunt/vortigese07.wav",
+		"vo/npc/vortigaunt/vortigese08.wav",
+		"vo/npc/vortigaunt/vortigese09.wav",
+		"vo/npc/vortigaunt/vortigese11.wav",
+		"vo/npc/vortigaunt/vortigese12.wav"
+	}
 end
 
 ix.chat.Register("Vortigese", {
@@ -180,23 +223,74 @@ ix.chat.Register("Vortigese", {
 				L"someone" or hook.Run("GetCharacterName", speaker, self.uniqueID) or
 				(IsValid(speaker) and speaker:Name() or "Console")
 		
+		local randomSound = table.Random(randomVortSounds)
+		if (IsValid(speaker)) then
+			speaker:EmitSound(randomSound, 60)
+		else
+			surface.PlaySound(randomSound)
+		end
+
 		if (!LocalPlayer():GetCharacter():IsVortigaunt()) then
 			local splitedText = string.Split(text, " ")
+			local localizedWords = L("vortWords")
 			local vortigese = {}
 
 			for k, v in pairs(splitedText) do
-				local word = table.Random(randomVortWords)
+				local word = table.Random(localizedWords)
 				table.insert( vortigese, word )
-
 			end
-			PrintTable(vortigese)
+
 			text = table.concat( vortigese, " " )
 		end
 
-		chat.AddText(color, string.format(self.format, name, text))
+		local placeholder = "@@NAME@@"
+		local translated = L(self.format, placeholder, text)
+		local nameStart, nameEnd = translated:find(placeholder, 1, true)
+
+		if (nameStart and nameEnd) then
+			local nameColor = color
+
+			if (IsValid(speaker) and !anonymous) then
+				nameColor = speaker:GetClassColor() or team.GetColor(speaker:Team())
+			end
+
+			chat.AddText(color, translated:sub(1, nameStart - 1), nameColor, name, color, translated:sub(nameEnd + 1))
+		else
+			chat.AddText(color, L(self.format, name, text))
+		end
 	end,	
 	prefix = {"/v", "/vort"},
-	description = "Says in vortigaunt language",
-	indicator = "Vortigesing",
+	description = "@vortDescription",
+	indicator = "vortIndicator",
+	deadCanChat = false
+})
+
+ix.chat.Register("Vortessence", {
+	format = "vortessenceFormat",
+	color = Color(77, 158, 154),
+	CanHear = function(self, speaker, listener)
+		return listener:GetCharacter():IsVortigaunt()
+	end,
+	CanSay = function(self, speaker)
+		if (!speaker:GetCharacter():IsVortigaunt()) then
+			speaker:NotifyLocalized("notVortigaunt")
+			return false
+		end
+
+		return true
+	end,
+	OnChatAdd = function(self, speaker, text)
+		local color = self.color
+		local name = L"vortessenceName"
+
+		if (IsValid(speaker) and speaker:GetCharacter()) then
+			name = speaker:GetCharacter():GetName()
+		end
+
+			chat.AddText(color, L(self.format, name, text))
+	end,
+	prefix = {"/ve", "/vortessence"},
+	description = "@vortessenceDescription",
+	indicator = "vortessenceIndicator",
 	deadCanChat = false
 })

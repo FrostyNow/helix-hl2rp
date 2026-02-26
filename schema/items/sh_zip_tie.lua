@@ -1,6 +1,7 @@
 
 ITEM.name = "Zip Tie"
 ITEM.description = "zipTieDesc"
+ITEM.category = "Utility"
 ITEM.price = 8
 ITEM.model = "models/items/crossbowrounds.mdl"
 ITEM.factions = {FACTION_MPF, FACTION_OTA}

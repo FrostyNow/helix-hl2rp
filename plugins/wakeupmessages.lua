@@ -2,7 +2,7 @@ local PLUGIN = PLUGIN
 
 PLUGIN.name = "Spawn Notifications"
 PLUGIN.description = "A notification which tells the player their status on loading the character."
-PLUGIN.author = "Riggs Mackay"
+PLUGIN.author = "Riggs Mackay | Modified by Frosty"
 PLUGIN.schema = "Any"
 PLUGIN.license = [[
 Copyright 2022 Riggs Mackay
@@ -14,22 +14,29 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ]]
 
+ix.lang.AddTable("english", {
+	wakeupMsg1 = "feels the cool breeze and comes to their senses.",
+	wakeupMsg2 = "suddenly stops with a look as if they remembered something while walking.",
+	wakeupMsg3 = "yawns loudly and looks around.",
+	wakeupMsg4 = "blinks their eyes wide and hurries their steps.",
+	wakeupMsg5 = "suddenly feels someone's presence and looks back."
+})
+
+ix.lang.AddTable("korean", {
+	wakeupMsg1 = "서늘한 바람을 느끼며 정신을 차립니다.",
+	wakeupMsg2 = "길을 걷다가 문득 무언가 떠올린 듯한 표정을 짓더니 멈춰섭니다.",
+	wakeupMsg3 = "하품을 크게 하고 주변을 두리번거립니다.",
+	wakeupMsg4 = "눈을 크게 끔뻑이고는 발길을 재촉합니다.",
+	wakeupMsg5 = "순간 인기척을 느끼고 뒤를 돌아봅니다."
+})
+
 -- Feel free to change any of these messages.
 local wakeupMessages = {
-	-- "wakes up from a long nap and recover from your sleep.",
-	-- "stands up and sniffing the fresh air from the world.",
-	-- "starts to stand up and recover from your sleep.",
-	-- "are sweating from all the scare you have been getting from your dream and you wake up.",
-	-- "were dreaming of someone and you heard their voice, you started to wake up.",
-	-- "hears a small whisper in your ear, after that you hear loud footsteps fading away, you wake up being scared.",
-	-- "hears a loud helicopter overhead of yourself and you instantly wake up.",
-	-- "heard a growling and you started to wake up but scared.",
-	-- "heard a loud siren and you are scared of the noise.",
-	"서늘한 바람을 느끼며 정신을 차립니다.",
-	"길을 걷다가 문득 무언가 떠올린 듯한 표정을 짓더니 멈춰섭니다.",
-	"하품을 크게 하고 주변을 두리번거립니다.",
-	"눈을 크게 끔뻑이고는 발길을 재촉합니다.",
-	"순간 인기척을 느끼고 뒤를 돌아봅니다",
+	"wakeupMsg1",
+	"wakeupMsg2",
+	"wakeupMsg3",
+	"wakeupMsg4",
+	"wakeupMsg5"
 }
 
 PLUGIN.lastWakeupByPlayer = PLUGIN.lastWakeupByPlayer or {}
@@ -95,7 +102,7 @@ function PLUGIN:PlayerLoadedCharacter(client, character)
 		client:ScreenFade(SCREENFADE.IN, color_black, 3, 2)
 
 		local msg = table.Random(wakeupMessages)
-		ix.chat.Send(client, "me", msg)
+		ix.chat.Send(client, "me", L(msg, client))
 	end)
 end
 

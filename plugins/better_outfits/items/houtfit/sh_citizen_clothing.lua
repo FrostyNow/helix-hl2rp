@@ -109,7 +109,6 @@ local function DefineCitizenClothing()
 		{id = "hard_helmet", category = "headgear", index = 9, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
 		{id = "ushanka", category = "headgear", index = 10, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
 		{id = "brown_flat_cap", category = "headgear", index = 11, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
-		{id = "combat_helmet", category = "headgear", index = 12, model = "models/props_junk/cardboard_box004a.mdl", price = 200, noBusiness = true, base = "base_armor", armorAmount = 30, damage = {.9, .9, .9, .9, .9, .9, .9}, hitGroups = {HITGROUP_HEAD}},
 
 		-- Bag
 		{id = "backpack", category = "bag", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 100, isBag = true, invWidth = 3, invHeight = 2},
@@ -125,19 +124,9 @@ local function DefineCitizenClothing()
 		-- Headstrap
 		{id = "mask", category = "headstrap", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
 		{id = "dust_mask", category = "headstrap", index = 2, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
-		{id = "gasmask", category = "headstrap", index = 3, model = "models/tnb/items/aphelion/gasmask.mdl", price = 200, noBusiness = true, base = "base_armor", gasmask = true, hitGroups = {HITGROUP_HEAD}},
 		{id = "red_shemagh", category = "headstrap", index = 4, model = "models/tnb/items/aphelion/facewrap.mdl", price = 50, noBusiness = true},
 		{id = "blue_shemagh", category = "headstrap", index = 5, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
 		{id = "black_shemagh", category = "headstrap", index = 6, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
-
-		-- Kevlar
-		{id = "cp_vest", category = "kevlar", index = 1, model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 50, damage = {.75, .75, .75, .75, .75, .75, .75}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "cp_vest_medic", category = "kevlar", index = 2, model = "models/tnb/items/aphelion/shirt_rebel1.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 50, damage = {.75, .75, .75, .75, .75, .75, .75}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "cp_vest_rebel", category = "kevlar", index = 3, model = "models/tnb/items/aphelion/shirt_rebel1.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 50, damage = {.75, .75, .75, .75, .75, .75, .75}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "combat_vest", category = "kevlar", index = 4, model = "models/props_junk/cardboard_box004a.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 50, damage = {.75, .75, .75, .75, .75, .75, .75}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "molle_vest", category = "kevlar", index = 5, model = "models/tnb/items/aphelion/shirt_rebel_molle.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 50, damage = {.75, .75, .75, .75, .75, .75, .75}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "overwatch_vest", category = "kevlar", index = 6, model = "models/tnb/items/aphelion/shirt_rebeloverwatch.mdl", price = 600, noBusiness = true, base = "base_armor", armorAmount = 60, damage = {.7, .7, .7, .7, .7, .7, .7}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
-		{id = "flak_jacket", category = "kevlar", index = 7, model = "models/props_junk/cardboard_box004a.mdl", price = 500, noBusiness = true, base = "base_armor", armorAmount = 40, damage = {.8, .8, .8, .8, .8, .8, .8}, hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}},
 
 		-- Belt
 		{id = "cp_belt", category = "belt", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true},

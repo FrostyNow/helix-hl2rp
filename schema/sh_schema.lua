@@ -200,7 +200,8 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, L(self.format, speaker:Name(), text))
+		local name = hook.Run("GetCharacterName", speaker, "request") or speaker:Name()
+		chat.AddText(self.color, L(self.format, name, text))
 	end
 
 	ix.chat.Register("request", CLASS)
@@ -223,7 +224,8 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, L(self.format, speaker:Name(), text))
+		local name = hook.Run("GetCharacterName", speaker, "request_eavesdrop") or speaker:Name()
+		chat.AddText(self.color, L(self.format, name, text))
 	end
 
 	ix.chat.Register("request_eavesdrop", CLASS)

@@ -4,85 +4,102 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 function ENT:Initialize()
-    self:SetModel("models/props_combine/combine_smallmonitor001.mdl")
-    self:SetMoveType(MOVETYPE_VPHYSICS)
-    self:PhysicsInit(SOLID_VPHYSICS)
-    self:SetUseType(SIMPLE_USE)
-    self:SetSolid(SOLID_VPHYSICS)
+	self:SetModel("models/props_combine/combine_smallmonitor001.mdl")
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetUseType(SIMPLE_USE)
+	self:SetSolid(SOLID_VPHYSICS)
 
-    self:SetNetVar("alarm", false)
+	self:SetNetVar("alarm", false)
 end
 
 function ENT:Use(ply)
-    local combineAvailable
+	local combineAvailable
 
-    for k, v in pairs(player.GetAll()) do
-        if ( v:IsCombine() ) then
-            combineAvailable = true
+	for k, v in pairs(player.GetAll()) do
+		if ( v:IsCombine() ) then
+			combineAvailable = true
 
-            break
-        end
-    end
-    combineAvailable = true
-    
-    if ( combineAvailable) then
-        if not ( ply:IsCombine() ) then
-            if ( ply:GetCharacter():GetInventory():HasItem("cid") ) then
-                local area = ply:GetArea()
-                
-                if ( !area or area == "" ) then
-                    area = "Unknown Location"
-                end
+			break
+		end
+	end
+	combineAvailable = true
+		
+	if ( combineAvailable) then
+		if not ( ply:IsCombine() ) then
+			if ( ply:GetCharacter():GetInventory():HasItem("cid") ) then
+				local area = ply:GetArea()
+				local cidName = L("Anonymous") or "Anonymous"
+				local cidID = "000000"
+				for _, v in pairs(ply:GetCharacter():GetInventory():GetItems()) do
+					if (v.uniqueID == "cid") then
+						cidName = v:GetData("name")
+						cidID = v:GetData("id")
+						break
+					end
+				end
+				
+				if ( !area or area == "" ) then
+					area = L("terminalUnknownLocation")
+				end
 
-                self:SetNetVar("alarm", true)
-                self:SetNetVar("requester", ply:Nick())
+				self:SetNetVar("alarm", true)
+				self:SetNetVar("requester", cidName)
 
-                ix.chat.Send(ply, "dispatchradio", "Attention all units, Asisstance Terminal has been triggered at "..area..", requested by "..ply:Nick(), false, nil)
+				ix.chat.Send(ply, "dispatchradio", L("terminalDispatch", nil, area, cidName), false, nil)
 
-                local waypoint = {
-                    pos = ply:EyePos(),
-                    text = "Terminal Request - "..ply:Nick().." | "..area,
-                    color = team.GetColor(ply:Team()),
-                    addedBy = ply,
-                    time = CurTime() + 180
-                }
+				local requesterDisplay = string.format("%s #%s", cidName or L("terminalUnidentified"), cidID or "00000")
 
-                self:SetNetVar("waypoint", #waypointPlugin.waypoints) -- Save the waypoint index for easy access later.
+				local waypointPlugin = ix.plugin.Get("waypoints")
+				if (waypointPlugin) then
+					local waypoint = {
+						pos = ply:EyePos(),
+						text = L("terminalRequest", nil, requesterDisplay, area),
+						color = team.GetColor(ply:Team()),
+						addedBy = ply,
+						time = CurTime() + 180
+					}
 
-                waypointPlugin:AddWaypoint(waypoint)
-            else
-                ply:Notify("You need an Identification Card to use the Assistance Terminal!")
-            end
-        elseif ( self:GetNetVar("alarm", false) ) then
-            self:SetNetVar("alarm", false)
-            self:SetNetVar("requester", nil)
+					self:SetNetVar("waypoint", #waypointPlugin.waypoints) -- Save the waypoint index for easy access later.
 
-            local waypointIndex = self:GetNetVar("waypoint")
+					waypointPlugin:AddWaypoint(waypoint)
+				end
+			else
+				ply:NotifyLocalized("terminalNeedsCID")
+			end
+		elseif ( self:GetNetVar("alarm", false) ) then
+			self:SetNetVar("alarm", false)
+			self:SetNetVar("requester", nil)
 
-            if ( waypointIndex ) then
-                waypointPlugin:UpdateWaypoint(waypointIndex, nil)
+			local waypointPlugin = ix.plugin.Get("waypoints")
+			if (waypointPlugin) then
+				local waypointIndex = self:GetNetVar("waypoint")
 
-                self:SetNetVar("waypoint", nil)
-            end
-        end
-    else
-        ply:Notify("There are no officers available at this time!")
-    end
+				if ( waypointIndex ) then
+					waypointPlugin:UpdateWaypoint(waypointIndex, nil)
+
+					self:SetNetVar("waypoint", nil)
+				end
+			end
+		end
+	else
+		ply:NotifyLocalized("terminalNoOfficers")
+	end
 end
 
 function ENT:Think()
-    if ( ( self.NextAlert or 0 ) <= CurTime() and self:GetNetVar("alarm") ) then
-        self.NextAlert = CurTime() + 3
+	if ( ( self.NextAlert or 0 ) <= CurTime() and self:GetNetVar("alarm") ) then
+		self.NextAlert = CurTime() + 3
 
-        self:EmitSound("ambient/alarms/klaxon1.wav", 80, 70)
-        self:EmitSound("ambient/alarms/klaxon1.wav", 80, 80)
+		self:EmitSound("ambient/alarms/klaxon1.wav", 80, 70)
+		self:EmitSound("ambient/alarms/klaxon1.wav", 80, 80)
 
-        self:SetNetVar("alarmLights", true)
-        
-        timer.Simple(2, function()
-            self:SetNetVar("alarmLights", false)
-        end)
-    end
+		self:SetNetVar("alarmLights", true)
+		
+		timer.Simple(2, function()
+			self:SetNetVar("alarmLights", false)
+		end)
+	end
 
-    self:NextThink(CurTime() + 2)
+	self:NextThink(CurTime() + 2)
 end

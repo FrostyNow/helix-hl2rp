@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Better Armor"
-PLUGIN.author = "Subleader, Alex Grist, and Frosty"
+PLUGIN.author = "Subleader, Alex Grist | Modified by Frosty"
 PLUGIN.desc = "Compatible with bad air and localized damage, plus it adds damage resistance."
 
 ix.lang.AddTable("english", {

@@ -358,7 +358,7 @@ ix.command.Add("GiveCID", {
 		end
 		
 		for _, v in pairs(inventory:GetItems()) do
-			if (v.id == "cid") then
+			if (v.uniqueID == "cid") then
 				v:SetData("name", character:GetName())
 				v:SetData("id", id)
 				if character:GetClass() == CLASS_CWU then
@@ -374,5 +374,22 @@ ix.command.Add("GiveCID", {
 		character:SetData("cid", id)
 		client:NotifyLocalized("givenCID", target:GetName(), id)
 		target:NotifyLocalized("givenCIDTarget", client:GetName(), id)
+	end
+})
+
+ix.command.Add("Heal", {
+	description = "@cmdHeal",
+	adminOnly = true,
+	arguments = {
+		ix.type.player
+	},
+	OnRun = function(self, client, target)
+		if target:IsPlayer() and target:GetCharacter() and target:Alive() then
+			target:SetHealth(target:GetMaxHealth() or 100)
+			client:NotifyLocalized("targetHealed", target:GetName())
+			-- target:SetArmor(target:GetMaxArmor() or 100)
+		else
+			client:NotifyLocalized("unknownError")
+		end
 	end
 })

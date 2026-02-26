@@ -1,4 +1,4 @@
-PLUGIN.name = 'Shadows Overhaul'
+PLUGIN.name = "Shadows Overhaul"
 
 if SERVER then
 	function PLUGIN:InitPostEntity()

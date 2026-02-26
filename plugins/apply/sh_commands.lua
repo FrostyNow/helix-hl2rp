@@ -12,7 +12,7 @@ ix.command.Add("Apply", {
 				local id = id
 
 				for _, v in pairs(inventory:GetItems()) do
-					if (v.id == "cid") then
+					if (v.uniqueID == "cid") then
 						name = v:GetData("name")
 						id = v:GetData("id")
 					end
