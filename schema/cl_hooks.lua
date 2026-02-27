@@ -132,6 +132,17 @@ function Schema:RenderScreenspaceEffects()
 	-- 	colorModify = COLOR_BLACK_WHITE
 	-- end
 
+	if (LocalPlayer():GetNetVar("antidepressant")) then
+		colorModify["$pp_colour_brightness"] = (colorModify["$pp_colour_brightness"] or 0) + 0.02
+		colorModify["$pp_colour_contrast"] = (colorModify["$pp_colour_contrast"] or 1) + 2.0
+		colorModify["$pp_colour_colour"] = 1.2
+	end
+
+	if (LocalPlayer():GetNetVar("poisoned")) then
+		colorModify["$pp_colour_brightness"] = (colorModify["$pp_colour_brightness"] or 0) - 0.1
+		colorModify["$pp_colour_colour"] = 0.7
+	end
+
 	DrawColorModify(colorModify)
 
 	if (LocalPlayer():IsCombine()) then

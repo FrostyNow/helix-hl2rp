@@ -10,14 +10,113 @@ ENT.RenderGroup = RENDERGROUP_BOTH
 ENT.PhysgunDisabled = true
 ENT.bNoPersist = true
 
+-- Localization
+ix.lang.AddTable("english", {
+	ffModeTitle = "Barrier mode changed to: %s",
+	ffModeOff = "Off",
+	ffModeCID = "Only allow citizens with valid CID",
+	ffModeNone = "Allow no citizens"
+})
+
+ix.lang.AddTable("korean", {
+	ffModeTitle = "장벽 모드 변경: %s",
+	ffModeOff = "꺼짐",
+	ffModeCID = "유효한 ID 카드를 소지한 시민만 허용",
+	ffModeNone = "시민 통과 불가"
+})
+
+local MODE_ALLOW_ALL = 1
+local MODE_ALLOW_CID = 2
+local MODE_ALLOW_NONE = 3
+
+local MODES = {
+	{
+		function(client)
+			return false
+		end,
+		"ffModeOff"
+	},
+	{
+		function(client)
+			local character = client:GetCharacter()
+
+			if (character and character:GetInventory() and !character:GetInventory():HasItem("cid")) then
+				return true
+			else
+				return false
+			end
+		end,
+		"ffModeCID"
+	},
+	{
+		function(client)
+			return true
+		end,
+		"ffModeNone"
+	}
+}
+
 function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "Mode")
 	self:NetworkVar("Entity", 0, "Dummy")
 end
 
-local MODE_ALLOW_ALL = 1
-local MODE_ALLOW_CID = 2
-local MODE_ALLOW_NONE = 3
+-- Helper to check if a player is authorized (Combine, Admin, or has Comkey)
+function ENT:IsAuthorized(client)
+	if (!IsValid(client) or !client:IsPlayer()) then return false end
+	
+	if (client:IsCombine() or client:Team() == FACTION_ADMIN) then
+		return true
+	end
+	
+	local character = client:GetCharacter()
+	if (character) then
+		local inventory = character:GetInventory()
+		if (inventory and inventory:HasItem("comkey")) then
+			return true
+		end
+	end
+	
+	return false
+end
+
+-- Helper to create physics mesh with thickness to prevent "catching"
+function ENT:CreateShieldPhysics(dummyPos)
+	local thickness = 2
+	
+	-- Define 8 corners of the box
+	local p1 = Vector(thickness, 0, -40)
+	local p2 = Vector(thickness, dummyPos.y, -40)
+	local p3 = Vector(thickness, dummyPos.y, 150)
+	local p4 = Vector(thickness, 0, 150)
+	local p5 = Vector(-thickness, 0, -40)
+	local p6 = Vector(-thickness, dummyPos.y, -40)
+	local p7 = Vector(-thickness, dummyPos.y, 150)
+	local p8 = Vector(-thickness, 0, 150)
+	
+	local meshVerts = {
+		-- Front
+		{pos = p1}, {pos = p4}, {pos = p3},
+		{pos = p3}, {pos = p2}, {pos = p1},
+		-- Back
+		{pos = p5}, {pos = p6}, {pos = p7},
+		{pos = p7}, {pos = p8}, {pos = p5},
+		-- Top
+		{pos = p4}, {pos = p8}, {pos = p7},
+		{pos = p7}, {pos = p3}, {pos = p4},
+		-- Bottom
+		{pos = p1}, {pos = p2}, {pos = p6},
+		{pos = p6}, {pos = p5}, {pos = p1},
+		-- Left side
+		{pos = p1}, {pos = p5}, {pos = p8},
+		{pos = p8}, {pos = p4}, {pos = p1},
+		-- Right side
+		{pos = p2}, {pos = p3}, {pos = p7},
+		{pos = p7}, {pos = p6}, {pos = p2},
+	}
+	
+	self:PhysicsFromMesh(meshVerts)
+end
 
 if (SERVER) then
 	function ENT:SpawnFunction(client, trace)
@@ -59,16 +158,7 @@ if (SERVER) then
 		self.dummy.PhysgunDisabled = true
 		self:DeleteOnRemove(self.dummy)
 
-		local verts = {
-			{pos = Vector(0, 0, -40)},
-			{pos = Vector(0, 0, 150)},
-			{pos = self:WorldToLocal(self.dummy:GetPos()) + Vector(0, 0, 150)},
-			{pos = self:WorldToLocal(self.dummy:GetPos()) + Vector(0, 0, 150)},
-			{pos = self:WorldToLocal(self.dummy:GetPos()) - Vector(0, 0, 40)},
-			{pos = Vector(0, 0, -40)}
-		}
-
-		self:PhysicsFromMesh(verts)
+		self:CreateShieldPhysics(self:WorldToLocal(self.dummy:GetPos()))
 
 		local physObj = self:GetPhysicsObject()
 
@@ -126,33 +216,6 @@ if (SERVER) then
 		end
 	end
 
-	local MODES = {
-		{
-			function(client)
-				return false
-			end,
-			"Off."
-		},
-		{
-			function(client)
-				local character = client:GetCharacter()
-
-				if (character and character:GetInventory() and !character:GetInventory():HasItem("cid")) then
-					return true
-				else
-					return false
-				end
-			end,
-			"Only allow with valid CID."
-		},
-		{
-			function(client)
-				return true
-			end,
-			"Never allow citizens."
-		}
-	}
-
 	function ENT:Use(activator)
 		if ((self.nextUse or 0) < CurTime()) then
 			self.nextUse = CurTime() + 1.5
@@ -160,7 +223,7 @@ if (SERVER) then
 			return
 		end
 
-		if (activator:IsCombine() or activator:GetCharacter():GetInventory():HasItem("comkey")) then
+		if (self:IsAuthorized(activator)) then
 			self:SetMode(self:GetMode() + 1)
 
 			if (self:GetMode() > #MODES) then
@@ -175,54 +238,15 @@ if (SERVER) then
 			end
 
 			self:EmitSound("buttons/combine_button5.wav", 140, 100 + (self:GetMode() - 1) * 15)
-			activator:ChatPrint("Changed barrier mode to: "..MODES[self:GetMode()][2])
+			
+			local modeKey = MODES[self:GetMode()][2]
+			activator:NotifyLocalized("ffModeTitle", L(modeKey, activator))
 
 			Schema:SaveForceFields()
 		else
 			self:EmitSound("buttons/combine_button3.wav")
 		end
 	end
-
-	hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
-		local client
-		local entity
-		local ragdoll
-
-		if (a:IsPlayer()) then
-			client = a
-			entity = b
-		elseif (b:IsPlayer()) then
-			client = b
-			entity = a
-		elseif (a:IsRagdoll()) then
-			ragdoll = a
-			entity = b
-		elseif (b:IsRagdoll()) then
-			ragdoll = b
-			entity = a
-		end
-
-		if (IsValid(entity) and entity:GetClass() == "ix_forcefield") then
-			if (IsValid(ragdoll)) then
-				if (entity:GetMode() == 1) then
-					return false
-				end
-			end
-			if (IsValid(client)) then
-				if (client:IsCombine() or client:Team() == FACTION_ADMIN) then
-					return false
-				elseif (client:GetCharacter():GetInventory():HasItem("comkey")) then
-					return false
-				end
-
-				local mode = entity:GetMode() or 1
-
-				return istable(MODES[mode]) and MODES[mode][1](client)
-			else
-				return entity:GetMode() != 4
-			end
-		end
-	end)
 else
 	local SHIELD_MATERIAL = ix.util.GetMaterial("effects/combineshield/comshieldwall3")
 
@@ -233,16 +257,7 @@ else
 			data.filter = self
 		local trace = util.TraceLine(data)
 
-		local verts = {
-	            {pos = Vector(0, 0, -40)},
-	            {pos = Vector(0, 0, 150)},
-	            {pos = self:WorldToLocal(trace.HitPos) + Vector(0, 0, 150)},
-	            {pos = self:WorldToLocal(trace.HitPos) + Vector(0, 0, 150)},
-	            {pos = self:WorldToLocal(trace.HitPos) - Vector(0, 0, 40)},
-	            {pos = Vector(0, 0, -40)}
-	        }
-
-		self:PhysicsFromMesh(verts)
+		self:CreateShieldPhysics(self:WorldToLocal(trace.HitPos))
 		self:EnableCustomCollisions(true)
 	end
 
@@ -299,3 +314,52 @@ else
 		mesh.End()
 	end
 end
+
+-- Shared hook to allow client-side prediction and smooth passing
+hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
+	local client
+	local entity
+	local ragdoll
+
+	if (a:IsPlayer()) then
+		client = a
+		entity = b
+	elseif (b:IsPlayer()) then
+		client = b
+		entity = a
+	elseif (a:IsRagdoll()) then
+		ragdoll = a
+		entity = b
+	elseif (b:IsRagdoll()) then
+		ragdoll = b
+		entity = a
+	end
+
+	if (IsValid(entity) and entity:GetClass() == "ix_forcefield") then
+		local mode = entity:GetMode() or 1
+		
+		-- If forcefield is OFF (Mode 1), everyone and everything passes
+		if (mode == 1) then
+			return false
+		end
+
+		-- Ragdolls collide in all active modes
+		if (IsValid(ragdoll)) then
+			return true
+		end
+
+		if (IsValid(client)) then
+			-- Authorized personnel (Combine, Admin, Comkey) always pass
+			if (entity.IsAuthorized and entity:IsAuthorized(client)) then
+				return false
+			end
+
+			-- Check mode-specific logic for unauthorized players
+			return istable(MODES[mode]) and MODES[mode][1](client)
+		else
+			-- For other entities (props, etc)
+			-- Since mode is not 1, we collide by default
+			return true
+		end
+	end
+end)

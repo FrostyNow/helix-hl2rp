@@ -67,13 +67,14 @@ function PANEL:RefreshResults()
 
 	self.SearchItemPanel:Clear()
 
-	local text = self.Search:GetText():utf8lower()
-	text = text:PatternSafe()
-
+	local text = self.Search:GetText()
 	local results = {}
 
 	for k, v in pairs(ix.item.list) do
-		if (v.name:utf8lower():find(text)) then
+		local name = v.name or ""
+		local localizedName = L(name)
+
+		if (ix.util.StringMatches(k, text) or ix.util.StringMatches(name, text) or ix.util.StringMatches(localizedName, text)) then
 			results[k] = v
 		end
 	end

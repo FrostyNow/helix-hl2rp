@@ -4,15 +4,5 @@ ITEM.description = "supplementsDesc"
 ITEM.hunger = 70
 ITEM.thirst = -10
 ITEM.price = 5
-
-ITEM:Hook("Eat", function(item)
-	local client = item.player
-	
-	client:EmitSound("npc/antlion_grub/squashed.wav", 75, 150, 0.25)
-
-	for i = 1, 5 do
-		timer.Simple(i, function()
-			client:SetHealth(math.Clamp(client:Health() + 1, 0, client:GetMaxHealth()))
-		end)
-	end	
-end)
+ITEM.heal = 5
+ITEM.sound = "interface/inv_eat_ration1.ogg"

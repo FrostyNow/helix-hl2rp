@@ -43,8 +43,8 @@ ITEM.functions.Use = {
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(Color(85, 127, 242))
-		data:SetText(L("securitizedItemTooltip"))
+		data:SetBackgroundColor(Color(218, 24, 24))
+		data:SetText(L("sociocidalItemTooltip"))
 		data:SetExpensiveShadow(0.5)
 		data:SizeToContents()
 	end

@@ -267,6 +267,16 @@ ix.command.Add("Revive", {
 					end
 					target.ixDeathWeapons = nil
 				end
+
+				if (target.ixDeathHunger) then
+					target:SetHunger(target.ixDeathHunger)
+					target.ixDeathHunger = nil
+				end
+
+				if (target.ixDeathThirst) then
+					target:SetThirst(target.ixDeathThirst)
+					target.ixDeathThirst = nil
+				end
 			end
 		end)
 

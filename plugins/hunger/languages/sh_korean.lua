@@ -80,4 +80,6 @@ LANGUAGE = {
 	itemMineralWaterDesc = "전쟁 전에 판매되던 정제된 물이 든 병입니다.",
 	["Washing Detergent"] = "세제",
 	itemWashingDetergentDesc = "더러운 옷을 물에 빨때 쓰입니다.",
+	["Bag of Flour"] = "밀가루 포대",
+	itemFlourDesc = "밀가루가 든 포대입니다.",
 }

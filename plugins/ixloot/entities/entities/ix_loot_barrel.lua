@@ -44,9 +44,9 @@ if ( SERVER ) then
         return false
     end
     
-    function ENT:AcceptInput(Name, Activator, Caller)
-        if (Name == "Use" and Caller:IsPlayer()) then
-            PLUGIN:SearchLootContainer(self, Caller)
+    function ENT:Use(activator)
+        if (IsValid(activator) and activator:IsPlayer()) then
+            PLUGIN:SearchLootContainer(self, activator)
         end
     end
 end

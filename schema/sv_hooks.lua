@@ -7,6 +7,7 @@ function Schema:LoadData()
 	self:LoadCoffeeMachines()
 	self:LoadPepsiMachines()
 	self:LoadBroadcastConsoles()
+	self:LoadMachines()
 
 	Schema.CombineObjectives = ix.data.Get("combineObjectives", {}, false, true)
 end
@@ -19,6 +20,7 @@ function Schema:SaveData()
 	self:SaveCoffeeMachines()
 	self:SavePepsiMachines()
 	self:SaveBroadcastConsoles()
+	self:SaveMachines()
 end
 
 function Schema:PlayerSwitchFlashlight(client, enabled)
@@ -186,6 +188,8 @@ end
 function Schema:DoPlayerDeath(client, attacker, damageinfo)
 	client.ixDeathAmmo = client:GetAmmo()
 	client.ixDeathWeapons = {}
+	client.ixDeathHunger = client:GetHunger()
+	client.ixDeathThirst = client:GetThirst()
 	
 	for _, v in ipairs(client:GetWeapons()) do
 		client.ixDeathWeapons[v:GetClass()] = {

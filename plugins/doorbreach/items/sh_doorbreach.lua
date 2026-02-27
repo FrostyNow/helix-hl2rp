@@ -1,7 +1,7 @@
 
 ITEM.name = "Shaped Charge Breaching Device"
 ITEM.description = "itemDoorBreachDesc"
-ITEM.model = Model("models/props_wasteland/prison_padlock001a.mdl")
+ITEM.model = Model("models/weapons/w_slam.mdl")
 ITEM.width = 1
 ITEM.height = 1
 ITEM.price = 475

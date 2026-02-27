@@ -6,11 +6,16 @@ PAPERLIMIT = 3000
 
 ix.lang.AddTable("english", {
 	paperDesc = "A paper which one you can write on.",
+	paperWritten = "You have written something!",
+	paperCharCount = "Number of characters: %s/%s",
 })
 ix.lang.AddTable("korean", {
 	["Paper"] = "종이",
 	paperDesc = "글씨를 쓸 수 있는 종이입니다.",
 	["Lire"] = "읽기",
+	paperWritten = "글씨를 썼습니다!",
+	paperCharCount = "글자수: %s/%s",
+	["Terminer"] = "끝내기",
 })
 
 if (CLIENT) then
@@ -26,7 +31,7 @@ else
 			local items = inv:GetItems()
 			for k, v in pairs(items) do
 				if (v:GetID() == id) then
-					client:Notify("You have written something!")
+					client:NotifyLocalized("paperWritten")
 					v:SetData("PaperData", contents)
 				end
 			end
@@ -35,7 +40,7 @@ else
 					local itemID = v.ixItemID
 					local item = ix.item.instances[itemID]
 					if (itemID == id) then
-						client:Notify("You have written something!")
+						client:NotifyLocalized("paperWritten")
 						item:SetData("PaperData", contents)
 					end
 				end

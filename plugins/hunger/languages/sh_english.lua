@@ -37,4 +37,5 @@ LANGUAGE = {
 	itemCannedHamDesc = "A can of ham that is canned.",
 	itemMineralWaterDesc = "A bottle of mineral water that is bottled.",
 	itemWashingDetergentDesc = "A bottle of washing detergent that is bottled.",
+	itemFlourDesc = "A bag of grinded wheat.",
 }

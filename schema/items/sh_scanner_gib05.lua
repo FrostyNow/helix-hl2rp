@@ -4,6 +4,7 @@ ITEM.description = "itemScannerPartsDesc"
 ITEM.price = 70
 ITEM.width = 2
 ITEM.height = 2
+ITEM.isjunk = true
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

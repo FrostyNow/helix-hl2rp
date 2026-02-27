@@ -181,7 +181,7 @@ else
 		return base
 	end
 
-	spawnmenu.AddCreationTab("Admin Item Spawnmenu", CreateItemsPanel, "icon16/script_key.png")
+	spawnmenu.AddCreationTab("Items", CreateItemsPanel, "icon16/script_key.png")
 
 	netstream.Hook("CheckForItemTab", function()
 		if !LocalPlayer():GetNWBool("spawnmenu_reloaded") then

@@ -4,18 +4,12 @@ ITEM.description = "itemWaterDesc"
 ITEM.thirst = 50
 ITEM.price = 1
 ITEM.empty = "water_empty"
+ITEM.sound = "interface/inv_drink_can2.ogg"
 
 ITEM:Hook("Eat", function(item)
 	local client = item.player
 	local char = client:GetCharacter()
 	local stm = char:GetAttribute("stm", 0)
-	
-	client:EmitSound("interface/inv_drink_can2.ogg")
-	char:AddBoost("water", "stm", stm * 0.9 )
 
-	for i = 1, 5 do
-		timer.Simple(i, function()
-			client:SetHealth(math.Clamp(client:Health() + 2, 0, client:GetMaxHealth()))
-		end)
-	end
+	char:AddBoost("water", "stm", stm * 0.9 )
 end)

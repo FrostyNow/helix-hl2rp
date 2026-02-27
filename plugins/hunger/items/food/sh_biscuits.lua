@@ -3,15 +3,5 @@ ITEM.model = "models/hlvr/food/biscuits_box_1.mdl"
 ITEM.description = "itemBiscuitsDesc"
 ITEM.hunger = 10
 ITEM.price = 3
-
-ITEM:Hook("Eat", function(item)
-	local client = item.player
-	
-	client:EmitSound("interface/inv_eat_paperwrap.ogg")
-
-	for i = 1, 5 do
-		timer.Simple(i, function()
-			client:SetHealth(math.Clamp(client:Health() + 1, 0, client:GetMaxHealth()))
-		end)
-	end
-end)
+ITEM.heal = 5
+ITEM.sound = "interface/inv_eat_paperwrap.ogg"

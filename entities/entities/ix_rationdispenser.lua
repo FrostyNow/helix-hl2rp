@@ -9,15 +9,35 @@ ENT.AdminOnly = true
 ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 
+ix.lang.AddTable("english", {
+	rdInsertID = "INSERT ID",
+	rdChecking = "CHECKING",
+	rdDispensing = "DISPENSING",
+	rdFreqLimit = "FREQ. LIMIT",
+	rdWait = "WAIT",
+	rdOffline = "OFFLINE",
+	rdPreparing = "PREPARING"
+})
+
+ix.lang.AddTable("korean", {
+	rdInsertID = "ID 카드 제시",
+	rdChecking = "확인 중",
+	rdDispensing = "배급 중",
+	rdFreqLimit = "지급 제한",
+	rdWait = "대기",
+	rdOffline = "작동 정지",
+	rdPreparing = "준비 중"
+})
+
 ENT.Displays = {
-	[1] = {"INSERT ID", color_white, true},
-	[2] = {"CHECKING", Color(255, 200, 0)},
-	[3] = {"DISPENSING", Color(0, 255, 0)},
-	[4] = {"FREQ. LIMIT", Color(255, 0, 0)},
-	[5] = {"WAIT", Color(255, 200, 0)},
-	[6] = {"OFFLINE", Color(255, 0, 0), true},
-	[7] = {"INSERT ID", Color(255, 0, 0)},
-	[8] = {"PREPARING", Color(0, 255, 0)}
+	[1] = {"rdInsertID", color_white, true},
+	[2] = {"rdChecking", Color(255, 200, 0)},
+	[3] = {"rdDispensing", Color(0, 255, 0)},
+	[4] = {"rdFreqLimit", Color(255, 0, 0)},
+	[5] = {"rdWait", Color(255, 200, 0)},
+	[6] = {"rdOffline", Color(255, 0, 0), true},
+	[7] = {"rdInsertID", Color(255, 0, 0)},
+	[8] = {"rdPreparing", Color(0, 255, 0)}
 }
 
 function ENT:SetupDataTables()
@@ -59,15 +79,15 @@ if (SERVER) then
 
 		self.dummy = ents.Create("prop_physics")
 		self.dummy:SetModel("models/weapons/w_package.mdl")
-		self.dummy:SetPos(self:GetPos())
-		self.dummy:SetAngles(self:GetAngles())
 		self.dummy:SetMoveType(MOVETYPE_NONE)
 		self.dummy:SetNotSolid(true)
 		self.dummy:SetNoDraw(true)
 		self.dummy:SetParent(self.dispenser, 1)
 		self.dummy:Spawn()
 		self.dummy:Activate()
-		self:DeleteOnRemove(self.dummy)
+
+		self.dummy:SetLocalPos(Vector(0, 0, 1.2))
+		self.dummy:SetLocalAngles(Angle(0, 0, 0))
 
 		local physics = self.dispenser:GetPhysicsObject()
 		physics:EnableMotion(false)
@@ -134,7 +154,13 @@ if (SERVER) then
 			return
 		end
 
-		if (client:Team() == FACTION_CITIZEN) then
+		if (client:IsCombine()) then
+			self:SetEnabled(!self:GetEnabled())
+			self:EmitSound(self:GetEnabled() and "buttons/combine_button1.wav" or "buttons/combine_button2.wav")
+
+			Schema:SaveRationDispensers()
+			self.nextUseTime = CurTime() + 2
+		else
 			if (!self:GetEnabled()) then
 				self:DisplayError(6)
 				return
@@ -166,12 +192,6 @@ if (SERVER) then
 					self:DisplayError(4)
 				end
 			end)
-		elseif (client:IsCombine()) then
-			self:SetEnabled(!self:GetEnabled())
-			self:EmitSound(self:GetEnabled() and "buttons/combine_button1.wav" or "buttons/combine_button2.wav")
-
-			Schema:SaveRationDispensers()
-			self.nextUseTime = CurTime() + 2
 		end
 	end
 
@@ -207,7 +227,7 @@ else
 			local alpha = display[3] and 255 or math.abs(math.cos(RealTime() * 2) * 255)
 			local color = ColorAlpha(display[2], alpha)
 
-			draw.SimpleText(display[1], "ixRationDispenser", 86, 36, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(L(display[1]), "ixRationDispenser", 86, 36, color, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 			render.PopFilterMin()
 			render.PopFilterMag()

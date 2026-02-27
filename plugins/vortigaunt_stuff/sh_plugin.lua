@@ -33,7 +33,8 @@ ix.lang.AddTable("english", {
 		"Churr galing churr ala gon",
 		"Churr lon gon challa gurr"
 	},
-	vortessenceName = "Vortessence"
+	vortessenceName = "Vortessence",
+	vortUnintelligible = "*(unintelligible vortigese)*"
 })
 
 ix.lang.AddTable("korean", {
@@ -59,7 +60,8 @@ ix.lang.AddTable("korean", {
 		"추르 갈링 추르 알라 공",
 		"추르 롱 공 챌라 구르"
 	},
-	vortessenceName = "보르티곤트 정수"
+	vortessenceName = "보르티곤트 정수",
+	vortUnintelligible = "*(알아들을 수 없는 보르티곤트 언어)*"
 })
 
 
@@ -230,17 +232,9 @@ ix.chat.Register("Vortigese", {
 			surface.PlaySound(randomSound)
 		end
 
-		if (!LocalPlayer():GetCharacter():IsVortigaunt()) then
-			local splitedText = string.Split(text, " ")
-			local localizedWords = L("vortWords")
-			local vortigese = {}
-
-			for k, v in pairs(splitedText) do
-				local word = table.Random(localizedWords)
-				table.insert( vortigese, word )
-			end
-
-			text = table.concat( vortigese, " " )
+		local character = LocalPlayer():GetCharacter()
+		if (character and !character:IsVortigaunt()) then
+			text = L("vortUnintelligible")
 		end
 
 		local placeholder = "@@NAME@@"
@@ -250,7 +244,9 @@ ix.chat.Register("Vortigese", {
 		if (nameStart and nameEnd) then
 			local nameColor = color
 
-			if (IsValid(speaker) and !anonymous) then
+			local bAnonymous = anonymous or (info and info.anonymous)
+
+			if (IsValid(speaker) and !bAnonymous) then
 				nameColor = speaker:GetClassColor() or team.GetColor(speaker:Team())
 			end
 

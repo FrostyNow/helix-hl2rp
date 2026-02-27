@@ -4,7 +4,7 @@ function PANEL:Init()
 	self:SetSize(300, 400)	
 	self:MakePopup()
 	self:Center()
-	self:SetTitle("Notepad")
+	self:SetTitle(L("Notepad"))
 
 	self.controls = self:Add("DPanel")
 	self.controls:Dock(BOTTOM)
@@ -23,7 +23,7 @@ function PANEL:Init()
 
 	self.controls.Paint = function(this, w, h)
 		local text = self.contents:GetValue()
-		draw.SimpleText(Format("Number of characters: %s/2000", string.len(text)), "DermaDefault", 10, h/2, color_white, TEXT_ALIGN_LEFT, 1)
+		draw.SimpleText(L("noteCharCount", string.len(text), NOTELIMIT), "DermaDefault", 10, h/2, color_white, TEXT_ALIGN_LEFT, 1)
 	end
 
 	self.confirm.DoClick = function(this)

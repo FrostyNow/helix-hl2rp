@@ -9,10 +9,14 @@ WRITINGDATA = WRITINGDATA or {}
 
 ix.lang.AddTable("english", {
 	notepadDesc = "A notepad which one you can write on.",
+	notYourNote = "This notepad doesn't belong to you.",
+	noteCharCount = "Number of characters: %s/%s",
 })
 ix.lang.AddTable("korean", {
 	["Notepad"] = "메모장",
 	notepadDesc = "글씨를 쓸 수 있는 메모장입니다.",
+	notYourNote = "이 메모장은 당신의 것이 아닙니다.",
+	noteCharCount = "글자수: %s/%s",
 })
 
 if (CLIENT) then
@@ -35,7 +39,7 @@ else
 		if (string.len(contents) <= NOTELIMIT) then
 			local note = FindNoteByID(id)
 			if (note:canWrite(client) == false) then
-				client:nofity("This notepad doesn't belong to you.")
+				client:NofityLocalized("notYourNote")
 			end
 
 			WRITINGDATA[id] = contents

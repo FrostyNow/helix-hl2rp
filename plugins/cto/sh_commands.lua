@@ -3,7 +3,7 @@ local PLUGIN = PLUGIN
 
 do
 	local COMMAND = {}
-	COMMAND.description = "Remotely disable a Combine camera - IDs are shown on the HUD."
+	COMMAND.description = "@cameraDisableDesc"
 	COMMAND.arguments = {
 		ix.type.number
 	}
@@ -12,24 +12,24 @@ do
 		local camera = Entity(ID)
 
 		if (!IsEntity(camera) or camera:GetClass() != "npc_combine_camera") then
-			client:Notify("There is no Combine camera with that ID!")
+			client:NotifyLocalized("cameraInvalid")
 
 			return
 		end
 
 		if (camera:GetSequenceName(camera:GetSequence()) != "idlealert") then
-			client:Notify("That camera is already disabled!")
+			client:NotifyLocalized("cameraAlreadyDisabled")
 
 			return
 		end
 
-		client:Notify("Disabling C-i" .. camera:EntIndex() .. "...")
+		client:NotifyLocalized("cameraDisabled", camera:EntIndex())
 
 		camera:Fire("Disable")
 	end
 
 	function COMMAND:OnCheckAccess(client)
-		return client:IsCombine() and (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
+		return client:IsCombine() and (client:IsAdmin() or Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
 	end
 
 	ix.command.Add("CameraDisable", COMMAND)
@@ -37,7 +37,6 @@ end
 
 do
 	local COMMAND = {}
-	COMMAND.description = "Remotely enable a Combine camera - IDs are shown on the HUD."
 	COMMAND.arguments = {
 		ix.type.number
 	}
@@ -46,24 +45,24 @@ do
 		local camera = Entity(ID)
 
 		if (!IsEntity(camera) or camera:GetClass() != "npc_combine_camera") then
-			client:Notify("There is no Combine camera with that ID!")
+			client:NotifyLocalized("cameraInvalid")
 
 			return
 		end
 
 		if (camera:GetSequenceName(camera:GetSequence()) != "idle") then
-			client:Notify("That camera is already enabled!")
+			client:NotifyLocalized("cameraAlreadyEnabled")
 
 			return
 		end
 
-		client:Notify("Enabling C-i" .. camera:EntIndex() .. "...")
+		client:NotifyLocalized("cameraEnabled", camera:EntIndex())
 
 		camera:Fire("Enable")
 	end
 
 	function COMMAND:OnCheckAccess(client)
-		return client:IsCombine() and (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
+		return client:IsCombine() and (client:IsAdmin() or Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
 	end
 
 	ix.command.Add("CameraEnable", COMMAND)
@@ -71,17 +70,18 @@ end
 
 do
 	local COMMAND = {}
-	COMMAND.description = "Update the sociostability status of the city."
+	COMMAND.description = "@socioStatusDesc"
 	COMMAND.arguments = {
 		ix.type.string
 	}
 	COMMAND.argumentNames = {"Socio-Status (green | blue | yellow | red | black)"}
+	COMMAND.alias = {"SocioStatus"}
 
 	function COMMAND:OnRun(client, socioStatus)
 		local tryingFor = string.upper(socioStatus)
 
 		if (!PLUGIN.sociostatusColors[tryingFor]) then
-			client:Notify("That is not a valid sociostatus!")
+			client:NotifyLocalized("socioInvalid")
 		else
 			local players = {}
 
@@ -107,8 +107,8 @@ do
 			end
 
 			PLUGIN.socioStatus = tryingFor
-
-			Schema:AddCombineDisplayMessage("ALERT! Sociostatus updated to " .. tryingFor .. "!", PLUGIN.sociostatusColors[tryingFor])
+			
+			Schema:AddCombineDisplayMessage("@socioStatusUpdated", PLUGIN.sociostatusColors[tryingFor], L(tryingFor, client))
 			
 			net.Start("RecalculateHUDObjectives")
 				net.WriteString(PLUGIN.socioStatus)
@@ -118,7 +118,7 @@ do
 	end
 
 	function COMMAND:OnCheckAccess(client)
-		return client:IsCombine() and (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
+		return client:IsCombine() and (client:IsAdmin() or Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "OfC") or Schema:IsCombineRank(client:Name(), "EpU") or Schema:IsCombineRank(client:Name(), "DvL") or Schema:IsCombineRank(client:Name(), "SeC") or client:Team() == FACTION_OTA)
 	end
 
 	ix.command.Add("SetSocioStatus", COMMAND)
@@ -126,18 +126,19 @@ end
 
 do
 	local COMMAND = {}
-	COMMAND.description = "Turn your biosignal on or off. Will alert all other units."
+	COMMAND.description = "@bioDesc"
 	COMMAND.arguments = {
 		ix.type.bool
 	}
+	COMMAND.alias = {"Bio", "Biosignal"}
 
 	function COMMAND:OnRun(client, bEnable)
 		local result = PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 		if (result == PLUGIN.ERROR_ALREADY_ENABLED) then
-			client:Notify("Your biosignal is already enabled!")
+			client:NotifyLocalized("bioAlreadyOn")
 		elseif (result == PLUGIN.ERROR_ALREADY_DISABLED) then
-			client:Notify("Your biosignal is already disabled!")
+			client:NotifyLocalized("bioAlreadyOff")
 		end
 	end
 
@@ -150,23 +151,25 @@ end
 
 do
 	local COMMAND = {}
-	COMMAND.description = "Turn a character's biosignal on or off. Will alert other units."
+	COMMAND.description = "@charSetBioDesc"
+	COMMAND.adminOnly = true
 	COMMAND.arguments = {
 		ix.type.player,
 		ix.type.bool
 	}
+	COMMAND.alias = {"CharSetBio", "CharSetBiosignal"}
 
 	function COMMAND:OnRun(client, target, bEnable)
 		local result = PLUGIN:SetPlayerBiosignal(target, bEnable)
 	
 		if (result == PLUGIN.ERROR_NOT_COMBINE) then
-			client:Notify(target:Name() .. " is not the Combine!")
+			client:NotifyLocalized("targetNotCombine", target:Name())
 		elseif (result == PLUGIN.ERROR_ALREADY_ENABLED) then
-			client:Notify(target:Name() .. "'s biosignal is already enabled!")
+			client:NotifyLocalized("targetBioAlreadyOn", target:Name())
 		elseif (result == PLUGIN.ERROR_ALREADY_DISABLED) then
-			client:Notify(target:Name() .. "'s biosignal is already disabled!")
+			client:NotifyLocalized("targetBioAlreadyOff", target:Name())
 		else
-			client:Notify("You have " .. (bEnable and "enabled" or "disabled") .. " " .. target:Name() .. "'s biosignal.")
+			client:NotifyLocalized("bioSet", target:Name(), bEnable and L("enabled") or L("disabled"))
 		end
 	end
 
@@ -177,39 +180,49 @@ do
 	ix.command.Add("CharSetBiosignalStatus", COMMAND)
 end
 
+-- do
+-- 	local COMMAND = {}
+-- 	COMMAND.description = "Set whether a Citizen has CID tags on their clothes."
+-- 	COMMAND.arguments = {
+-- 		ix.type.player,
+-- 		ix.type.bool
+-- 	}
+
+-- 	function COMMAND:OnRun(client, target, hasTags)
+-- 		if (hasTags and !target:GetCharacter():GetData("IsCIDTagGone")) then
+-- 			client:Notify(target:Name() .. " already has CID tags!")
+-- 		elseif (!hasTags and target:GetCharacter():GetData("IsCIDTagGone")) then
+-- 			client:Notify(target:Name() .. " already has no CID tags!")
+-- 		else
+-- 			client:GetCharacter():SetData("IsCIDTagGone", !hasTags)
+
+-- 			client:Notify("You have " .. (hasTags and "added" or "removed") .. " " .. target:Name() .. "'s CID tags.")
+-- 		end
+-- 	end
+
+-- 	function COMMAND:OnCheckAccess(client)
+-- 		return client:IsAdmin() and ix.config.Get("useTagSystem")
+-- 	end
+
+-- 	ix.command.Add("CharSetHasTags", COMMAND)
+-- end
+
 do
 	local COMMAND = {}
-	COMMAND.description = "Set whether a Citizen has CID tags on their clothes."
-	COMMAND.arguments = {
-		ix.type.player,
-		ix.type.bool
-	}
-
-	function COMMAND:OnRun(client, target, hasTags)
-		if (hasTags and !target:GetCharacter():GetData("IsCIDTagGone")) then
-			client:Notify(target:Name() .. " already has CID tags!")
-		elseif (!hasTags and target:GetCharacter():GetData("IsCIDTagGone")) then
-			client:Notify(target:Name() .. " already has no CID tags!")
-		else
-			client:GetCharacter():SetData("IsCIDTagGone", !hasTags)
-
-			client:Notify("You have " .. (hasTags and "added" or "removed") .. " " .. target:Name() .. "'s CID tags.")
-		end
-	end
-
-	function COMMAND:OnCheckAccess(client)
-		return client:IsAdmin() and ix.config.Get("useTagSystem")
-	end
-
-	ix.command.Add("CharSetHasTags", COMMAND)
-end
-
-do
-	local COMMAND = {}
-	COMMAND.description = "Request assistance from Civil Protection."
+	COMMAND.description = "@requestDesc"
 	COMMAND.arguments = ix.type.text
+	COMMAND.alias = {"req"}
 
 	function COMMAND:OnRun(client, message)
+		if (!client:IsAdmin()) then
+			local lastRequest = client.ixLastRequest or 0
+			local cooldown = 20
+
+			if (lastRequest + cooldown > CurTime()) then
+				return "@requestCooldown", math.ceil(lastRequest + cooldown - CurTime())
+			end
+		end
+
 		local character = client:GetCharacter()
 		local inventory = character:GetInventory()
 
@@ -223,6 +236,8 @@ do
 				ix.chat.Send(client, "request_eavesdrop", message)
 
 				client:EmitSound("buttons/combine_button7.wav")
+
+				client.ixLastRequest = CurTime()
 			else
 				return "@notNow"
 			end

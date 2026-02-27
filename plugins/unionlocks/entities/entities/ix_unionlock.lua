@@ -19,13 +19,17 @@ function ENT:SetupDataTables()
 end
 
 if (SERVER) then
-	function ENT:GetLockPosition(door, normal)
+	function ENT:GetLockPosition(door, normal, fallback)
 		local index = door:LookupBone("handle")
-		local position = door:GetPos()
+		local position = fallback or door:GetPos()
 		normal = normal or door:GetForward():Angle()
 
-		if (index and index >= 1) then
-			position = door:GetBonePosition(index)
+		if (index and index >= 0) then
+			local bonePos = door:GetBonePosition(index)
+
+			if (bonePos and bonePos ~= vector_origin) then
+				position = bonePos
+			end
 		end
 
 		position = position + normal:Forward() * 7.2 + normal:Up() * 10 + normal:Right() * 2
@@ -66,8 +70,8 @@ if (SERVER) then
 			return client:NotifyLocalized("dNotValid")
 		end
 
-		local normal = client:GetEyeTrace().HitNormal:Angle()
-		local position, angles = self:GetLockPosition(door, normal)
+		local normal = trace.HitNormal:Angle()
+		local position, angles = self:GetLockPosition(door, normal, trace.HitPos)
 
 		local entity = ents.Create("ix_unionlock")
 		entity:SetPos(trace.HitPos)
@@ -154,7 +158,7 @@ if (SERVER) then
 
 		for _, v in pairs(client:GetCharacter():GetInventory():GetItems()) do
 			if (v.uniqueID == "cid") then
-				if (v.GetData("class") == "Civil Worker's Union") then
+				if (v:GetData("class") == "Civil Worker's Union") then
 					unionkey = true
 				end
 			end

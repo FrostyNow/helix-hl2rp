@@ -45,7 +45,7 @@ function PLUGIN:Tick()
 									combineCamera:Fire("SetIdle")
 									combineCamera:Fire("SetAngry")
 
-									Schema:AddCombineDisplayMessage(string.format(L("MovementViolation"), combineCamera:EntIndex()), Color(255, 128, 0, 255))
+									Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
 								end
 							end
 						end
@@ -100,7 +100,7 @@ function PLUGIN:PlayerSpawn(client)
 
 		if (client:GetNetVar("IsBiosignalGone")) then
 			if (ix.config.Get("useBiosignalSystem")) then
-				client:Notify(L("NoBiosignalNote", client))
+				self:SetPlayerBiosignal(client, true)
 			else
 				client:SetNetVar("IsBiosignalGone", false)
 			end
@@ -124,8 +124,8 @@ function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
 			local location = client:GetArea() != "" and client:GetArea() or "unknown location"
 			local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
-			Schema:AddCombineDisplayMessage(L("DownloadingTrauma"), Color(255, 255, 255, 255))
-			Schema:AddCombineDisplayMessage(string.format(L("UnitLostConsciousness"), digits, location), Color(255, 0, 0, 255))
+			Schema:AddCombineDisplayMessage("@DownloadingTrauma", Color(255, 255, 255, 255))
+			Schema:AddCombineDisplayMessage("@UnitLostConsciousness", Color(255, 0, 0, 255), digits, location)
 		end
 	end
 end

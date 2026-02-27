@@ -38,6 +38,9 @@ ix.lang.AddTable("english", {
 	hintCook = "Why don't you try cooking something every now and then? All you need is a stove and the right ingredients.",
 	hintPiss = "Don't piss off Civil Protection, or you'll find yourself being re-educated, or worse..",
 	hintCommand = "You can check a random hint immediately by typing /hint.",
+	hintJunks = "You can find useful items in the junks.",
+	hintRecycle = "You can recycle items to get some money.",
+	hintLaundry = "You can wash clothes to get some money.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -67,6 +70,9 @@ ix.lang.AddTable("korean", {
 	hintCook = "요리를 해보는 건 어떻습니까? 가스레인지와 적절한 재료만 있으면 됩니다.",
 	hintPiss = "시민 보호 기동대의 눈밖에 나지 마십시오. 재교육을 받거나 더 나쁜 일에 처할 수 있습니다..",
 	hintCommand = "/hint를 입력하여 무작위 도움말 중 하나를 즉시 확인할 수 있습니다.",
+	hintJunks = "쓰레기 더미에서 유용한 아이템을 찾을 수 있습니다.",
+	hintRecycle = "쓰레기를 재활용하여 돈을 벌 수 있습니다.",
+	hintLaundry = "옷을 세탁하여 돈을 벌 수 있습니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -113,6 +119,9 @@ ix.hints.Register("hintCP")
 ix.hints.Register("hintCook")
 ix.hints.Register("hintPiss")
 ix.hints.Register("hintCommand")
+ix.hints.Register("hintJunks")
+ix.hints.Register("hintRecycle")
+ix.hints.Register("hintLaundry")
 
 ix.command.Add("Hint", {
 	description = "@cmdHintDesc",

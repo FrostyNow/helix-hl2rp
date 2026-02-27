@@ -1,0 +1,9 @@
+ITEM.name = "Bag of Flour"
+ITEM.model = "models/hlvr/food/bag_flour_1.mdl"
+ITEM.description = "itemFlourDesc"
+ITEM.hunger = 10
+ITEM.thirst = -10
+ITEM.price = 100
+ITEM.usenum = 4
+ITEM.width = 2
+ITEM.height = 2

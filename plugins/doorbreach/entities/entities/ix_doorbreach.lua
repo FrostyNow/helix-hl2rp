@@ -51,6 +51,7 @@ if (SERVER) then
 		end
 
 		self:SetPos(position)
+		angles.x = angles.x + 90
 		self:SetAngles(angles)
 		self:SetParent(door)
 	end
@@ -91,7 +92,7 @@ if (SERVER) then
 	end
 
 	function ENT:Initialize()
-		self:SetModel("models/props_wasteland/prison_padlock001a.mdl")
+		self:SetModel("models/weapons/w_slam.mdl")
 		self:SetSolid(SOLID_VPHYSICS)
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetCollisionGroup(COLLISION_GROUP_WEAPON)

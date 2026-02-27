@@ -121,7 +121,7 @@ concommand.Add("ix_scanner_photocache", function(ply)
             end
         end
     else
-        ply:Notify("Only Combine Players can view the scanner photo cache!")
+        ply:NotifyLocalized("cacheCmbOnly")
         return false
     end
 end)

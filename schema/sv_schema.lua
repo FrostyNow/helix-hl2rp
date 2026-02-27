@@ -100,6 +100,26 @@ function Schema:SaveBroadcastConsoles()
 	ix.data.Set("broadcastConsoles", data)
 end
 
+function Schema:SaveMachines()
+	local data = {}
+	local machineClasses = {
+		["ix_recycler"] = true,
+		-- 필요한 다른 기계 클래스가 있다면 여기에 추가하세요.
+	}
+
+	for _, v in ipairs(ents.GetAll()) do
+		if (machineClasses[v:GetClass()]) then
+			data[#data + 1] = {
+				pos = v:GetPos(),
+				angles = v:GetAngles(),
+				class = v:GetClass()
+			}
+		end
+	end
+
+	ix.data.Set("machines", data)
+end
+
 -- data loading
 function Schema:LoadRationDispensers()
 	for _, v in ipairs(ix.data.Get("rationDispensers") or {}) do
@@ -178,6 +198,29 @@ function Schema:LoadBroadcastConsoles()
 		console:SetPos(v[1])
 		console:SetAngles(v[2])
 		console:Spawn()
+	end
+end
+
+function Schema:LoadMachines()
+	local restored = ix.data.Get("machines")
+
+	if (restored) then
+		for _, v in pairs(restored) do
+			local entity = ents.Create(v.class)
+
+			if (IsValid(entity)) then
+				entity:SetPos(v.pos)
+				entity:SetAngles(v.angles)
+				entity:Spawn()
+				entity:Activate()
+
+				local phys = entity:GetPhysicsObject()
+				if (IsValid(phys)) then
+					phys:EnableMotion(false)
+					phys:Sleep()
+				end
+			end
+		end
 	end
 end
 

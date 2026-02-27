@@ -35,6 +35,10 @@ ix.anim.SetModelClass("models/dpfilms/metropolice/hl2concept.mdl", "metrocop")
 ix.anim.SetModelClass("models/dpfilms/metropolice/policetrench.mdl", "metrocop")
 ix.anim.SetModelClass("models/metropolice/leet_police_v2.mdl", "metrocop")
 
+ix.anim.SetModelClass("models/Combine_Soldier.mdl", "overwatch")
+ix.anim.SetModelClass("models/Combine_Soldier_PrisonGuard.mdl", "overwatch")
+ix.anim.SetModelClass("models/Combine_Super_Soldier.mdl", "overwatch")
+
 ix.anim.SetModelClass("models/ninja/combine/combine_soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/ninja/combine/combine_soldier_prisonguard.mdl", "overwatch")
 ix.anim.SetModelClass("models/ninja/combine/combine_super_soldier.mdl", "overwatch")

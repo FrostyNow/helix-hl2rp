@@ -217,7 +217,8 @@ if (SERVER) then
 			local scaledDamage = 1 + (strength * ix.config.Get("strengthMeleeMultiplier", 0.3))
 
 			-- Fists start at 1 damage and are hard-capped to 10.
-			context.damage = math.Clamp(scaledDamage, 1, 10)
+			-- context.damage = math.Clamp(scaledDamage, 1, 10)
+			context.damage = damage + (strength * ix.config.Get("strengthMeleeMultiplier", 0.3))
 		end
 	end
 
@@ -232,12 +233,17 @@ if (SERVER) then
 			return
 		end
 
-		if (inflictor:GetClass() == "ix_hands") then
-			dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), 1, 10))
-		elseif (inflictor:GetClass() == "ix_stunstick") then
-			local maxDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 20 or 15
-			local minDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 3 or 1
-			dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), minDamage, maxDamage))
+		-- if (inflictor:GetClass() == "ix_hands") then
+		-- 	dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), 1, 10))
+		-- elseif (inflictor:GetClass() == "ix_stunstick") then
+		-- 	local maxDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 20 or 15
+		-- 	local minDamage = (inflictor.GetActivated and inflictor:GetActivated()) and 3 or 1
+		-- 	dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), minDamage, maxDamage))
+		-- end
+
+		if (inflictor:GetClass() == "ix_stunstick") then
+			local strength = entity:GetCharacter():GetAttribute("str", 0)
+			dmgInfo:SetDamage(dmgInfo:GetDamage() + (strength * ix.config.Get("strengthMeleeMultiplier", 0.3)))
 		end
 	end
 

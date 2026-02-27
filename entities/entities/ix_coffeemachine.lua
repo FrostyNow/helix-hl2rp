@@ -9,10 +9,17 @@ ENT.AdminOnly = true
 ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 
+ix.lang.AddTable("english", {
+	vendingCoffee = "COFFEE - ₮10",
+})
+ix.lang.AddTable("korean", {
+	vendingCoffee = "커피 - ₮10",
+})
+
 ENT.MaxRenderDistance = math.pow(256, 2)
 ENT.MaxStock = 20
 ENT.Items = {
-	{"COFFEE - 10", "coffee", 10}
+	{"vendingCoffee", "coffee", 10}
 }
 
 function ENT:GetStock(id)
@@ -205,7 +212,7 @@ else
 				surface.SetDrawColor(color_red)
 
 				if (itemInfo) then
-					draw.SimpleText(itemInfo[1], "ixVendingMachine", x + halfWidth, y + halfHeight, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+					draw.SimpleTextOutlined(L(itemInfo[1]), "ixVendingMachine", x + 4, y + halfHeight, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, 255))
 
 					if (self:GetStock(i) > 0) then
 						surface.SetDrawColor(color_blue)

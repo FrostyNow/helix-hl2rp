@@ -44,8 +44,8 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 	-- Alert all other units.
-	Schema:AddCombineDisplayMessage(L("DownloadingLostBiosignal"), Color(255, 255, 255, 255))
-	Schema:AddCombineDisplayMessage(string.format(L("BiosignalLostForUnit"), digits, location), Color(255, 0, 0, 255))
+	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(255, 255, 255, 255))
+	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 255), digits, location)
 
 	local soundQueue = {
 		"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -97,13 +97,13 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 				local location = client:GetArea() != "" and client:GetArea() or "unknown location"
 
-				client:AddCombineDisplayMessage(L("ConnectionRestored", client), Color(0, 255, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 255)) -- Alert this unit.
 
 				local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 				-- Alert all units.
-				Schema:AddCombineDisplayMessage(L("DownloadingFoundBiosignal"), Color(255, 255, 255, 255))
-				Schema:AddCombineDisplayMessage(string.format(L("NoncohesiveBiosignalFound"), digits, location), Color(0, 255, 0, 255))
+				Schema:AddCombineDisplayMessage("@DownloadingFoundBiosignal", Color(255, 255, 255, 255))
+				Schema:AddCombineDisplayMessage("@NoncohesiveBiosignalFound", Color(0, 255, 0, 255), digits, location)
 
 				local soundQueue = {
 					"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -117,7 +117,7 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 					end
 				end
 			else
-				client:AddCombineDisplayMessage(L("ErrorShuttingDown", client), Color(255, 0, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage("@ErrorShuttingDown", Color(255, 0, 0, 255)) -- Alert this unit.
 
 				self:DoPostBiosignalLoss(client)
 			end
@@ -150,5 +150,5 @@ function PLUGIN:DispatchRequestSignal(client, text)
 		net.WriteString(text)
 	net.Send(players)
 
-	Schema:AddCombineDisplayMessage(L("AssistanceRequestRecv"), Color(175, 125, 100, 255))
+	Schema:AddCombineDisplayMessage("@AssistanceRequestRecv", Color(175, 125, 100, 255))
 end

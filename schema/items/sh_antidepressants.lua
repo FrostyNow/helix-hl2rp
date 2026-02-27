@@ -7,27 +7,22 @@ ITEM.price = 15
 ITEM.functions.Use = {
 	text = "Swallow",
 	OnRun = function(item)
-		if (CLIENT) then
-			item.player:EmitSound("music/stingers/industrial_suspense1.wav", 60)
-		else
-			local client = item.player
+		local client = item.player
 
-			client:SetNetVar("noDepress", client:GetNetVar("noDepress", 0) - 0.5)
-			client:SetNetVar("blur", 0.95)
+		client:EmitSound("interface/items/inv_items_pills_2.ogg")
+		client:SendLua([[surface.PlaySound("music/stingers/industrial_suspense1.wav")]])
+		
+		client:ScreenFade(SCREENFADE.IN, Color(255, 255, 255, 150), 1, 1)
+		client:SetNetVar("noDepress", client:GetNetVar("noDepress", 0) + 1)
+		client:SetNetVar("antidepressant", true)
 
-			timer.Simple(8, function()
-				if (IsValid(client)) then
-					client:SetNetVar("blur", 0)
-					client:SetNetVar("noDepress", client:GetNetVar("noDepress", 0) + 1)
-				end
-			end)
-
-			timer.Simple(128, function()
-				if (IsValid(client)) then
-					client:SetNetVar("noDepress", client:GetNetVar("noDepress", 0.5) - 0.5)
-				end
-			end)
-		end
+		timer.Simple(60, function()
+			if (IsValid(client)) then
+				client:ScreenFade(SCREENFADE.OUT, Color(0, 0, 0, 150), 1, 1)
+				client:SetNetVar("antidepressant", false)
+				client:SetNetVar("noDepress", client:GetNetVar("noDepress", 0) - 1)
+			end
+		end)
 	end
 }
 

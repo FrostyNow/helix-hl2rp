@@ -4,7 +4,7 @@ function PANEL:Init()
 	self:SetSize(500, 700)	
 	self:MakePopup()
 	self:Center()
-	self:SetTitle("Paper")
+	self:SetTitle(L("Paper"))
 
 	self.controls = self:Add("DPanel")
 	self.controls:Dock(BOTTOM)
@@ -28,7 +28,7 @@ function PANEL:Init()
 
 	self.controls.Paint = function(this, w, h)
 		local text = self.contents:GetValue()
-		draw.SimpleText(Format("Number of characters: %s/3000", string.len(text)), "DermaDefault", 10, h/2, color_white, TEXT_ALIGN_LEFT, 1)
+		draw.SimpleText(L("paperCharCount", string.len(text), PAPERLIMIT), "DermaDefault", 10, h/2, color_white, TEXT_ALIGN_LEFT, 1)
 	end
 
 	self.confirm.DoClick = function(this)

@@ -3,16 +3,6 @@ ITEM.model = "models/props_junk/garbage_plasticbottle003a.mdl"
 ITEM.description = "itemOrangeSodaDesc"
 ITEM.thirst = 25
 ITEM.price = 6
-
-ITEM:Hook("Eat", function(item)
-	local client = item.player
-
-	client:EmitSound("interface/inv_drink_flask.ogg")
-	client:RestoreStamina(10)
-
-	for i = 1, 5 do
-		timer.Simple(i, function()
-			client:SetHealth(math.Clamp(client:Health() + 1, 0, client:GetMaxHealth()))
-		end)
-	end
-end)
+ITEM.heal = 5
+ITEM.sound = "interface/inv_drink_flask.ogg"
+ITEM.usenum = 2
