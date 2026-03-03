@@ -81,7 +81,7 @@ function PLUGIN:PreDrawOpaqueRenderables()
 		LocalPlayer():EmitSound(CLICK, 50, 120)
 	end
 
-	if (IsValid(viewEntity) and viewEntity:GetClass():find("scanner")) then
+	if (LocalPlayer():IsCombine() and Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) and IsValid(viewEntity) and viewEntity:GetClass():find("scanner")) then
 		viewEntity:SetNoDraw(true)
 
 		if (self.lastViewEntity ~= viewEntity) then

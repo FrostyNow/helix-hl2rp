@@ -18,13 +18,8 @@ net.Receive("ixScannerData", function(length, ply)
         local receivers = {}
 
         for k, v in ipairs(player.GetAll()) do
-            if v:IsCombine() or v:IsDispatch() then
+            if (Schema and Schema.CanPlayerSeeCombineOverlay and Schema:CanPlayerSeeCombineOverlay(v)) then
                 receivers[#receivers + 1] = v
-                ix.util.EmitQueuedSounds(v, {
-                    "npc/metropolice/vo/on1.wav",
-                    "npc/overwatch/radiovoice/preparevisualdownload.wav",
-                    "npc/metropolice/vo/off1.wav"
-                })
             end
         end
 

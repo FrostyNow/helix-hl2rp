@@ -101,22 +101,25 @@ function Schema.voices.GetVoiceList(class, text, delay)
 				local replacement = ""
 
 				if (info[key].table) then
-					local table = table.Random(info[key].table)
+					local voiceTable = table.Random(info[key].table)
 
-					replacement = table[1]
-					sound = table[2]
-
+					replacement = voiceTable[1]
+					sound = voiceTable[2]
 				else
-					
 					replacement = info[key].text
 					sound = info[key].sound
-				
 				end
 
-				output[#output + 1] = {sound, delay or 0.1}
-				phrase = phrase..replacement.." "
-				skip = i
-				current = current + 1
+				if (istable(sound)) then
+					sound = table.Random(sound)
+				end
+
+				if (sound and sound != "") then
+					output[#output + 1] = {sound, delay or 0.1}
+					phrase = phrase..replacement.." "
+					skip = i
+					current = current + 1
+				end
 				
 				continue
 			else

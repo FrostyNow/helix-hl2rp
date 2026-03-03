@@ -19,7 +19,20 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 ITEM.maxDurability = 150
 ITEM.outfitCategory = "suit"
 ITEM.pacData = {}
-ITEM.replacements = "models/dpfilms/metropolice/hdpolice.mdl"
+ITEM.replacements = {
+	{"humans/pandafishizens", "conceptbine_policeforce/rnd"}
+}
+ITEM.eqBodyGroups = {
+	["mask"] = 1,
+	["mask eyes"] = 1,
+	["cop mask filters"] = 1,
+	["mask back"] = 1,
+	["vest"] = 1,
+	["gloves"] = 1,
+	["boots"] = 1,
+	["lower gear"] = 1,
+	["lower radio"] = 1,
+}
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
@@ -45,7 +58,7 @@ ITEM.replacements = {
 }
 
 -- This will apply body groups.
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["blade"] = 1,
 	["bladeblur"] = 1
 }

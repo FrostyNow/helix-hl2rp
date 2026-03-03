@@ -2,7 +2,7 @@
 FACTION.name = "Citizen"
 FACTION.description = "A regular human citizen enslaved by the Universal Union."
 FACTION.color = Color(53, 156, 56, 255)
-FACTION.pay = 5
+-- FACTION.pay = 5
 FACTION.isDefault = true
 FACTION.models = {}
 

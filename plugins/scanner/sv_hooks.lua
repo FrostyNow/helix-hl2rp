@@ -110,7 +110,7 @@ end
 -- end
 
 function PLUGIN:CanPlayerReceiveScan(ply, photographer)
-	return ply:IsCombine() or ply:IsDispatch()
+	return Schema and Schema.CanPlayerSeeCombineOverlay and Schema:CanPlayerSeeCombineOverlay(ply)
 end
 
 function PLUGIN:PlayerSwitchFlashlight(ply, enabled)

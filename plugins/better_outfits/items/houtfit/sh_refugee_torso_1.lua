@@ -6,8 +6,8 @@ ITEM.width = 1
 ITEM.height = 1
 ITEM.price = 150
 ITEM.outfitCategory = "torso"
-ITEM.noResetBodyGroups = true
-ITEM.bodyGroups = {
+
+ITEM.eqBodyGroups = {
 	["torso"] = 4
 }
 ITEM.allowedModels = {

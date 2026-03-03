@@ -10,6 +10,25 @@ ITEM.outfitCategory = "model"
 ITEM.gasmask = false
 ITEM.resistance = false
 ITEM.pacData = {}
+ITEM.equipSound = {
+	"interface/items/inv_items_cloth_1.ogg",
+	"interface/items/inv_items_cloth_2.ogg",
+	"interface/items/inv_items_cloth_3.ogg"
+}
+ITEM.unequipSound = {
+	"interface/items/inv_items_cloth_1.ogg",
+	"interface/items/inv_items_cloth_2.ogg",
+	"interface/items/inv_items_cloth_3.ogg"
+}
+
+local function PlayRandomSound(client, sound)
+	if (istable(sound)) then
+		client:EmitSound(sound[math.random(1, #sound)])
+	elseif (isstring(sound)) then
+		client:EmitSound(sound)
+	end
+end
+
 ITEM.damage = {1, 1, 1, 1, 1, 1, 1}
 ITEM.maxDurability = 100
 ITEM.intAttr = 1
@@ -28,7 +47,7 @@ ITEM.replacements = {
 }
 
 -- This will apply body groups.
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["blade"] = 1,
 	["bladeblur"] = 1
 }
@@ -93,25 +112,18 @@ function ITEM:RemoveOutfit(client)
 		end
 	end
 
-	for k, _ in pairs(self.bodyGroups or {}) do
+	for k, _ in pairs(self.eqBodyGroups or {}) do
 		local index = client:FindBodygroupByName(k)
 
 		if (index > -1) then
 			client:SetBodygroup(index, 0)
-
-			local groups = character:GetData("groups", {})
-
-			if (groups[index]) then
-				groups[index] = nil
-				character:SetData("groups", groups)
-			end
 		end
 	end
 
 	-- restore the original bodygroups
 	if (character:GetData("oldGroups" .. self.outfitCategory)) then
 		for k, v in pairs(character:GetData("oldGroups" .. self.outfitCategory, {})) do
-			local index = tonumber(k) or client:FindBodygroupByName(k)
+			local index = isnumber(k) and k or client:FindBodygroupByName(k)
 
 			if (index and index > -1) then
 				client:SetBodygroup(index, tonumber(v) or 0)
@@ -120,6 +132,23 @@ function ITEM:RemoveOutfit(client)
 
 		character:SetData("groups", character:GetData("oldGroups" .. self.outfitCategory, {}))
 		character:SetData("oldGroups" .. self.outfitCategory, nil)
+	end
+
+	-- Re-apply bodygroups from other equipped items to handle intersections
+	for _, item in pairs(character:GetInventory():GetItems()) do
+		if (item.id != self.id and item:GetData("equip") and item.eqBodyGroups) then
+			local bgs = item.eqBodyGroups
+			for bgName, bgValue in pairs(bgs) do
+				local index = client:FindBodygroupByName(bgName)
+				if (index > -1) then
+					client:SetBodygroup(index, bgValue)
+					
+					local currentGroups = character:GetData("groups", {})
+					currentGroups[index] = bgValue
+					character:SetData("groups", currentGroups)
+				end
+			end
+		end
 	end
 
 	if (self.attribBoosts) then
@@ -159,6 +188,9 @@ function ITEM:RemoveAttachment(id, client)
 end
 
 function ITEM:UpdateResistance(client)
+	client = client or self.player or self:GetOwner()
+	if (!IsValid(client)) then return end
+
 	local char = client:GetCharacter()
 	if (!char) then return end
 	local items = char:GetInventory():GetItems()
@@ -224,10 +256,14 @@ function ITEM:OnInstanced(client)
 end
 
 ITEM:Hook("drop", function(item)
-	local client = item.player
+	local client = item:GetOwner()
 	if (item:GetData("equip")) then
-		item:RemoveOutfit(item:GetOwner())
-		armorPlayer(item.player, item.player, 0)
+		if (IsValid(client)) then
+			PlayRandomSound(client, item.unequipSound)
+		end
+
+		item:RemoveOutfit(client)
+		armorPlayer(client, client, 0)
 	end
 end)
 
@@ -238,6 +274,10 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 	OnRun = function(item)
 		local client = item.player
 		
+		if (IsValid(client)) then
+			PlayRandomSound(client, item.unequipSound)
+		end
+
 		armorPlayer(item.player, item.player, 0)
 		
 		item:RemoveOutfit(item.player)
@@ -254,6 +294,104 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 			hook.Run("CanPlayerUnequipItem", client, item) != false and item.invID == client:GetCharacter():GetInventory():GetID()
 	end
 }
+
+function ITEM:ApplyOutfit(client)
+	client = client or self.player or self:GetOwner()
+	if (!IsValid(client)) then return end
+
+	local char = client:GetCharacter()
+	if (!char) then return end
+
+	local model = client:GetModel()
+
+	if (self.gasmask == true) then
+		client:SetNetVar("gasmask", true)
+	else
+		client:SetNetVar("gasmask", false)
+	end
+
+	self:UpdateResistance(client)
+
+	local armorAmount = self.armorAmount
+	if (self:GetData("Durability", self.maxDurability) <= 0) then
+		armorAmount = armorAmount * 0.5
+	end
+	armorPlayer(client, client, armorAmount)
+
+	if (type(self.OnGetReplacement) == "function") then
+		local replacement = self:OnGetReplacement()
+		char:SetData("oldModel" .. self.outfitCategory, char:GetData("oldModel" .. self.outfitCategory, model))
+		char:SetModel(replacement)
+	elseif (self.replacement or self.replacements) then
+		char:SetData("oldModel" .. self.outfitCategory, char:GetData("oldModel" .. self.outfitCategory, model))
+
+		if (type(self.replacements) == "table") then
+			if (#self.replacements == 2 and type(self.replacements[1]) == "string") then
+				local newModel = model:gsub(self.replacements[1], self.replacements[2])
+				char:SetModel(newModel)
+			else
+				local newModel = model
+				for _, v in ipairs(self.replacements) do
+					newModel = newModel:gsub(v[1], v[2])
+				end
+				char:SetModel(newModel)
+			end
+		else
+			local newModel = self.replacement or self.replacements
+			char:SetModel(newModel)
+		end
+	end
+
+	if (self.newSkin) then
+		if (!char:GetData("oldSkin" .. self.outfitCategory)) then
+			char:SetData("oldSkin" .. self.outfitCategory, client:GetSkin())
+		end
+		client:SetSkin(self.newSkin)
+	end
+
+	local groups = char:GetData("groups", {})
+
+	if (!char:GetData("oldGroups" .. self.outfitCategory)) then
+		local oldGroups = {}
+		for i = 0, client:GetNumBodyGroups() - 1 do
+			local name = client:GetBodygroupName(i)
+			oldGroups[name] = client:GetBodygroup(i)
+		end
+
+		char:SetData("oldGroups" .. self.outfitCategory, oldGroups)
+	end
+
+	if (self.eqBodyGroups) then
+		local outfitGroups = {}
+
+		for k, value in pairs(self.eqBodyGroups) do
+			local index = client:FindBodygroupByName(k)
+
+			if (index > -1) then
+				outfitGroups[index] = value
+			end
+		end
+
+		local newGroups = table.Copy(char:GetData("groups", {}))
+
+		for index, value in pairs(outfitGroups) do
+			newGroups[index] = value
+			client:SetBodygroup(index, value)
+		end
+
+		if (!table.IsEmpty(newGroups)) then
+			char:SetData("groups", newGroups)
+		end
+	end
+
+	if (self.attribBoosts) then
+		for k, v in pairs(self.attribBoosts) do
+			char:AddBoost(self.uniqueID, k, v)
+		end
+	end
+
+	self:OnEquipped()
+end
 
 ITEM.functions.Equip = {
 	name = "equip",
@@ -276,87 +414,9 @@ ITEM.functions.Equip = {
 			end
 			
 			item:SetData("equip", true)
-			
-			if (item.gasmask == true) then
-				client:SetNetVar("gasmask", true)
-			else
-				client:SetNetVar("gasmask", false)
-			end
-			
-			item:UpdateResistance(client)
-			
-			item.player:EmitSound("snd_jack_clothequip.wav", 80)
-			
-			local armorAmount = item.armorAmount
-			if (item:GetData("Durability", item.maxDurability) <= 0) then
-				armorAmount = armorAmount * 0.5
-			end
-			armorPlayer(item.player, item.player, armorAmount)
+			PlayRandomSound(client, item.equipSound)
+			item:ApplyOutfit(client)
 
-			if (type(item.OnGetReplacement) == "function") then
-				char:SetData("oldModel" .. item.outfitCategory, char:GetData("oldModel" .. item.outfitCategory, item.player:GetModel()))
-				char:SetModel(item:OnGetReplacement())
-			elseif (item.replacement or item.replacements) then
-				char:SetData("oldModel" .. item.outfitCategory, char:GetData("oldModel" .. item.outfitCategory, item.player:GetModel()))
-
-				if (type(item.replacements) == "table") then
-					if (#item.replacements == 2 and type(item.replacements[1]) == "string") then
-						char:SetModel(item.player:GetModel():gsub(item.replacements[1], item.replacements[2]))
-					else
-						for _, v in ipairs(item.replacements) do
-							char:SetModel(item.player:GetModel():gsub(v[1], v[2]))
-						end
-					end
-				else
-					char:SetModel(item.replacement or item.replacements)
-				end
-			end
-
-			if (item.newSkin) then
-				char:SetData("oldSkin" .. item.outfitCategory, item.player:GetSkin())
-				item.player:SetSkin(item.newSkin)
-			end
-
-			local groups = char:GetData("groups", {})
-
-			if (!table.IsEmpty(groups)) then
-				char:SetData("oldGroups" .. item.outfitCategory, table.Copy(groups))
-	
-				if !item.noResetBodyGroups then
-					client:ResetBodygroups()
-				end
-			end
-
-			if (item.bodyGroups) then
-				groups = {}
-	
-				for k, value in pairs(item.bodyGroups) do
-					local index = item.player:FindBodygroupByName(k)
-	
-					if (index > -1) then
-						groups[index] = value
-					end
-				end
-	
-				local newGroups = char:GetData("groups", {})
-	
-				for index, value in pairs(groups) do
-					newGroups[index] = value
-					item.player:SetBodygroup(index, value)
-				end
-	
-				if (!table.IsEmpty(newGroups)) then
-					char:SetData("groups", newGroups)
-				end
-			end
-
-			if (item.attribBoosts) then
-				for k, v in pairs(item.attribBoosts) do
-					char:AddBoost(item.uniqueID, k, v)
-				end
-			end
-
-			item:OnEquipped()
 			return false
 	end,
 	OnCanRun = function(item)
@@ -441,9 +501,17 @@ function ITEM:OnRemoved()
 end
 
 function ITEM:OnEquipped()
+	hook.Run("OnItemEquipped", self, self:GetOwner())
 end
 
 function ITEM:OnUnequipped()
+	hook.Run("OnItemUnequipped", self, self:GetOwner())
+end
+
+function ITEM:OnLoadout()
+	if (self:GetData("equip")) then
+		self:ApplyOutfit(self.player or self:GetOwner())
+	end
 end
 
 function ITEM:CanEquipOutfit()

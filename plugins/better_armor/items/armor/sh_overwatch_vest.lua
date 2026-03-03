@@ -5,7 +5,7 @@ ITEM.price = 600
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["kevlar"] = 6
 }
 ITEM.allowedModels = {
@@ -36,7 +36,7 @@ ITEM.allowedModels = {
     "models/humans/pandafishizens/female_24.mdl"
 }
 ITEM.noBusiness = true
-ITEM.noResetBodyGroups = true
+
 ITEM.armorAmount = 60
 ITEM.damage = {.7, .7, .7, .7, .7, .7, .7}
 ITEM.resistance = true

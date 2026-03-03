@@ -310,9 +310,9 @@ ITEM.functions.Broadcast = {
 		itemTable:SetData("broadcast", !itemTable:GetData("broadcast", false))
 		
 		if itemTable:GetData("broadcast") then
-			itemTable.player:NotifyLocalized("You are now broadcasting over all channels on "..itemTable:GetData("frequency","100.0").." MHz.")
+			itemTable.player:NotifyLocalized("radioBroadcasting", itemTable:GetData("frequency","100.0"))
 		else
-			itemTable.player:NotifyLocalized("You are no longer broadcasting over all channels.")
+			itemTable.player:NotifyLocalized("radioNotBroadcasting")
 		end
 		
 		return false
@@ -476,9 +476,9 @@ ITEM.functions.Silence = {
 		if (itemTable:GetData("enabled")) then
 			itemTable:SetData("silenced", !itemTable:GetData("silenced", false))
 			if itemTable:GetData("silenced") then
-				itemTable.player:NotifyLocalized("You silenced the radio.")
+				itemTable.player:NotifyLocalized("radioSilenced")
 			else
-				itemTable.player:NotifyLocalized("You unsilenced the radio.")
+				itemTable.player:NotifyLocalized("radioUnsilenced")
 			end
 		end
 		return false
@@ -544,7 +544,7 @@ ITEM.functions.Listen = {
 		else
 			character:SetData("scanning",keepScanning)
 			itemTable:SetData("scanning",false)
-			itemTable.player:NotifyLocalized("You are no longer listening to all channels.")
+			itemTable.player:NotifyLocalized("allChannelsDisabled")
 		end
 		
 		return false
@@ -773,11 +773,11 @@ function ITEM.postHooks.Activate(item, status)
 		if itemTable:GetData("active") then
 			character:SetData("frequency",itemTable:GetData("frequency","100.0"))
 			character:SetData("channel",itemTable:GetData("channel","1"))
-			itemTable.player:NotifyLocalized("You activated the radio.")
+			itemTable.player:NotifyLocalized("radioActivated")
 		else
 			itemTable:SetData("broadcast",false)
 			character:SetData("frequency","")
-			itemTable.player:NotifyLocalized("You deactivated the radio.")
+			itemTable.player:NotifyLocalized("radioDeactivated")
 		end
 		
 		itemTable.player:EmitSound("buttons/lever8.wav", 50, math.random(170, 180), 0.25)

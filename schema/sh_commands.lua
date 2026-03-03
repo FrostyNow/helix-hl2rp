@@ -303,7 +303,7 @@ ix.command.Add("CharSetName", {
 	OnRun = function(self, client, target, name)
 		-- display string request panel if no name was specified
 		if (!isstring(name) or !name:find("%S")) then
-			return client:RequestString("@cmdCharSetNameTitle", "@cmdCharSetNameDescription", function(text)
+			return client:RequestString("@cmdCharSetNameTitle", "@cmdCharSetName", function(text)
 				ix.command.Run(client, "CharSetName", {target:GetName(), text})
 			end, target:GetName())
 		end

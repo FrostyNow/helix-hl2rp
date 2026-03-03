@@ -8,6 +8,7 @@ PLUGIN.bind = KEY_N
 
 ix.lang.AddTable("english", {
 	voiceMenuTitle = "Voice Menu",
+	voiceMenuDesc = "Open the voice selection menu.",
 	voiceMenuSearch = "Search by command or text...",
 	voiceMenuFavorites = "Favorites",
 	voiceMenuNoClasses = "No available voice classes.",
@@ -28,6 +29,7 @@ ix.lang.AddTable("english", {
 
 ix.lang.AddTable("korean", {
 	voiceMenuTitle = "음성 메뉴",
+	voiceMenuDesc = "음성 선택 메뉴를 엽니다.",
 	voiceMenuSearch = "명령어 또는 출력 텍스트 검색...",
 	voiceMenuFavorites = "즐겨찾기",
 	voiceMenuNoClasses = "사용 가능한 음성 클래스가 없습니다.",
@@ -45,6 +47,10 @@ ix.lang.AddTable("korean", {
 	voiceMenuInfoOverwatch = "감시인 무전입니다. 라디오 채널 전용입니다.",
 	voiceMenuInfoDefault = "항목을 선택하면 일반/라디오 채널을 선택하실 수 있습니다."
 })
+
+if (SERVER) then
+	util.AddNetworkString("ixToggleVoiceMenu")
+end
 
 if (CLIENT) then
 	local RADIO_ITEM_IDS = {
@@ -898,4 +904,16 @@ if (CLIENT) then
 			return
 		end
 	end
+	net.Receive("ixToggleVoiceMenu", function()
+		toggleVoiceMenu(LocalPlayer())
+	end)
 end
+
+ix.command.Add("Voice", {
+	description = "@voiceMenuDesc",
+	alias = {"VoiceMenu"},
+	OnRun = function(self, client)
+		net.Start("ixToggleVoiceMenu")
+		net.Send(client)
+	end
+})

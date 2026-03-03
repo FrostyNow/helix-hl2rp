@@ -60,7 +60,7 @@ end
 local COMMAND_PREFIX = "/"
 
 function Schema:ChatTextChanged(text)
-	if (LocalPlayer():IsCombine()) then
+	if (LocalPlayer():IsCombine() and !Schema:IsConceptCombine(LocalPlayer())) then
 		local key = nil
 
 		if (text == COMMAND_PREFIX .. "radio") then
@@ -88,9 +88,17 @@ function Schema:CanPlayerJoinClass(client, class, info)
 end
 
 function Schema:CharacterLoaded(character)
-	if (character:IsCombine()) then
+	-- Creation is now handled by the Think hook for dynamic mask support
+end
+
+function Schema:Think()
+	local client = LocalPlayer()
+	if (!client:GetCharacter()) then return end
+
+	local bCanSeeOverlay = Schema:CanPlayerSeeCombineOverlay(client)
+	if (bCanSeeOverlay and !IsValid(ix.gui.combine)) then
 		vgui.Create("ixCombineDisplay")
-	elseif (IsValid(ix.gui.combine)) then
+	elseif (!bCanSeeOverlay and IsValid(ix.gui.combine)) then
 		ix.gui.combine:Remove()
 	end
 end
@@ -113,6 +121,32 @@ local COLOR_BLACK_WHITE = {
 
 local combineOverlay = ix.util.GetMaterial("effects/combine_binocoverlay")
 local cinematicOverlay = ix.util.GetMaterial("nco/cinover")
+
+-- Concept models that should have their head scaled based on the mask bodygroup
+-- No longer needed as it's handled by Schema:IsConceptCombine
+
+
+function Schema:ApplyMaskScale(v)
+	if (!IsValid(v)) then return end
+
+	local headBone = v:LookupBone("ValveBiped.Bip01_Head1")
+
+	if (!headBone) then
+		return
+	end
+
+	if (Schema:IsConceptCombine(v)) then
+		local maskIndex = v:FindBodygroupByName("mask")
+
+		if (maskIndex != -1) then
+			local scale = (v:GetBodygroup(maskIndex) >= 1) and 0.9 or 1
+			v:ManipulateBoneScale(headBone, Vector(scale, scale, scale))
+			return
+		end
+	end
+
+	v:ManipulateBoneScale(headBone, Vector(1, 1, 1))
+end
 -- local scannerFirstPerson = false
 
 function Schema:RenderScreenspaceEffects()
@@ -145,7 +179,7 @@ function Schema:RenderScreenspaceEffects()
 
 	DrawColorModify(colorModify)
 
-	if (LocalPlayer():IsCombine()) then
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		render.UpdateScreenEffectTexture()
 
 		combineOverlay:SetFloat("$alpha", 0.1)
@@ -447,178 +481,6 @@ netstream.Hook("ixFLIRToggle", function(bool)
 	end
 end)
 
-local adminAnonHintColor = Color(170, 170, 170)
-
-local function IsAdminViewingAnonymous(target)
-	local localClient = LocalPlayer()
-
-	if (!IsValid(localClient) or !localClient:IsAdmin()) then
-		return false
-	end
-
-	local ourCharacter = localClient:GetCharacter()
-	local targetCharacter = IsValid(target) and target:GetCharacter()
-
-	if (!ourCharacter or !targetCharacter) then
-		return false
-	end
-
-	local recognized = hook.Run("IsCharacterRecognized", ourCharacter, targetCharacter:GetID())
-		or hook.Run("IsPlayerRecognized", target)
-
-	return !recognized
-end
-
-local function CompactText(text, maxLength)
-	text = tostring(text or ""):gsub("%s+", " ")
-
-	if (text:utf8len() > maxLength) then
-		return text:utf8sub(1, maxLength - 3) .. "..."
-	end
-
-	return text
-end
-
-hook.Add("LoadFonts", "ixAdminAnonHintFont", function(font, genericFont)
-	surface.CreateFont("ixAdminAnonHintFont", {
-		font = genericFont,
-		size = math.max(ScreenScale(6), 16),
-		weight = 450,
-		italic = true
-	})
-end)
-
--- remove legacy hook IDs so autoreload does not stack duplicate rows
-hook.Remove("PopulateImportantCharacterInfo", "ixHL2RPAdminAnonImportantInfo")
-hook.Remove("PopulateImportantCharacterInfo", "ixAdminAnonImportantInfo")
-hook.Remove("PopulateCharacterInfo", "ixHL2RPAdminAnonDescriptionInfo")
-
-hook.Add("PopulateImportantCharacterInfo", "ixAdminAnonImportantInfo", function(client, character, container)
-	if (!IsAdminViewingAnonymous(client)) then
-		return
-	end
-
-	local displayedName = hook.Run("GetCharacterName", client) or character:GetName()
-	local realName = character:GetName()
-	local unknownName = L("unknown")
-
-	if (displayedName == realName or displayedName != unknownName or IsValid(container:GetRow("adminRealName"))) then
-		return
-	end
-
-	local realNameRow = container:AddRowAfter("name", "adminRealName")
-	realNameRow:SetFont("ixAdminAnonHintFont")
-	realNameRow:SetTextColor(adminAnonHintColor)
-	realNameRow:SetText("(" .. CompactText(realName, 64) .. ")")
-	realNameRow:SizeToContents()
-end)
-
-local function PatchScoreboardPanels()
-	local iconTable = vgui.GetControlTable("ixScoreboardIcon")
-
-	if (iconTable and !iconTable.ixAdminAnonPatchApplied) then
-		iconTable.ixAdminAnonPatchApplied = true
-
-		function iconTable:Paint(width, height)
-			if (!self.material) then
-				return
-			end
-
-			surface.SetMaterial(self.material)
-
-			if (self.bHidden) then
-				local row = self:GetParent()
-				local target = IsValid(row) and row.player
-
-				if (IsAdminViewingAnonymous(target)) then
-					surface.SetDrawColor(128, 128, 128, 255)
-				else
-					surface.SetDrawColor(0, 0, 0, 255)
-				end
-			else
-				surface.SetDrawColor(255, 255, 255, 255)
-			end
-
-			surface.DrawTexturedRect(0, 0, width, height)
-		end
-	end
-
-	local rowTable = vgui.GetControlTable("ixScoreboardRow")
-
-	if (rowTable and !rowTable.ixAdminAnonPatchApplied) then
-		rowTable.ixAdminAnonPatchApplied = true
-
-		local oldInit = rowTable.Init
-		local oldUpdate = rowTable.Update
-
-		function rowTable:Init(...)
-			oldInit(self, ...)
-
-			self.realNameHint = self.name:Add("DLabel")
-			self.realNameHint:SetFont("ixAdminAnonHintFont")
-			self.realNameHint:SetTextColor(adminAnonHintColor)
-			self.realNameHint:SetMouseInputEnabled(false)
-			self.realNameHint:SetVisible(false)
-
-			self.realDescriptionHint = self.description:Add("DLabel")
-			self.realDescriptionHint:SetFont("ixAdminAnonHintFont")
-			self.realDescriptionHint:SetTextColor(adminAnonHintColor)
-			self.realDescriptionHint:SetMouseInputEnabled(false)
-			self.realDescriptionHint:SetVisible(false)
-		end
-
-		function rowTable:Update(...)
-			oldUpdate(self, ...)
-
-			local target = self.player
-			local character = IsValid(target) and target:GetCharacter()
-			local showHints = IsAdminViewingAnonymous(target) and character
-
-			if (!showHints) then
-				if (IsValid(self.realNameHint)) then
-					self.realNameHint:SetVisible(false)
-				end
-
-				if (IsValid(self.realDescriptionHint)) then
-					self.realDescriptionHint:SetVisible(false)
-				end
-
-				return
-			end
-
-			local displayedName = self.name:GetText()
-			local realName = character:GetName()
-
-			if (displayedName != realName and IsValid(self.realNameHint)) then
-				self.realNameHint:SetText(" (" .. CompactText(realName, 48) .. ")")
-				self.realNameHint:SizeToContents()
-
-				surface.SetFont(self.name:GetFont())
-				local nameWidth = select(1, surface.GetTextSize(displayedName))
-				self.realNameHint:SetPos(nameWidth + 4, 0)
-				self.realNameHint:SetVisible(true)
-			elseif (IsValid(self.realNameHint)) then
-				self.realNameHint:SetVisible(false)
-			end
-
-			local displayedDescription = self.description:GetText()
-			local realDescription = character:GetDescription() or ""
-
-			if (realDescription != "" and displayedDescription != realDescription and IsValid(self.realDescriptionHint)) then
-				self.realDescriptionHint:SetText(" (" .. CompactText(realDescription, 80) .. ")")
-				self.realDescriptionHint:SizeToContents()
-
-				surface.SetFont(self.description:GetFont())
-				local descriptionWidth = select(1, surface.GetTextSize(displayedDescription))
-				self.realDescriptionHint:SetPos(descriptionWidth + 4, 0)
-				self.realDescriptionHint:SetVisible(true)
-			elseif (IsValid(self.realDescriptionHint)) then
-				self.realDescriptionHint:SetVisible(false)
-			end
-		end
-	end
-end
-
 
 function Schema:PrePlayerDraw(v)
 	if (v:GetCharacter() and !v:GetNoDraw() and v:Alive()) then
@@ -647,11 +509,12 @@ function Schema:PrePlayerDraw(v)
 		else
 			v:SetEyeTarget(v:EyePos() + v:GetAimVector() * 1000)
 		end
+
+		self:ApplyMaskScale(v)
 	end
 end
 
-hook.Add("InitializedSchema", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
-hook.Add("InitPostEntity", "ixHL2RPPatchScoreboardPanels", PatchScoreboardPanels)
+
 
 -- GLOBAL FIX: Detour character:GetData to sanitize groups on the fly
 -- This ensures cl_charload.lua receives clean data regardless of when it asks
@@ -673,6 +536,22 @@ hook.Add("InitPostEntity", "ixHL2RPfixBodygroups", function()
 			end
 			
 			return data
+		end
+	end
+end)
+
+hook.Add("InitPostEntity", "ixHL2RPModelHeadScale", function()
+	local modelPanel = vgui.GetControlTable("ixModelPanel")
+
+	if (modelPanel) then
+		local oldLayout = modelPanel.LayoutEntity
+
+		modelPanel.LayoutEntity = function(self, entity)
+			if (oldLayout) then
+				oldLayout(self, entity)
+			end
+
+			Schema:ApplyMaskScale(entity)
 		end
 	end
 end)
@@ -779,6 +658,8 @@ function Schema:OnCharacterMenuCreated(panel)
 		
 		Entity:SetAngles(Angle(0, yaw, 0))
 		Entity:SetIK(false)
+
+		Schema:ApplyMaskScale(Entity)
 
 		-- Eye fix (Look forward)
 		local arrow = Entity:GetForward() * 100
@@ -890,6 +771,7 @@ function Schema:OnCharacterMenuCreated(panel)
 				model:SetPoseParameter("eyes_pitch", 0)
 				model:SetPoseParameter("eyes_yaw", 0)
 				
+				Schema:ApplyMaskScale(model)
 				this:RunAnimation(model)
 			end
 		end

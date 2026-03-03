@@ -40,8 +40,8 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
-	flagGiveAll = "%s이(가) %s에게 모든 플래그를 부여했습니다!",
-	flagTakeAll = "%s이(가) %s의 모든 플래그를 제거했습니다!",
+	flagGiveAll = "%s(이)가 %s에게 모든 플래그를 부여했습니다!",
+	flagTakeAll = "%s(이)가 %s의 모든 플래그를 제거했습니다!",
 })
 
 --[[-------------------------------------------------------------------------

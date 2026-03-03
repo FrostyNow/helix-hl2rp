@@ -19,11 +19,15 @@ end
 
 function ITEM:OnEquipped()
 	self.player:SetArmor(self:GetData("armor", self.maxArmor))
+
+	hook.Run("OnItemEquipped", self, self.player)
 end
 
 function ITEM:OnUnequipped()
 	self:SetData("armor", math.Clamp(self.player:Armor(), 0, self.maxArmor))
 	self.player:SetArmor(0)
+
+	hook.Run("OnItemUnequipped", self, self.player)
 end
 
 function ITEM:Repair(amount)

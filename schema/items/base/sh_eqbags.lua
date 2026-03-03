@@ -387,7 +387,9 @@ end)
 
 
 function ITEM:OnEquipped()
+	hook.Run("OnItemEquipped", self, self.player)
 end
 
 function ITEM:OnUnequipped()
+	hook.Run("OnItemUnequipped", self, self.player)
 end

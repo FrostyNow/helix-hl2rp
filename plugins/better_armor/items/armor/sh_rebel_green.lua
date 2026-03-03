@@ -21,7 +21,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH, HITGROUP_LEFTARM, HITGROUP_LEFTLEG, HITGROUP_RIGHTLEG}
 ITEM.outfitCategory = "outfit"
 ITEM.pacData = {}
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["torso"] = 9,
 	["legs"] = 5,
 	["hands"] = 1,
@@ -52,7 +52,7 @@ ITEM.replacements = {
 }
 
 -- This will apply body groups.
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["blade"] = 1,
 	["bladeblur"] = 1
 }

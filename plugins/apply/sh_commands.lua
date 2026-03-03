@@ -11,7 +11,7 @@ ix.command.Add("Apply", {
 				local name = name
 				local id = id
 
-				for _, v in pairs(inventory:GetItems()) do
+				for _, v in pairs(inv:GetItems()) do
 					if (v.uniqueID == "cid") then
 						name = v:GetData("name")
 						id = v:GetData("id")
@@ -19,7 +19,7 @@ ix.command.Add("Apply", {
 				end
 				
 				if id then
-					ix.chat.Send(client, "ic", name .. " #" .. id)
+					ix.chat.Send(client, "me", name .. " #" .. id)
 				elseif client:IsCombine() then
 					return client:NotifyLocalized("notCitizen", client:Name())
 				else

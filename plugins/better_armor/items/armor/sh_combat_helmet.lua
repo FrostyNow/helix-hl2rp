@@ -5,7 +5,7 @@ ITEM.price = 200
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "headgear"
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["headgear"] = 12
 }
 ITEM.allowedModels = {
@@ -36,7 +36,7 @@ ITEM.allowedModels = {
     "models/humans/pandafishizens/female_24.mdl"
 }
 ITEM.noBusiness = true
-ITEM.noResetBodyGroups = true
+
 ITEM.armorAmount = 30
 ITEM.damage = {.9, .9, .9, .9, .9, .9, .9}
 ITEM.resistance = true

@@ -227,6 +227,8 @@ LANGUAGE = {
 	itemSuitShirtDesc = "A formal suit for men which was common before the war.",
 	itemWintercoatDesc = "A cosy coat that is good in cold winter.",
 	
+	mpfScannerDesc = "A metropolice scanner, it utilises Combine technology.",
+	
 	securitizedItemTooltip = "Class: Securitized",
 	sociocidalItemTooltip = "Class: Sociocidal",
 	itemLockedTooltip = "Security Locked",

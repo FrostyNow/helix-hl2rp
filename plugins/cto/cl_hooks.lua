@@ -68,7 +68,7 @@ end
 function PLUGIN:HUDPaint()
 	local client = LocalPlayer()
 
-	if (client:IsCombine()) then
+	if (Schema:CanPlayerSeeCombineOverlay(client)) then
 		local colorRed = Color(255, 0, 0, 255)
 		local colorObject = Color(150, 150, 200, 255)
 		local fontHeight = draw.GetFontHeight("BudgetLabel")

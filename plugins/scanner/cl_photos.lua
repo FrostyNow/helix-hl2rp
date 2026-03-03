@@ -46,6 +46,12 @@ net.Receive("ixScannerData", function()
 
     if (not data) then return end
 
+    ix.util.EmitQueuedSounds(LocalPlayer(), {
+        "npc/metropolice/vo/on1.wav",
+        "npc/overwatch/radiovoice/preparevisualdownload.wav",
+        "npc/metropolice/vo/off1.wav"
+    }, 0, 0.1, 0)
+
     if (IsValid(CURRENT_PHOTO)) then
         local panel = CURRENT_PHOTO
 
@@ -89,8 +95,8 @@ net.Receive("ixScannerData", function()
     CURRENT_PHOTO = panel
 end)
 
-concommand.Add("ix_scanner_photocache", function(ply)
-    if ply:IsCombine() then
+concommand.Add("ix_scanner_photocache", function()
+    if LocalPlayer():IsCombine() and Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then
         local frame = vgui.Create("DFrame")
         frame:SetTitle("Photo Cache")
         frame:SetSize(480, 360)
@@ -121,7 +127,7 @@ concommand.Add("ix_scanner_photocache", function(ply)
             end
         end
     else
-        ply:NotifyLocalized("cacheCmbOnly")
+        LocalPlayer():NotifyLocalized("cacheCmbOnly")
         return false
     end
 end)

@@ -6,7 +6,7 @@
 -- ITEM.height = 1
 -- ITEM.price = 250
 -- ITEM.outfitCategory = "head"
--- ITEM.noResetBodyGroups = true
+-- 
 -- ITEM.bodyGroups = {
 -- 	["headgear"] = 2
 -- }

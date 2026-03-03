@@ -115,3 +115,24 @@ ix.command.Add("ForceCleanUpItems", {
 
 -- 	end
 -- })
+ix.command.Add("DebugOutfit", {
+	description = "Manually re-applies equipped outfits for debugging.",
+	adminOnly = true,
+	arguments = {bit.bor(ix.type.player, ix.type.optional)},
+	OnRun = function(self, client, target)
+		target = target or client
+		local character = target:GetCharacter()
+		if (!character) then return "Invalid character." end
+
+		local inventory = character:GetInventory()
+		local count = 0
+		for _, v in pairs(inventory:GetItems()) do
+			if (v:GetData("equip") and v.OnLoadout and !v.isWeapon) then
+				v:OnLoadout(target)
+				count = count + 1
+			end
+		end
+
+		return string.format("Re-applied %s items for %s.", count, target:GetName())
+	end
+})

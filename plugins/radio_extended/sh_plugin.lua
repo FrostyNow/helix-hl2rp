@@ -101,6 +101,16 @@ ix.lang.AddTable("english", {
 
 	itemRadioRepeaterDesc = "A repeater that receives one frequency and transmits it on another frequency.",
 	itemRadioRepeaterFreqs = "Receive Frequency: %s MHz\nTransmit Frequency: %s MHz",
+
+	radioSilenced = "You silenced the radio.",
+	radioUnsilenced = "You unsilenced the radio.",
+	allChannelsDisabled = "You are no longer listening to all channels.",
+	radioActivated = "You activated the radio.",
+	radioDeactivated = "You deactivated the radio.",
+	radioBroadcasting = "You are now broadcasting over all channels on %s MHz.",
+	radioNotBroadcasting = "You are no longer broadcasting over all channels.",
+	radioListening = "You are now listening to all channels.",
+	radioNotListening = "You are no longer listening to all channels.",
 })
 
 ix.lang.AddTable("korean", {
@@ -210,6 +220,16 @@ ix.lang.AddTable("korean", {
 
 	itemRadioRepeaterDesc = "한 주파수를 받아서 다른 주파수로 연장하여 신호를 보내주는 증폭기입니다.",
 	itemRadioRepeaterFreqs = "수신 주파수: %s MHz\n송신 주파수: %s MHz",
+
+	radioSilenced = "무전기를 음소거했습니다.",
+	radioUnsilenced = "무전기의 음소거를 해제했습니다.",
+	allChannelsDisabled = "모든 채널 청취를 중지했습니다.",
+	radioActivated = "무전기를 활성화했습니다.",
+	radioDeactivated = "무전기를 비활성화했습니다.",
+	radioBroadcasting = "무전기로 %s MHz에서 모든 채널에 방송합니다.",
+	radioNotBroadcasting = "모든 채널 방송을 중지했습니다.",
+	radioListening = "무전기로 %s MHz에서 모든 채널을 청취합니다.",
+	radioNotListening = "모든 채널 청취를 중지했습니다.",
 })
 
 -- Anonymous names, if radio callsigns are anonymous

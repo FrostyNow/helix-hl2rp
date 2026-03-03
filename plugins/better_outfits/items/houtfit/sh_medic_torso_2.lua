@@ -5,8 +5,8 @@ ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "torso"
-ITEM.noResetBodyGroups = true
-ITEM.bodyGroups = {
+
+ITEM.eqBodyGroups = {
 	["torso"] = 11
 }
 ITEM.allowedModels = {

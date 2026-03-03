@@ -30,7 +30,7 @@ function PLUGIN:OpenActMenu()
 
 	table.SortByMember(availableActs, "name", true)
 
-	local width, height = 640, 520
+	local width, height = 720, 600
 	ix.gui.actMenu = vgui.Create("EditablePanel")
 	ix.gui.actMenu:SetSize(width, height)
 	ix.gui.actMenu:Center()
@@ -47,21 +47,22 @@ function PLUGIN:OpenActMenu()
 		surface.SetDrawColor(ix.config.Get("color", color_white))
 		surface.DrawRect(0, 0, w, 32)
 		
-		draw.SimpleText(L("actMenuDesc"):upper(), "ixMenuButtonFontSmall", 8, 16, color_black, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L("actMenuDesc"):upper(), "ixMenuButtonFontSmall", 16, 16, color_black, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 	end
 
 	-- Search Bar
 	local search = ix.gui.actMenu:Add("ixIconTextEntry")
-	search:SetPos(8, 40)
-	search:SetSize(width - 16, 32)
+	search:Dock(TOP)
+	search:DockMargin(16, 40, 16, 8)
+	search:SetTall(32)
 	search:SetFont("ixMenuButtonFontSmall")
 	if (search.SetPlaceholderText) then
 		search:SetPlaceholderText(L("search").."...")
 	end
 
 	local scroll = ix.gui.actMenu:Add("DScrollPanel")
-	scroll:SetPos(8, 80)
-	scroll:SetSize(width - 16, height - 88)
+	scroll:Dock(FILL)
+	scroll:DockMargin(16, 0, 16, 16)
 
 	local layout = scroll:Add("DIconLayout")
 	layout:Dock(TOP)
@@ -75,7 +76,7 @@ function PLUGIN:OpenActMenu()
 		local currentAngle = client:GetNetVar("actEnterAngle")
 		if (currentAngle) then
 			local btn = layout:Add("DButton")
-			btn:SetSize(width - 32, 40)
+			btn:SetSize(width - 32 - 16, 40)
 			btn:SetText(L("actExit"):upper())
 			btn:SetFont("ixMenuButtonFontSmall")
 			btn:SetTextColor(Color(255, 100, 100))
@@ -108,7 +109,7 @@ function PLUGIN:OpenActMenu()
 				end
 
 				local btn = layout:Add("DButton")
-				btn:SetSize((width - 32) / 3 - 4, 40)
+				btn:SetSize((width - 32 - 16 - 8) / 3, 40)
 				btn:SetText(label:upper())
 				btn:SetFont("ixMenuButtonFontSmall")
 				btn:SetTextColor(color_white)

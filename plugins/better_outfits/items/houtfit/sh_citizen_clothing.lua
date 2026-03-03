@@ -149,7 +149,7 @@ local function DefineCitizenClothing()
 		ITEM.height = 1
 		ITEM.price = v.price or 50
 		ITEM.outfitCategory = v.category
-		ITEM.bodyGroups = {
+		ITEM.eqBodyGroups = {
 			[v.category] = v.index
 		}
 		ITEM.allowedModels = citizenModels
@@ -166,7 +166,7 @@ local function DefineCitizenClothing()
 			ITEM.noBusiness = true
 		end
 
-		ITEM.noResetBodyGroups = true
+		
 		
 		if (v.base == "base_armor") then
 			ITEM.armorAmount = v.armorAmount or 0

@@ -24,7 +24,7 @@ function CombHUD()
 	
 	if !LocalPlayer():IsValid() or !LocalPlayer():Alive() then return end -- you can fix this yourself, it errors and i cba to find the solution because it doesn't really matter since the hud still works
 	if !LocalPlayer():GetCharacter() then return end
-	if LocalPlayer():IsCombine() then
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		local tsin = TimedSin(.68, 200, 255, 0)
 		local area = LocalPlayer():GetArea() or "Unknown" -- fyi if you step out of an area and there's no new area this won't update
 		local tcolor = team.GetColor(LocalPlayer():Team())
@@ -143,7 +143,7 @@ local direction = {
 }
 
 local function CombineCompass()
-	if !LocalPlayer():IsCombine() then return end
+	if !Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then return end
 	local ang = LocalPlayer():EyeAngles()
 	local width = ScrW() * .23
 	local m = 1
@@ -188,7 +188,7 @@ local idlemessages = {
 hook.Add("Think", "AmbientMessages", function()
 	local lp = LocalPlayer()
 
-	if (lp:Team() == FACTION_MPF or lp:Team() == FACTION_OTA) and (nextmessage or 0) < CurTime() then
+	if (Schema:CanPlayerSeeCombineOverlay(lp)) and (nextmessage or 0) < CurTime() then
 		local message = L(idlemessages[math.random(1, #idlemessages)])
 
 		if message != (lastmessage or "") then

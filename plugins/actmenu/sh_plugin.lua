@@ -26,6 +26,7 @@ end
 
 ix.command.Add("Act", {
 	description = "@actMenuDesc",
+	alias = {"ActMenu"},
 	OnRun = function(self, client)
 		net.Start("ixActMenuOpen")
 		net.Send(client)

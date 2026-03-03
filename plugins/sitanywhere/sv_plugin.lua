@@ -259,11 +259,6 @@ local function Sit(ply, pos, ang, parent, parentbone, func, exit)
 
 	ply:EnterVehicle(vehicle)
 
-	if ix.config.Get("sittingCanDamagePlayersSitting", false) then
-		ply:SetCollisionGroup(COLLISION_GROUP_DEBRIS)
-		ply:CollisionRulesChanged()
-	end
-
 	if func then
 		func(ply)
 	end
@@ -584,11 +579,6 @@ local function UndoSitting(ply)
 	if prev ~= nil then
 		ply.sitting_allowswep = nil
 		ply:SetAllowWeaponsInVehicle(prev)
-	end
-
-	if ix.config.Get("sittingCanDamagePlayersSitting", false) then
-		ply:SetCollisionGroup(COLLISION_GROUP_PLAYER)
-		ply:CollisionRulesChanged()
 	end
 
 	if ply.seatExit then

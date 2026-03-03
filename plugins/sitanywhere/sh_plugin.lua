@@ -85,9 +85,6 @@ ix.config.Add("sittingCanSitOnPlayers", false, "Allows players to sit on SitAnyw
 ix.config.Add("sittingCanSitOnPlayerEnt", false, "Allows players to sit on actual player entities", nil, {
 	category = "sitAnywhere"
 })
-ix.config.Add("sittingCanDamagePlayersSitting", true, "Allows damaging sitting players", nil, {
-	category = "sitAnywhere"
-})
 ix.config.Add("sittingAdminOnly", false, "Locks sitting to admins only", nil, {
 	category = "sitAnywhere"
 })

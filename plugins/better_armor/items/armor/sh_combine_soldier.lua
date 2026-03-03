@@ -46,7 +46,7 @@ ITEM.replacements = {
 }
 
 -- This will apply body groups.
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["blade"] = 1,
 	["bladeblur"] = 1
 }

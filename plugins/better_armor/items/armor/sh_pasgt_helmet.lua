@@ -17,11 +17,11 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			1, -- Acid
 			.8, -- Explosion
 }
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["helmet"] = 1
 }
 ITEM.outfitCategory = "head"
-ITEM.noResetBodyGroups = true
+
 ITEM.hitGroups = {HITGROUP_HEAD}
 ITEM.maxDurability = 100
 ITEM.allowedModels = {

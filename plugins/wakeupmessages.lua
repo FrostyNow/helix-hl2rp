@@ -102,7 +102,13 @@ function PLUGIN:PlayerLoadedCharacter(client, character)
 		client:ScreenFade(SCREENFADE.IN, color_black, 3, 2)
 
 		local msg = table.Random(wakeupMessages)
-		ix.chat.Send(client, "me", L(msg, client))
+		local class = ix.chat.classes.me
+
+		for _, v in player.Iterator() do
+			if (v:GetCharacter() and class:CanHear(client, v)) then
+				ix.chat.Send(client, "me", L(msg, v), false, {v})
+			end
+		end
 	end)
 end
 

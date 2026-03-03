@@ -17,10 +17,12 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ix.lang.AddTable("english", {
 	cmdPhotoCache = "Opens the scanner photo cache.",
 	combineOnly = "Only Combine Players can view the scanner photo cache!",
+	noScannerPlugin = "The server is missing the 'scanner' plugin.",
 })
 ix.lang.AddTable("korean", {
 	cmdPhotoCache = "저장된 스캐너 사진을 확인합니다.",
 	cacheCmbOnly = "콤바인 플레이어만 저장된 스캐너 사진을 확인할 수 있습니다!",
+	noScannerPlugin = "이 서버에 'scanner' 플러그인이 없습니다.",
 })
 
 if ( CLIENT ) then
@@ -36,7 +38,7 @@ ix.util.Include("cl_hooks.lua")
 ix.command.Add("PhotoCache", {
 	description = "@cmdPhotoCache",
 	OnRun = function(self, ply)
-		if !(ply:IsCombine() or IsValid(ply.ixScn)) then
+		if !(ply:IsCombine() and Schema:CanPlayerSeeCombineOverlay(ply)) then
 			return "@cacheCmbOnly"
 		end
 		

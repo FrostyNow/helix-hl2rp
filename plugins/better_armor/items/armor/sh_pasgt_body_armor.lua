@@ -20,12 +20,12 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 ITEM.replacements = {
 	{"novest", ""}
 }
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["harness"] = 1,
 	["bodyarmor"] = 1
 }
 ITEM.outfitCategory = "torso"
-ITEM.noResetBodyGroups = true
+
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 ITEM.maxDurability = 150
 ITEM.allowedModels = {

@@ -34,6 +34,29 @@ ix.anim.SetModelClass("models/dpfilms/metropolice/hdpolice.mdl", "metrocop")
 ix.anim.SetModelClass("models/dpfilms/metropolice/hl2concept.mdl", "metrocop")
 ix.anim.SetModelClass("models/dpfilms/metropolice/policetrench.mdl", "metrocop")
 ix.anim.SetModelClass("models/metropolice/leet_police_v2.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_01.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_02.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_03.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_04.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_06.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_07.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_11.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_18.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_19.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_24.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_01.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_02.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_03.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_04.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_05.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_06.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_07.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_08.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_09.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_10.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_11.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_15.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_16.mdl", "metrocop")
 
 ix.anim.SetModelClass("models/Combine_Soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/Combine_Soldier_PrisonGuard.mdl", "overwatch")
@@ -48,6 +71,16 @@ ix.anim.SetModelClass("models/jq/hlvr/characters/combine/combine_captain/combine
 ix.anim.SetModelClass("models/jq/hlvr/characters/combine/grunt/combine_grunt_hlvr_npc.mdl", "overwatch")
 ix.anim.SetModelClass("models/jq/hlvr/characters/combine/heavy/combine_heavy_hlvr_npc.mdl", "overwatch")
 ix.anim.SetModelClass("models/jq/hlvr/characters/combine/suppressor/combine_suppressor_hlvr_npc.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_nova_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_elite_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_elite_wpu_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_coordinator_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_border_patrol_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_beta_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_recon_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_h.mdl", "overwatch")
+ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_shotgunner_h.mdl", "overwatch")
 
 ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
 ix.anim.SetModelClass("models/armacham/security/enemy/guard_1.mdl", "overwatch")
@@ -87,6 +120,26 @@ end
 
 function Schema:IsCombineRank(text, rank)
 	return string.find(text, "[%D+]"..rank.."[%D+]")
+end
+
+function Schema:IsConceptCombine(client)
+	if (!IsValid(client)) then return false end
+	local model = client:GetModel():lower()
+	return model:find("conceptbine_policeforce", 1, true)
+end
+
+function Schema:CanPlayerSeeCombineOverlay(client)
+	if (!client:IsCombine()) then
+		return false
+	end
+
+	if (self:IsConceptCombine(client)) then
+		local index = client:FindBodygroupByName("mask")
+
+		return index != -1 and client:GetBodygroup(index) >= 1
+	end
+
+	return true
 end
 
 local function addNameColoredMessage(color, speaker, formatted)
@@ -156,7 +209,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		text = speaker:IsCombine() and string.format("<:: %s ::>", text) or text
+		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
 		addNameColoredMessage(self.color, speaker, L(self.format, speaker:Name(), text))
 	end
 
@@ -187,7 +240,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		text = speaker:IsCombine() and string.format("<:: %s ::>", text) or text
+		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
 		chat.AddText(self.color, L(self.format, speaker:Name(), text))
 	end
 

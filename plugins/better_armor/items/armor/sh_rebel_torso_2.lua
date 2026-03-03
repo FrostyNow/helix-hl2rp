@@ -20,9 +20,9 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			1, -- Explosion
 }
 ITEM.outfitCategory = "torso"
-ITEM.noResetBodyGroups = true
+
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["torso"] = 9
 }
 ITEM.allowedModels = {

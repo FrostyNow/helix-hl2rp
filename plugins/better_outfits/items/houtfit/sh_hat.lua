@@ -4,11 +4,11 @@ ITEM.model = "models/props_junk/cardboard_box004a.mdl"
 ITEM.height = 1
 ITEM.width = 1
 ITEM.price = 20
-ITEM.bodyGroups = {
+ITEM.eqBodyGroups = {
 	["helmet"] = 3
 }
 ITEM.outfitCategory = "head"
-ITEM.noResetBodyGroups = true
+
 ITEM.allowedModels = {
 	"models/wichacks/erdimnovest.mdl",
 	"models/wichacks/ericnovest.mdl",

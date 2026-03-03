@@ -236,10 +236,18 @@ end
 -- end
 
 function Schema:EntityTakeDamage(entity, dmgInfo)
-	if (IsValid(entity.ixPlayer) and entity.ixPlayer:IsScanner()) then
-		entity.ixPlayer:SetHealth( math.max(entity:Health(), 0) )
+	-- if (IsValid(entity.ixPlayer) and entity.ixPlayer:IsScanner()) then
+	-- 	entity.ixPlayer:SetHealth( math.max(entity:Health(), 0) )
 
-		hook.Run("PlayerHurt", entity.ixPlayer, dmgInfo:GetAttacker(), entity.ixPlayer:Health(), dmgInfo:GetDamage())
+	-- 	hook.Run("PlayerHurt", entity.ixPlayer, dmgInfo:GetAttacker(), entity.ixPlayer:Health(), dmgInfo:GetDamage())
+	-- end
+
+	if IsValid(entity:IsPlayer()) then
+		if entity:GetCharacter() and entity:Team() == FACTION_OTA then
+			if dmgInfo:IsDamageType(DMG_RADIATION) then
+				dmgInfo:SetDamage(dmgInfo:GetDamage() * 0.1)
+			end
+		end
 	end
 end
 
