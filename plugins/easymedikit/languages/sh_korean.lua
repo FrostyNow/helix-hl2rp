@@ -14,6 +14,8 @@ LANGUAGE = {
 	bandageDesc = "상처나 부스럼 따위에 감는 소독한 헝겊입니다.",
 	["Splint"] = "부목",
 	itemSplintDesc = " 팔다리에 골절, 염좌, 염증 따위가 있을 때에 아픈 팔다리를 고정하기 위하여 일시적으로 대는 나무입니다.",
+	["Automated External Defibrillator"] = "자동 심장 충격기",
+	aedDesc = "심장 박동을 되돌리기 위한 자동 심장 충격기입니다. 심정지로 쓰러진 사람에게만 사용해야 합니다.",
 	
 	["Intelligence"] = "지능",
 }

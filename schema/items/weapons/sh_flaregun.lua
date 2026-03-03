@@ -1,6 +1,6 @@
 ITEM.name = "Flare Gun"
 ITEM.description = "flaregunDesc"
-ITEM.class = "ix_flaregun"
+ITEM.class = "weapon_rtbr_flaregun"
 ITEM.weaponCategory = "sidearm"
 ITEM.classes = {CLASS_REBEL}
 ITEM.width = 2

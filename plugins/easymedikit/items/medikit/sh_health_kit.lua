@@ -6,16 +6,7 @@ ITEM.healthPoint = 25 -- Health point that the player will get
 ITEM.medAttr = 3 -- How much medical attribute the character needs
 ITEM.bleeding = true
 ITEM.fracture = true
-
-ITEM:Hook("selfheal", function(item)
-	local client = item.player
-	client:EmitSound("items/smallmedkit1.wav")
-end)
-
-ITEM:Hook("heal", function(item)
-	local client = item.player
-	client:EmitSound("items/smallmedkit1.wav")
-end)
+ITEM.sound = "items/smallmedkit1.wav"
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

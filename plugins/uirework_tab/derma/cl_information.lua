@@ -37,6 +37,8 @@ function PANEL:Init()
 
 		-- Apply rotation
 		entity:SetAngles(this.currentAngles)
+
+		Schema:ApplyMaskScale(entity)
 	end
 
 	-- Overwrite Paint to support alpha modulation during menu fade

@@ -38,6 +38,7 @@ ITEM.allowedModels = {
 	"models/conceptbine_policeforce/rnd/female_06.mdl",
 	"models/conceptbine_policeforce/rnd/female_07.mdl",
 	"models/conceptbine_policeforce/rnd/female_11.mdl",
+	"models/conceptbine_policeforce/rnd/female_17.mdl",
 	"models/conceptbine_policeforce/rnd/female_18.mdl",
 	"models/conceptbine_policeforce/rnd/female_19.mdl",
 	"models/conceptbine_policeforce/rnd/female_24.mdl"

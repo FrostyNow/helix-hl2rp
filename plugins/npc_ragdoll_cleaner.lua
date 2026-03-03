@@ -8,10 +8,24 @@ ix.config.Add("maxNPCRagdolls", 40, "The maximum number of NPC ragdolls to keep.
 	category = "NPC Ragdoll Cleaner"
 })
 
+ix.lang.AddTable("english", {
+	cmdNPCRagdollClear = "Cleans NPC ragdolls that haven't been interacted with for a certain amount of time.",
+	npcRagdollsCleared = "Removed %d NPC ragdolls.",
+	noNPCRagdollsCleared = "No NPC ragdolls were found that could be removed."
+})
+
+ix.lang.AddTable("korean", {
+	cmdNPCRagdollClear = "일정 시간 동안 상호작용이 없었던 NPC 래그돌을 제거합니다.",
+	npcRagdollsCleared = "%d개의 NPC 래그돌을 제거했습니다.",
+	noNPCRagdollsCleared = "제거할 수 있는 NPC 래그돌이 없습니다."
+})
+
 if (SERVER) then
 	PLUGIN.ragdolls = PLUGIN.ragdolls or {}
 
 	function PLUGIN:TouchRagdoll(entity)
+		entity.ixLastTouch = CurTime()
+
 		for k, v in ipairs(self.ragdolls) do
 			if (v == entity) then
 				table.remove(self.ragdolls, k)
@@ -63,6 +77,7 @@ if (SERVER) then
 				end
 
 				table.insert(self.ragdolls, entity)
+				entity.ixLastTouch = CurTime()
 				self:CleanupRagdolls()
 			end)
 		end
@@ -119,3 +134,42 @@ if (SERVER) then
 		end
 	end
 end
+
+ix.command.Add("NPCRagdollClear", {
+	description = "@cmdNPCRagdollClear",
+	adminOnly = true,
+	arguments = {
+		bit.bor(ix.type.number, ix.type.optional)
+	},
+	argumentNames = {"minutes"},
+	OnRun = function(self, client, minutes)
+		minutes = minutes or 5
+		local count = 0
+		local currentTime = CurTime()
+		local threshold = minutes * 60
+
+		local toRemove = {}
+		for _, ragdoll in ipairs(PLUGIN.ragdolls) do
+			if (IsValid(ragdoll)) then
+				local lastTouch = ragdoll.ixLastTouch or 0
+
+				if (minutes == 0 or (currentTime - lastTouch) >= threshold) then
+					if (!PLUGIN:IsRagdollInUse(ragdoll)) then
+						table.insert(toRemove, ragdoll)
+					end
+				end
+			end
+		end
+
+		for _, ragdoll in ipairs(toRemove) do
+			ragdoll:Remove()
+			count = count + 1
+		end
+
+		if (count > 0) then
+			return "@npcRagdollsCleared", count
+		else
+			return "@noNPCRagdollsCleared"
+		end
+	end
+})

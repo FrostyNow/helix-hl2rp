@@ -63,12 +63,61 @@ do
 	ix.lang.AddTable("english", {
 		itemLost = "You've lost item %s.",
 		moneyLost = "You've lost %s.",
+		corpseName = "%s's Belongings",
+		search = "Search",
+		revive = "Revive",
+		reviveNotify = "You have revived %s using %s.",
+		noHealItem = "You don't have medical items for revival.",
+		lowMedicalSkill = "You don't have enough medical skill to use this.",
+		searchingCorpse = "Searching...",
+		revivingCorpse = "Reviving...",
+		tooFar = "You are too far from the corpse.",
 	})
 
 	ix.lang.AddTable("korean", {
 		itemLost = "당신은 %s(을)를 잃었습니다.",
 		moneyLost = "당신은 %s(을)를 잃었습니다.",
+		corpseName = "%s의 소지품",
+		search = "수색하기",
+		revive = "소생시키기",
+		reviveNotify = "%s(을)를 사용하여 %s(을)를 소생시켰습니다.",
+		noHealItem = "소생에 필요한 의료 도구가 없습니다.",
+		lowMedicalSkill = "이 도구를 사용하기 위한 의료 기술이 부족합니다.",
+		searchingCorpse = "수색 중...",
+		revivingCorpse = "소생 중...",
+		tooFar = "시체에서 너무 멉니다.",
 	})
+end
+
+function PLUGIN:CanTransferItem(item, curInv, inventory)
+	if (inventory and inventory.vars and inventory.vars.isCorpseInventory and !inventory.ixIsInitializing) then
+		return false
+	end
+end
+
+if (CLIENT) then
+	function PLUGIN:OnEntityCreated(entity)
+		if (entity:GetClass() == "prop_ragdoll") then
+			entity.GetEntityMenu = function(this, client)
+				local options = {}
+
+				if (this:GetNetVar("ixInventory")) then
+					options[L"search"] = function()
+						return true
+					end
+				end
+
+				local target = this:GetNetVar("player")
+				if (IsValid(target) and !target:Alive()) then
+					options[L"revive"] = function()
+						return true
+					end
+				end
+
+				return options
+			end
+		end
+	end
 end
 
 if (SERVER) then
@@ -141,6 +190,37 @@ if (SERVER) then
 		entity:RemoveCallOnRemove("fixer")
 		entity:CallOnRemove("ixPersistentCorpse", function(ragdoll)
 
+			if (ragdoll.ixInventory) then
+				local inventory = ix.item.inventories[ragdoll.ixInventory]
+				if (inventory) then
+					if (ragdoll.ixIsReviving and IsValid(client) and client:GetCharacter()) then
+						local char = client:GetCharacter()
+						local playerInv = char:GetInventory()
+						for _, item in pairs(inventory:GetItems()) do
+							local bSuccess = item:Transfer(playerInv:GetID(), nil, nil, client)
+							if (!bSuccess) then
+								item:Transfer()
+								if (item:GetEntity()) then
+									item:GetEntity():SetPos(client:GetPos() + Vector(math.Rand(-8,8), math.Rand(-8,8), 10))
+								end
+							end
+						end
+						if (ragdoll.GetMoney and ragdoll:GetMoney() > 0) then
+							char:GiveMoney(ragdoll:GetMoney())
+						end
+					end
+
+					for _, item in pairs(inventory:GetItems()) do
+						item:Remove()
+					end
+					ix.item.inventories[ragdoll.ixInventory] = nil
+					
+					local query = mysql:Delete("ix_items")
+						query:Where("inventory_id", ragdoll.ixInventory)
+					query:Execute()
+				end
+			end
+
 			if (IsValid(client) and !client:Alive()) then
 				client:SetLocalVar("ragdoll", nil)
 			end
@@ -199,10 +279,37 @@ if (SERVER) then
 		end
 		
 		if (ix.config.Get("dropItemsOnDeath", false)) then
+			local invID = os.time() + entity:EntIndex() + math.random(1, 99999)
+			local inventory = ix.inventory.Create(8, 8, invID)
+			inventory.noSave = true
+			inventory.vars.isCorpseInventory = true
+
+			entity.ixInventory = invID
+			entity.ixPlayerName = client:GetName()
+			entity:SetNetVar("ixInventory", invID)
+			entity:SetNetVar("ixPlayerName", client:GetName())
+			entity:SetNetVar("player", client)
+			entity.ShowPlayerInteraction = true
+
+			function entity:OnOptionSelected(activator, option, data)
+			end
+
+			function entity:GetMoney()
+				return self.ixMoney or 0
+			end
+			function entity:SetMoney(amount)
+				if (self.ixIsInitialized and amount > (self.ixMoney or 0)) then
+					return
+				end
+
+				self.ixMoney = amount
+			end
+
 			local items = client:GetCharacter():GetInventory():GetItems(false)
 			local itemNames = {}
 			local counter = 0
 
+			inventory.ixIsInitializing = true
 			for k, item in pairs( items ) do
 				if ix.config.Get("deathWeaponDura") then
 					if (item:GetData("Durability", false)) then
@@ -218,11 +325,14 @@ if (SERVER) then
 									if (item:GetData("equip", false)) then
 										item:SetData("equip", false)
 									end
-									item:Transfer()
+									
 									if (ix.config.Get("dropItemsOnDeath")) then
-										item:Transfer()
-										if item:GetEntity() then
-											item:GetEntity():SetPos(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), counter * 5 ))
+										local bSuccess = item:Transfer(invID, nil, nil, client)
+										if (!bSuccess) then
+											item:Transfer()
+											if item:GetEntity() then
+												item:GetEntity():SetPos(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), counter * 5 ))
+											end
 										end
 									else
 										item:remove()
@@ -239,9 +349,12 @@ if (SERVER) then
 								end
 								
 								if (ix.config.Get("dropItemsOnDeath")) then
-									item:Transfer()
-									if item:GetEntity() then
-										item:GetEntity():SetPos(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), counter * 5 ))
+									local bSuccess = item:Transfer(invID, nil, nil, client)
+									if (!bSuccess) then
+										item:Transfer()
+										if item:GetEntity() then
+											item:GetEntity():SetPos(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), counter * 5 ))
+										end
 									end
 								else
 									item:remove()
@@ -253,6 +366,8 @@ if (SERVER) then
 					end
 				end
 			end
+
+			inventory.ixIsInitializing = nil
 
 			if client:Alive() then
 				for j, name in pairs(itemNames) do
@@ -275,11 +390,160 @@ if (SERVER) then
 			
 			if (amount > 0) then
 				char:TakeMoney(amount)
-				ix.currency.Spawn(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), 5), amount)
+				if (entity.SetMoney) then
+					entity:SetMoney(amount)
+					entity.ixIsInitialized = true
+				else
+					ix.currency.Spawn(client:GetPos() + Vector( math.Rand(-8,8), math.Rand(-8,8), 5), amount)
+				end
 				
 				-- timer.Simple(ix.config.Get("spawnTime", 5) + 1, function()
 					client:NotifyLocalized( "moneyLost", ix.currency.Get(amount, client) )
 				-- end)
+			end
+		end
+	end
+
+	function PLUGIN:PlayerInteractEntity(client, entity, option, data)
+		if (entity:GetClass() != "prop_ragdoll") then return end
+
+		local invID = entity:GetNetVar("ixInventory")
+		local target = entity:GetNetVar("player")
+
+		local isSearch = (option == L("search", client))
+		local isRevive = (option == L("revive", client))
+
+		if (invID and isSearch) then
+			local inventory = ix.item.inventories[invID]
+
+			if (inventory and (client.ixNextOpen or 0) < CurTime()) then
+				client:SetAction("@searchingCorpse", 3)
+				
+				local uniqueID = "ixCorpseSearch_" .. client:SteamID64()
+				timer.Create(uniqueID, 0.1, 30, function()
+					if (!IsValid(entity) or !IsValid(client) or !client:Alive()) then 
+						timer.Remove(uniqueID)
+						if (IsValid(client)) then client:SetAction() end
+						return 
+					end
+					
+					-- 2 meters is roughly 80 units
+					if (client:GetPos():DistToSqr(entity:GetPos()) > 6400) then
+						timer.Remove(uniqueID)
+						client:SetAction()
+						client:NotifyLocalized("tooFar")
+						return
+					end
+
+					if (timer.RepsLeft(uniqueID) == 0) then
+						local name = L("corpseName", client, entity:GetNetVar("ixPlayerName") or "Unknown")
+
+						ix.storage.Open(client, inventory, {
+							name = name,
+							entity = entity,
+							searchTime = 0,
+							data = {money = entity.GetMoney and entity:GetMoney() or 0},
+							OnPlayerClose = function()
+								ix.log.Add(client, "closeContainer", name, inventory:GetID())
+							end
+						})
+
+						client.ixNextOpen = CurTime() + 1.5
+					end
+				end)
+			end
+		elseif (isRevive) then
+			if (IsValid(target) and !target:Alive()) then
+				local character = client:GetCharacter()
+				local inventory = character:GetInventory()
+				local item = inventory:HasItem("health_kit") or inventory:HasItem("health_vial") or inventory:HasItem("aed")
+
+				if (item) then
+					if (character:GetAttribute("int", 0) < (item.medAttr or 0)) then
+						client:NotifyLocalized("lowMedicalSkill")
+						return
+					end
+
+					client:SetAction("@revivingCorpse", 3)
+					
+					local uniqueID = "ixCorpseRevive_" .. client:SteamID64()
+					timer.Create(uniqueID, 0.1, 30, function()
+						if (!IsValid(entity) or !IsValid(client) or !client:Alive() or !IsValid(target) or target:Alive()) then 
+							timer.Remove(uniqueID)
+							if (IsValid(client)) then client:SetAction() end
+							return 
+						end
+						
+						if (client:GetPos():DistToSqr(entity:GetPos()) > 6400) then
+							timer.Remove(uniqueID)
+							client:SetAction()
+							client:NotifyLocalized("tooFar")
+							return
+						end
+
+						if (timer.RepsLeft(uniqueID) == 0) then
+							-- Double check if item still exists after action time
+							if (!inventory:HasItem(item.uniqueID)) then return end
+
+							local pos = entity:GetPos()
+							local angles = entity:GetAngles()
+							local amount = item.healthPoint or 25
+
+							if amount < 0 then amount = target:GetMaxHealth() end
+
+							entity.ixIsReviving = true
+							
+							target:Spawn()
+							timer.Simple(0, function()
+								if (IsValid(target)) then
+									target:SetPos(pos)
+									target:SetEyeAngles(Angle(0, angles.y, 0))
+									target:SetHealth(amount)
+								end
+							end)
+
+							item:Remove()
+							if (item.sound) then
+								client:EmitSound(item.sound)
+							end
+							
+							client:NotifyLocalized("reviveNotify", L(item.name, client), target:GetName())
+							target:NotifyLocalized("revive03", client:GetName())
+
+							entity:Remove()
+						end
+					end)
+				else
+					client:NotifyLocalized("noHealItem")
+				end
+			end
+		end
+	end
+
+	function PLUGIN:PlayerUse(client, entity)
+		if (entity:GetClass() == "prop_ragdoll" and entity:GetNetVar("ixInventory")) then
+			return false
+		end
+	end
+
+	function PLUGIN:InitializedPlugins()
+		local COMMAND = ix.command.list["revive"]
+		if (COMMAND) then
+			local oldOnRun = COMMAND.OnRun
+			COMMAND.OnRun = function(self, client, target)
+				local ragdoll = target:GetRagdollEntity()
+				if (!IsValid(ragdoll)) then
+					for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+						if (v:GetNetVar("player") == target) then
+							ragdoll = v
+							break
+						end
+					end
+				end
+				if (IsValid(ragdoll)) then
+					ragdoll.ixIsReviving = true
+				end
+				return oldOnRun(self, client, target)
 			end
 		end
 	end

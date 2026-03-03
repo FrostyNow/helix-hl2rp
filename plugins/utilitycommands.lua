@@ -19,8 +19,18 @@ PLUGIN.readme = [[
 
 ]]
 
+ix.lang.AddTable("english", {
+	cmdDestroyAllEnts = "Destroys all of the specified entity class (* compatible).",
+	entitiesRemoved = "Removed all %s.",
+	cmdCleanUpItems = "Destroys all items on the map after the specified amount of time (s).",
+	itemsRemoved = "Removed all items on the map.",
+	cmdForceCleanUpItems = "Immediately destroys all items on the map.",
+	cmdDebugOutfit = "Manually re-applies equipped outfits for debugging.",
+	debugOutfit = "Re-applied %s items for %s.",
+})
+
 ix.command.Add("RemoveAllEnts", {
-	description = "Destroys all of the specified entity class (* compatible).",
+	description = "@cmdDestroyAllEnts",
 	arguments = {ix.type.string},
 	superAdminOnly = true,
 	OnRun = function(self, client, targets)
@@ -28,13 +38,13 @@ ix.command.Add("RemoveAllEnts", {
 		for _, ent in ipairs(ents.FindByClass(targets)) do
 			ent:Remove()
 		end
-		return "Removed."
+		return client:NotifyLocalized("entitiesRemoved", targets)
 		
 	end
 })
 
 ix.command.Add("CleanUpItems", {
-	description = "Destroys all items on the map after the specified amount of time (s).",
+	description = "@cmdCleanUpItems",
 	arguments = {ix.type.number, ix.type.bool},
 	superAdminOnly = true,
 	OnRun = function(self, client, time, shouldNotice)
@@ -57,18 +67,19 @@ ix.command.Add("CleanUpItems", {
 			
 		end)
 		
-		return "Done."
+		return client:NotifyLocalized("itemsRemoved")
 
 	end
 })
 
 ix.command.Add("ForceCleanUpItems", {
-	description = "Immediately destroys all items on the map.",
+	description = "@cmdForceCleanUpItems",
 	arguments = {ix.type.bool},
 	superAdminOnly = true,
 	OnRun = function(self, client, shouldNotice)
 
 		if shouldNotice then
+			ix.chat.Send(client, "event", L(itemRemovalWarning), false, {v})
 			ix.chat.Send(client, "event", "[WARNING] All dropped items are being destroyed.")
 
 		end
@@ -81,7 +92,7 @@ ix.command.Add("ForceCleanUpItems", {
 
 		end
 
-		return "Done."
+		return client:NotifyLocalized("itemsRemoved")
 
 	end
 })
@@ -116,7 +127,7 @@ ix.command.Add("ForceCleanUpItems", {
 -- 	end
 -- })
 ix.command.Add("DebugOutfit", {
-	description = "Manually re-applies equipped outfits for debugging.",
+	description = "@cmdDebugOutfit",
 	adminOnly = true,
 	arguments = {bit.bor(ix.type.player, ix.type.optional)},
 	OnRun = function(self, client, target)
@@ -133,6 +144,6 @@ ix.command.Add("DebugOutfit", {
 			end
 		end
 
-		return string.format("Re-applied %s items for %s.", count, target:GetName())
+		return client:NotifyLocalized("debugOutfit", count, target:GetName())
 	end
 })

@@ -10,6 +10,7 @@ ITEM.healthPoint = 0
 ITEM.medAttr = 0
 ITEM.bleeding = false
 ITEM.fracture = false
+ITEM.sound = nil
 
 function ITEM:GetDescription()
 	return (L(self.description) .. L("itemMedkitDesc01") .. self.medAttr .. L("itemMedkitDesc02") .. self.healthPoint)
@@ -23,13 +24,23 @@ ITEM.functions.selfheal = {
 		local int = character:GetAttribute("int", 0)
 		if int >= itemTable.medAttr then
 			client:SetNetworkedFloat("NextBandageuse", 2 + CurTime())
-			client:SetHealth(math.Clamp(client:Health() + itemTable.healthPoint + int, 0, client:GetMaxHealth()))
+			local amount = itemTable.healthPoint + int
+			local newHealth = client:Health() + amount
+
+			if (newHealth <= 0) then
+				client:TakeDamage(client:Health() + 100, client, client)
+			else
+				client:SetHealth(math.Clamp(newHealth, 0, client:GetMaxHealth()))
+			end
 			character:SetAttrib("int", int + 0.2)
 			if itemTable.bleeding then
 				PLUGIN:SetBleeding(client, false)
 			end
 			if itemTable.fracture then
 				PLUGIN:SetFracture(client, false)
+			end
+			if itemTable.sound then
+				client:EmitSound(itemTable.sound)
 			end
 		else
 			client:NotifyLocalized("lackKnowledge")
@@ -58,13 +69,23 @@ ITEM.functions.heal = {
 		if (IsValid(entity) and entity:IsPlayer()) then
 			if int >= itemTable.medAttr then
 				entity:SetNetworkedFloat("NextBandageuse", 2 + CurTime())
-				entity:SetHealth(math.Clamp(entity:Health() + itemTable.healthPoint + int, 0, entity:GetMaxHealth()))
+				local amount = itemTable.healthPoint + int
+				local newHealth = entity:Health() + amount
+
+				if (newHealth <= 0) then
+					entity:TakeDamage(entity:Health() + 100, client, client)
+				else
+					entity:SetHealth(math.Clamp(newHealth, 0, entity:GetMaxHealth()))
+				end
 				character:SetAttrib("int", int + 0.2)
 				if itemTable.bleeding then
 					PLUGIN:SetBleeding(entity, false)
 				end
 				if itemTable.fracture then
 					PLUGIN:SetFracture(entity, false)
+				end
+				if itemTable.sound then
+					client:EmitSound(itemTable.sound)
 				end
 				
 				-- Sound is handled by individual item hooks (selfheal/heal)

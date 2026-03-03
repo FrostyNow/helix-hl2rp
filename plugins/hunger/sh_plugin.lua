@@ -354,32 +354,44 @@ if (CLIENT) then
 end
 
 function PLUGIN:AdjustStaminaOffset(client, offset)
+	local char = client:GetCharacter()
+	local enabled = client:Team() != FACTION_OTA and !Schema:IsCombineRank(client:Name(), "SCN")
+
+	if (!char or !enabled) then
+		return
+	end
+
 	local hunger = client:GetHunger()
 	local thirst = client:GetThirst()
 	local penalty = 0
 
 	-- Hunger Penalties
 	if (hunger < 20) then
-		penalty = penalty - 1.0 -- Starving
+		penalty = penalty - 0.3 -- Starving (was -0.5)
 	elseif (hunger < 40) then
-		penalty = penalty - 0.4 -- Hungry
+		penalty = penalty - 0.15 -- Hungry (was -0.2)
 	elseif (hunger < 60) then
-		penalty = penalty - 0.1 -- Grumbling
+		penalty = penalty - 0.05 -- Grumbling
 	end
 
 	-- Thirst Penalties
 	if (thirst < 20) then
-		penalty = penalty - 1.5 -- Dehydrated
+		penalty = penalty - 0.5 -- Dehydrated (was -0.7)
 	elseif (thirst < 40) then
-		penalty = penalty - 0.8 -- Lightly Dehydrated
+		penalty = penalty - 0.25 -- Lightly Dehydrated (was -0.3)
 	elseif (thirst < 60) then
-		penalty = penalty - 0.4 -- Thirsty
+		-- Only apply if they are also somewhat hungry, as per user request
+		if (hunger < 60) then
+			penalty = penalty - 0.1 -- Thirsty
+		end
 	elseif (thirst < 80) then
-		penalty = penalty - 0.1 -- Parched
+		if (hunger < 60) then
+			penalty = penalty - 0.05 -- Parched
+		end
 	end
 
 	if (penalty != 0) then
-		return penalty
+		return offset + penalty
 	end
 end
 
