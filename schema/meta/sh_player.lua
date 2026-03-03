@@ -1,6 +1,11 @@
 local playerMeta = FindMetaTable("Player")
 
 function playerMeta:IsCombine()
+	local character = self:GetCharacter()
+	if (character and character:IsCombine()) then
+		return true
+	end
+
 	local faction = self:Team()
 	return faction == FACTION_MPF or faction == FACTION_OTA
 end

@@ -45,8 +45,19 @@ if SERVER then
 
 	function PLUGIN:PlayerLoadedCharacter(client, character)
 		timer.Simple(0.25, function()
-			client:SetLocalVar("hunger", character:GetData("hunger", 100))
-			client:SetLocalVar("thirst", character:GetData("thirst", 100))
+			local hunger = character:GetData("hunger", 100)
+			local thirst = character:GetData("thirst", 100)
+
+			client:SetLocalVar("hunger", hunger)
+			client:SetLocalVar("thirst", thirst)
+
+			client.ixLastHungerState = self:GetHungerState(hunger)
+			client.ixLastHungerValue = hunger
+			client.ixLastThirstState = self:GetThirstState(thirst)
+			client.ixLastThirstValue = thirst
+
+			client.ixNextHungerMessage = CurTime() + 300
+			client.ixNextThirstMessage = CurTime() + 300
 		end)
 	end
 
@@ -140,6 +151,21 @@ if SERVER then
 		end
 	end
 
+	function PLUGIN:GetHungerState(val)
+		if (val < 20) then return "starving" end
+		if (val < 40) then return "hungry" end
+		if (val < 60) then return "grumbling" end
+		return "normal"
+	end
+
+	function PLUGIN:GetThirstState(val)
+		if (val < 20) then return "dehydrated" end
+		if (val < 40) then return "lightlyDehydrated" end
+		if (val < 60) then return "thirsty" end
+		if (val < 80) then return "parched" end
+		return "normal"
+	end
+
 	function PLUGIN:PlayerTick(ply)
 		if ply:GetNetVar("hungertick", 0) <= CurTime() then
 			ply:SetNetVar("hungertick", ix.config.Get("hunger_decay_speed", 300) + CurTime())
@@ -152,23 +178,73 @@ if SERVER then
 		end
 	end
 	
-	local damageTime = CurTime()
-	
+	local checkTime = CurTime()
+
 	function PLUGIN:Think()
-		if (damageTime < CurTime()) then
-			for k, v in ipairs(player.GetAll()) do
-				if (v:GetCharacter()) then
-					if (v:GetCharacter():GetData("hunger", 0) < 20) then
-						v:TakeDamage(1,v,v:GetActiveWeapon())
-					end
-				
-					if (v:GetCharacter():GetData("thirst", 0) < 20) then
-						v:TakeDamage(1.5,v,v:GetActiveWeapon())
+		if (checkTime < CurTime()) then
+			for _, v in ipairs(player.GetAll()) do
+				local char = v:GetCharacter()
+				if (!char) then continue end
+
+				local hunger = v:GetLocalVar("hunger", 100)
+				local thirst = v:GetLocalVar("thirst", 100)
+
+				-- Damage logic
+				if (hunger < 20) then
+					v:TakeDamage(1, v, v:GetActiveWeapon())
+				end
+
+				if (thirst < 20) then
+					v:TakeDamage(1.5, v, v:GetActiveWeapon())
+				end
+
+				-- Notification logic
+				local hungerState = self:GetHungerState(hunger)
+				local lastHungerState = v.ixLastHungerState or "normal"
+
+				-- Notification logic
+				local hungerState = self:GetHungerState(hunger)
+				local lastHungerState = v.ixLastHungerState or "normal"
+
+				if (hungerState != "normal") then
+					-- Enter message (only if state worsened)
+					if (hungerState != lastHungerState and hunger < (v.ixLastHungerValue or 100)) then
+						ix.chat.Send(v, "it", L(hungerState .. "Enter", v), false, {v})
+						v.ixNextHungerMessage = CurTime() + 300
+					-- Periodic message
+					elseif ((v.ixNextHungerMessage or 0) < CurTime()) then
+						local key = hungerState .. "Periodic"
+						if (L(key, v) != key) then
+							ix.chat.Send(v, "it", L(key, v), false, {v})
+						end
+						v.ixNextHungerMessage = CurTime() + 300
 					end
 				end
+				v.ixLastHungerState = hungerState
+				v.ixLastHungerValue = hunger
+
+				local thirstState = self:GetThirstState(thirst)
+				local lastThirstState = v.ixLastThirstState or "normal"
+
+				if (thirstState != "normal") then
+					-- Enter message
+					if (thirstState != lastThirstState and thirst < (v.ixLastThirstValue or 100)) then
+						ix.chat.Send(v, "it", L(thirstState .. "Enter", v), false, {v})
+						v.ixNextThirstMessage = CurTime() + 300
+					-- Periodic message
+					elseif ((v.ixNextThirstMessage or 0) < CurTime()) then
+						local key = thirstState .. "Periodic"
+						if (L(key, v) != key) then
+							ix.chat.Send(v, "it", L(key, v), false, {v})
+						end
+						v.ixNextThirstMessage = CurTime() + 300
+					end
+				end
+				v.ixLastThirstState = thirstState
+				v.ixLastThirstValue = thirst
 			end
-			
-			damageTime = CurTime() + 15
+
+			checkTime = CurTime() + 15
 		end
 	end
 
@@ -241,6 +317,7 @@ if (CLIENT) then
 	ix.bar.Add(function()
 		local status = ""
 		local var = LocalPlayer():GetLocalVar("hunger", 0) / 100
+		local bShowLabels = ix.option.Get("showBarLabels", false)
 
 		if var < 0.2 then
 			status = L"starving"
@@ -248,8 +325,8 @@ if (CLIENT) then
 			status = L"hungry"
 		elseif var < 0.6 then
 			status = L"grumbling"
-		elseif var < 0.8 then
-			status = ""
+		else
+			status = bShowLabels and L"notHungry"
 		end
 
 		return var, status
@@ -258,6 +335,7 @@ if (CLIENT) then
 	ix.bar.Add(function()
 		local status = ""
 		local var = LocalPlayer():GetLocalVar("thirst", 0) / 100
+		local bShowLabels = ix.option.Get("showBarLabels", false)
 
 		if var < 0.2 then
 			status = L"dehydrated"
@@ -267,6 +345,8 @@ if (CLIENT) then
 			status = L"thirsty"
 		elseif var < 0.8 then
 			status = L"parched"
+		else
+			status = bShowLabels and L"notThirsty"
 		end
 
 		return var, status
@@ -274,8 +354,32 @@ if (CLIENT) then
 end
 
 function PLUGIN:AdjustStaminaOffset(client, offset)
-	if client:GetHunger() < 15 or client:GetThirst() < 20 then
-		return -1
+	local hunger = client:GetHunger()
+	local thirst = client:GetThirst()
+	local penalty = 0
+
+	-- Hunger Penalties
+	if (hunger < 20) then
+		penalty = penalty - 1.0 -- Starving
+	elseif (hunger < 40) then
+		penalty = penalty - 0.4 -- Hungry
+	elseif (hunger < 60) then
+		penalty = penalty - 0.1 -- Grumbling
+	end
+
+	-- Thirst Penalties
+	if (thirst < 20) then
+		penalty = penalty - 1.5 -- Dehydrated
+	elseif (thirst < 40) then
+		penalty = penalty - 0.8 -- Lightly Dehydrated
+	elseif (thirst < 60) then
+		penalty = penalty - 0.4 -- Thirsty
+	elseif (thirst < 80) then
+		penalty = penalty - 0.1 -- Parched
+	end
+
+	if (penalty != 0) then
+		return penalty
 	end
 end
 

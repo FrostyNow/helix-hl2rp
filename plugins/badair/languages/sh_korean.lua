@@ -1,6 +1,7 @@
 LANGUAGE = {
-	badairAdded = "새 독성 기체 구역을 추가했습니다.",
-	badairCommand = "최대 지점으로 설정할 다른 위치에에서 명령어를 다시 실행하세요.",
-	badairRemoved = "독성 기체 구역이 제거되었습니다.",
-	badairBeArea = "독성 기체 구역을 제거하려면 그 안에 있어야 합니다.",
+	cmdAreaBadAir = "현재 서 있는 구역의 독가스 기능을 켜거나 끕니다.",
+	areaBadAirReq = "이 명령어를 사용하려면 구역 안에 있어야 합니다.",
+	areaBadAirInvalid = "유효하지 않은 구역입니다.",
+	areaBadAirEnabled = "이 구역의 독가스를 활성화했습니다: %s",
+	areaBadAirDisabled = "이 구역의 독가스를 비활성화했습니다: %s",
 }

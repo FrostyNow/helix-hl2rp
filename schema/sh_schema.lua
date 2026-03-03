@@ -133,6 +133,11 @@ function Schema:CanPlayerSeeCombineOverlay(client)
 		return false
 	end
 
+	local faction = client:Team()
+	if (faction != FACTION_MPF and faction != FACTION_OTA) then
+		return false
+	end
+
 	if (self:IsConceptCombine(client)) then
 		local index = client:FindBodygroupByName("mask")
 

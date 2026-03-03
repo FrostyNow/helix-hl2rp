@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Equipped Items Tooltip"
-PLUGIN.author = "Antigravity"
+PLUGIN.author = "Frosty with Antigravity"
 PLUGIN.description = "Displays equipped items in the player info tooltip."
 
 -- Register character variable to sync equipped items to clients

@@ -3,7 +3,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.PrintName = "Broadcast Console"
-ENT.Author = "Antigravity"
+ENT.Author = "Frosty with Antigravity"
 ENT.Category = "HL2 RP"
 ENT.Spawnable = true
 ENT.AdminOnly = true

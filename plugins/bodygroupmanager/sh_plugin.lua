@@ -16,7 +16,8 @@ ix.lang.AddTable("english", {
 	previous = "Previous",
 	cmdCharResetBodygroups = "Reset the bodygroups of a target character and unequip related items.",
 	resetBodygroupsTarget = "Your bodygroups have been reset by an administrator.",
-	resetBodygroupsClient = "You have reset the bodygroups of %s."
+	resetBodygroupsClient = "You have reset the bodygroups of %s.",
+	warnEquippedOutfit = "Warning: Modifying bodygroups/skin while wearing an outfit may cause unexpected behavior!"
 })
 
 ix.lang.AddTable("korean", {
@@ -30,8 +31,23 @@ ix.lang.AddTable("korean", {
 	previous = "이전",
 	cmdCharResetBodygroups = "대상의 바디그룹을 초기화하고 관련 아이템을 장착 해제합니다.",
 	resetBodygroupsTarget = "관리자에 의해 바디그룹이 초기화되었습니다.",
-	resetBodygroupsClient = "%s의 바디그룹을 초기화했습니다."
+	resetBodygroupsClient = "%s의 바디그룹을 초기화했습니다.",
+	warnEquippedOutfit = "경고: 대상을 의상으로 장착한 상태에서 바디그룹/스킨을 수정하면 데이터가 얽혀 문제가 발생할 수 있습니다!"
 })
+
+local function HasEquippedOutfit(character)
+	if (!character) then return false end
+	
+	local inventory = character:GetInventory()
+	if (inventory) then
+		for _, item in pairs(inventory:GetItems()) do
+			if (item:GetData("equip") and (item.outfitCategory or item.eqBodyGroups or item.bodyGroups)) then
+				return true
+			end
+		end
+	end
+	return false
+end
 
 ix.command.Add("CharEditBodygroup", {
 	description = "@cmdEditBodygroup",
@@ -40,8 +56,13 @@ ix.command.Add("CharEditBodygroup", {
 		bit.bor(ix.type.player, ix.type.optional)
 	},
 	OnRun = function(self, client, target)
+		target = target or client
+		if (HasEquippedOutfit(target:GetCharacter())) then
+			client:NotifyLocalized("warnEquippedOutfit")
+		end
+
 		net.Start("ixBodygroupView")
-			net.WriteEntity(target or client)
+			net.WriteEntity(target)
 		net.Send(client)
 	end
 })
@@ -100,6 +121,10 @@ ix.command.Add("Bodygroup", {
 			return "@flagNoMatch", "b"
 		end
 
+		if (HasEquippedOutfit(character)) then
+			client:NotifyLocalized("warnEquippedOutfit")
+		end
+
 		net.Start("ixBodygroupView")
 			net.WriteEntity(client)
 		net.Send(client)
@@ -113,6 +138,10 @@ ix.command.Add("Skin", {
 
 		if (!character or !character:HasFlags("s")) then
 			return "@flagNoMatch", "s"
+		end
+
+		if (HasEquippedOutfit(character)) then
+			client:NotifyLocalized("warnEquippedOutfit")
 		end
 
 		net.Start("ixBodygroupView")
@@ -142,6 +171,12 @@ properties.Add("ixEditBodygroups", {
 	end,
 
 	Action = function(self, entity)
+		if (HasEquippedOutfit(entity:GetCharacter())) then
+			if (CLIENT) then
+				ix.util.Notify(L("warnEquippedOutfit"))
+			end
+		end
+
 		local panel = vgui.Create("ixBodygroupView")
 		panel:Display(entity)
 	end
@@ -149,3 +184,35 @@ properties.Add("ixEditBodygroups", {
 
 ix.util.Include("sv_hooks.lua")
 ix.util.Include("cl_hooks.lua")
+
+ix.command.Add("CharSetBodygroup", {
+	description = "@cmdCharSetBodygroup",
+	adminOnly = true,
+	arguments = {
+		ix.type.character,
+		ix.type.string,
+		bit.bor(ix.type.number, ix.type.optional)
+	},
+	OnRun = function(self, client, target, bodygroup, value)
+		if (HasEquippedOutfit(target)) then
+			client:NotifyLocalized("warnEquippedOutfit")
+		end
+
+		local index = target:GetPlayer():FindBodygroupByName(bodygroup)
+
+		if (index > -1) then
+			if (value and value < 1) then
+				value = nil
+			end
+
+			local groups = target:GetData("groups", {})
+				groups[index] = value
+			target:SetData("groups", groups)
+			target:GetPlayer():SetBodygroup(index, value or 0)
+
+			ix.util.NotifyLocalized("cChangeGroups", nil, client:GetName(), target:GetName(), bodygroup, value or 0)
+		else
+			return "@invalidArg", 2
+		end
+	end
+})

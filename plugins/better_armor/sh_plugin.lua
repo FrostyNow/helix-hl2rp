@@ -28,11 +28,8 @@ ix.lang.AddTable("english", {
 	["cp_vest_rebel"] = "CP Vest with Bag",
 	["cp_vest_rebel_desc"] = "A Civil Protection bulletproof vest with a backpack attached.",
 	["combat_vest_desc"] = "A combat vest with limited ballistic protection.",
-	["molle_vest"] = "MOLLE Vest",
 	["molle_vest_desc"] = "A ballistic combat vest equipped with MOLLE storage pouches.",
-	["overwatch_vest"] = "Overwatch Vest",
-	["overwatch_vest_desc"] = "A bulletproof vest issued to the Overwatch Transhuman Arm.",
-	["flak_jacket"] = "Flak Jacket",
+	["overwatch_vest_desc"] = "A bulletproof vest made from the equipment of the Overwatch Transhuman Arm.",
 	["flak_jacket_desc"] = "A protective vest designed to shield against fragmentation and shrapnel.",
 })
 ix.lang.AddTable("korean", {
@@ -70,11 +67,11 @@ ix.lang.AddTable("korean", {
 	["combat_vest_desc"] = "제한적인 방탄 성능이 있는 전투 조끼입니다.",
 	["Combat Helmet"] = "우드랜드 방탄모",
 	["combat_helmet_desc"] = "우드랜드 위장무늬 천을 씌운 방탄모입니다.",
-	["molle_vest"] = "MOLLE 방탄 조끼",
+	["Molle Vest"] = "MOLLE 방탄 조끼",
 	["molle_vest_desc"] = "7시간 전쟁 전 군인에게 지급되었던 수납 기능이 있는 방탄 전투조끼입니다.",
-	["overwatch_vest"] = "감시부대 방탄 조끼",
-	["overwatch_vest_desc"] = "감시인 신인류 부대의 제식 방탄 조끼입니다.",
-	["flak_jacket"] = "방편복",
+	["Overwatch Vest"] = "감시부대 방탄 조끼",
+	["overwatch_vest_desc"] = "감시인 신인류 부대의 제식 장비를 벗겨내서 만든 방탄 조끼입니다.",
+	["Flak Jacket"] = "방편복",
 	["flak_jacket_desc"] = "파편을 방호할 수 있는 조끼입니다.",
 })
 

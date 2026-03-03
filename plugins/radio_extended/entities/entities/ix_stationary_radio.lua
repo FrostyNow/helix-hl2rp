@@ -1,7 +1,7 @@
 
 ENT.Type = "anim"
 ENT.PrintName = "Stationary Radio"
-ENT.Author = "Antigravity"
+ENT.Author = "Frosty with Antigravity"
 ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.Category = "Helix"

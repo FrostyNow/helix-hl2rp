@@ -2,122 +2,172 @@ local PLUGIN = PLUGIN
 PLUGIN.name = "Bad Air"
 PLUGIN.author = "Black Tea and Subleader"
 PLUGIN.desc = "Remastered Bad Air"
-PLUGIN.toxicAreas = PLUGIN.toxicAreas or {}
 
--- ix.util.Include("cl_plugin.lua")
+ix.lang.AddTable("korean", {
+	toxicity = "오염도",
+	badairEnter1 = "갑자기 숨 쉬기가 답답하고 쓰라린 듯 따갑습니다.",
+	badairEnter2 = "뭔가 매캐한 냄새가 나는 것 같습니다.",
+	badairEnter3 = "공기 중에 무거운 입자가 깔리는 듯한 느낌이 듭니다.",
+	badairExit1 = "숨 쉬기가 한결 편안해졌습니다.",
+	badairExit2 = "불쾌한 냄새가 사라지는 것 같습니다.",
+	badairExit3 = "뭔가 상쾌해진 것 같습니다."
+})
 
-local PLAYER = FindMetaTable("Player")
+ix.lang.AddTable("english", {
+	toxicity = "Toxicity",
+	badairEnter1 = "It suddenly feels stuffy and your breathing stings.",
+	badairEnter2 = "It smells as if there's something acrid here.",
+	badairEnter3 = "It feels as though heavy particles are settling in the air.",
+	badairExit1 = "Breathing has become much easier.",
+	badairExit2 = "The unpleasant smell seems to have disappeared.",
+	badairExit3 = "It feels somehow refreshing."
+})
 
+local badairEnterMessages = {
+	"badairEnter1",
+	"badairEnter2",
+	"badairEnter3"
+}
+
+local badairExitMessages = {
+	"badairExit1",
+	"badairExit2",
+	"badairExit3"
+}
+
+function PLUGIN:SetupAreaProperties()
+	ix.area.AddProperty("badair", ix.type.bool, false)
+end
 
 if (!CLIENT) then
-	-- gets two vector and gives min and max vector for Vector:WithinAA(min, max)
-	local function sortVector(vector1, vector2)
-		local minVector = Vector(0, 0, 0)
-		local maxVector = Vector(0, 0, 0)
-
-		for i = 1, 3 do
-			if (vector1[i] >= vector2[i]) then
-				maxVector[i] = vector1[i]
-				minVector[i] = vector2[i]
-			else
-				maxVector[i] = vector2[i]
-				minVector[i] = vector1[i]
-			end
-		end
-
-		return minVector, maxVector
-	end
-
-	ix.badair = ix.badair or {}
-
-	-- get all bad air area.
-	function ix.badair.getAll()
-		return PLUGIN.toxicAreas
-	end
-
-	-- Add toxic bad air area.
-	function ix.badair.addArea(vMin, vMax)
-		vMin, vMax = sortVector(vMin, vMax)
-
-		if (vMin and vMax) then
-			table.insert(PLUGIN.toxicAreas, {vMin, vMax})
-		end
-	end
-
-	function PLUGIN:SaveData()
-		self:SetData(ix.badair.getAll())
-	end
-	
-	function PLUGIN:LoadData()
-		PLUGIN.toxicAreas = self:GetData()
-	end
-
 	-- This timer does the effect of bad air.
 	timer.Create("badairTick", 1, 0, function()
 		for _, client in ipairs(player.GetAll()) do
 			local char = client:GetCharacter()
-			local clientPos = client:GetPos() + client:OBBCenter()
-			client.currentArea = nil
 
-			for index, vec in ipairs((ix.badair.getAll() or {})) do
-				if (clientPos:WithinAABox(vec[1], vec[2])) then
-					if (client:IsAdmin()) then
-						client.currentArea = index
+			if (client:Alive() and char) then
+				local isInGas = false
+
+				if (client:IsInArea()) then
+					local areaID = client:GetArea()
+					
+					if (areaID and areaID != "") then
+						local areaMeta = ix.area.stored[areaID]
+						
+						if (areaMeta and areaMeta.properties and areaMeta.properties.badair) then
+							local bIsProtected = client:GetNetVar("gasmask") or client:GetMoveType() == MOVETYPE_NOCLIP
+
+							if (!bIsProtected and client:IsCombine()) then
+								if (Schema:IsConceptCombine(client)) then
+									local index = client:FindBodygroupByName("mask")
+
+									if (index != -1 and client:GetBodygroup(index) >= 1) then
+										bIsProtected = true
+									end
+								else
+									bIsProtected = true
+								end
+							end
+
+							if (!bIsProtected) then
+								isInGas = true
+							end
+						end
+					end
+				end
+
+				local wasInGas = client.ixInBadAir or false
+
+				if (isInGas and !wasInGas) then
+					client.ixInBadAir = true
+
+					if ((client.ixNextBadAirEnterMessage or 0) < CurTime()) then
+						local msg = table.Random(badairEnterMessages)
+						ix.chat.Send(client, "it", L(msg, client), false, {client})
+
+						client.ixNextBadAirEnterMessage = CurTime() + 5
+					end
+				elseif (!isInGas and wasInGas) then
+					client.ixInBadAir = false
+
+					if ((client.ixNextBadAirExitMessage or 0) < CurTime()) then
+						local msg = table.Random(badairExitMessages)
+						ix.chat.Send(client, "it", L(msg, client), false, {client})
+
+						client.ixNextBadAirExitMessage = CurTime() + 5
+					end
+				end
+
+				local toxicity = client:GetLocalVar("toxicity", 0)
+
+				if (isInGas) then
+					toxicity = math.Clamp(toxicity + 3, 0, 100)
+					client:SetLocalVar("toxicity", toxicity)
+
+					if (toxicity >= 100) then
+						local dmg = math.max(1, client:GetMaxHealth() / 33)
+						client:TakeDamage(dmg)
+						client:ScreenFade(1, ColorAlpha(color_white, 150), .5, 0)
 					end
 
-					if (client:Alive() and char) then
-						if (!client:GetNetVar("gasmask") and !client:IsCombine()) then
-							client:TakeDamage(math.Clamp(1, client:GetMaxHealth() / 33))
-							client:ScreenFade(1, ColorAlpha(color_white, 150), .5, 0)
-						end
-
-						break
+					if ((client.ixNextCough or 0) < CurTime()) then
+						client.ixNextCough = CurTime() + math.Rand(3, 5)
+						
+						local pitch = client:IsFemale() and math.random(115, 125) or math.random(95, 105)
+						client:EmitSound("ambient/voices/cough" .. math.random(1, 4) .. ".wav", 75, pitch)
+						client:ViewPunch(Angle(math.Rand(-3, 3), math.Rand(-2, 2), math.Rand(-1, 1)))
+					end
+				else
+					if (toxicity > 0) then
+						toxicity = math.Clamp(toxicity - 2, 0, 100)
+						client:SetLocalVar("toxicity", toxicity)
 					end
 				end
 			end
 		end
 	end)
-
-	netstream.Start("addArea", function(client, v1, v2)
-		if (!client:IsAdmin()) then
-			client:notify(L("notAllowed", client))
-		end
-
-		client:notify(L("badairAdded", client))
-		ix.badair.addArea(v1, v2)
-	end)
+else
+	ix.bar.Add(function()
+		return math.max(LocalPlayer():GetLocalVar("toxicity", 0) / 100, 0)
+	end, Color(34, 139, 34), nil, "toxicity")
 end
 
-ix.command.Add("BadAirAdd", {
-	description = "Add an area",
+ix.command.Add("AreaBadAir", {
+	description = "@cmdAreaBadAir",
 	adminOnly = true,
 	OnRun = function(self, client, arguments)
-		local pos = client:GetEyeTraceNoCursor().HitPos
+		local areaID = client:GetArea()
 
-		if (!client:GetNetVar("badairMin")) then
-			client:SetNetVar("badairMin", pos, client)
-			client:Notify(L("badairCommand", client))
-		else
-			local vMin = client:GetNetVar("badairMin")
-			local vMax = pos
-			ix.badair.addArea(vMin, vMax)
-
-			client:SetNetVar("badairMin", nil, client)
-			client:Notify(L("badairAdded", client))
+		if (!client:IsInArea() or !areaID or areaID == "") then
+			return "@areaBadAirReq"
 		end
-	end
-})
 
-ix.command.Add("BadAirRemove", {
-	description = "Remove an area",
-	adminOnly = true,
-	OnRun = function(self, client, arguments)
-		if (client.currentArea) then
-			client:Notify(L("badairRemoved", client))
+		local areaInfo = ix.area.stored[areaID]
+		if (!areaInfo) then
+			return "@areaBadAirInvalid"
+		end
 
-			table.remove(PLUGIN.toxicAreas, client.currentArea)	
+		areaInfo.properties.badair = not areaInfo.properties.badair
+
+		-- Network the change to all clients
+		net.Start("ixAreaAdd")
+			net.WriteString(areaID)
+			net.WriteString(areaInfo.type)
+			net.WriteVector(areaInfo.startPosition)
+			net.WriteVector(areaInfo.endPosition)
+			net.WriteTable(areaInfo.properties)
+		net.Broadcast()
+
+		-- Save the area plugin data
+		local areaPlugin = ix.plugin.list["area"]
+		if (areaPlugin) then
+			areaPlugin:SaveData()
+		end
+
+		if (areaInfo.properties.badair) then
+			return "@areaBadAirEnabled", areaID
 		else
-			client:Notify(L("badairBeArea", client))
+			return "@areaBadAirDisabled", areaID
 		end
 	end
 })

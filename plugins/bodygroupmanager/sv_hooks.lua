@@ -15,6 +15,7 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 
 	local character = client:GetCharacter()
 	local targetCharacter = target:GetCharacter()
+
 	local canAdminEdit = ix.command.HasAccess(client, "CharEditBodygroup")
 	local isSelf = (target == client)
 

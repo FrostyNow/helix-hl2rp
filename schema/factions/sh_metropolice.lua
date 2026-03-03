@@ -106,15 +106,17 @@ function FACTION:OnNameChanged(client, oldValue, value)
 		-- character:SetModel("models/dpfilms/metropolice/policetrench.mdl")
 	elseif (!Schema:IsCombineRank(oldValue, "EpU") and Schema:IsCombineRank(value, "EpU")) then
 		character:JoinClass(CLASS_EMP)
-
 		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
 	elseif (!Schema:IsCombineRank(oldValue, "DvL") and Schema:IsCombineRank(value, "DvL")) then
 		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
 	elseif (!Schema:IsCombineRank(oldValue, "SeC") and Schema:IsCombineRank(value, "SeC")) then
 		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
-	elseif (!Schema:IsCombineRank(oldValue, "SCN") and Schema:IsCombineRank(value, "SCN")
-	or !Schema:IsCombineRank(oldValue, "SHIELD") and Schema:IsCombineRank(value, "SHIELD")) then
-		character:JoinClass(CLASS_MPS)
+	-- elseif (!Schema:IsCombineRank(oldValue, "SCN") and Schema:IsCombineRank(value, "SCN")
+	-- or !Schema:IsCombineRank(oldValue, "SHIELD") and Schema:IsCombineRank(value, "SHIELD")) then
+	-- 	character:JoinClass(CLASS_MPS)
+	elseif (!Schema:IsCombineRank(oldValue, "SCN") and Schema:IsCombineRank(value, "SCN")) then
+		character:SetModel("models/Combine_Scanner.mdl")
+		character:JoinClass(CLASS_SCANNER)
 	end
 end
 

@@ -20,7 +20,8 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 ITEM.maxDurability = 500
 ITEM.outfitCategory = "suit"
 ITEM.pacData = {}
-ITEM.replacements = "models/combine_soldier.mdl"
+ITEM.replacements = "models/combine_soldierproto.mdl"
+ITEM.newSkin = 0
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

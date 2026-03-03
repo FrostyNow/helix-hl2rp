@@ -175,7 +175,7 @@ ITEM.functions.Equip = {
 function ITEM:OnInstanced(invID, x, y)
 	local inventory = ix.item.inventories[invID]
 
-	ix.item.NewInv(inventory and inventory.owner or 0, self.uniqueID, function(inv)
+	ix.item.New(inventory and inventory.owner or 0, self.uniqueID, function(inv)
 		local client = inv:GetOwner()
 
 		inv.vars.isBag = self.uniqueID
@@ -228,7 +228,7 @@ function ITEM:OnSendData()
 			end)
 		end
 	else
-		ix.item.NewInv(self.player:GetCharacter():GetID(), self.uniqueID, function(inv)
+		ix.item.New(self.player:GetCharacter():GetID(), self.uniqueID, function(inv)
 			self:SetData("id", inv:GetID())
 		end)
 	end
@@ -274,15 +274,15 @@ function ITEM:OnRemoved()
 end
 
 -- Called when the item should tell whether or not it can be transfered between inventories.
-function ITEM:CanTransfer(oldInventory, newInventory)
+function ITEM:CanTransfer(oldInventory, newentory)
 	local index = self:GetData("id")
 
-	if (newInventory and self:GetData("equip")) then
-		if (newInventory.vars and newInventory.vars.isBag) then
+	if (newentory and self:GetData("equip")) then
+		if (newentory.vars and newentory.vars.isBag) then
 			return false
 		end
 
-		local index2 = newInventory:GetID()
+		local index2 = newentory:GetID()
 
 		if (index == index2) then
 			return false
@@ -295,7 +295,7 @@ function ITEM:CanTransfer(oldInventory, newInventory)
 		end
 	end
 
-	return !newInventory or newInventory:GetID() != oldInventory:GetID() or newInventory.vars.isBag
+	return !newentory or newentory:GetID() != oldInventory:GetID() or newentory.vars.isBag
 end
 
 function ITEM:OnTransferred(curInv, inventory)

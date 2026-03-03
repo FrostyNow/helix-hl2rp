@@ -33,6 +33,7 @@ ITEM.eqBodyGroups = {
 	["lower gear"] = 1,
 	["lower radio"] = 1,
 }
+ITEM.newSkin = 0
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

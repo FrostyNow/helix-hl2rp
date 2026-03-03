@@ -101,9 +101,19 @@ function ITEM:RemoveOutfit(client)
 
 	self:SetData("equip", false)
 
+	-- Reset all bodygroups first BEFORE changing model
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
+	end
+
 	if (character:GetData("oldModel" .. self.outfitCategory)) then
 		character:SetModel(character:GetData("oldModel" .. self.outfitCategory))
 		character:SetData("oldModel" .. self.outfitCategory, nil)
+	end
+
+	-- Reset all bodygroups AGAIN after changing model to clear Source Engine carry-over bugs
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
 	end
 
 	if (self.newSkin) then
@@ -116,40 +126,22 @@ function ITEM:RemoveOutfit(client)
 		end
 	end
 
-	for k, _ in pairs(self.eqBodyGroups or {}) do
-		local index = client:FindBodygroupByName(k)
-
-		if (index > -1) then
-			client:SetBodygroup(index, 0)
+	-- Apply base character bodygroups
+	local baseGroups = character:GetData("groups", {})
+	for k, v in pairs(baseGroups) do
+		local index = isnumber(k) and k or client:FindBodygroupByName(k)
+		if (index and index > -1) then
+			client:SetBodygroup(index, tonumber(v) or 0)
 		end
 	end
 
-	-- restore the original bodygroups
-	if (character:GetData("oldGroups" .. self.outfitCategory)) then
-		for k, v in pairs(character:GetData("oldGroups" .. self.outfitCategory, {})) do
-			local index = isnumber(k) and k or client:FindBodygroupByName(k)
-
-			if (index and index > -1) then
-				client:SetBodygroup(index, tonumber(v) or 0)
-			end
-		end
-
-		character:SetData("groups", character:GetData("oldGroups" .. self.outfitCategory, {}))
-		character:SetData("oldGroups" .. self.outfitCategory, nil)
-	end
-
-	-- Re-apply bodygroups from other equipped items to handle intersections
+	-- Re-apply bodygroups from all equipped items
 	for _, item in pairs(character:GetInventory():GetItems()) do
-		if (item.id != self.id and item:GetData("equip") and item.eqBodyGroups) then
-			local bgs = item.eqBodyGroups
-			for bgName, bgValue in pairs(bgs) do
+		if (item:GetData("equip") and item.eqBodyGroups) then
+			for bgName, bgValue in pairs(item.eqBodyGroups) do
 				local index = client:FindBodygroupByName(bgName)
 				if (index > -1) then
 					client:SetBodygroup(index, bgValue)
-					
-					local currentGroups = character:GetData("groups", {})
-					currentGroups[index] = bgValue
-					character:SetData("groups", currentGroups)
 				end
 			end
 		end
@@ -275,6 +267,11 @@ function ITEM:ApplyOutfit(client)
 
 	local model = client:GetModel()
 
+	-- Reset all bodygroups first BEFORE changing model
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
+	end
+
 	if (isfunction(self.OnGetReplacement)) then
 		local replacement = self:OnGetReplacement()
 		char:SetData("oldModel" .. self.outfitCategory, char:GetData("oldModel" .. self.outfitCategory, model))
@@ -299,6 +296,11 @@ function ITEM:ApplyOutfit(client)
 		end
 	end
 
+	-- Reset all bodygroups AGAIN after changing model to clear Source Engine carry-over bugs
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
+	end
+
 	if (self.newSkin) then
 		if (!char:GetData("oldSkin" .. self.outfitCategory)) then
 			char:SetData("oldSkin" .. self.outfitCategory, client:GetSkin())
@@ -308,38 +310,24 @@ function ITEM:ApplyOutfit(client)
 		client:SetSkin(self.newSkin)
 	end
 
-	local groups = char:GetData("groups", {})
-
-	if (!char:GetData("oldGroups" .. self.outfitCategory)) then
-		local oldGroups = {}
-		for i = 0, client:GetNumBodyGroups() - 1 do
-			local name = client:GetBodygroupName(i)
-			oldGroups[name] = client:GetBodygroup(i)
+	-- Apply base character bodygroups
+	local baseGroups = char:GetData("groups", {})
+	for k, v in pairs(baseGroups) do
+		local index = isnumber(k) and k or client:FindBodygroupByName(k)
+		if (index and index > -1) then
+			client:SetBodygroup(index, tonumber(v) or 0)
 		end
-
-		char:SetData("oldGroups" .. self.outfitCategory, oldGroups)
 	end
 
-	if (self.eqBodyGroups) then
-		local outfitGroups = {}
-
-		for k, value in pairs(self.eqBodyGroups) do
-			local index = client:FindBodygroupByName(k)
-
-			if (index > -1) then
-				outfitGroups[index] = value
+	-- Re-apply bodygroups from all equipped items (including this one)
+	for _, item in pairs(char:GetInventory():GetItems()) do
+		if (item:GetData("equip") and item.eqBodyGroups) then
+			for bgName, bgValue in pairs(item.eqBodyGroups) do
+				local index = client:FindBodygroupByName(bgName)
+				if (index > -1) then
+					client:SetBodygroup(index, bgValue)
+				end
 			end
-		end
-
-		local newGroups = table.Copy(char:GetData("groups", {}))
-
-		for index, value in pairs(outfitGroups) do
-			newGroups[index] = value
-			client:SetBodygroup(index, value)
-		end
-
-		if (!table.IsEmpty(newGroups)) then
-			char:SetData("groups", newGroups)
 		end
 	end
 

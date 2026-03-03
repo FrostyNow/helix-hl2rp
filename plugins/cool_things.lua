@@ -22,7 +22,7 @@ ix.lang.AddTable("english", {
 	optdItemESP = "Shows the names and locations of each item in the server.",
 })
 ix.lang.AddTable("korean", {
-	optItemESP = "아이템 ESP 켜기",
+	optItemESP = "아이템 ESP 보기",
 	optdItemESP = "서버에 있는 각각의 아이템의 이름과 위치를 표시합니다.",
 })
 
