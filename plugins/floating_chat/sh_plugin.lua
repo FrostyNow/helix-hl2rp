@@ -80,19 +80,19 @@ if (CLIENT) then
 	function PLUGIN:LoadFonts(font, genericFont)
 		surface.CreateFont("ixFloatingChatFont", {
 			font = genericFont,
-			size = 22,
+			size = 44,
 			extended = true,
 			weight = 500
 		})
 		surface.CreateFont("ixFloatingChatFontLarge", {
 			font = genericFont,
-			size = 28,
+			size = 56,
 			extended = true,
 			weight = 800
 		})
 		surface.CreateFont("ixFloatingChatFontSmall", {
 			font = genericFont,
-			size = 18,
+			size = 36,
 			extended = true,
 			weight = 500
 		})
@@ -133,8 +133,10 @@ if (CLIENT) then
 			text = L("vortUnintelligible")
 		end
 
+		text = string.format("\"%s\"", text)
+
 		surface.SetFont(font)
-		local wrappedLines = self:WrapText(text, font, 400)
+		local wrappedLines = self:WrapText(text, font, 800)
 
 		if (#wrappedLines > 5) then
 			local newLines = {}
@@ -196,7 +198,7 @@ if (CLIENT) then
 			angle:RotateAroundAxis(angle:Forward(), 90)
 
 			local realDist = math.sqrt(distance)
-			local scale = math.Clamp(realDist * 0.001, 0.05, 0.5)
+			local scale = math.Clamp(realDist * 0.001, 0.05, 0.5) * 0.5
 
 			local offset = 0
 			for i = #client.ixFloatingChatData, 1, -1 do
@@ -231,7 +233,7 @@ if (CLIENT) then
 					end
 				cam.End3D2D()
 
-				offset = offset + (th * scale) + (10 * scale) -- Scaled spacing between messages
+				offset = offset + (th * scale) + (20 * scale) -- Scaled spacing between messages
 			end
 		end
 	end

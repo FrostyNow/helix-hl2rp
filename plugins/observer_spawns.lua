@@ -10,7 +10,7 @@ ix.lang.AddTable("english", {
 	optdObserverSpawnpointESP = "Shows the names and locations of each faction spawnpoint in the server.",
 })
 ix.lang.AddTable("korean", {
-	optObserverSpawnpointESP = "시작지점 ESP 켜기",
+	optObserverSpawnpointESP = "시작지점 ESP 보기",
 	optdObserverSpawnpointESP = "서버에 있는 각 세력의 시작지점의 이름과 위치를 표시합니다.",
 })
 

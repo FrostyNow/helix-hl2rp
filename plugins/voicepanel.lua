@@ -7,19 +7,21 @@ if (CLIENT) then
 	local ixVoicePanels = {}
 
 	function PANEL:Init()
-		local hi = vgui.Create("DLabel", self)
-		hi:SetFont("ixIconsMedium")
-		hi:Dock(LEFT)
-		hi:DockMargin(8, 0, 8, 0)
-		hi:SetTextColor(color_white)
-		hi:SetText("i")
-		hi:SetWide(30)
+		self.Icon = vgui.Create("DLabel", self)
+		self.Icon:SetFont("ixIconsMedium")
+		self.Icon:Dock(LEFT)
+		self.Icon:DockMargin(8, 0, 8, 0)
+		self.Icon:SetTextColor(color_white)
+		self.Icon:SetText("i")
+		self.Icon:SetWide(30)
+		self.Icon:SetExpensiveShadow(1, Color(0, 0, 0, 150))
 
 		self.LabelName = vgui.Create("DLabel", self)
 		self.LabelName:SetFont("ixMediumFont")
 		self.LabelName:Dock(FILL)
 		self.LabelName:DockMargin(0, 0, 0, 0)
 		self.LabelName:SetTextColor(color_white)
+		self.LabelName:SetExpensiveShadow(1, Color(0, 0, 0, 150))
 
 		self.Color = color_transparent
 
@@ -31,8 +33,6 @@ if (CLIENT) then
 
 	function PANEL:Setup(client)
 		self.client = client
-		self.name = hook.Run("ShouldAllowScoreboardOverride", client, "name") and hook.Run("GetDisplayedName", client) or client:Nick()
-		self.LabelName:SetText(self.name)
 		self:InvalidateLayout()
 	end
 
@@ -43,14 +43,50 @@ if (CLIENT) then
 
 		surface.SetDrawColor(0, 0, 0, 50 + self.client:VoiceVolume() * 50)
 		surface.DrawRect(0, 0, w, h)
-
-		surface.SetDrawColor(255, 255, 255, 50 + self.client:VoiceVolume() * 120)
-		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
 	function PANEL:Think()
 		if (IsValid(self.client)) then
-			self.LabelName:SetText(self.name)
+			local client = self.client
+			local character = client:GetCharacter()
+			local localChar = LocalPlayer():GetCharacter()
+			local name = client:Nick()
+			local color = color_white
+
+			if (character and localChar) then
+				local bRecognized = client == LocalPlayer() or localChar:DoesRecognize(character) or hook.Run("IsPlayerRecognized", client)
+
+				if (bRecognized) then
+					name = hook.Run("ShouldAllowScoreboardOverride", client, "name") and hook.Run("GetDisplayedName", client) or client:GetName()
+
+					local class = ix.class.Get(character:GetClass())
+					if (class and class.color) then
+						color = class.color
+					else
+						color = team.GetColor(client:Team())
+					end
+				else
+					name = L("unknown")
+					color = color_white
+				end
+			end
+
+			if (self.LabelName:GetText() != name) then
+				self.LabelName:SetText(name)
+
+				surface.SetFont("ixMediumFont")
+				local nameW = surface.GetTextSize(name)
+				local totalW = math.max(280, nameW + 30 + 16 + 16) -- icon(30) + margins(16) + padding(8*2)
+
+				if (self:GetWide() != totalW) then
+					self:SetWide(totalW)
+				end
+			end
+
+			if (self.LabelName:GetTextColor() != color) then
+				self.LabelName:SetTextColor(color)
+				self.Icon:SetTextColor(color)
+			end
 		end
 
 		if (self.fadeAnim) then
@@ -125,8 +161,8 @@ if (CLIENT) then
 		ixVoicePanelList = vgui.Create("DPanel")
 
 		ixVoicePanelList:ParentToHUD()
-		ixVoicePanelList:SetSize(270, ScrH() - 200)
-		ixVoicePanelList:SetPos(ScrW() - 320, 100)
+		ixVoicePanelList:SetSize(600, ScrH() - 200)
+		ixVoicePanelList:SetPos(ScrW() - 620, 100)
 		ixVoicePanelList:SetPaintBackground(false)
 	end
 

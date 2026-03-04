@@ -16,15 +16,24 @@ ix.util.Include("sv_hooks.lua")
 ix.util.Include("cl_hooks.lua")
 
 ix.option.Add("spawnerESP", ix.type.bool, false, {
-	category = "Item Spawner"
+	category = "observer",
+	phrase = "optSpawnerESP",
+	description = "optSpawnerESPDesc",
+	hidden = function()
+		return !CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Item Spawner", nil)
+	end
 })
 
 ix.lang.AddTable("english", {
+	optSpawnerESP = "Item Spawner ESP",
+	optSpawnerESPDesc = "Whether or not to show the item spawner ESP while in observer.",
 	spawnerESPTitle = "Spawner: %s",
 	spawnerESPInfo = "Delay: %sm | Rarity: %s%%",
 })
 
 ix.lang.AddTable("korean", {
-	spawnerESPTitle = "스폰 지점: %s",
+	optSpawnerESP = "아이템 생성 지점 ESP",
+	optSpawnerESPDesc = "옵저버 상태일 때 아이템 생성 지점 ESP를 표시할지 여부입니다.",
+	spawnerESPTitle = "생성 지점: %s",
 	spawnerESPInfo = "대기 시간: %s분 | 희귀 확률: %s%%",
 })

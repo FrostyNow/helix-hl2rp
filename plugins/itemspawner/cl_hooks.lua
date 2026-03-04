@@ -24,7 +24,7 @@ end)
 function PLUGIN:HUDPaint()
 	local client = LocalPlayer()
 	
-	if (!ix.option.Get(client, "spawnerESP", false)) then return end
+	if (!ix.option.Get("spawnerESP", false)) then return end
 	if (client:GetMoveType() != MOVETYPE_NOCLIP) then return end
 	if (!CAMI.PlayerHasAccess(client, "Helix - Item Spawner", nil)) then return end
 	
@@ -34,8 +34,11 @@ function PLUGIN:HUDPaint()
 		local pos = v.position:ToScreen()
 		
 		if (pos.visible) then
-			draw.SimpleText(L("spawnerESPTitle", v.title), "ixGenericFont", pos.x, pos.y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-			draw.SimpleText(L("spawnerESPInfo", v.delay, v.rarity), "ixGenericFont", pos.x, pos.y + 15, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(L("spawnerESPTitle", v.title), "ixGenericFont", pos.x, pos.y, Color(207, 142, 56), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+
+			if (v.position:DistToSqr(client:GetPos()) <= 440000) then
+				draw.SimpleText(L("spawnerESPInfo", v.delay, v.rarity), "ixSmallFont", pos.x, pos.y + 15, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
 		end
 	end
 end

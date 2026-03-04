@@ -60,7 +60,7 @@ end
 local COMMAND_PREFIX = "/"
 
 function Schema:ChatTextChanged(text)
-	if (LocalPlayer():IsCombine() and !Schema:IsConceptCombine(LocalPlayer())) then
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		local key = nil
 
 		if (text == COMMAND_PREFIX .. "radio") then
@@ -69,7 +69,7 @@ function Schema:ChatTextChanged(text)
 			key = "w"
 		elseif (text == COMMAND_PREFIX .. "y ") then
 			key = "y"
-		elseif (text:sub(1, 1):match("%w")) then
+		elseif (text:sub(1, 1):match("[%w]") or (text:byte(1) or 0) > 127) then
 			key = "t"
 		end
 

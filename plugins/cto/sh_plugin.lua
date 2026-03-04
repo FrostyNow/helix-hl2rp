@@ -13,7 +13,6 @@ ix.util.Include("sv_plugin.lua")
 ix.lang.AddTable("english", {
 	["Camera Terminal"] = "Camera Terminal",
 	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
-	notCombine = "You are not the Combine!",
 	MovementViolation = "Movement violation(s) sighted by C-i%s...",
 	NoBiosignalNote = "Note: Your character currently has no biosignal.",
 	DownloadingTrauma = "Downloading trauma packet...",
@@ -31,7 +30,6 @@ ix.lang.AddTable("english", {
 	bioDesc = "Turn your biosignal on or off. Will alert all other units.",
 	bioAlreadyOn = "Your biosignal is already enabled!",
 	bioAlreadyOff = "Your biosignal is already disabled!",
-	targetNotCombine = "%s is not the Combine!",
 	targetBioAlreadyOn = "%s's biosignal is already enabled!",
 	targetBioAlreadyOff = "%s's biosignal is already disabled!",
 	bioSet = "You have %s %s's biosignal.",
@@ -50,7 +48,6 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	["Camera Terminal"] = "카메라 단말기",
 	cameraTerminalDesc = "감시 카메라와 연결된 단말기입니다.",
-	notCombine = "당신은 콤바인이 아닙니다!",
 	["All Clear"] = "이상 없음",
 	["Watching..."] = "감시 중...",
 	["Violation!"] = "위반 행위!",
@@ -86,7 +83,6 @@ ix.lang.AddTable("korean", {
 	bioDesc = "생체 신호를 전환합니다. 다른 병력에 알림이 전송됩니다.",
 	bioAlreadyOn = "생체 신호가 이미 켜져 있습니다!",
 	bioAlreadyOff = "생체 신호가 이미 꺼져 있습니다!",
-	targetNotCombine = "%s님은 콤바인이 아닙니다!",
 	targetBioAlreadyOn = "%s님의 생체 신호가 이미 켜져 있습니다!",
 	targetBioAlreadyOff = "%s님의 생체 신호가 이미 꺼져 있습니다!",
 	bioSet = "당신은 %s님의 생체 신호를 %s로 전환했습니다.",

@@ -33,6 +33,7 @@ LANGUAGE = {
 	needComkey = "You need a Combine keycard to do this.",
 	positiveIntegerRequired = "A positive integer (>= 1) is required.",
 	notCombine = "You are not the Combine!",
+	targetNotCombine = "%s is not the Combine!",
 	notCitizen = "%s is not a citizen!",
 
 	-- combine display messages

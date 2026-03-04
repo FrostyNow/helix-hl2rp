@@ -37,7 +37,7 @@ if CLIENT then
 	local AngularCompensation = 1
 	local MinimumFocus = 128
 
-	ix.option.Add("cbobIntensity", ix.type.number, 1, {
+	ix.option.Add("cbobIntensity", ix.type.number, 0.7, {
 		category = "ViewBob", min = 0.1, max = 1, decimals = 1
 	})
 
@@ -45,7 +45,7 @@ if CLIENT then
 		category = "ViewBob", min = 0.1, max = 1, decimals = 1
 	})
 
-	ix.option.Add("enablevbob", ix.type.bool, false, {
+	ix.option.Add("enablevbob", ix.type.bool, true, {
 		category = "ViewBob"
 	})
 

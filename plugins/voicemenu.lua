@@ -248,8 +248,9 @@ if (CLIENT) then
 		self:DockPadding(12, 12, 12, 12)
 
 		self.selectedCommand = nil
-		self.selectedClass = nil
+		self.selectedClass = PLUGIN.lastCategory
 		self.availableClasses = {}
+		self.bFirstPopulate = true
 
 		self.header = self:Add("DPanel")
 		self.header:Dock(TOP)
@@ -547,13 +548,13 @@ if (CLIENT) then
 		return true
 	end
 
-	function PANEL:SendVoice(command, mode)
+	function PANEL:SendVoice(command, mode, bNoClose)
 		if (!isstring(command) or command == "") then
 			return
 		end
 
 		if (mode == MODE_RADIO) then
-			local canUseRadio = self:CanSendRadio()
+			local canUseRadio = self:CanUseRadio()
 
 			if (!canUseRadio) then
 				LocalPlayer():Notify(TL("voiceMenuRadioUnavailable", "Cannot send by radio right now."))
@@ -583,7 +584,9 @@ if (CLIENT) then
 			RunConsoleCommand("say", command)
 		end
 
-		self:Remove()
+		if (!bNoClose) then
+			self:Remove()
+		end
 	end
 
 	function PANEL:CreateClassButton(class)
@@ -635,7 +638,7 @@ if (CLIENT) then
 		label:SizeToContents()
 	end
 
-	function PANEL:OpenModeMenu(command, voiceClass, x, y)
+	function PANEL:OpenModeMenu(command, voiceClass, x, y, bNoClose)
 		local modes = self:GetAllowedModesForClass(voiceClass or self.selectedClass)
 		local labels = {
 			[MODE_NORMAL] = TL("voiceMenuModeNormal", "Normal"),
@@ -645,7 +648,7 @@ if (CLIENT) then
 		}
 
 		if (#modes == 1) then
-			self:SendVoice(command, modes[1])
+			self:SendVoice(command, modes[1], bNoClose)
 			return
 		end
 
@@ -654,10 +657,17 @@ if (CLIENT) then
 		for _, mode in ipairs(modes) do
 			local canUseMode = self:CanUseMode(mode)
 			local option = menu:AddOption(labels[mode] or mode, function()
-				self:SendVoice(command, mode)
+				self:SendVoice(command, mode, bNoClose)
 			end)
 
 			option:SetEnabled(canUseMode == true)
+
+			if (canUseMode == true) then
+				option.DoRightClick = function()
+					self:SendVoice(command, mode, true)
+					menu:Remove()
+				end
+			end
 		end
 
 		menu:Open(x, y, false, self)
@@ -709,7 +719,12 @@ if (CLIENT) then
 
 		button.DoClick = function(panel)
 			local x, y = input.GetCursorPos()
-			self:OpenModeMenu(panel.command, panel.voiceClass, x, y)
+			self:OpenModeMenu(panel.command, panel.voiceClass, x, y, false)
+		end
+
+		button.DoRightClick = function(panel)
+			local x, y = input.GetCursorPos()
+			self:OpenModeMenu(panel.command, panel.voiceClass, x, y, true)
 		end
 		button.Paint = function(panel, w, h)
 			local alpha = panel:IsHovered() and 45 or 20
@@ -843,6 +858,16 @@ if (CLIENT) then
 			empty:SetText(TL("voiceMenuNoEntries", "No voice entries found."))
 			empty:SizeToContents()
 		end
+
+		if (self.bFirstPopulate and PLUGIN.lastScroll) then
+			timer.Simple(0, function()
+				if (IsValid(self) and IsValid(self.commandScroll)) then
+					self.commandScroll:GetVBar():SetScroll(PLUGIN.lastScroll)
+				end
+			end)
+
+			self.bFirstPopulate = false
+		end
 	end
 
 	function PANEL:Paint(w, h)
@@ -869,6 +894,12 @@ if (CLIENT) then
 			local menu = vgui.Create("ixVoiceMenuLarge")
 
 			menu.OnRemove = function(panel)
+				PLUGIN.lastCategory = panel.selectedClass
+
+				if (IsValid(panel.commandScroll)) then
+					PLUGIN.lastScroll = panel.commandScroll:GetVBar():GetScroll()
+				end
+
 				if (client.menu == panel) then
 					client.menuOpen = false
 					client.menu = nil

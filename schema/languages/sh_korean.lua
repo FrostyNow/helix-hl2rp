@@ -33,6 +33,7 @@ LANGUAGE = {
 	needComkey = "그 행동을 하려면 콤바인 보안 카드가 필요합니다.",
 	positiveIntegerRequired = "1보다 같거나 큰 양의 정수가 필요합니다.",
 	notCombine = "당신은 콤바인이 아닙니다!",
+	targetNotCombine = "%s님은 콤바인이 아닙니다!",
 	notCitizen = "%s님은 시민이 아닙니다!",
 
 	-- combine display messages
@@ -57,10 +58,11 @@ LANGUAGE = {
 	cLostContact = "위험! 무전 통신이 두절되었음...",
 	cDamageExternal = "외적",
 	cDamageSevere = "심각한",
+	["unknown location"] = "알 수 없는 위치",
 
 	voices = "음성 대사",
 
-	cmdCharSpawn = "대상 플레이어를 스폰 지점에 소환합니다.",
+	cmdCharSpawn = "대상 플레이어를 시작 지점에 소환합니다.",
 	cmdRevive = "대상 플레이어를 사망 지점에 부활시킵니다.",
 	cmdGiveCID = "대상 플레이어에게 시민 ID를 부여하거나 이미 있는 경우 새 ID 카드를 발급합니다.",
 	givenCID = "당신은 %s에게 시민 ID를 부여했습니다. 대상의 ID는 %s입니다.",
@@ -148,7 +150,7 @@ LANGUAGE = {
 	raidGovernment = "정부 은행털이",
 	raidLaws = "최소 경찰 수",
 	raidMoneyWorth = "1회 털이 금액",
-	raidSpawn = "은행 돈 스폰 시간",
+	raidSpawn = "은행 돈 생성 시간",
 	raidTimer = "1회 털이 딜레이",
 	raidWanted = "털이시 수배시작",
 	rewardArrest = "체포시 보상",
@@ -158,7 +160,7 @@ LANGUAGE = {
 	punchStamina = "펀치시 소요 스태미너",
 	dpBank = "은행 페널티",
 	garbageCount = "쓰레기 수",
-	garbageInterval = "쓰레기 스폰시간",
+	garbageInterval = "쓰레기 생성 시간",
 	garbageMax = "쓰레기 최대",
 	hitCost = "암살 비용",
 	incomeInterval = "이자 시간",

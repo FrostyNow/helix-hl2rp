@@ -40,7 +40,7 @@ end
 function PLUGIN:DoPostBiosignalLoss(client)
 	client:SetNetVar("IsBiosignalGone", true)
 
-	local location = client:GetArea() != "" and client:GetArea() or "unknown location"
+	local location = client:GetArea() != "" and client:GetArea() or L("unknown location", client)
 	local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 	-- Alert all other units.
@@ -95,7 +95,7 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 			if (bEnable) then
 				client:SetNetVar("IsBiosignalGone", false)
 
-				local location = client:GetArea() != "" and client:GetArea() or "unknown location"
+				local location = client:GetArea() != "" and client:GetArea() or L("unknown location", client)
 
 				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 255)) -- Alert this unit.
 

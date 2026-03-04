@@ -9,16 +9,22 @@ surface.CreateFont("HUDSmooth", {
 	antialias = true,
 	weight = 350,
 	extended,
+	outline = true,
 })
 
 local weps = { -- this table is for the weapons printnames, to be shown correctly on the armament info.
-	["#HL2_Shotgun"] = "Shotgun",
-	["#HL2_Pistol"] = "9mm Pistol",
-	["#HL2_Pulse_Rifle"] = "Standard Issue Pulse Rifle",
-	["Stunstick"] = "Stunstick",
-	["#HL2_SMG1"] = "Submachine Gun",
-	["#HL2_357Handgun"] = ".357 Revolver",
-	["#HL2_Grenade"] = "Grenade"
+	["#HL2_Shotgun"] = L("Shotgun"),
+	["#HL2_Pistol"] = L("9mm Pistol"),
+	["#HL2_Pulse_Rifle"] = L("Standard Issue Pulse Rifle"),
+	["Stunstick"] = L("Stunstick"),
+	["#HL2_SMG1"] = L("Submachine Gun"),
+	["#HL2_357Handgun"] = L(".357 Revolver"),
+	["#HL2_Grenade"] = L("Grenade"),
+	["arc9_hla_irifle"] = L("Standard Issue Pulse Rifle"),
+	["arc9_hl2_pistol"] = L("9mm Pistol"),
+	["arc9_hl2_smg1"] = L("Submachine Gun"),
+	["weapon_rtbr_flaregun"] = L("Flare Gun"),
+	["weapon_rtbr_oicw"] = "OICW",
 }
 function CombHUD()
 	
@@ -26,7 +32,7 @@ function CombHUD()
 	if !LocalPlayer():GetCharacter() then return end
 	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		local tsin = TimedSin(.68, 200, 255, 0)
-		local area = LocalPlayer():GetArea() or "Unknown" -- fyi if you step out of an area and there's no new area this won't update
+		local area = LocalPlayer():GetArea() or L("Unknown") -- fyi if you step out of an area and there's no new area this won't update
 		local tcolor = team.GetColor(LocalPlayer():Team())
 		local w = ScrW() / 2
 		local h = ScrH() / 2
@@ -39,53 +45,57 @@ function CombHUD()
 		local clipMax = weapon:GetMaxClip1()
 		local count = LocalPlayer():GetAmmoCount(weapon:GetPrimaryAmmoType())
 		local secondary = LocalPlayer():GetAmmoCount(weapon:GetSecondaryAmmoType())
-		local Arm = "Unknown" -- honestly i don't know if this is necessary but /shrug
+		local Arm = L("Unknown") -- honestly i don't know if this is necessary but /shrug
 		for k, v in pairs(weps) do
 			if tostring(LocalPlayer():GetActiveWeapon():GetPrintName()) == k then
-				Arm = v or "Unknown" -- honestly i don't know if this is necessary but /shrug
+				Arm = v or L("Unknown") -- honestly i don't know if this is necessary but /shrug
+			elseif tostring(LocalPlayer():GetActiveWeapon():GetClass()) == k then
+				Arm = v or L("Unknown") -- honestly i don't know if this is necessary but /shrug
 			end
 		end
-		if LocalPlayer():Health() >= 75 then -- there's probably a more efficient way to do whatever is below but eh
+		if LocalPlayer():Health() >= LocalPlayer():GetMaxHealth() then -- there's probably a more efficient way to do whatever is below but eh
 			hpCol = Color(18, 196, 18)
-		elseif LocalPlayer():Health() >= 40 then
+		elseif LocalPlayer():Health() >= LocalPlayer():GetMaxHealth() * 8 / 10 then
 			hpCol = Color(255,239,17)
 		else
-			if LocalPlayer():Health() < 40 then
+			if LocalPlayer():Health() < LocalPlayer():GetMaxHealth() * 4 / 10 then
 				hpCol = Color(tsin, 20, 20)
 			end
 		end
 
-		if LocalPlayer():Armor() >= 70 then
+		if LocalPlayer():Armor() >= LocalPlayer():GetMaxArmor() then
 			armCol = Color(18, 196, 18)
-		elseif LocalPlayer():Armor() >= 35 then
+		elseif LocalPlayer():Armor() >= LocalPlayer():GetMaxArmor() * 8 / 10 then
 			armCol = Color(255,239,17)
 		else
-			if LocalPlayer():Armor() < 35 then
+			if LocalPlayer():Armor() < LocalPlayer():GetMaxArmor() * 4 / 10 then
 				armCol = Color(223,20,20)
 			end
 		end
 		if LocalPlayer():Team() == FACTION_MPF then
-			lA = "LOCAL ASSET"
+			lA = L"PROTECTION TEAM"
 		else
 			if LocalPlayer():Team() == FACTION_OTA then
-				lA = "OVERWATCH ASSET"
+				lA = L"STABILIZATION TEAM"
 			end
 		end
 		
 		--main square 1 (unit info)
+		local ux, uy = ScrW() - 310, 40
+
 		surface.SetDrawColor(17, 136, 247, 150)
-		surface.DrawOutlinedRect(w + 500, h - 500, 300, 180, 2)
-		surface.SetDrawColor(66, 63, 63, 120)
-		surface.DrawRect(w+500, h - 500, 300, 180)
-		draw.SimpleText("LOCAL UNIT: "..LocalPlayer():Name(), "HUDSmooth", w+510, h-470, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
-		draw.SimpleText(lA, "HUDSmooth", w+510, h-490, tcolor)
-		draw.SimpleText("ASSET HEALTH: "..LocalPlayer():Health(), "HUDSmooth", w+510,h-450, hpCol)
-		draw.SimpleText("ASSET ARMOR: "..LocalPlayer():Armor(), "HUDSmooth", w+510,h-430, armCol)
-		draw.SimpleText("ASSET TOKENS: "..money, "HUDSmooth", w+510, h-410)
+		surface.DrawOutlinedRect(ux, uy, 300, 180, 2)
+		surface.SetDrawColor(0, 0, 0, 175)
+		surface.DrawRect(ux, uy, 300, 180)
+		draw.SimpleText(lA, "BudgetLabel", ux + 10, uy + 10, tcolor)
+		draw.SimpleText(L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText(L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
+		draw.SimpleText(L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
+		draw.SimpleText(L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
 		surface.SetDrawColor(17, 136, 247, 150)
-		surface.DrawRect(w+502,h-385, 296, 5)
-		draw.SimpleText("BIOSIGNAL ZONE: "..area, "HUDSmooth", w+510, h-370)
-		draw.SimpleText("BIOSIGNAL GRID: "..grid, "HUDSmooth", w+510, h-350)
+		surface.DrawRect(ux + 2, uy + 115, 296, 5)
+		draw.SimpleText(L"BIOSIGNAL ZONE: "..area, "BudgetLabel", ux + 10, uy + 130)
+		draw.SimpleText(L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
 		--[[ local gm = LocalPlayer():GetModel() commented out because it looks ugly as hell & is unnecessary
 		local gs = LocalPlayer():GetSkin()
 		if LocalPlayer():Team() == 3 then
@@ -121,13 +131,15 @@ function CombHUD()
 		--main square 3 (armament info)
 		local ga = LocalPlayer():GetActiveWeapon():GetClass()
 		if ga == "ix_hands" or ga == "ix_keys" or ga == "gmod_tool" or ga == "weapon_physgun" then return end
+		local x, y = ScrW() - 310, ScrH() - 65
+
 		surface.SetDrawColor(17, 136, 247, 150)
-		surface.DrawOutlinedRect(w+500, h+465, 300, 55)
-		surface.SetDrawColor(66, 63, 63, 120)
-		surface.DrawRect(w+500, h+465, 300, 55)
-		draw.SimpleText("ARM: "..Arm, "HUDSmooth", w+510, h + 475)
-		draw.SimpleText("[ "..clip.." / "..clipMax.." ]", "HUDSmooth", w+510, h + 495)
-		draw.SimpleText("[ "..count.." ]", "HUDSmooth", w + 580, h + 495)
+		surface.DrawOutlinedRect(x, y, 300, 55)
+		surface.SetDrawColor(0, 0, 0, 175)
+		surface.DrawRect(x, y, 300, 55)
+		draw.SimpleText(L"ARM: "..Arm, "BudgetLabel", x + 10, y + 10)
+		draw.SimpleText("[ "..clip.." / "..clipMax.." ]", "BudgetLabel", x + 10, y + 30)
+		draw.SimpleText("[ "..count.." ]", "BudgetLabel", x + 80, y + 30)
 	end
 end 
 local direction = {
@@ -197,5 +209,11 @@ hook.Add("Think", "AmbientMessages", function()
 		end
 
 		nextmessage = CurTime() + math.random(3, 4) -- this is the timer for when these show, increase numbers for longer times between messages
+	end
+end)
+
+hook.Add("CanDrawAmmoHUD", "CHUD_HideBaseAmmo", function(weapon)
+	if Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then
+		return false
 	end
 end)
