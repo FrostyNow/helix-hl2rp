@@ -28,7 +28,14 @@ ITEM.functions.selfheal = {
 			local newHealth = client:Health() + amount
 
 			if (newHealth <= 0) then
-				client:TakeDamage(client:Health() + 100, client, client)
+				local dmg = DamageInfo()
+				dmg:SetDamage(client:Health() + 100)
+				dmg:SetAttacker(client)
+				dmg:SetInflictor(client)
+				dmg:SetDamageType(DMG_SHOCK)
+				dmg:SetDamageForce(client:GetAimVector() * -8000)
+
+				client:TakeDamageInfo(dmg)
 			else
 				client:SetHealth(math.Clamp(newHealth, 0, client:GetMaxHealth()))
 			end
@@ -73,7 +80,14 @@ ITEM.functions.heal = {
 				local newHealth = entity:Health() + amount
 
 				if (newHealth <= 0) then
-					entity:TakeDamage(entity:Health() + 100, client, client)
+				local dmg = DamageInfo()
+					dmg:SetDamage(entity:Health() + 100)
+					dmg:SetAttacker(client)
+					dmg:SetInflictor(client)
+					dmg:SetDamageType(DMG_SHOCK)
+					dmg:SetDamageForce(client:GetAimVector() * 8000)
+
+					entity:TakeDamageInfo(dmg)
 				else
 					entity:SetHealth(math.Clamp(newHealth, 0, entity:GetMaxHealth()))
 				end

@@ -1,0 +1,11 @@
+ITEM.name = "Headcrab Soup"
+ITEM.model = "models/props_lab/headcrabprepbowl.mdl"
+ITEM.description = "itemHeadcrabSoupDesc"
+ITEM.width = 1
+ITEM.height = 1
+ITEM.hunger = 30
+ITEM.thirst = 10
+ITEM.price = 20
+ITEM.cookable = true
+ITEM.usenum = 2
+ITEM.sound = "interface/inv_eat_mutant_food.ogg"

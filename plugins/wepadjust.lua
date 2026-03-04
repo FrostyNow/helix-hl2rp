@@ -46,6 +46,13 @@ function PLUGIN:InitializedPlugins()
 			swep.ForceDefaultClip = 0
 		end
 
+		local swep = weapons.GetStored("arc9_hl2_pistol")
+		if (swep) then
+			swep.DamageMax = 6
+			swep.DamageMin = 4
+			swep.ForceDefaultClip = 0
+		end
+
 		// VJ
 		local swep = weapons.GetStored("weapon_vj_hlr2_rpg")
 		if (swep) then

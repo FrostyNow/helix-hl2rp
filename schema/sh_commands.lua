@@ -107,6 +107,7 @@ do
 		end
 	end
 
+	COMMAND.alias = "B"
 	ix.command.Add("Broadcast", COMMAND)
 end
 

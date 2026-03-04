@@ -9,13 +9,15 @@ LANGUAGE = {
 	["Health Vial"] = "구급 주사",
 	healthVialDesc = "녹색 액체가 든 작은 주사기입니다.",
 	["Health Kit"] = "구급 상자",
-	healthKitDesc = "약품이 들어있는 하얀 상자입니다.",
+	healthKitDesc = "녹색 액체가 든 작은 병과 의료 도구들이 들어있는 상자입니다.",
 	["Bandage"] = "붕대",
 	bandageDesc = "상처나 부스럼 따위에 감는 소독한 헝겊입니다.",
 	["Splint"] = "부목",
-	itemSplintDesc = " 팔다리에 골절, 염좌, 염증 따위가 있을 때에 아픈 팔다리를 고정하기 위하여 일시적으로 대는 나무입니다.",
+	itemSplintDesc = "팔다리에 골절, 염좌, 염증 따위가 있을 때에 아픈 팔다리를 고정하기 위하여 일시적으로 대는 나무입니다.",
 	["Automated External Defibrillator"] = "자동 심장 충격기",
 	aedDesc = "심장 박동을 되돌리기 위한 자동 심장 충격기입니다. 심정지로 쓰러진 사람에게만 사용해야 합니다.",
+	["Medkit"] = "구급 가방",
+	medkitDesc = "적십자가 그려진 빨간색 천 가방에 붕대와 겸자 등의 응급 처치 도구가 들어있습니다.",
 	
 	["Intelligence"] = "지능",
 }

@@ -1,6 +1,6 @@
 ITEM.name = "9mm Pistol"
 ITEM.description = "pistolDesc"
-ITEM.class = "weapon_rtbr_pistol"
+ITEM.class = "arc9_hl2_pistol"
 ITEM.weaponCategory = "sidearm"
 ITEM.classes = {CLASS_REBEL}
 ITEM.flag = "V"

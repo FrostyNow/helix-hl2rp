@@ -205,6 +205,7 @@ LANGUAGE = {
 	primary = "주무기",
 	sidearm = "보조무기",
 	Unlock = "잠금 해제하기",
+	Take = "가져가기",
 
 	["Utility"] = "유틸리티",
 
@@ -432,6 +433,18 @@ LANGUAGE = {
 	itemGlassDesc = "단단하고 부서지기 쉬우며 투명한 재질로 다양한 품목을 만드는 데 사용되는 재료입니다.",
 	["Plastic Bottle"] = "플라스틱 병",
 	itemPlasticBottleDesc = "내용물이 없는 빈 플라스틱 병입니다.",
+	["Empty Bottle"] = "빈 병",
+	itemEmptyBottleDesc = "내용물이 없는 빈 유리병입니다.",
+	["Glue"] = "접착제",
+	itemGlueDesc = "물체를 서로 붙이는 데 사용되는 끈적한 액체입니다.",
+	["Pot"] = "냄비",
+	potDesc = "요리할 때 쓰던 냄비입니다.",
+	["Pipe"] = "파이프",
+	pipeDesc = "하수관을 유지하기 위해 사용하던 파이프입니다.",
+	["Axe"] = "도끼",
+	axeDesc = "나무를 자르기 위해 사용하던 도끼입니다.",
+	["Bottle Shard"] = "병 조각",
+	bottleShardDesc = "부러진 병의 조각입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",
@@ -519,6 +532,7 @@ LANGUAGE = {
 	
 	Stunstick = "진압봉",
 	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "왼쪽 클릭: 휘두르기.\nALT + 왼쪽 클릭: 전원 켜기/끄기.\n오른쪽 클릭: 밀기/노크하기.",
+	["To hold a suitcase around."] = "여행 가방을 들고 다닙니다.",
 	
 	broadcastConsole = "방송 콘솔",
 	["Broadcast Console"] = "방송 콘솔",

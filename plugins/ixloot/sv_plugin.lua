@@ -42,11 +42,11 @@ function PLUGIN:SearchLootContainer(ent, ply)
 					for i = 1, lootAmount do
 						if (randomChance == math.random(1,20)) then
 							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
-							ply:NotifyLocalized("ixlootGained", ix.item.Get(randomLootItem):GetName())
+							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
 							ply:GetCharacter():GetInventory():Add(randomLootItem)
 						else
 							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
-							ply:NotifyLocalized("ixlootGained", ix.item.Get(randomLootItem):GetName())
+							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
 							ply:GetCharacter():GetInventory():Add(randomLootItem)
 						end
 					end

@@ -7,6 +7,15 @@ PLUGIN.description = "Adds locks for civil workers."
 
 ix.util.Include("sv_hooks.lua")
 
+ix.lang.AddTable("english", {
+	unionLockDesc = "A metal apparatus applied to doors."
+})
+
+ix.lang.AddTable("korean", {
+	["Union Lock"] = "조합 잠금장치",
+	unionLockDesc = "문짝에 부착하는 금속 장치입니다.",
+})
+
 if SERVER then
     function PLUGIN:SaveUnionLocks()
         local data = {}

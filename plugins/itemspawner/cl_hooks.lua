@@ -1,4 +1,41 @@
 
+local PLUGIN = PLUGIN
+
+PLUGIN.spawner = PLUGIN.spawner or {}
+PLUGIN.spawner.positions = PLUGIN.spawner.positions or {}
+
 net.Receive("ixItemSpawnerManager", function()
-	vgui.Create("ixItemSpawnerManager"):Populate(net.ReadTable())
+	PLUGIN.spawner.positions = net.ReadTable()
+	if (IsValid(ix.gui.itemSpawnerManager)) then
+		ix.gui.itemSpawnerManager:Remove()
+	end
+	ix.gui.itemSpawnerManager = vgui.Create("ixItemSpawnerManager")
+	ix.gui.itemSpawnerManager:Populate(PLUGIN.spawner.positions)
 end)
+
+net.Receive("ixItemSpawnerESP", function()
+	PLUGIN.spawner.positions = net.ReadTable()
+	
+	if (IsValid(ix.gui.itemSpawnerManager)) then
+		ix.gui.itemSpawnerManager:Populate(PLUGIN.spawner.positions)
+	end
+end)
+
+function PLUGIN:HUDPaint()
+	local client = LocalPlayer()
+	
+	if (!ix.option.Get(client, "spawnerESP", false)) then return end
+	if (client:GetMoveType() != MOVETYPE_NOCLIP) then return end
+	if (!CAMI.PlayerHasAccess(client, "Helix - Item Spawner", nil)) then return end
+	
+	if (!PLUGIN.spawner.positions) then return end
+	
+	for _, v in ipairs(PLUGIN.spawner.positions) do
+		local pos = v.position:ToScreen()
+		
+		if (pos.visible) then
+			draw.SimpleText(L("spawnerESPTitle", v.title), "ixGenericFont", pos.x, pos.y, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(L("spawnerESPInfo", v.delay, v.rarity), "ixGenericFont", pos.x, pos.y + 15, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		end
+	end
+end

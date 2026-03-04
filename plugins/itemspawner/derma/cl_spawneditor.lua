@@ -81,6 +81,8 @@ function PANEL:Setup(item)
 		net.Start("ixItemSpawnerChanges")
 			net.WriteTable(changes)
 		net.SendToServer()
+		
+		self:Remove()
 	end
 
 end

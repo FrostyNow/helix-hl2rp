@@ -297,6 +297,15 @@ if (SERVER) then
 			function entity:GetMoney()
 				return self.ixMoney or 0
 			end
+
+			function entity:GetInventory()
+				return ix.item.inventories[self.ixInventory]
+			end
+
+			function entity:GetDisplayName()
+				return "Corpse (" .. (self:GetNetVar("ixPlayerName") or "Unknown") .. ")"
+			end
+
 			function entity:SetMoney(amount)
 				if (self.ixIsInitialized and amount > (self.ixMoney or 0)) then
 					return

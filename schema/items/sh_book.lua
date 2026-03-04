@@ -9,9 +9,23 @@ ITEM.functions.Use = {
 	OnRun = function(item)
 		local client = item.player
 		local int = client:GetCharacter():GetAttribute("int", 0)
+		local lck = client:GetCharacter():GetAttribute("lck", 0)
+		local amount = 0.5 + lck * 0.5
+		
+		if amount <= maxAttributes then
+			client:GetCharacter():SetAttrib("int", int + amount)
+		else
+			client:GetCharacter():SetAttrib("int", maxAttributes)
+		end
 
-		-- client:EmitSound("items/battery_pickup.wav")
-		client:GetCharacter():SetAttrib("int", int + 0.5)
+		for i = 0, 2 do
+			timer.Simple(i * 0.3, function()
+				if (IsValid(client)) then
+					client:EmitSound("interface/items/inv_items_money_paper.ogg")
+				end
+			end)
+		end
+
 	end,
 	OnCanRun = function(item)
 		local client = item.player

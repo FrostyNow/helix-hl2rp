@@ -1,6 +1,14 @@
 
 ITEM.name = "Binoculars"
-ITEM.model = Model("models/gibs/shield_scanner_gib1.mdl")
+ITEM.model = "models/customstuff/binoculars.mdl"
+ITEM.width = 1
+ITEM.height = 1
+ITEM.iconCam = {
+	pos = Vector(705.3, 591.82, 464.45),
+	ang = Angle(26.77, 219.94, 0),
+	fov = 0.6
+}
+ITEM.exRender = true
 ITEM.category = "Utility"
 ITEM.description = "itemBinocularsDesc"
 ITEM.price = 100

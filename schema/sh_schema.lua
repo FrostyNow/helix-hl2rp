@@ -41,6 +41,7 @@ ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_04.mdl", "metro
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_06.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_07.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_11.mdl", "metrocop")
+ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_17.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_18.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_19.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/female_24.mdl", "metrocop")
@@ -297,8 +298,15 @@ do
 	local CLASS = {}
 	CLASS.color = Color(150, 125, 175)
 	CLASS.format = "chatBroadcastFormat"
+	CLASS.prefix = {"/Broadcast", "/B"}
 
 	function CLASS:CanSay(speaker, text)
+		if (speaker:IsRestricted()) then
+			speaker:NotifyLocalized("notNow")
+
+			return false
+		end
+
 		local address = "ix_broadcast_console"
 		local range = 120 * 120
 		local bCanBroadcast = false

@@ -1,0 +1,9 @@
+ITEM.name = "Medkit"
+ITEM.model = "models/bloocobalt/l4d/items/w_eq_fieldkit.mdl"
+ITEM.description = "medkitDesc"
+ITEM.price = 25
+ITEM.healthPoint = 40 -- Health point that the player will get
+ITEM.medAttr = 5 -- How much medical attribute the character needs
+ITEM.bleeding = true
+ITEM.fracture = true
+ITEM.sound = "interface/inv_bandage_3p7.ogg"

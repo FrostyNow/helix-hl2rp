@@ -71,11 +71,6 @@ ITEM.functions.Eat = {
 			end
 			client:SetThirst(math.Clamp(thirst + amount, 0, 100))
 		end
-		
-		if (item.empty) then
-			local inv = character:GetInventory()
-			inv:Add(item.empty)
-		end
 
 		local luck = character:GetAttribute("lck", 0)
 		local baseHeal = item.heal or 0
@@ -122,10 +117,17 @@ ITEM.functions.Eat = {
 		if (usenum) then
 			usenum = usenum - 1
 			if (usenum <= 0) then
+				if (item.empty) then
+					local inv = character:GetInventory()
+					inv:Add(item.empty)
+				end
 				return true
 			end
 			item:SetData("usenum", usenum)
 			return false
+		elseif (item.empty) then
+			local inv = character:GetInventory()
+			inv:Add(item.empty)
 		end
 
 		return true

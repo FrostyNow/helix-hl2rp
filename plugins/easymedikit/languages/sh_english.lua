@@ -7,8 +7,9 @@ LANGUAGE = {
 	cNotValid = "You are not looking at a valid character!",
 
 	healthVialDesc = "A small vial with green liquid.",
-	healthKitDesc = "A white packet filled with medication.",
+	healthKitDesc = "A small box containing a green liquid and medical tools.",
 	bandageDesc = "A piece of material used either to support a medical device such as a dressing or splint, or on its own to provide support to or to restrict the movement of a part of the body.",
 	itemSplintDesc = "A splint is a rigid or flexible device that maintains in position a displaced or movable part, also used to keep in place and protect an injured part to support healing and to prevent further damage.",
 	aedDesc = "A device used to restore normal heart rhythm. Use only on cardiac arrest patients.",
+	medkitDesc = "A red cloth bag with a white cross on it, containing emergency medical supplies such as bandages and forceps.",
 }

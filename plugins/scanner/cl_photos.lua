@@ -96,38 +96,51 @@ net.Receive("ixScannerData", function()
 end)
 
 concommand.Add("ix_scanner_photocache", function()
-    if LocalPlayer():IsCombine() and Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then
-        local frame = vgui.Create("DFrame")
-        frame:SetTitle("Photo Cache")
-        frame:SetSize(480, 360)
-        frame:MakePopup()
-        frame:Center()
+	local bAllowed = false
 
-        frame.list = frame:Add("DScrollPanel")
-        frame.list:Dock(FILL)
-        frame.list:SetDrawBackground(true)
+	if (LocalPlayer():IsCombine() and Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
+		bAllowed = true
+	else
+		for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+			if (v:GetPos():DistToSqr(LocalPlayer():GetPos()) <= 150 * 150) then
+				bAllowed = true
+				break
+			end
+		end
+	end
 
-        for k, v in ipairs(PHOTO_CACHE) do
-            local button = frame.list:Add("DButton")
-            button:SetTall(28)
-            button:Dock(TOP)
-            button:DockMargin(4, 4, 4, 0)
-            button:SetText(os.date("%X - %d/%m/%Y", v.time))
-            button.DoClick = function()
-                local frame2 = vgui.Create("DFrame")
-                frame2:SetSize(PICTURE_WIDTH + 8, PICTURE_HEIGHT + 8)
-                frame2:SetTitle(button:GetText())
-                frame2:MakePopup()
-                frame2:Center()
+	if (bAllowed) then
+		local frame = vgui.Create("DFrame")
+		frame:SetTitle(L("Photo Cache"))
+		frame:SetSize(480, 360)
+		frame:MakePopup()
+		frame:Center()
 
-                frame2.body = frame2:Add("DHTML")
-                frame2.body:SetHTML(v.data)
-                frame2.body:Dock(FILL)
-                frame2.body:DockMargin(4, 4, 4, 4)
-            end
-        end
-    else
-        LocalPlayer():NotifyLocalized("cacheCmbOnly")
-        return false
-    end
+		frame.list = frame:Add("DScrollPanel")
+		frame.list:Dock(FILL)
+		frame.list:SetDrawBackground(true)
+
+		for k, v in ipairs(PHOTO_CACHE) do
+			local button = frame.list:Add("DButton")
+			button:SetTall(28)
+			button:Dock(TOP)
+			button:DockMargin(4, 4, 4, 0)
+			button:SetText(os.date("%X - %d/%m/%Y", v.time))
+			button.DoClick = function()
+				local frame2 = vgui.Create("DFrame")
+				frame2:SetSize(PICTURE_WIDTH + 8, PICTURE_HEIGHT + 8)
+				frame2:SetTitle(button:GetText())
+				frame2:MakePopup()
+				frame2:Center()
+
+				frame2.body = frame2:Add("DHTML")
+				frame2.body:SetHTML(v.data)
+				frame2.body:Dock(FILL)
+				frame2.body:DockMargin(4, 4, 4, 4)
+			end
+		end
+	else
+		LocalPlayer():NotifyLocalized("cacheCmbOnly")
+		return false
+	end
 end)

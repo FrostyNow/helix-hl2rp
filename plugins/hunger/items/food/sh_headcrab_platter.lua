@@ -1,0 +1,11 @@
+ITEM.name = "Headcrab Platter"
+ITEM.model = "models/props_lab/headcrabprepheadcrab.mdl"
+ITEM.description = "itemHeadcrabPlatterDesc"
+ITEM.width = 1
+ITEM.height = 1
+ITEM.hunger = 30
+ITEM.thirst = -5
+ITEM.price = 25
+ITEM.cookable = true
+ITEM.usenum = 3
+ITEM.sound = "interface/inv_eat_mutant_food.ogg"

@@ -1,8 +1,10 @@
 ﻿ITEM.name = "Safe Password"
-ITEM.description = "A safe password to secure your own container."
+ITEM.description = "itemSafePasswordDesc"
 ITEM.model = "models/props_wasteland/prison_padlock001a.mdl"
+ITEM.category = "Utility"
 ITEM.width = 1
 ITEM.height = 1
+ITEM.price = 10
 
 ITEM.functions.Use = {
 	name = "Set Password",
@@ -15,16 +17,16 @@ ITEM.functions.Use = {
 		local tr = client:GetEyeTraceNoCursor()
 
 		if (tr.Entity:GetClass() != "ix_container") then 
-			client:NotifyLocalized("You must use this on a personal safe!", recipient) 
+			client:NotifyLocalized("notPersonalSafe", recipient) 
 			return false
 		end
 
 		if tr.Entity.password then 
-			client:NotifyLocalized("You cannot put a name on an already secured container!", recipient)
+			client:NotifyLocalized("safeAlreadySecured", recipient)
 		 	return false 
 		end
 
-		client:RequestString('Container Password', 'What password do you want for your personal safe?', function(password)
+		client:RequestString("@containerPasswordTitle", "@containerPasswordDesc", function(password)
 
 			if (password:len() != 0) then
 			tr.Entity.Sessions = {}

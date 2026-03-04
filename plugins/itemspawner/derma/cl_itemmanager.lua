@@ -17,6 +17,10 @@ function PANEL:Init()
 end
 
 function PANEL:Populate(items)
+	if (IsValid(self.container)) then
+		self.container:Clear()
+	end
+	
 	self.index = {}
 
 	for index, item in ipairs(items) do

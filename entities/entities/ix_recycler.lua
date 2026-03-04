@@ -117,23 +117,25 @@ if (SERVER) then
 			end
 		end
 
-		if (totalValue < 1) then
+		if (totalValue < 5) then
 			client:NotifyLocalized("recyclerWeightError")
 			return
 		end
+
+		totalValue = math.floor(totalValue)
 
 		-- Remove the items from the inventory.
 		for _, item in pairs(itemsToRecycle) do
 			item:Remove()
 		end
 
-		client:NotifyLocalized("recyclerProcessed", math.floor(totalValue))
+		client:NotifyLocalized("recyclerProcessed", ix.currency.Get(totalValue, client))
 
 		self.loopsound = CreateSound(self, "ambient/machines/machine3.wav")
 		self.loopsound:Play()
 		
 		self:SetIsActivated(true)
-		self:SetRecycleAmount(math.floor(totalValue))
+		self:SetRecycleAmount(totalValue)
 		self.timeGen = CurTime() + self.RecycleTime
 	end
 
@@ -170,7 +172,7 @@ if (SERVER) then
 				self:EmitSound("hl1/fvox/deeoo.wav", 60, 150)
 				
 				local money = self:GetMoneyHolding()
-				client:NotifyLocalized("recyclerPayout", ix.currency.Get(money))
+				client:NotifyLocalized("recyclerPayout", ix.currency.Get(money, client))
 				
 				local char = client:GetCharacter()
 				if (char) then

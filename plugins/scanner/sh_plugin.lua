@@ -38,10 +38,34 @@ ix.util.Include("cl_hooks.lua")
 ix.command.Add("PhotoCache", {
 	description = "@cmdPhotoCache",
 	OnRun = function(self, ply)
-		if !(ply:IsCombine() and Schema:CanPlayerSeeCombineOverlay(ply)) then
-			return "@cacheCmbOnly"
+		if (ply:IsCombine() and Schema:CanPlayerSeeCombineOverlay(ply)) then
+			ply:ConCommand("ix_scanner_photocache")
+			return
 		end
-		
-		ply:ConCommand("ix_scanner_photocache")
+
+		for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+			if (v:GetPos():DistToSqr(ply:GetPos()) <= 80 * 80) then
+				ply:ConCommand("ix_scanner_photocache")
+				return
+			end
+		end
+
+		return "@cacheCmbOnly"
 	end
 })
+
+local CHAR = ix.meta.character
+
+if (CHAR) then
+	CHAR.GetModelScanner = CHAR.GetModelScanner or CHAR.GetModel
+
+	function CHAR:GetModel(...)
+		local class = self:GetClass()
+
+		if (CLASS_SCANNER and class == CLASS_SCANNER) then
+			return "models/Combine_Scanner.mdl"
+		end
+
+		return self:GetModelScanner(...)
+	end
+end

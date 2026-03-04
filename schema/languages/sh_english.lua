@@ -194,6 +194,12 @@ LANGUAGE = {
 	itemOilDesc = "A bottle that contains flammable and/or slippery liquid.",
 	itemGlassDesc = "A hard, brittle, transparent material used for crafting various items.",
 	itemPlasticBottleDesc = "An empty plastic bottle.",
+	itemEmptyBottleDesc = "An empty glass bottle.",
+	itemGlueDesc = "A sticky liquid used for binding objects together.",
+	potDesc = "A pot used for cooking.",
+	pipeDesc = "A pipe used for plumbing.",
+	axeDesc = "An axe used for chopping woods.",
+	bottleShardDesc = "A shard of a broken bottle.",
 
 	itemMetropoliceDesc = "An uniform that metropolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

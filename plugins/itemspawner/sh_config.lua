@@ -22,3 +22,8 @@ ix.config.Add("spawnerRareItemChance", 10, "Percentage chance of spawning a rare
 	category = "Item Spawner",
 	data = { min = 0, max = 100 }
 })
+
+ix.config.Add("spawnerMaxItems", 10, "Maximum number of items accumulated at a single spawn point.", nil, {
+	category = "Item Spawner",
+	data = { min = 1, max = 100 }
+})

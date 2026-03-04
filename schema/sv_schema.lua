@@ -35,9 +35,21 @@ end
 
 function Schema:SaveVendingMachines()
 	local data = {}
+	local machineClasses = {
+		["ix_vendingmachine"] = true,
+		["ix_coffeemachine"] = true,
+		["ix_pepsimachine"] = true,
+	}
 
-	for _, v in ipairs(ents.FindByClass("ix_vendingmachine")) do
-		data[#data + 1] = {v:GetPos(), v:GetAngles(), v:GetAllStock()}
+	for _, v in ipairs(ents.GetAll()) do
+		if (machineClasses[v:GetClass()]) then
+			data[#data + 1] = {
+				pos = v:GetPos(),
+				angles = v:GetAngles(),
+				class = v:GetClass(),
+				stock = v:GetAllStock()
+			}
+		end
 	end
 
 	ix.data.Set("vendingMachines", data)
@@ -70,41 +82,12 @@ function Schema:SaveForceFields()
 	ix.data.Set("forceFields", data)
 end
 
-function Schema:SaveCoffeeMachines()
-	local data = {}
-
-	for _, v in ipairs(ents.FindByClass("ix_coffeemachine")) do
-		data[#data + 1] = {v:GetPos(), v:GetAngles(), v:GetAllStock()}
-	end
-
-	ix.data.Set("coffeeMachines", data)
-end
-
-function Schema:SavePepsiMachines()
-	local data = {}
-
-	for _, v in ipairs(ents.FindByClass("ix_pepsimachine")) do
-		data[#data + 1] = {v:GetPos(), v:GetAngles(), v:GetAllStock()}
-	end
-
-	ix.data.Set("pepsiMachines", data)
-end
-
-function Schema:SaveBroadcastConsoles()
-	local data = {}
-
-	for _, v in ipairs(ents.FindByClass("ix_broadcast_console")) do
-		data[#data + 1] = {v:GetPos(), v:GetAngles()}
-	end
-
-	ix.data.Set("broadcastConsoles", data)
-end
-
 function Schema:SaveMachines()
 	local data = {}
 	local machineClasses = {
 		["ix_recycler"] = true,
-		-- 필요한 다른 기계 클래스가 있다면 여기에 추가하세요.
+		["ix_health_charger"] = true,
+		["ix_broadcast_console"] = true,
 	}
 
 	for _, v in ipairs(ents.GetAll()) do
@@ -133,13 +116,20 @@ function Schema:LoadRationDispensers()
 end
 
 function Schema:LoadVendingMachines()
-	for _, v in ipairs(ix.data.Get("vendingMachines") or {}) do
-		local vendor = ents.Create("ix_vendingmachine")
+	local restored = ix.data.Get("vendingMachines")
 
-		vendor:SetPos(v[1])
-		vendor:SetAngles(v[2])
-		vendor:Spawn()
-		vendor:SetStock(v[3])
+	if (restored) then
+		for _, v in pairs(restored) do
+			local entity = ents.Create(v.class)
+
+			if (IsValid(entity)) then
+				entity:SetPos(v.pos)
+				entity:SetAngles(v.angles)
+				entity:Spawn()
+				entity:SetStock(v.stock)
+				entity:Activate()
+			end
+		end
 	end
 end
 
@@ -166,38 +156,6 @@ function Schema:LoadForceFields()
 		field:SetAngles(v[2])
 		field:Spawn()
 		field:SetMode(v[3])
-	end
-end
-
-function Schema:LoadCoffeeMachines()
-	for _, v in ipairs(ix.data.Get("coffeeMachines") or {}) do
-		local vendor = ents.Create("ix_coffeemachine")
-
-		vendor:SetPos(v[1])
-		vendor:SetAngles(v[2])
-		vendor:Spawn()
-		vendor:SetStock(v[3])
-	end
-end
-
-function Schema:LoadPepsiMachines()
-	for _, v in ipairs(ix.data.Get("pepsiMachines") or {}) do
-		local vendor = ents.Create("ix_pepsimachine")
-
-		vendor:SetPos(v[1])
-		vendor:SetAngles(v[2])
-		vendor:Spawn()
-		vendor:SetStock(v[3])
-	end
-end
-
-function Schema:LoadBroadcastConsoles()
-	for _, v in ipairs(ix.data.Get("broadcastConsoles") or {}) do
-		local console = ents.Create("ix_broadcast_console")
-
-		console:SetPos(v[1])
-		console:SetAngles(v[2])
-		console:Spawn()
 	end
 end
 

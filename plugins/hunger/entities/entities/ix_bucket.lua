@@ -14,6 +14,7 @@ if (SERVER) then
 		self:SetNetVar("active", false)
 		self:SetUseType(SIMPLE_USE)
 		self.loopsound = CreateSound(self, "ambient/fire/fire_small_loop1.wav")
+		self.loopsound:SetSoundLevel(80)
 		local physicsObject = self:GetPhysicsObject()
 
 		if (IsValid(physicsObject)) then
@@ -32,10 +33,10 @@ if (SERVER) then
 		self:SetNetVar("active", bActive)
 
 		if bActive then
-			self:EmitSound("ambient/fire/mtov_flame2.wav", 75, 100)
+			self:EmitSound("ambient/fire/mtov_flame2.wav", 75, 100, 0.8)
 			self.loopsound:Play()
 		else
-			self:EmitSound("ambient/fire/mtov_flame2.wav", 75, 250)
+			self:EmitSound("ambient/fire/mtov_flame2.wav", 75, 250, 0.8)
 			self.loopsound:Stop()
 		end
 	end
