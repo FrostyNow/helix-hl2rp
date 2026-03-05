@@ -32,7 +32,10 @@ function CombHUD()
 	if !LocalPlayer():GetCharacter() then return end
 	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		local tsin = TimedSin(.68, 200, 255, 0)
-		local area = LocalPlayer():GetArea() or L("Unknown") -- fyi if you step out of an area and there's no new area this won't update
+		local area = LocalPlayer():GetArea()
+		if (!area or area == "") then
+			area = L("Unknown Location")
+		end
 		local tcolor = team.GetColor(LocalPlayer():Team())
 		local w = ScrW() / 2
 		local h = ScrH() / 2
@@ -88,14 +91,14 @@ function CombHUD()
 		surface.SetDrawColor(17, 136, 247, 255)
 		surface.DrawOutlinedRect(ux, uy, 300, 180)
 		draw.SimpleText(lA, "BudgetLabel", ux + 10, uy + 10, tcolor)
-		draw.SimpleText("'"..L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
-		draw.SimpleText("'"..L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
-		draw.SimpleText("'"..L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
-		draw.SimpleText("'"..L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
+		draw.SimpleText("<::"..L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText("<::"..L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
+		draw.SimpleText("<::"..L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
+		draw.SimpleText("<::"..L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
 		surface.SetDrawColor(17, 136, 247, 255)
 		surface.DrawRect(ux + 2, uy + 115, 296, 1)
-		draw.SimpleText("'"..L"BIOSIGNAL ZONE: "..area, "BudgetLabel", ux + 10, uy + 130)
-		draw.SimpleText("'"..L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
+		draw.SimpleText("<::"..L"BIOSIGNAL ZONE: "..area, "BudgetLabel", ux + 10, uy + 130)
+		draw.SimpleText("<::"..L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
 		--[[ local gm = LocalPlayer():GetModel() commented out because it looks ugly as hell & is unnecessary
 		local gs = LocalPlayer():GetSkin()
 		if LocalPlayer():Team() == 3 then
