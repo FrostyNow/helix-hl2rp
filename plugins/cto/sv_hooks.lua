@@ -121,7 +121,7 @@ end
 function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
 	if (client:IsCombine() and !client:GetNetVar("IsBiosignalGone")) then
 		if (bFallenOver) then
-			local location = client:GetArea() != "" and client:GetArea() or L("unknown location")
+			local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location")
 			local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
 
 			Schema:AddCombineDisplayMessage("@DownloadingTrauma", Color(255, 255, 255, 255))
@@ -132,7 +132,7 @@ end
 
 function Schema:PlayerDeath(client, inflictor, attacker)
 	if (client:IsCombine()) then
-		local location = client:GetArea() != "" and client:GetArea() or L("unknown location", client)
+		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
 
 		if (!client:GetNetVar("IsBiosignalGone")) then
 			PLUGIN:DoPostBiosignalLoss(client)

@@ -124,7 +124,7 @@ function PLUGIN:HUDPaint()
 
 	local position = LocalPlayer():GetPos()
 	local angle = LocalPlayer():GetAimVector():Angle()
-	local zone = LocalPlayer():GetArea() or "unknown"
+	local zone = LocalPlayer():GetAreaName() != "" and LocalPlayer():GetAreaName() or "unknown"
 
 	draw.SimpleText("POS ("..math.floor(position[1])..", "..math.floor(position[2])..", "..math.floor(position[3])..")", "ixScannerFont", x + 8, y + 8, color_white)
 	draw.SimpleText("ANG ("..math.floor(angle[1])..", "..math.floor(angle[2])..", "..math.floor(angle[3])..")", "ixScannerFont", x + 8, y + 24, color_white)

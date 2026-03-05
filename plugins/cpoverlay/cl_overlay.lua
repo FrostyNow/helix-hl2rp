@@ -30,9 +30,9 @@ function CombHUD()
 	
 	if !LocalPlayer():IsValid() or !LocalPlayer():Alive() then return end -- you can fix this yourself, it errors and i cba to find the solution because it doesn't really matter since the hud still works
 	if !LocalPlayer():GetCharacter() then return end
-	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
+		if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
 		local tsin = TimedSin(.68, 200, 255, 0)
-		local area = LocalPlayer():GetArea()
+		local area = LocalPlayer():GetAreaName()
 		if (!area or area == "") then
 			area = L("Unknown Location")
 		end

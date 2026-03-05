@@ -195,7 +195,7 @@ end
 
 function Schema:PlayerDeath(client, inflicter, attacker)
 	if (client:IsCombine()) then
-		local location = client:GetArea() or L("unknown location", client)
+		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
 
 		self:AddCombineDisplayMessage("@cLostBiosignal")
 		self:AddCombineDisplayMessage("@cLostBiosignalLocation", Color(255, 0, 0, 255), location)
