@@ -1,8 +1,7 @@
 local PLUGIN = PLUGIN
 
-util.AddNetworkString("ixGearSync")
-util.AddNetworkString("ixGearUnequip")
-util.AddNetworkString("ixGearEquip")
+util.AddNetworkString("ixGearEquipReq")
+util.AddNetworkString("ixGearUnequipReq")
 
 -- ============================================================
 -- Gear Inventory Management
@@ -48,198 +47,256 @@ local function GetOrCreateGearInventory(character, callback)
 	end)
 end
 
-local function SyncGearSlots(client)
-	local character = client:GetCharacter()
-	if (!character) then return end
+-- ============================================================
+-- Transfer helpers
+-- ============================================================
 
-	local gearInvID = character:GetData("gearInvID") or 0
+local function DoGearTransfer(item, newInvID, x, y, client)
+    item.bGearTransfer = true
+    local oldCanTransfer = item.CanTransfer
+    item.CanTransfer = function() return true end
 
-	net.Start("ixGearSync")
-		net.WriteUInt(gearInvID, 32)
-	net.Send(client)
+    local success, err = item:Transfer(newInvID, x, y, client)
+    
+    item.CanTransfer = oldCanTransfer
+    item.bGearTransfer = nil
+    
+    return success
+end
+
+local function TransferToGear(item, owner)
+    local character = owner:GetCharacter()
+    if (!character) then return end
+    
+    local gearInvID = character:GetData("gearInvID")
+    if (!gearInvID) then return end
+    
+    local gearInv = ix.item.inventories[gearInvID]
+    if (!gearInv) then return end
+    
+    timer.Simple(0, function()
+        if (!item or item.invID == gearInvID or item:GetData("equip") != true) then return end
+        
+        local x, y = gearInv:FindEmptySlot(item.width, item.height)
+        if (x and y) then
+            DoGearTransfer(item, gearInvID, x, y, owner)
+        end
+    end)
+end
+
+local function TransferToMain(item, owner)
+    local character = owner:GetCharacter()
+    local mainInv = character:GetInventory()
+    if (!mainInv) then return end
+
+    local targetX, targetY = nil, nil
+    local targetInvID = mainInv:GetID()
+
+    if (item.targetSlot) then
+        targetInvID = item.targetSlot.invID
+        targetX = item.targetSlot.x
+        targetY = item.targetSlot.y
+        item.targetSlot = nil
+    end
+
+    timer.Simple(0, function()
+        if (!item or item:GetData("equip") == true) then return end
+        
+        local x, y = targetX, targetY
+        if (!x or !y) then
+            -- Fallback to next empty slot if coordinates are taken or missing
+            if (mainInv:GetID() == targetInvID) then
+                x, y = mainInv:FindEmptySlot(item.width, item.height)
+            else
+                local tInv = ix.item.inventories[targetInvID]
+                if (tInv) then x, y = tInv:FindEmptySlot(item.width, item.height) end
+            end
+        end
+
+        local success = false
+        if (x and y) then
+            success = DoGearTransfer(item, targetInvID, x, y, owner)
+        end
+
+        -- ROLLBACK on failure
+        if (!success) then
+            item:SetData("equip", true)
+            owner:NotifyLocalized("noSpace")
+            print("[GearMenu] Rollback: Re-equipped item because transfer failed.")
+        end
+    end)
 end
 
 -- ============================================================
--- Network Handlers for Gear Actions
+-- Hooks
 -- ============================================================
 
-net.Receive("ixGearEquip", function(len, client)
-	local sourceInvID = net.ReadUInt(32)
-	local itemID = net.ReadUInt(32)
-	local targetSlotID = net.ReadString()
-
-	local character = client:GetCharacter()
-	if (!character) then return end
-
-	local gearInvID = character:GetData("gearInvID")
-	if (!gearInvID) then return end
-
-	local gearInv = ix.item.inventories[gearInvID]
-	if (!gearInv) then return end
-
-	local item = ix.item.instances[itemID]
-	if (!item or item.invID != sourceInvID) then return end
-
-	-- Block if the item is already equipped
-	if (item:GetData("equipSlot") != nil and sourceInvID != gearInvID) then return end
-
-	-- Check if the slot is already occupied by something else
-	local existingItem = nil
-	for _, v in pairs(gearInv:GetItems()) do
-		if (v:GetData("equipSlot") == targetSlotID) then
-			existingItem = v
-			break
-		end
-	end
-
-	item.player = client
-
-	-- If it's just moving from one gear slot to another:
-	if (sourceInvID == gearInvID) then
-		if (existingItem and existingItem.id != itemID) then
-			client:NotifyLocalized("Slot is already occupied.")
-			return
-		end
-
-		if (item.OnUnequip) then item:OnUnequip() end
-		item:SetData("equipSlot", targetSlotID)
-		if (item.OnEquip) then item:OnEquip() end
-		item.player = nil
-		return
-	end
-
-	-- Move from main/bag inventory into Gear Inventory
-	-- If something is already there, put it back in the main inventory first.
-	if (existingItem) then
-		existingItem.player = client
-		if (existingItem.OnUnequip) then existingItem:OnUnequip() end
-		existingItem:SetData("equipSlot", nil)
-		
-		local mainInv = character:GetInventory()
-		local emptyX, emptyY = mainInv:FindEmptySlot(existingItem.width, existingItem.height)
-		
-		if (!emptyX or !emptyY) then
-			client:NotifyLocalized("Not enough space to unequip existing gear.")
-			existingItem.player = nil
-			return
-		end
-		
-		existingItem:Transfer(mainInv:GetID(), emptyX, emptyY, client)
-		existingItem.player = nil
-	end
-
-	-- Clear basic equip flags temporarily so hooking plugins don't block the transfer
-	if (item.OnUnequip) then item:OnUnequip() end
-
-	-- Find an empty slot in the internal gear inventory pack
-	local emptyX, emptyY = gearInv:FindEmptySlot(item.width, item.height)
-	if (!emptyX or !emptyY) then
-		client:NotifyLocalized("Gear capacity full.")
-		item.player = nil
-		return
-	end
-
-	item.bGearEquipping = true
-	local bSuccess, err = item:Transfer(gearInvID, emptyX, emptyY, client)
-	item.bGearEquipping = nil
-
-	if (!bSuccess) then
-		client:NotifyLocalized(err or "Failed to equip.")
-	else
-		item:SetData("equipSlot", targetSlotID)
-		if (item.OnEquip) then item:OnEquip() end
-	end
-	
-	item.player = nil
+hook.Add("OnItemEquipped", "ixGearMenu", function(item, owner)
+    if (!item or !IsValid(owner)) then return end
+    item:SetData("equipTime", os.time())
+    TransferToGear(item, owner)
 end)
 
-net.Receive("ixGearUnequip", function(len, client)
-	local itemID = net.ReadUInt(32)
-	local bHasTarget = net.ReadBool()
-	local targetInvID, targetX, targetY
-
-	if (bHasTarget) then
-		targetInvID = net.ReadUInt(32)
-		targetX = net.ReadUInt(6)
-		targetY = net.ReadUInt(6)
-	end
-
-	local character = client:GetCharacter()
-	if (!character) then return end
-
-	local gearInvID = character:GetData("gearInvID")
-	if (!gearInvID) then return end
-
-	local gearInv = ix.item.inventories[gearInvID]
-	if (!gearInv) then return end
-
-	local item = ix.item.instances[itemID]
-	if (!item or item.invID != gearInvID) then return end
-
-	local destInvID, destX, destY
-
-	if (bHasTarget and targetInvID) then
-		destInvID = targetInvID
-		if (targetX and targetY and targetX > 0 and targetY > 0) then
-			destX = targetX
-			destY = targetY
-		end
-	else
-		local mainInv = character:GetInventory()
-		if (!mainInv) then return end
-		destInvID = mainInv:GetID()
-	end
-
-	local targetInv = ix.item.inventories[destInvID]
-	if (!targetInv) then return end
-
-	if (!destX or !destY) then
-		local emptyX, emptyY = targetInv:FindEmptySlot(item.width, item.height)
-		if (!emptyX or !emptyY) then
-			client:NotifyLocalized("noFit")
-			return
-		end
-		destX = emptyX
-		destY = emptyY
-	end
-
-	item.player = client
-	if (item.OnUnequip) then item:OnUnequip() end
-	item:SetData("equipSlot", nil)
-	item.player = nil
-
-	local bStatus, error = item:Transfer(destInvID, destX, destY, client)
-
-	if (!bStatus) then
-		-- Revert
-		item.player = client
-		item:SetData("equipSlot", item:GetData("equipSlot")) -- Actually, previous slot needs saving if we properly revert, but sticking to basics.
-		if (item.OnEquip) then item:OnEquip() end
-		item.player = nil
-		client:NotifyLocalized(error or "unknownError")
-	end
+hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
+    if (!item or !IsValid(owner)) then return end
+    item:SetData("equipTime", nil)
+    TransferToMain(item, owner)
 end)
 
--- Validate transfers TO gear inventory natively (prevent drag/drop natively into gear inv)
+-- ============================================================
+-- FIX: Override RemoveOutfit AFTER items are loaded
+-- The base sh_outfit.lua only scans character:GetInventory()
+-- so items in gear inv lose their bodygroups on unequip.
+-- ============================================================
+
+local function SetupBodygroupFix()
+    local baseOutfit = ix.item.list and ix.item.list["base_outfit"]
+    if (!baseOutfit) then return end
+    if (baseOutfit.ixGearMenuOverridden) then return end
+    baseOutfit.ixGearMenuOverridden = true
+
+    local origRemoveOutfit = baseOutfit.RemoveOutfit
+
+    baseOutfit.RemoveOutfit = function(self, client)
+        origRemoveOutfit(self, client)
+
+        if (!IsValid(client) or !client:GetCharacter()) then return end
+        local charID = client:GetCharacter():GetID()
+
+        for _, item in pairs(ix.item.instances) do
+            if (item.id != self.id and item.characterID == charID and item:GetData("equip") == true) then
+                local bgs = item.eqBodyGroups or item.bodyGroups
+
+                if (istable(bgs) and !table.IsEmpty(bgs)) then
+                    for bgName, bgValue in pairs(bgs) do
+                        local index = tonumber(bgName) or client:FindBodygroupByName(tostring(bgName))
+                        if (index and index > -1) then
+                            client:SetBodygroup(index, tonumber(bgValue) or 0)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+hook.Add("InitializedSchema", "ixGearMenuBodygroupFix", SetupBodygroupFix)
+SetupBodygroupFix() -- run immediately for hot-reload
+
+-- ============================================================
+-- Network Receivers
+-- ============================================================
+
+net.Receive("ixGearEquipReq", function(len, client)
+    local itemID = net.ReadUInt(32)
+    local item = ix.item.instances[itemID]
+    if (!item or (item.player != client and item:GetOwner() != client)) then return end
+    
+    local equipFunc
+    for k, v in pairs(item.functions or {}) do
+        if (k:lower() == "equip") then equipFunc = v break end
+    end
+    if (!equipFunc) then return end
+    
+    item.player = client
+    if (equipFunc.OnCanRun and equipFunc.OnCanRun(item) == false) then
+        item.player = nil return
+    end
+    if (equipFunc.OnRun) then
+        equipFunc.OnRun(item)
+    else
+        item:SetData("equip", true)
+    end
+    item.player = nil
+end)
+
+net.Receive("ixGearUnequipReq", function(len, client)
+    local itemID = net.ReadUInt(32)
+    local targetInvID = net.ReadUInt(32)
+    local x = net.ReadInt(16)
+    local y = net.ReadInt(16)
+    
+    local item = ix.item.instances[itemID]
+    if (!item or (item.player != client and item:GetOwner() != client)) then return end
+
+    item.player = client
+    local character = client:GetCharacter()
+    local targetInv = ix.item.inventories[targetInvID] or (character and character:GetInventory())
+    
+    -- Preserve explicit unequip coordinates
+    if (targetInv and x != -1 and y != -1) then
+        item.targetSlot = {invID = targetInv:GetID(), x = x, y = y}
+    end
+
+    if (item.functions.EquipUn and item.functions.EquipUn.OnRun) then
+        item.functions.EquipUn.OnRun(item)
+    else
+        item:SetData("equip", false)
+    end
+    item.player = nil
+end)
+
+-- ============================================================
+-- Commands
+-- ============================================================
+
+concommand.Add("ix_gear_rescue", function(ply, cmd, args)
+    if (IsValid(ply) and !ply:IsSuperAdmin()) then return end
+    
+    local targetPly = ply
+    if (args[1]) then
+        for _, v in ipairs(player.GetAll()) do
+            if (string.find(string.lower(v:Nick()), string.lower(args[1])) or v:SteamID() == args[1]) then
+                targetPly = v break
+            end
+        end
+    end
+    if (!IsValid(targetPly)) then return end
+
+    local char = targetPly:GetCharacter()
+    if (!char) then return end
+    
+    local mainInv = char:GetInventory()
+    local gearInvID = char:GetData("gearInvID")
+    if (!mainInv or !gearInvID) then return end
+    
+    local count = 0
+    for id, item in pairs(ix.item.instances) do
+        if (item.invID == gearInvID and item:GetData("equip") != true) then
+            -- Use bGearTransfer to pass CanTransferItem check
+            item.bGearTransfer = true
+            local oldCanTransfer = item.CanTransfer
+            item.CanTransfer = function() return true end
+
+            local tx, ty = mainInv:FindEmptySlot(item.width, item.height)
+            if (tx and ty) then
+                item:Transfer(mainInv:GetID(), tx, ty)
+            else
+                item:Spawn(targetPly:GetPos())
+                item:Transfer(0, nil, nil)
+            end
+
+            item.CanTransfer = oldCanTransfer
+            item.bGearTransfer = nil
+            count = count + 1
+        end
+    end
+    
+    if (IsValid(ply)) then
+        ply:Notify("Rescued " .. count .. " items.")
+    end
+end)
+
 function PLUGIN:CanTransferItem(item, curInv, newInv)
 	if (!item or !curInv or !newInv) then return end
-
 	local curIsGear = curInv.vars and curInv.vars.isGear
 	local newIsGear = newInv.vars and newInv.vars.isGear
-
-	if (newIsGear and !curIsGear) then
-		return false -- Must use ixGearEquip net message.
-	end
-	
-	if (curIsGear and newIsGear) then
-		return false -- Prevent manual gear backpack rearrangement via typical UI.
-	end
+	if (item.bGearTransfer) then return true end
+	if (newIsGear or curIsGear) then return false end
 end
 
--- Character loaded → setup gear inventory.
 function PLUGIN:CharacterLoaded(character)
 	local client = character:GetPlayer()
-
 	if (IsValid(client)) then
 		timer.Simple(1, function()
 			if (IsValid(client) and client:GetCharacter() == character) then
@@ -249,10 +306,21 @@ function PLUGIN:CharacterLoaded(character)
 						inv:Sync(client)
 						inv.vars.isGear = true
 					end
-
-					SyncGearSlots(client)
 				end)
 			end
 		end)
+	end
+end
+
+function PLUGIN:CanPlayerEquipItem(client, item)
+	if (!item or !item.isWeapon or !item.weaponCategory) then return end
+	local character = client:GetCharacter()
+	if (!character) then return end
+	local charID = character:GetID()
+	for id, other in pairs(ix.item.instances) do
+		if (other.id != item.id and other.isWeapon and other.weaponCategory == item.weaponCategory and other:GetData("equip") == true and other.characterID == charID) then
+			client:NotifyLocalized("weaponSlotFilled", item.weaponCategory)
+			return false
+		end
 	end
 end
