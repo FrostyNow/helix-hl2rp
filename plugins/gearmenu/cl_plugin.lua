@@ -39,13 +39,13 @@ local function UnequipFromGearSlot(slotIndex, targetInvID, targetX, targetY)
 	net.Start("ixGearUnequip")
 		net.WriteUInt(slotIndex, 6)
 
-		local bHasTarget = (targetInvID != nil and targetX != nil and targetY != nil)
+		local bHasTarget = (targetInvID != nil)
 		net.WriteBool(bHasTarget)
 
 		if (bHasTarget) then
 			net.WriteUInt(targetInvID, 32)
-			net.WriteUInt(targetX, 6)
-			net.WriteUInt(targetY, 6)
+			net.WriteUInt(targetX or 0, 6)
+			net.WriteUInt(targetY or 0, 6)
 		end
 	net.SendToServer()
 end
@@ -231,8 +231,31 @@ function SLOT_PANEL:SetEquippedItem(item)
 		proxy.OnDrop = function(proxyPnl, bDragging, inventoryPanel, inventory, gridX, gridY)
 			if (!bDragging) then return end
 
-			if (IsValid(inventoryPanel) and inventoryPanel.invID and gridX and gridY) then
-				UnequipFromGearSlot(mySlotIndex, inventoryPanel.invID, gridX, gridY)
+			if (IsValid(inventoryPanel)) then
+				if (inventoryPanel.combineItem) then
+					-- User dropped onto another item (e.g., bag or combinable).
+					local combineItem = inventoryPanel.combineItem
+					if (combineItem.isBag) then
+						-- Drop straight into the bag's inventory.
+						UnequipFromGearSlot(mySlotIndex, combineItem:GetData("id"))
+					else
+						-- Standard native combine action.
+						local inventoryID = combineItem.invID
+						if (inventoryID) then
+							net.Start("ixInventoryAction")
+								net.WriteString("combine")
+								net.WriteUInt(combineItem.id, 32)
+								net.WriteUInt(inventoryID, 32)
+								net.WriteTable({item.id})
+							net.SendToServer()
+						end
+					end
+				elseif (inventoryPanel.invID and gridX and gridY) then
+					-- Native drop onto specific coordinates.
+					UnequipFromGearSlot(mySlotIndex, inventoryPanel.invID, gridX, gridY)
+				else
+					UnequipFromGearSlot(mySlotIndex)
+				end
 			else
 				UnequipFromGearSlot(mySlotIndex)
 			end
@@ -341,7 +364,14 @@ function SLOT_PANEL:OnItemDropped(panels, bDropped, menuIndex, x, y)
 		return
 	end
 
-	MoveToGearSlot(panel.gridX, panel.gridY, panel:GetInventoryID(), self.slotIndex)
+	if (panel:GetInventoryID() == PLUGIN.gearInvID) then
+		-- Dragging from another gear slot.
+		-- Use our unequip bypass so `better_armor` doesn't block the swap due to early equip flags.
+		UnequipFromGearSlot(panel.gridY, PLUGIN.gearInvID, 1, self.slotIndex)
+	else
+		-- Moving from main/bag inventory to gear slot.
+		MoveToGearSlot(panel.gridX, panel.gridY, panel:GetInventoryID(), self.slotIndex)
+	end
 end
 
 function SLOT_PANEL:Paint(w, h)
@@ -544,6 +574,8 @@ function PANEL:LoadInventory()
 	invPanel:SetInventory(inventory)
 
 	ix.gui.inv1 = invPanel
+	-- Ensure Helix knows where to open bag panels.
+	ix.gui.menuInventoryContainer = self.invCanvas
 
 	if (ix.option.Get("openBags", true)) then
 		for k, _ in inventory:Iter() do
