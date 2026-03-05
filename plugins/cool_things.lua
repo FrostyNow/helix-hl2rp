@@ -93,7 +93,7 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 				local size = math.max(10, 32 * factor)
 				local alpha = math.max(255 * factor, 80)
 				surface.SetDrawColor(teamColor.r, teamColor.g, teamColor.b, alpha)
-				surface.SetFont("ixGenericFont")
+				surface.SetFont("BudgetLabel")
 				local text = v:Name()
 				
 				if not v.status then

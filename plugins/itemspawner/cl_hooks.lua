@@ -34,10 +34,10 @@ function PLUGIN:HUDPaint()
 		local pos = v.position:ToScreen()
 		
 		if (pos.visible) then
-			draw.SimpleText(L("spawnerESPTitle", v.title), "ixGenericFont", pos.x, pos.y, Color(207, 142, 56), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(L("spawnerESPTitle", v.title), "BudgetLabel", pos.x, pos.y, Color(207, 142, 56), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 			if (v.position:DistToSqr(client:GetPos()) <= 440000) then
-				draw.SimpleText(L("spawnerESPInfo", v.delay, v.rarity), "ixSmallFont", pos.x, pos.y + 15, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+				draw.SimpleText(L("spawnerESPInfo", v.delay, v.rarity), "BudgetLabel", pos.x, pos.y + 15, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			end
 		end
 	end

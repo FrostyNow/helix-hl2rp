@@ -38,7 +38,7 @@ ITEM.newSkin = 0
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(Color(85, 127, 242))
+		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
 		data:SetText(L("securitizedItemTooltip"))
 		data:SetExpensiveShadow(0.5)
 		data:SizeToContents()

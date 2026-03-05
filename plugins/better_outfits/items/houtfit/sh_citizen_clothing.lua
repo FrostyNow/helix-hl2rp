@@ -184,7 +184,7 @@ local function DefineCitizenClothing()
 				local labelText = nil
 
 				if (string.find(self.uniqueID, "cp_") and !string.find(self.uniqueID, "rebel")) or string.find(self.uniqueID, "overwatch") or string.find(self.uniqueID, "cmb") or (string.find(self.uniqueID, "armpad") and !string.find(self.uniqueID, "lambda")) then
-					labelColor = Color(85, 127, 242)
+					labelColor = team.GetColor(FACTION_MPF)
 					labelText = "securitizedItemTooltip"
 				elseif string.find(self.uniqueID, "rebel") or string.find(self.uniqueID, "lambda") or string.find(self.uniqueID, "combat") or string.find(self.uniqueID, "molle") or string.find(self.uniqueID, "flak") or string.find(self.uniqueID, "shemagh") or string.find(self.uniqueID, "gasmask") then
 					labelColor = Color(218, 24, 24)

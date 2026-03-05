@@ -87,7 +87,8 @@ if (CLIENT) then
 			if (#names > 0) then
 				local row = tooltip:AddRow("equipped_items")
 				row:SetText(table.concat(names, ", ") .. L("equippedGarmentsSuffix"))
-				row:SetTextColor(ix.config.Get("color"))
+				row:SetBackgroundColor(ix.config.Get("color"))
+				row:SetTextColor(color_white)
 				row:SizeToContents()
 			end
 		end
