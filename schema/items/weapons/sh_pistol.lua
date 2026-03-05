@@ -7,15 +7,17 @@ ITEM.flag = "V"
 ITEM.width = 2
 ITEM.height = 1
 ITEM.price = 300
-ITEM.model = "models/rtbr/weapons/pistol/w_pistol.mdl"
+ITEM.model = "models/weapons/juniez/pistol.mdl"
 ITEM.width = 2
 ITEM.height = 1
+ITEM.gearSlot = {"weapon_primary", "weapon_secondary"}
 ITEM.iconCam = {
 	pos = Vector(0, 200, 0),
-	ang = Angle(0.52, 270.02, 0),
+	ang = Angle(-0.49, 270.64, 0),
 	fov = 4.68
 }
 ITEM.exRender = true
+
 ITEM.factions = {FACTION_MPF, FACTION_CONSCRIPT}
 
 if (CLIENT) then
@@ -26,4 +28,12 @@ if (CLIENT) then
 		data:SetExpensiveShadow(0.5)
 		data:SizeToContents()
 	end
+end
+
+function ITEM:OnEquip()
+	self:Equip(self.player)
+end
+
+function ITEM:OnUnequip()
+	self:Unequip(self.player, true)
 end
