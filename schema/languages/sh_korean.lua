@@ -59,6 +59,7 @@ LANGUAGE = {
 	cDamageExternal = "외적",
 	cDamageSevere = "심각한",
 	["unknown location"] = "알 수 없는 위치",
+	["Unknown Location"] = "알 수 없는 위치",
 
 	voices = "음성 대사",
 
