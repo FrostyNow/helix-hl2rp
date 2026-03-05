@@ -164,6 +164,26 @@ function PLUGIN:CanTransferItem(item, curInv, newInv)
 	end
 end
 
+local function UnequipItem(item, client)
+	item.player = client
+
+	if (item.OnUnequip) then
+		item:OnUnequip()
+	end
+
+	item.player = nil
+end
+
+local function EquipItem(item, client)
+	item.player = client
+
+	if (item.OnEquip) then
+		item:OnEquip()
+	end
+
+	item.player = nil
+end
+
 -- Item added to gear inventory → equip.
 function PLUGIN:InventoryItemAdded(oldInv, newInv, item)
 	if (!newInv or !item) then return end
@@ -172,32 +192,7 @@ function PLUGIN:InventoryItemAdded(oldInv, newInv, item)
 		local owner = newInv:GetOwner()
 		if (!IsValid(owner)) then return end
 
-		item.player = owner
-
-		if (item.OnEquip) then
-			item:OnEquip()
-		end
-
-		item.player = nil
-	end
-end
-
--- Item transferred out of gear inventory → unequip (if not already done).
-function PLUGIN:OnItemTransferred(item, curInv, newInv)
-	if (!item or !curInv) then return end
-
-	if (curInv.vars and curInv.vars.isGear) then
-
-		local owner = curInv:GetOwner()
-		if (!IsValid(owner)) then return end
-
-		item.player = owner
-
-		if (item.OnUnequip) then
-			item:OnUnequip(item.player)
-		end
-
-		item.player = nil
+		EquipItem(item, owner)
 	end
 end
 
@@ -209,13 +204,7 @@ function PLUGIN:InventoryItemRemoved(inventory, item)
 		local owner = inventory:GetOwner()
 		if (!IsValid(owner)) then return end
 
-		item.player = owner
-
-		if (item.OnUnequip) then
-			item:OnUnequip()
-		end
-
-		item.player = nil
+		UnequipItem(item, owner)
 	end
 end
 
@@ -230,6 +219,7 @@ function PLUGIN:CharacterLoaded(character)
 					if (inv and IsValid(client)) then
 						inv:AddReceiver(client)
 						inv:Sync(client)
+						inv.vars.isGear = true
 					end
 
 					SyncGearSlots(client)
