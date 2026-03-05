@@ -36,6 +36,8 @@ ITEM.functions.Use = {
 			end
 				
 			client:EmitSound("items/battery_pickup.wav")
+		else
+			client:NotifyLocalized("cidInvalidTarget")
 		end
 
 		return false
@@ -96,6 +98,8 @@ ITEM.functions.Upgrade = {
 			else
 				client:NotifyLocalized("notCitizen")
 			end
+		else
+			client:NotifyLocalized("cidInvalidTarget")
 		end
 
 		return false
@@ -146,6 +150,8 @@ ITEM.functions.Degrade = {
 			else
 				client:NotifyLocalized("notCitizen")
 			end
+		else
+			client:NotifyLocalized("cidInvalidTarget")
 		end
 
 		return false
