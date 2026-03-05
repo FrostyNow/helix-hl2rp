@@ -73,29 +73,29 @@ function CombHUD()
 			end
 		end
 		if LocalPlayer():Team() == FACTION_MPF then
-			lA = L"PROTECTION TEAM"
+			lA = "// "..L"PROTECTION TEAM"
 		else
 			if LocalPlayer():Team() == FACTION_OTA then
-				lA = L"STABILIZATION TEAM"
+				lA = "// "..L"STABILIZATION TEAM"
 			end
 		end
 		
 		--main square 1 (unit info)
 		local ux, uy = ScrW() - 310, 40
 
-		surface.SetDrawColor(17, 136, 247, 150)
-		surface.DrawOutlinedRect(ux, uy, 300, 180, 2)
 		surface.SetDrawColor(0, 0, 0, 175)
 		surface.DrawRect(ux, uy, 300, 180)
+		surface.SetDrawColor(17, 136, 247, 255)
+		surface.DrawOutlinedRect(ux, uy, 300, 180)
 		draw.SimpleText(lA, "BudgetLabel", ux + 10, uy + 10, tcolor)
-		draw.SimpleText(L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
-		draw.SimpleText(L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
-		draw.SimpleText(L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
-		draw.SimpleText(L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
-		surface.SetDrawColor(17, 136, 247, 150)
-		surface.DrawRect(ux + 2, uy + 115, 296, 5)
-		draw.SimpleText(L"BIOSIGNAL ZONE: "..area, "BudgetLabel", ux + 10, uy + 130)
-		draw.SimpleText(L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
+		draw.SimpleText("'"..L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
+		draw.SimpleText("'"..L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
+		draw.SimpleText("'"..L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
+		draw.SimpleText("'"..L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
+		surface.SetDrawColor(17, 136, 247, 255)
+		surface.DrawRect(ux + 2, uy + 115, 296, 1)
+		draw.SimpleText("'"..L"BIOSIGNAL ZONE: "..area, "BudgetLabel", ux + 10, uy + 130)
+		draw.SimpleText("'"..L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
 		--[[ local gm = LocalPlayer():GetModel() commented out because it looks ugly as hell & is unnecessary
 		local gs = LocalPlayer():GetSkin()
 		if LocalPlayer():Team() == 3 then
@@ -143,15 +143,15 @@ function CombHUD()
 	end
 end 
 local direction = {
-	[0] = "N",
-	[45] = "NE",
-	[90] = "E",
-	[135] = "SE",
-	[180] = "S",
-	[225] = "SW",
-	[270] = "W",
-	[315] = "NW",
-	[360] = "N"
+	[0] = "[N]",
+	[45] = "[NE]",
+	[90] = "[E]",
+	[135] = "[SE]",
+	[180] = "[S]",
+	[225] = "[SW]",
+	[270] = "[W]",
+	[315] = "[NW]",
+	[360] = "[N]"
 }
 
 local function CombineCompass()
@@ -164,11 +164,14 @@ local function CombineCompass()
 	local rang = math.Round(ang.y)
 
 	surface.SetDrawColor(0, 0, 0, 175)
-	surface.DrawRect(ScrW() / 2 - (width / 2) - 8, 30, width + 16, 35)
+	surface.DrawRect(ScrW() / 2 - (width / 2) - 16, 30, width + 32, 35)
 	surface.SetDrawColor(17, 136, 247, 150)
-	surface.DrawOutlinedRect(ScrW() / 2 - (width / 2) - 8, 30, width + 16, 35)
+	surface.DrawOutlinedRect(ScrW() / 2 - (width / 2) - 16, 30, width + 32, 35)
 
 	draw.SimpleText(ang, "BudgetLabel", ScrW() / 2, 50, color_white, TEXT_ALIGN_CENTER)
+
+	surface.SetDrawColor(17, 136, 247, 255)
+	surface.DrawRect(ScrW() / 2 - (width / 2) - 8, 46, width + 16, 1)
 
 	for i = (rang - (lines / 2)) % 360, ((rang - (lines / 2)) % 360) + lines do
 		local x = (ScrW() / 2 + (width / 2)) - ((i - ang.y - 180) % 360) * spacing
