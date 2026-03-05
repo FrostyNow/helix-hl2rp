@@ -90,19 +90,33 @@ net.Receive("ixGearUnequip", function(len, client)
 	local destInvID
 	local destX, destY
 
-	if (bHasTarget and targetInvID and targetX and targetY and targetX > 0 and targetY > 0) then
-		-- Specific target slot.
+	if (bHasTarget and targetInvID) then
 		destInvID = targetInvID
-		destX = targetX
-		destY = targetY
+
+		-- If specific coordinates are provided (and valid), use them.
+		if (targetX and targetY and targetX > 0 and targetY > 0) then
+			destX = targetX
+			destY = targetY
+		end
+		-- Otherwise, destX and destY remain nil (auto-find slot in targetInvID).
 	else
-		-- Auto-find empty slot in main inventory.
+		-- Fallback to auto-find empty slot in main inventory.
 		local mainInv = character:GetInventory()
 		if (!mainInv) then return end
 
 		destInvID = mainInv:GetID()
-		destX = nil
-		destY = nil
+	local targetInv = ix.item.inventories[destInvID]
+	if (!targetInv) then return end
+
+	-- If no coords provided, explicitly find an empty slot.
+	if (!destX or !destY) then
+		local emptyX, emptyY = targetInv:FindEmptySlot(item.width, item.height)
+		if (!emptyX or !emptyY) then
+			client:NotifyLocalized("noFit")
+			return
+		end
+		destX = emptyX
+		destY = emptyY
 	end
 
 	-- IMPORTANT: Unequip BEFORE Transfer.
