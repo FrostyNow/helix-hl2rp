@@ -15,24 +15,29 @@ net.Receive("ixGearSync", function()
 	end
 end)
 
--- Equip: send custom ixGearEquip message with source inventory, item, and desired slot.
-local function EquipToGearSlot(sourceInvID, itemID, slotID)
-	if (!sourceInvID or !itemID or !slotID) then return end
+-- Equip: use native ixInventoryMove (we know exact source and target grid coords).
+local function MoveToGearSlot(panelGridX, panelGridY, sourceInvID, slotIndex)
+	local gearInvID = PLUGIN.gearInvID
+	if (!gearInvID or gearInvID == 0) then return end
+	if (!panelGridX or !panelGridY or !sourceInvID) then return end
 
-	net.Start("ixGearEquip")
+	net.Start("ixInventoryMove")
+		net.WriteUInt(panelGridX, 6)
+		net.WriteUInt(panelGridY, 6)
+		net.WriteUInt(1, 6) -- gear inv X is always 1
+		net.WriteUInt(slotIndex, 6) -- gear inv Y = slot index
 		net.WriteUInt(sourceInvID, 32)
-		net.WriteUInt(itemID, 32)
-		net.WriteString(slotID)
+		net.WriteUInt(gearInvID, 32)
 	net.SendToServer()
 end
 
--- Unequip: custom net message specifying the item ID.
+-- Unequip: custom net message.
 -- Optional targetInvID / targetX / targetY for specific slot placement.
-local function UnequipFromGearSlot(itemID, targetInvID, targetX, targetY)
-	if (!itemID) then return end
+local function UnequipFromGearSlot(slotIndex, targetInvID, targetX, targetY)
+	if (!slotIndex) then return end
 
 	net.Start("ixGearUnequip")
-		net.WriteUInt(itemID, 32)
+		net.WriteUInt(slotIndex, 6)
 
 		local bHasTarget = (targetInvID != nil)
 		net.WriteBool(bHasTarget)
@@ -232,7 +237,7 @@ function SLOT_PANEL:SetEquippedItem(item)
 					local combineItem = inventoryPanel.combineItem
 					if (combineItem.isBag) then
 						-- Drop straight into the bag's inventory.
-						UnequipFromGearSlot(item.id, combineItem:GetData("id"))
+						UnequipFromGearSlot(mySlotIndex, combineItem:GetData("id"))
 					else
 						-- Standard native combine action.
 						local inventoryID = combineItem.invID
@@ -247,12 +252,12 @@ function SLOT_PANEL:SetEquippedItem(item)
 					end
 				elseif (inventoryPanel.invID and gridX and gridY) then
 					-- Native drop onto specific coordinates.
-					UnequipFromGearSlot(item.id, inventoryPanel.invID, gridX, gridY)
+					UnequipFromGearSlot(mySlotIndex, inventoryPanel.invID, gridX, gridY)
 				else
-					UnequipFromGearSlot(item.id)
+					UnequipFromGearSlot(mySlotIndex)
 				end
 			else
-				UnequipFromGearSlot(item.id)
+				UnequipFromGearSlot(mySlotIndex)
 			end
 
 			proxyPnl:Remove()
@@ -359,9 +364,14 @@ function SLOT_PANEL:OnItemDropped(panels, bDropped, menuIndex, x, y)
 		return
 	end
 
-	-- Whether from another gear slot or main inventory, 
-	-- EquipToGearSlot handles the backend transfer natively now.
-	EquipToGearSlot(panel:GetInventoryID(), itemTable.id, self.slotID)
+	if (panel:GetInventoryID() == PLUGIN.gearInvID) then
+		-- Dragging from another gear slot.
+		-- Use our unequip bypass so `better_armor` doesn't block the swap due to early equip flags.
+		UnequipFromGearSlot(panel.gridY, PLUGIN.gearInvID, 1, self.slotIndex)
+	else
+		-- Moving from main/bag inventory to gear slot.
+		MoveToGearSlot(panel.gridX, panel.gridY, panel:GetInventoryID(), self.slotIndex)
+	end
 end
 
 function SLOT_PANEL:Paint(w, h)
@@ -482,10 +492,7 @@ function PANEL:Init()
 
 	self.slotPanels = {}
 
-	local character = LocalPlayer():GetCharacter()
-	local slots = character and PLUGIN:GetCharacterGearSlots(character) or PLUGIN.GearSlots
-
-	for i, slotData in ipairs(slots) do
+	for i, slotData in ipairs(PLUGIN.GearSlots) do
 		local slot = self.slotScroll:Add("ixGearSlot")
 		slot:SetSlotInfo(slotData, i)
 		slot:Dock(TOP)
@@ -589,19 +596,17 @@ function PANEL:RefreshSlots()
 	local gearInv = gearInvID and gearInvID > 0 and ix.item.inventories[gearInvID]
 
 	for i, slotPanel in ipairs(self.slotPanels) do
-		local equippedItem = nil
+		local item = nil
 
-		if (gearInv) then
-			-- Scan all items in the gear inventory for a matching equipSlot data tag.
-			for _, item in pairs(gearInv:GetItems()) do
-				if (item:GetData("equipSlot") == slotPanel.slotID) then
-					equippedItem = item
-					break
-				end
+		if (gearInv and gearInv.slots and gearInv.slots[1]) then
+			local slotData = gearInv.slots[1][i]
+
+			if (slotData and istable(slotData) and slotData.id) then
+				item = slotData
 			end
 		end
 
-		slotPanel:SetEquippedItem(equippedItem)
+		slotPanel:SetEquippedItem(item)
 	end
 end
 
