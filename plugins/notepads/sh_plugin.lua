@@ -38,7 +38,7 @@ else
 	netstream.Hook("noteSendText", function(client, id, contents)
 		if (string.len(contents) <= NOTELIMIT) then
 			local note = FindNoteByID(id)
-			if (note:canWrite(client) == false) then
+			if (note:CanWrite(client) == false) then
 				client:NofityLocalized("notYourNote")
 			end
 
@@ -102,7 +102,7 @@ else
 
 		for _, v in ipairs(ents.GetAll()) do
 			if (v:GetClass() == "ix_note") then
-				table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:getOwner()})
+				table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:GetOwner()})
 				table.insert(validNotes, v.id)
 			end
 		end

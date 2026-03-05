@@ -9,18 +9,7 @@ function PLUGIN:PlayerSwitchFlashlight(client, bEnabled)
 	local inventory = character and character:GetInventory()
 	
 	if (glowflashlight) then
-
-		if ((inventory and inventory:HasItem("flashlight")) or client:IsCombine()) then
-			client:SetNetVar("flashlight", !client:GetNetVar("flashlight", false))
-
-			if ( client:GetNetVar("flashlight", true) ) then
-				client:EmitSound("items/flashlight1.wav", 60, 100)
-			else
-				client:EmitSound("items/flashlight1.wav", 60, 70)
-			end
-		end
-
-		return false
+		return
 	elseif ((inventory and inventory:HasItem("flashlight")) or client:IsCombine()) then
 		return true
 	end

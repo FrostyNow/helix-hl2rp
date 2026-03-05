@@ -8,6 +8,7 @@ ENT.Spawnable = false
 ENT.AdminOnly = false
 ENT.PhysgunDisable = true
 ENT.bNoPersist = true
+ENT.PopulateEntityInfo = true
 
 if (SERVER) then
 	function ENT:Initialize()
@@ -18,33 +19,32 @@ if (SERVER) then
 
 	function ENT:Use(activator)
 		if (self.id and WRITINGDATA[self.id]) then
-			netstream.Start(activator, "receiveNote", self.id, WRITINGDATA[self.id], self:canWrite(activator))
+			netstream.Start(activator, "receiveNote", self.id, WRITINGDATA[self.id], self:CanWrite(activator))
 		end
 	end
 else
-	function ENT:onShouldDrawEntityInfo()
-		return true
-	end
+	function ENT:OnPopulateEntityInfo(container)
+		local name = container:AddRow("name")
+		name:SetImportant()
+		name:SetText(L("Notepad"))
+		name:SizeToContents()
 
-	--function ENT:onDrawEntityInfo(alpha)
-		--local position = self:LocalToWorld(self:OBBCenter()):ToScreen()
-		--local x, y = position.x, position.y - 10
-		
-		--ix.util.drawText("Note", x, y, ColorAlpha(nut.config.get("color"), alpha), 1, 1, nil, alpha * 0.65)
-		--ix.util.drawText("It seems something is written on.", x, y + 16, ColorAlpha(color_white, alpha), 1, 1, "nutSmallFont", alpha * 0.65)
-	--end
+		local desc = container:AddRow("desc")
+		desc:SetText(L("notepadDesc"))
+		desc:SizeToContents()
+	end
 
 	function ENT:Draw()
 		self:DrawModel()
 	end
 end
 
-function ENT:getOwner()
+function ENT:GetOwner()
 	return self:GetNetVar("ownerChar")
 end
 
-function ENT:canWrite(client)
+function ENT:CanWrite(client)
 	if (client) then
-		return (client:IsAdmin() or client:GetChar().id == self:getOwner())
+		return (client:IsAdmin() or client:GetChar().id == self:GetOwner())
 	end
 end

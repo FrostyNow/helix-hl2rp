@@ -236,7 +236,7 @@ function Schema:EntityTakeDamage(entity, dmgInfo)
 	-- 	hook.Run("PlayerHurt", entity.ixPlayer, dmgInfo:GetAttacker(), entity.ixPlayer:Health(), dmgInfo:GetDamage())
 	-- end
 
-	if IsValid(entity:IsPlayer()) then
+	if (entity:IsPlayer()) then
 		if entity:GetCharacter() and entity:Team() == FACTION_OTA then
 			if dmgInfo:IsDamageType(DMG_RADIATION) then
 				dmgInfo:SetDamage(dmgInfo:GetDamage() * 0.1)
@@ -424,7 +424,7 @@ function Schema:PlayerSpray(client)
 	local inventory = character:GetInventory()
 	local hasItem = inventory:HasItem("spraycan")
 
-	if (client:IsAdmin() or hasIteam) then
+	if (client:IsAdmin() or hasItem) then
 		return true
 	else
 		return false

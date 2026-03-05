@@ -7,6 +7,7 @@ ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
 ITEM.width = 4
 ITEM.price = 1450
 ITEM.height = 2
+ITEM.weaponCategory = "primary"
 ITEM.iconCam = {
 	ang	= Angle(-0.70499622821808, 268.25439453125, 0),
 	fov	= 12.085652091515,

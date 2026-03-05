@@ -16,6 +16,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 if ( CLIENT ) then
 	PLUGIN.flashlights = PLUGIN.flashlights or {}
+	PLUGIN.lastFlashlightStates = PLUGIN.lastFlashlightStates or {}
 
 	local function GetLightPosition(client)
 		if ( client == LocalPlayer() and !client:ShouldDrawLocalPlayer() ) then
@@ -52,7 +53,22 @@ if ( CLIENT ) then
 
 	function PLUGIN:Think()
 		for _, client in ipairs(player.GetAll()) do
-			if ( !client:GetNetVar("flashlight") ) then
+			local bFlashlight = client:GetNetVar("flashlight", false)
+			local bNoclip = client:GetMoveType() == MOVETYPE_NOCLIP
+
+			self.lastFlashlightStates = self.lastFlashlightStates or {}
+
+			if (self.lastFlashlightStates[client] != bFlashlight) then
+				if (self.lastFlashlightStates[client] != nil) then
+					if (client == LocalPlayer() or !bNoclip) then
+						client:EmitSound("items/flashlight1.wav", 60, bFlashlight and 100 or 70)
+					end
+				end
+
+				self.lastFlashlightStates[client] = bFlashlight
+			end
+
+			if ( !bFlashlight or (bNoclip and client != LocalPlayer()) ) then
 				if ( IsValid(self.flashlights[client]) ) then
 					self.flashlights[client]:Remove()
 					self.flashlights[client] = nil
@@ -90,9 +106,13 @@ if ( CLIENT ) then
 	end
 
 	function PLUGIN:EntityRemoved(ent)
-		if ( ent:IsPlayer() and IsValid(self.flashlights[ent]) ) then
-			self.flashlights[ent]:Remove()
+		if ( ent:IsPlayer() ) then
+			if ( IsValid(self.flashlights[ent]) ) then
+				self.flashlights[ent]:Remove()
+			end
+
 			self.flashlights[ent] = nil
+			self.lastFlashlightStates[ent] = nil
 		end
 	end
 
@@ -101,7 +121,7 @@ if ( CLIENT ) then
 	function PLUGIN:PostDrawTranslucentRenderables()
 		for client, flashlight in pairs(self.flashlights) do
 			if ( IsValid(flashlight) and IsValid(client) ) then
-				if ( client == LocalPlayer() and !client:ShouldDrawLocalPlayer() ) then continue end
+				if ( (client == LocalPlayer() and !client:ShouldDrawLocalPlayer()) or (client:GetMoveType() == MOVETYPE_NOCLIP and client != LocalPlayer()) ) then continue end
 
 				local startPos = GetLightPosition(client)
 				local endPos = client:GetEyeTraceNoCursor().HitPos
@@ -132,6 +152,14 @@ if ( SERVER ) then
 		client:SetNetVar("flashlight", false)
 	end
 
+	function PLUGIN:DoPlayerDeath(client)
+		client:SetNetVar("flashlight", false)
+	end
+
+	function PLUGIN:OnPlayerRagdoll(client)
+		client:SetNetVar("flashlight", false)
+	end
+
 	function PLUGIN:CharacterLoaded(character)
 		local client = character:GetPlayer()
 		client:SetNetVar("flashlight", false)
@@ -141,14 +169,12 @@ if ( SERVER ) then
 		local character = client:GetCharacter()
 		local inventory = character and character:GetInventory()
 
+		if (!character or client:IsRagdoll()) then
+			return false
+		end
+
 		if ((inventory and inventory:HasItem("flashlight")) or client:IsCombine()) then
 			client:SetNetVar("flashlight", !client:GetNetVar("flashlight", false))
-
-			if ( client:GetNetVar("flashlight", true) ) then
-				client:EmitSound("items/flashlight1.wav", 60, 100)
-			else
-				client:EmitSound("items/flashlight1.wav", 60, 70)
-			end
 		end
 
 		return false

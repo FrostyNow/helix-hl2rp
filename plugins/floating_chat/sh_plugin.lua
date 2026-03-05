@@ -101,6 +101,7 @@ if (CLIENT) then
 	function PLUGIN:MessageReceived(client, info)
 		if (!ix.config.Get("floatingChatEnabled", true)) then return end
 		if (!IsValid(client) or !client:IsPlayer()) then return end
+		if (client:GetMoveType() == MOVETYPE_NOCLIP) then return end
 		if (!CHAT_TYPES[info.chatType]) then return end
 
 		client.ixFloatingChatData = client.ixFloatingChatData or {}
@@ -186,6 +187,7 @@ if (CLIENT) then
 		for _, client in player.Iterator() do
 			if (!client.ixFloatingChatData or #client.ixFloatingChatData == 0) then continue end
 			if (!client:Alive() and !client:IsBot()) then continue end
+			if (client:GetMoveType() == MOVETYPE_NOCLIP) then continue end
 
 			local distance = client:GetPos():DistToSqr(eyePos)
 			if (client == localPlayer and !ix.option.Get("seeOwnFloatingChat", false)) then continue end
