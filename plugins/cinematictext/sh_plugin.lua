@@ -1,0 +1,126 @@
+local PLUGIN = PLUGIN
+
+PLUGIN.name = "Cinematic Splash Text"
+PLUGIN.description = "Cinematic looking splash text for that extra flair."
+PLUGIN.author = "76561198070441753 (TovarischPootis), ported by mxd (IX)"
+PLUGIN.schema = "Any"
+PLUGIN.license = [[
+Copyright (c) 2025 mxd (mixvd)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+]]
+
+ix.util.Include("sv_plugin.lua")
+
+ix.lang.AddTable("english", {
+	cmdCinematicMenu = "Open a menu to setup the cinematic.",
+    textMissing = "Text is missing. Enter some text to display",
+})
+
+ix.lang.AddTable("korean", {
+	cmdCinematicMenu = "시네마틱 설정 메뉴를 엽니다.",
+    ["Cinematic Splash Text Menu"] = "시네마틱 스플래시 텍스트 메뉴",
+    ["Splash Text"] = "스플래시 텍스트",
+    ["Big Splash Text (Appears under normal text)"] = "큰 스플래시 텍스트 (일반 텍스트 아래에 위치)",
+    ["Splash Text Duration"] = "텍스트 출력 시간",
+    ["Draw Black Bars"] = "레터박스 출력",
+    ["Play audio"] = "오디오 재생",
+    ["Cinematic Audio Path"] = "시네마틱 오디오 경로",
+    ["POST"] = "게시",
+    ["CANCEL"] = "취소",
+    textMissing = "텍스트가 없습니다. 출력할 텍스트를 입력하세요.",
+})
+
+ix.config.Add("cinematicTextFont", "Arial", "The font used to display cinematic splash texts.", function()
+	if (CLIENT) then
+		hook.Run("LoadCinematicSplashTextFonts")
+	end
+end, {category = PLUGIN.name})
+
+ix.config.Add("cinematicTextSize", 18, "The font size multiplier used by cinematic splash texts.", function()
+	if (CLIENT) then
+		hook.Run("LoadCinematicSplashTextFonts")
+	end
+end, {
+    category = PLUGIN.name,
+    data = {min = 10, max = 50},
+    }
+)
+
+ix.config.Add("cinematicTextSizeBig", 30, "The big font size multiplier used by cinematic splash texts.", function()
+	if (CLIENT) then
+		hook.Run("LoadCinematicSplashTextFonts")
+	end
+end, {
+    category = PLUGIN.name,
+    data = {min = 10, max = 50},
+    }
+)
+
+ix.config.Add("cinematicBarSize", 0.18, "How big the black bars are during cinematic.", nil, {
+	category = PLUGIN.name,
+    data = {min = 0.1, max = 0.2, decimals = 2}
+})
+
+ix.config.Add("cinematicTextAuto", false, "Whether to automatically show cinematic text after character load.", nil, {
+    category = PLUGIN.name
+})
+
+ix.config.Add("cinematicTextAutoLine1", "Welcome back,", "The first line of text for automatic cinematic.", nil, {
+    category = PLUGIN.name
+})
+
+ix.config.Add("cinematicTextAutoLine2", "to the City 17.", "The second line of text for automatic cinematic.", nil, {
+    category = PLUGIN.name
+})
+
+ix.config.Add("cinematicTextAutoMusic", "music/stingers/industrial_suspense2.wav", "The music played for automatic cinematic splash text.", nil, {
+    category = PLUGIN.name
+})
+
+
+ix.command.Add("CinematicMenu", {
+	description = "@cmdCinematicMenu",
+	adminOnly = true,
+	OnRun = function(self, client)
+		net.Start("openCinematicSplashMenu")
+        net.Send(client)
+	end
+})
+
+
+if CLIENT then
+    function PLUGIN:LoadCinematicSplashTextFonts()
+        local font = ix.config.Get("cinematicTextFont", "Arial")
+        local fontSizeBig = ix.config.Get("cinematicTextSizeBig", 30)
+        local fontSizeNormal = ix.config.Get("cinematicTextSize", 18)
+        surface.CreateFont("cinematicSplashFontBig", {
+            font = font,
+            size = ScreenScale(fontSizeBig),
+            extended = true,
+            weight = 1000
+        })
+
+        surface.CreateFont("cinematicSplashFont", {
+            font = font,
+            size = ScreenScale(fontSizeNormal),
+            extended = true,
+            weight = 800
+        })
+
+        surface.CreateFont("cinematicSplashFontSmall", {
+            font = font,
+            size = ScreenScale(10),
+            extended = true,
+            weight = 800
+        })
+    end
+
+    function PLUGIN:LoadFonts()
+        self:LoadCinematicSplashTextFonts() -- this will create the fonts upon initial load.
+    end
+end

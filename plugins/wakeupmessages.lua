@@ -97,8 +97,10 @@ function PLUGIN:PlayerLoadedCharacter(client, character)
 
 		PLUGIN.lastWakeupByPlayer[steamID64] = charID
 		PLUGIN.lastWakeupAtByCharacter[dedupeKey] = CurTime()
-
-		client:ConCommand("play music/stingers/hl1_stinger_song16.mp3")
+		
+		if !ix.plugin.list["cinematictext"] or !ix.config.Get("cinematicTextAuto") then
+			client:ConCommand("play music/stingers/hl1_stinger_song16.mp3")
+		end
 		client:ScreenFade(SCREENFADE.IN, color_black, 3, 2)
 
 		local msg = table.Random(wakeupMessages)
