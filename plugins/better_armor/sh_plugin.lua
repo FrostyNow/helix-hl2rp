@@ -103,10 +103,10 @@ function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 	local items = inventory:GetItems()
 	
 	local bestScale = 1
-	local foundArmor = false
+	local hitgroupProtected = false
 
 	for k, v in pairs(items) do
-		if (v:GetData("equip") and v.base == "base_armor" and v.resistance) then
+		if (v:GetData("equip") == true and v.base == "base_armor" and v.resistance) then
 			-- Check if item covers this hitgroup
 			-- If hitGroups is nil, it covers everything (backward compatibility/suits)
 			if (v.hitGroups and !table.HasValue(v.hitGroups, hitgroup or 0)) then
@@ -126,29 +126,45 @@ function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 			
 			local dmg = v.damage or {1,1,1,1,1,1,1}
 			local scale = 1
+			local bValidType = false
 
 			if (dmginfo:IsDamageType(DMG_BULLET)) then
-				foundArmor = true
+				bValidType = true
 				scale = dmg[1]
 			elseif (dmginfo:IsDamageType(DMG_SLASH)) then
-				foundArmor = true
+				bValidType = true
 				scale = dmg[2]
 			elseif (dmginfo:IsDamageType(DMG_CLUB)) then
-				foundArmor = true
+				bValidType = true
 				scale = dmg[2] -- Treat club as slash/melee
 			end
 			
-			if (foundArmor) then
+			if (bValidType) then
 				scale = GetEffectiveScale(scale, fraction)
 				if (scale < bestScale) then
 					bestScale = scale
+					
+					-- If this item specifically reduces damage for this hit, mark it as protected
+					if (scale < 1) then
+						hitgroupProtected = true
+					end
 				end
 			end
 		end
 	end
 
-	if (foundArmor) then
+	if (hitgroupProtected) then
 		dmginfo:ScaleDamage(bestScale)
+
+		if (SERVER and dmginfo:IsDamageType(DMG_BULLET)) then
+			if (hitgroup == HITGROUP_HEAD) then
+				client:EmitSound("player/bhit_helmet-1.wav")
+			else
+				client:EmitSound("player/kevlar" .. math.random(1, 5) .. ".wav")
+			end
+		end
+	elseif (SERVER and dmginfo:IsDamageType(DMG_BULLET) and hitgroup == HITGROUP_HEAD) then
+		client:EmitSound("player/headshot" .. math.random(1, 2) .. ".wav")
 	end
 end
 
