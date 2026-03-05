@@ -17,4 +17,5 @@ LANGUAGE = {
 	lockpickingExit = "Exit",
 	lockpickingPick = "Pick a lock",
 	itemBobbyPinDesc = "A pin to tidy up hair, but it is also used for many other purposes.",
+	cannotPickComlock = "You can't pick a comlock.",
 }

@@ -18,4 +18,5 @@ LANGUAGE = {
 	lockpickingPick = "잠금 해제",
 	["Bobby pin box"] = "머리핀 상자",
 	itemBobbyPinDesc = "머리카락을 정리할 때 사용하는 핀이지만, 다른 용도로도 많이 쓰입니다.",
+	cannotPickComlock = "전자 잠금장치는 락픽으로 해제할 수 없습니다.",
 }

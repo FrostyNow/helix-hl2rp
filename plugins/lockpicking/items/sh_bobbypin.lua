@@ -5,7 +5,7 @@ ITEM.category = "Utility"
 ITEM.width = 1
 ITEM.height = 1
 ITEM.price = 90
-ITEM.pinAmount = 5
+ITEM.pinAmount = 10
 ITEM.startingPinHealth = 20
 ITEM.noBusiness = true
 
@@ -13,11 +13,11 @@ ITEM.noBusiness = true
 -- [[ Data ]] --
 ----------------
 local conditions = {
-	[0.85] = {"lockpickingExcellent", {0, 179, 0}},
-	[0.55] = {"lockpickingWell", {255, 255, 0}},
-	[0.35] = {"lockpickingWeak", {255, 140, 26}},
-	[0.25] = {"lockpickingBad", {255, 51, 0}},
-	[0] = {"lockpickingVeryBad", {102, 0, 0}}
+	[0.85] = {"lockpickingExcellent", Color(0, 179, 0)},
+	[0.55] = {"lockpickingWell", Color(255, 255, 0)},
+	[0.35] = {"lockpickingWeak", Color(255, 140, 26)},
+	[0.25] = {"lockpickingBad", Color(255, 51, 0)},
+	[0] = {"lockpickingVeryBad", Color(102, 0, 0)}
 }
 
 function ITEM:GetCondition()
@@ -57,6 +57,11 @@ ITEM.functions.use = {
 		local client = item.player
 		local ent = LockpickingPlugin:GetEntityLookedAt(client, ix.config.Get("lockpickMaxLookDistance"))
 
+		if ( IsValid(ent.ixLock) ) then
+			client:NotifyLocalized("cannotPickComlock")
+			return false
+		end
+
 		if ( IsDoorLocked(ent) and not GetDoorLockpicker(ent) ) then
 			local session = LockpickingPlugin:StartServerSession(ent, client, item)
 
@@ -83,6 +88,9 @@ ITEM.functions.use = {
 					client:NotifyLocalized("lockpickingNotLocked")
 				elseif ( GetDoorLockpicker(ent) ) then
 					client:NotifyLocalized("lockpickingAlreadyLocked")
+				elseif ( IsValid(ent.ixLock) ) then
+					client:NotifyLocalized("cannotPickComlock")
+					return false
 				end
 			end
 
