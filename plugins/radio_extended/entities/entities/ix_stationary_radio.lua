@@ -27,9 +27,9 @@ if (SERVER) then
 		self:SetNetVar("active", !self:GetNetVar("active", false))
 		
 		if (self:GetNetVar("active")) then
-			self:EmitSound("buttons/button1.wav")
+			self:EmitSound("radio/radio_on.ogg")
 		else
-			self:EmitSound("buttons/button19.wav")
+			self:EmitSound("radio/radio_off.ogg")
 		end
 	end
 else

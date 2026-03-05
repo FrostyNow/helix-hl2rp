@@ -165,16 +165,17 @@ end
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local class = tooltip:AddRow("class")
+		local color = team.GetColor(FACTION_CITIZEN) or Color(255, 255, 255, 255)
 		
 		if (self:GetData("class") == "Civil Worker's Union") then
 			class:SetText(L("Civil Worker's Union") .. L("cidDescClass"))
-			class:SetBackgroundColor(Color(224, 208, 117, 255))
+			class:SetBackgroundColor(ix.class.list[CLASS_CWU] and ix.class.list[CLASS_CWU].color or color)
 		elseif (self:GetData("class") == "First Class Citizen") then
 			class:SetText(L("First Class Citizen") .. L("cidDescClass"))
-			class:SetBackgroundColor(Color(191, 57, 75, 255))
+			class:SetBackgroundColor(ix.class.list[CLASS_ELITE_CITIZEN] and ix.class.list[CLASS_ELITE_CITIZEN].color or color)
 		else
 			class:SetText(L("Second Class Citizen") .. L("cidDescClass"))
-			class:SetBackgroundColor(Color(53, 156, 56, 255))
+			class:SetBackgroundColor(color)
 		end
 		class:SetExpensiveShadow(0.5)
 		class:SizeToContents()
