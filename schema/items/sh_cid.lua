@@ -6,6 +6,7 @@ ITEM.price = 50
 ITEM.noDeathDrop = true
 ITEM.functions.Use = {
 	name = "Assign",
+	icon = "icon16/pencil_go.png",
 	OnRun = function(itemTable)
 		local client = itemTable.player
 		local data = {}
@@ -47,6 +48,7 @@ ITEM.functions.Use = {
 }
 ITEM.functions.Upgrade = {
 	name = "Upgrade",
+	icon = "icon16/arrow_up.png",
 	OnRun = function(itemTable)
 		local client = itemTable.player
 		local data = {}
@@ -106,6 +108,7 @@ ITEM.functions.Upgrade = {
 }
 ITEM.functions.Degrade = {
 	name = "Degrade",
+	icon = "icon16/exclamation.png",
 	OnRun = function(itemTable)
 		local client = itemTable.player
 		local data = {}
