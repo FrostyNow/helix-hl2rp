@@ -2,6 +2,7 @@ ITEM.name = "Walkie Talkie"
 ITEM.description = "itemWalkieTalkieDesc"
 ITEM.walkietalkie = true
 ITEM.price = 75
+ITEM.category = "Utility"
 
 -- Inventory drawing
 if (CLIENT) then
