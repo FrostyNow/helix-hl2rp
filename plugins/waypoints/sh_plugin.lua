@@ -38,7 +38,7 @@ ix.command.Add("WaypointAdd", {
 	OnRun = function(self, client, text, time, color)
 		local faction = ix.faction.Get(client:Team())
 
-		if (!faction or !faction.canAddWaypoints) then
+		if (!client:IsAdmin() and (!faction or !faction.canAddWaypoints)) then
 			return "@cannotAddWaypoints"
 		end
 
@@ -50,7 +50,7 @@ ix.command.Add("WaypointAdd", {
 				return "@invalidWaypointColor", colorName, PLUGIN:ListColors()
 			end
 		else
-			color = faction.color or color_white
+			color = (faction and faction.color) or color_white
 		end
 
 		local position = client:GetEyeTraceNoCursor().HitPos
@@ -76,7 +76,7 @@ ix.command.Add("WaypointAddND", {
 	OnRun = function(self, client, text, time, color)
 		local faction = ix.faction.Get(client:Team())
 
-		if (!faction or !faction.canAddWaypoints) then
+		if (!client:IsAdmin() and (!faction or !faction.canAddWaypoints)) then
 			return "@cannotAddWaypoints"
 		end
 
@@ -88,7 +88,7 @@ ix.command.Add("WaypointAddND", {
 				return "@invalidWaypointColor", colorName, PLUGIN:ListColors()
 			end
 		else
-			color = faction.color or color_white
+			color = (faction and faction.color) or color_white
 		end
 
 		local position = client:GetEyeTraceNoCursor().HitPos
@@ -120,7 +120,7 @@ ix.command.Add("WaypointUpdate", {
 		local minDistanceSqr = nil
 
 		local faction = ix.faction.Get(client:Team())
-		local onlyOwnWaypoints = !(faction and faction.canUpdateWaypoints)
+		local onlyOwnWaypoints = !client:IsAdmin() and !(faction and faction.canUpdateWaypoints)
 
 		for k, point in pairs(PLUGIN.waypoints) do
 			if (onlyOwnWaypoints and point.addedBy != client) then
@@ -154,7 +154,7 @@ ix.command.Add("WaypointUpdate", {
 				return "@invalidWaypointColor", colorName, PLUGIN:ListColors()
 			end
 		else
-			color = PLUGIN.waypoints[index].color or faction.color or color_white
+			color = PLUGIN.waypoints[index].color or (faction and faction.color) or color_white
 		end
 
 		if (time) then
@@ -188,7 +188,7 @@ ix.command.Add("WaypointRemove", {
 		local minDistanceSqr = nil
 
 		local faction = ix.faction.Get(client:Team())
-		local onlyOwnWaypoints = !(faction and faction.canRemoveWaypoints)
+		local onlyOwnWaypoints = !client:IsAdmin() and !(faction and faction.canRemoveWaypoints)
 
 		for k, point in pairs(PLUGIN.waypoints) do
 			if (onlyOwnWaypoints and point.addedBy != client) then
@@ -224,7 +224,7 @@ ix.command.Add("WaypointRemoveAll", {
 	OnRun = function(self, client)
 		local faction = ix.faction.Get(client:Team())
 
-		if (!faction or !faction.canRemoveWaypoints) then
+		if (!client:IsAdmin() and (!faction or !faction.canRemoveWaypoints)) then
 			return "@cannotRemoveWaypoints"
 		end
 

@@ -12,9 +12,9 @@ function PLUGIN:GetPlayers()
 	for _, client in ipairs(player.GetAll()) do
 		local faction = ix.faction.Get(client:Team())
 
-		if (faction and faction.canSeeWaypoints) then
-			players[#players + 1] = client
-		end
+	if (client:IsAdmin() or (faction and faction.canSeeWaypoints)) then
+		players[#players + 1] = client
+	end
 	end
 
 	return players

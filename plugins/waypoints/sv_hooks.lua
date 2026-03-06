@@ -6,7 +6,7 @@ PLUGIN.waypointThink = 0
 function PLUGIN:PlayerLoadedCharacter(client, character, currentChar)
 	local faction = ix.faction.Get(character:GetFaction())
 
-	if (faction.canSeeWaypoints) then
+	if (client:IsAdmin() or (faction and faction.canSeeWaypoints)) then
 		net.Start("SetupWaypoints")
 			net.WriteBool(true)
 			net.WriteTable(self.waypoints)

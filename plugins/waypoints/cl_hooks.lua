@@ -5,7 +5,24 @@ PLUGIN.waypoints = {}
 
 function PLUGIN:HUDPaint()
 	local height = draw.GetFontHeight("BudgetLabel")
-	local clientPos = LocalPlayer():EyePos()
+	local client = LocalPlayer()
+	local clientPos = client:EyePos()
+	local character = client:GetCharacter()
+	if (not character) then return end
+
+	local faction = ix.faction.Get(character:GetFaction())
+	local bHasPermission = faction and faction.canSeeWaypoints
+	local bIsAdmin = client:IsAdmin()
+	local bInNoclip = client:GetMoveType() == MOVETYPE_NOCLIP
+
+	local bCanSeeByPermission = bHasPermission
+	if (bCanSeeByPermission and client:IsCombine() and not Schema:CanPlayerSeeCombineOverlay(client)) then
+		bCanSeeByPermission = false
+	end
+
+	if (not bCanSeeByPermission and not (bIsAdmin and bInNoclip)) then
+		return
+	end
 
 	for index, waypoint in pairs(self.waypoints) do
 		if (waypoint.time < CurTime()) then
@@ -23,7 +40,7 @@ function PLUGIN:HUDPaint()
 		surface.DrawLine(x + 15, y, x - 15, y)
 		surface.DrawLine(x, y + 15, x, y - 15)
 		surface.DrawOutlinedRect(x - 8, y - 8, 17, 17)
-		if (LocalPlayer():IsLineOfSightClear(waypoint.pos)) then
+		if (client:IsLineOfSightClear(waypoint.pos)) then
 			surface.DrawOutlinedRect(x - 5, y - 5, 11, 11)
 		end
 
@@ -56,9 +73,18 @@ net.Receive("SetupWaypoints", function()
 	for index, waypoint in pairs(data) do
 		local text = waypoint.text
 
+		-- Translate arguments if they are phrases
+		if (waypoint.arguments) then
+			for k, v in ipairs(waypoint.arguments) do
+				if (type(v) == "string" and v:sub(1, 1) == "@") then
+					waypoint.arguments[k] = L(v:sub(2))
+				end
+			end
+		end
+
 		-- check for any phrases and replace the text
 		if (text:sub(1, 1) == "@") then
-			waypoint.text = "<:: "..L(text:sub(2), unpack(waypoint.arguments)).." ::>"
+			waypoint.text = "<:: "..L(text:sub(2), unpack(waypoint.arguments or {})).." ::>"
 		else
 			waypoint.text = "<:: "..text.." ::>"
 		end
@@ -75,9 +101,18 @@ net.Receive("UpdateWaypoint", function()
 	if (data[2] != nil) then
 		local text = data[2].text
 
+		-- Translate arguments if they are phrases
+		if (data[2].arguments) then
+			for k, v in ipairs(data[2].arguments) do
+				if (type(v) == "string" and v:sub(1, 1) == "@") then
+					data[2].arguments[k] = L(v:sub(2))
+				end
+			end
+		end
+
 		-- check for any phrases and replace the text
 		if (text:sub(1, 1) == "@") then
-			data[2].text = "<:: "..L(text:sub(2), unpack(data[2].arguments)).." ::>"
+			data[2].text = "<:: "..L(text:sub(2), unpack(data[2].arguments or {})).." ::>"
 		else
 		    data[2].text = "<:: "..text.." ::>"
 		end

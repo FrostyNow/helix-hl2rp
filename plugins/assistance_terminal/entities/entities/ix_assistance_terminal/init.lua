@@ -29,7 +29,7 @@ function ENT:Use(ply)
 		if not ( ply:IsCombine() ) then
 			if ( ply:GetCharacter():GetInventory():HasItem("cid") ) then
 				local area = ply:GetArea()
-				local cidName = L("Anonymous") or "Anonymous"
+				local cidName = "Anonymous"
 				local cidID = "000000"
 				for _, v in pairs(ply:GetCharacter():GetInventory():GetItems()) do
 					if (v.uniqueID == "cid") then
@@ -38,36 +38,40 @@ function ENT:Use(ply)
 						break
 					end
 				end
-				
-				if ( !area or area == "" ) then
-					area = L("terminalUnknownLocation")
+
+				if (!area or area == "") then
+					area = "@terminalUnknownLocation"
 				end
 
+				self:EmitSound("buttons/combine_button1.wav")
 				self:SetNetVar("alarm", true)
 				self:SetNetVar("requester", cidName)
 
-				ix.chat.Send(ply, "dispatchradio", L("terminalDispatch", nil, area, cidName), false, nil)
+				ix.chat.Send(ply, "dispatchradio", L("terminalDispatch", nil, area:sub(1,1) == "@" and L(area:sub(2)) or area, cidName), false, nil)
 
-				local requesterDisplay = string.format("%s #%s", cidName or L("terminalUnidentified"), cidID or "00000")
+				local requesterDisplay = string.format("%s #%s", cidName, cidID)
 
 				local waypointPlugin = ix.plugin.Get("waypoints")
 				if (waypointPlugin) then
 					local waypoint = {
 						pos = ply:EyePos(),
-						text = L("terminalRequest", nil, requesterDisplay, area),
+						text = "@terminalRequest",
+						arguments = {requesterDisplay, area},
 						color = team.GetColor(ply:Team()),
 						addedBy = ply,
 						time = CurTime() + 180
 					}
 
-					self:SetNetVar("waypoint", #waypointPlugin.waypoints) -- Save the waypoint index for easy access later.
+					self:SetNetVar("waypoint", #waypointPlugin.waypoints + 1) -- Use +1 because table.insert happens in AddWaypoint
 
 					waypointPlugin:AddWaypoint(waypoint)
 				end
 			else
+				self:EmitSound("buttons/combine_button_locked.wav")
 				ply:NotifyLocalized("terminalNeedsCID")
 			end
 		elseif ( self:GetNetVar("alarm", false) ) then
+			self:EmitSound("buttons/combine_button5.wav")
 			self:SetNetVar("alarm", false)
 			self:SetNetVar("requester", nil)
 
