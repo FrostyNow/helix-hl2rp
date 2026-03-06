@@ -13,7 +13,7 @@ function Schema:AddWaypoint(position, text, color, time, addedBy, ...)
 		addedBy = addedBy,
 		arguments = {...},
 		time = CurTime() + time
-    }
+	}
 
 	PLUGIN:AddWaypoint(waypoint)
 end
