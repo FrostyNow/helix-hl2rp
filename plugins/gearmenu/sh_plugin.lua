@@ -1,7 +1,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.Title = "Gear Menu"
-PLUGIN.Author = "Ronald"
+PLUGIN.Author = "Ronald and Frosty"
 PLUGIN.Description = "Make menu for store equipment gear so it doesn't have slot in inventory."
 PLUGIN.Version = "2.0.0"
 
