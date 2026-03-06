@@ -19,13 +19,15 @@ ENT.restoreCool = 5
 
 ix.lang.AddTable("english", {
 	healthChargerDesc = "A medical device that automatically injects green solution to heal the user.",
-	healthChargerPay = "You paid %s for medical care."
+	healthChargerPay = "You paid %s for medical care.",
+	healthChargerNoMoney = "You don't have enough money for medical care."
 })
 
 ix.lang.AddTable("korean", {
 	["Health Charger"] = "자동화 의료 장치",
 	healthChargerDesc = "녹색 용액을 자동 주입하여 사용자를 치료하는 기계장치입니다.",
-	healthChargerPay = "의료 서비스 비용으로 %s을(를) 지불했습니다."
+	healthChargerPay = "의료 서비스 비용으로 %s을(를) 지불했습니다.",
+	healthChargerNoMoney = "의료 서비스를 이용하기 위한 돈이 부족합니다."
 })
 
 function ENT:GetUsed()
@@ -101,7 +103,7 @@ if (SERVER) then
 			local character = self.user:GetCharacter()
 			
 			if (character and self.sessionUsed > 0) then
-				local cost = math.Round(self.sessionUsed * 100)
+				local cost = math.min(math.Round(self.sessionUsed * 100), character:GetMoney())
 				
 				if (cost > 0) then
 					character:TakeMoney(cost)
@@ -119,8 +121,11 @@ if (SERVER) then
 	function ENT:Think()
 		if (self:IsActive() and IsValid(self.user)) then
 			local dist = self.user:GetPos():Distance(self:GetPos())
-			
-			if (dist > 96 or !self.user:KeyDown(IN_USE) or self:GetUsed() >= 1 or self.user:Health() >= self.user:GetMaxHealth()) then
+			local character = self.user:GetCharacter()
+			local nextCost = math.Round((self.sessionUsed + self.restoreCost) * 100)
+
+			if (dist > 96 or !self.user:KeyDown(IN_USE) or self:GetUsed() >= 1 or
+				self.user:Health() >= self.user:GetMaxHealth() or !character or character:GetMoney() < nextCost) then
 				self:finishUse()
 				return
 			end
@@ -143,7 +148,17 @@ if (SERVER) then
 	end
 
 	function ENT:Use(client)
+		local character = client:GetCharacter()
+		local minCost = math.Round(self.restoreCost * 100)
+
 		if (!client.ixHealthCharging and !IsValid(self.user) and self:GetUsed() < 1 and client:Health() < client:GetMaxHealth()) then
+			if (character and character:GetMoney() < minCost) then
+				client:Notify(L("healthChargerNoMoney", client))
+				self:EmitSound(self.denySound)
+
+				return
+			end
+
 			client.ixHealthCharging = self
 			self.user = client
 			self.sessionUsed = 0
