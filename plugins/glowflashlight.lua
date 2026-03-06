@@ -54,11 +54,6 @@ if ( CLIENT ) then
 	function PLUGIN:Think()
 		for _, client in ipairs(player.GetAll()) do
 			local bFlashlight = client:GetNetVar("flashlight", false)
-			
-			if (!client:Alive() or IsValid(client:GetLocalVar("ragdoll"))) then
-				bFlashlight = false
-			end
-
 			local bNoclip = client:GetMoveType() == MOVETYPE_NOCLIP
 
 			self.lastFlashlightStates = self.lastFlashlightStates or {}
@@ -157,11 +152,11 @@ if ( SERVER ) then
 		client:SetNetVar("flashlight", false)
 	end
 
-	function PLUGIN:PlayerDeath(client)
+	function PLUGIN:DoPlayerDeath(client)
 		client:SetNetVar("flashlight", false)
 	end
 
-	function PLUGIN:OnCharacterFallover(client, entity, isFallen)
+	function PLUGIN:OnPlayerRagdoll(client)
 		client:SetNetVar("flashlight", false)
 	end
 

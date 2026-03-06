@@ -4,10 +4,6 @@ local PLUGIN = PLUGIN
 PLUGIN.waypoints = {}
 
 function PLUGIN:HUDPaint()
-	if (LocalPlayer():IsCombine() and Schema.CanPlayerSeeCombineOverlay and not Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
-		return
-	end
-
 	local height = draw.GetFontHeight("BudgetLabel")
 	local clientPos = LocalPlayer():EyePos()
 
