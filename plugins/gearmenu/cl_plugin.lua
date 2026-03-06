@@ -3,428 +3,36 @@ local PLUGIN = PLUGIN
 -- Gear inventory ID synced from server.
 PLUGIN.gearInvID = PLUGIN.gearInvID or 0
 
--- ============================================================
--- Net Messages
--- ============================================================
-
 net.Receive("ixGearSync", function()
 	PLUGIN.gearInvID = net.ReadUInt(32)
 
 	if (IsValid(ix.gui.gearMenu)) then
-		ix.gui.gearMenu:RefreshSlots()
+		ix.gui.gearMenu:RefreshGearInv()
 	end
 end)
 
--- Equip: send custom ixGearEquip message with source inventory, item, and desired slot.
-local function EquipToGearSlot(sourceInvID, itemID, slotID)
-	if (!sourceInvID or !itemID or !slotID) then return end
-
-	net.Start("ixGearEquip")
-		net.WriteUInt(sourceInvID, 32)
+local function RequestEquip(itemID)
+	net.Start("ixGearEquipReq")
 		net.WriteUInt(itemID, 32)
-		net.WriteString(slotID)
 	net.SendToServer()
 end
 
--- Unequip: custom net message specifying the item ID.
--- Optional targetInvID / targetX / targetY for specific slot placement.
-local function UnequipFromGearSlot(itemID, targetInvID, targetX, targetY)
-	if (!itemID) then return end
-
-	net.Start("ixGearUnequip")
+local function RequestUnequip(itemID, targetInvID, x, y)
+	net.Start("ixGearUnequipReq")
 		net.WriteUInt(itemID, 32)
-
-		local bHasTarget = (targetInvID != nil)
-		net.WriteBool(bHasTarget)
-
-		if (bHasTarget) then
-			net.WriteUInt(targetInvID, 32)
-			net.WriteUInt(targetX or 0, 6)
-			net.WriteUInt(targetY or 0, 6)
-		end
+		net.WriteUInt(targetInvID or 0, 32)
+		net.WriteInt(x or -1, 16)
+		net.WriteInt(y or -1, 16)
 	net.SendToServer()
 end
 
 -- ============================================================
--- Helper: get the standard icon cell size from the main inventory panel
--- ============================================================
-local function GetInventoryIconSize()
-	if (IsValid(ix.gui.inv1) and ix.gui.inv1.iconSize) then
-		return ix.gui.inv1.iconSize
-	end
-
-	return 64
-end
-
--- ============================================================
--- ixGearSlot: Individual equipment slot panel
--- ============================================================
-local SLOT_PANEL = {}
-
-function SLOT_PANEL:Init()
-	self:SetTall(72)
-	self:Dock(TOP)
-	self:DockMargin(4, 4, 4, 0)
-
-	-- Accept item drops from the inventory.
-	self:Receiver("ixInventoryItem", self.OnItemDropped)
-
-	-- Slot label
-	self.label = self:Add("DLabel")
-	self.label:SetFont("ixSmallFont")
-	self.label:SetText("")
-	self.label:SetTextColor(Color(200, 200, 200))
-	self.label:Dock(FILL)
-	self.label:SetContentAlignment(5)
-	self.label:SetTall(18)
-
-	self.slotID = ""
-	self.slotIndex = 1
-	self.equippedItem = nil
-end
-
-function SLOT_PANEL:SetSlotInfo(slotData, slotIndex)
-	self.slotID = slotData.id
-	self.slotName = slotData.name
-	self.slotIcon = slotData.icon
-	self.slotIndex = slotIndex
-	self.label:SetText(slotData.name)
-end
-
-function SLOT_PANEL:SetEquippedItem(item)
-	-- If same item, skip rebuild.
-	if (self.equippedItem and item and self.equippedItem.id == item.id) then
-		return
-	end
-
-	-- Clear existing display.
-	if (IsValid(self.displayPanel)) then
-		self.displayPanel:Remove()
-		self.displayPanel = nil
-	end
-
-	-- Clean up any lingering drag proxy.
-	if (IsValid(self.dragProxy)) then
-		self.dragProxy:Remove()
-		self.dragProxy = nil
-	end
-
-	self.equippedItem = item
-
-	if (!item) then return end
-
-	-- ---- Display Panel: ixItemIcon filling the slot content area ----
-	local contentH = self:GetTall() - 18
-	local displaySize = math.min(self:GetWide() - 8, contentH - 4)
-
-	local display = self:Add("ixItemIcon")
-	display:Dock(FILL)
-	display:DockMargin(0, 0, 0, 0)
-	display:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
-	display:SetItemTable(item)
-	display.gridW = 1
-	display.gridH = 1
-	display:SetZPos(999)
-	display:SetPos((self:GetWide() - displaySize) / 2, (contentH - displaySize) / 2)
-
-    if (item.exRender) then
-        display.Icon:SetVisible(false)
-        display.ExtraPaint = function(this, panelX, panelY)
-            local bg = item:GetData("bodygroups", item.bodyGroups)
-            local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "") .. "Equipped"
-
-            local exIcon = ikon:GetIcon(renderKey)
-            if (exIcon) then
-                surface.SetMaterial(exIcon)
-                surface.SetDrawColor(color_white)
-                surface.DrawTexturedRect(0, 0, panelX, panelY)
-            else
-                ikon:renderIcon(
-                    renderKey,
-                    display:GetWide(),
-                    display:GetTall(),
-                    item:GetModel(),
-                    item.iconCam,
-                    nil,
-                    bg
-                )
-            end
-        end
-    else
-        -- yeah..
-        ix.gui.RenderNewIcon(display, item)
-    end
-
-	-- Tooltip on hover.
-	display:SetHelixTooltip(function(tooltip)
-		ix.hud.PopulateItemTooltip(tooltip, item)
-	end)
-
-	-- Store references for the closures.
-	local mySlotIndex = self.slotIndex
-	local mySlotPanel = self
-
-	-- ---- Left Click: Create drag proxy (standard Helix size) ----
-	display.OnMousePressed = function(pnl, mcode)
-		if (mcode == MOUSE_RIGHT) then
-			pnl:DoRightClick()
-			return
-		end
-
-		if (mcode != MOUSE_LEFT) then return end
-
-		-- Ensure previous proxy is cleaned up.
-		if (IsValid(mySlotPanel.dragProxy)) then
-			mySlotPanel.dragProxy:Remove()
-		end
-
-		local cellSize = GetInventoryIconSize()
-		-- Parent proxy to the gear menu so it gets destroyed if the menu is closed.
-		local proxy = vgui.Create("ixItemIcon", ix.gui.gearMenu)
-		proxy:SetSize(cellSize * (item.width or 1), cellSize * (item.height or 1))
-		proxy:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
-		proxy:SetItemTable(item)
-		proxy:SetInventoryID(PLUGIN.gearInvID)
-		proxy.gridX = 1
-		proxy.gridY = mySlotIndex
-		proxy.gridW = item.width or 1
-		proxy.gridH = item.height or 1
-
-        
-		if (item.exRender) then
-			proxy.Icon:SetVisible(false)
-			proxy.ExtraPaint = function(this, panelX, panelY)
-				local bg = item:GetData("bodygroups", item.bodyGroups)
-				local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "")
-
-				local exIcon = ikon:GetIcon(renderKey)
-				if (exIcon) then
-					surface.SetMaterial(exIcon)
-					surface.SetDrawColor(color_white)
-					surface.DrawTexturedRect(0, 0, panelX, panelY)
-				else
-					ikon:renderIcon(
-						renderKey,
-						item.width,
-						item.height,
-						item:GetModel(),
-						item.iconCam,
-						nil,
-						bg
-					)
-				end
-			end
-		else
-			-- yeah..
-			ix.gui.RenderNewIcon(proxy, item)
-		end
-
-		-- Set up DnD.
-		proxy:Droppable("ixInventoryItem")
-
-		-- OnDrop handler.
-		proxy.OnDrop = function(proxyPnl, bDragging, inventoryPanel, inventory, gridX, gridY)
-			if (!bDragging) then return end
-
-			if (IsValid(inventoryPanel)) then
-				if (inventoryPanel.combineItem) then
-					-- User dropped onto another item (e.g., bag or combinable).
-					local combineItem = inventoryPanel.combineItem
-					if (combineItem.isBag) then
-						-- Drop straight into the bag's inventory.
-						UnequipFromGearSlot(item.id, combineItem:GetData("id"))
-					else
-						-- Standard native combine action.
-						local inventoryID = combineItem.invID
-						if (inventoryID) then
-							net.Start("ixInventoryAction")
-								net.WriteString("combine")
-								net.WriteUInt(combineItem.id, 32)
-								net.WriteUInt(inventoryID, 32)
-								net.WriteTable({item.id})
-							net.SendToServer()
-						end
-					end
-				elseif (inventoryPanel.invID and gridX and gridY) then
-					-- Native drop onto specific coordinates.
-					UnequipFromGearSlot(item.id, inventoryPanel.invID, gridX, gridY)
-				else
-					UnequipFromGearSlot(item.id)
-				end
-			else
-				UnequipFromGearSlot(item.id)
-			end
-
-			proxyPnl:Remove()
-		end
-
-		-- Fallback cleanup: destroy if mouse is released and we're not dragging.
-		proxy.Think = function(proxyPnl)
-			if (!input.IsMouseDown(MOUSE_LEFT) and !dragndrop.IsDragging()) then
-				proxyPnl:Remove()
-			end
-		end
-
-		-- Position proxy off-screen so ONLY the drag system's ghost is visible.
-		proxy:SetPos(-9999, -9999)
-
-		-- Trigger the drag manually.
-		proxy:MouseCapture(true)
-		proxy:DragMousePress(mcode)
-
-		mySlotPanel.dragProxy = proxy
-	end
-
-	display.OnMouseReleased = function(pnl, mcode)
-		if (mcode != MOUSE_LEFT) then return end
-
-		if (IsValid(mySlotPanel.dragProxy)) then
-			mySlotPanel.dragProxy:DragMouseRelease(mcode)
-			mySlotPanel.dragProxy:MouseCapture(false)
-		end
-	end
-
-	-- ---- Right Click: Context Menu ----
-	display.DoRightClick = function()
-		local menu = DermaMenu()
-
-		menu:AddOption("Unequip", function()
-			UnequipFromGearSlot(mySlotIndex)
-		end):SetIcon("icon16/cross.png")
-
-		if (item and item.functions) then
-			for k, v in SortedPairs(item.functions) do
-				if (k == "drop" or k == "combine" or k == "Equip" or k == "EquipUn") then
-					continue
-				end
-
-				if (v.OnCanRun and v.OnCanRun(item) == false) then
-					continue
-				end
-
-				menu:AddOption(L(v.name or k), function()
-					item.player = LocalPlayer()
-
-					local send = true
-
-					if (v.OnClick) then
-						send = v.OnClick(item)
-					end
-
-					if (v.sound) then
-						surface.PlaySound(v.sound)
-					end
-
-					if (send != false) then
-						net.Start("ixInventoryAction")
-							net.WriteString(k)
-							net.WriteUInt(item.id, 32)
-							net.WriteUInt(item.invID, 32)
-							net.WriteTable({})
-						net.SendToServer()
-					end
-
-					item.player = nil
-				end):SetImage(v.icon or "icon16/brick.png")
-			end
-		end
-
-		menu:Open()
-	end
-
-	self.displayPanel = display
-	self:InvalidateLayout(true)
-end
-
-function SLOT_PANEL:PerformLayout(w, h)
-end
-
-function SLOT_PANEL:OnRemove()
-	if (IsValid(self.dragProxy)) then
-		self.dragProxy:Remove()
-		self.dragProxy = nil
-	end
-end
-
-function SLOT_PANEL:OnItemDropped(panels, bDropped, menuIndex, x, y)
-	if (!bDropped) then return end
-
-	local panel = panels[1]
-	if (!IsValid(panel)) then return end
-
-	local itemTable = panel:GetItemTable()
-	if (!itemTable) then return end
-
-	if (!PLUGIN:CanItemFitSlot(itemTable, self.slotID)) then
-		return
-	end
-
-	-- Whether from another gear slot or main inventory, 
-	-- EquipToGearSlot handles the backend transfer natively now.
-	EquipToGearSlot(panel:GetInventoryID(), itemTable.id, self.slotID)
-end
-
-function SLOT_PANEL:Paint(w, h)
-	local bgColor
-
-	if (self.equippedItem) then
-		bgColor = Color(40, 70, 40, 200)
-	elseif (self:IsHovered()) then
-		bgColor = Color(60, 60, 60, 200)
-	else
-		bgColor = Color(30, 30, 30, 200)
-	end
-
-	draw.RoundedBox(4, 0, 0, w, h, bgColor)
-
-	surface.SetDrawColor(80, 80, 80, 150)
-	surface.DrawOutlinedRect(0, 0, w, h, 1)
-
-	-- Slot icon placeholder when empty.
-	if (!self.equippedItem and self.slotIcon) then
-		local iconMat = Material(self.slotIcon)
-
-		if (iconMat and !iconMat:IsError()) then
-			surface.SetDrawColor(100, 100, 100, 100)
-			surface.SetMaterial(iconMat)
-			surface.DrawTexturedRect(w / 2 - 12, (h - 18) / 2 - 4, 24, 24)
-		end
-	end
-
-	-- Highlight when dragging a compatible item over.
-	if (dragndrop.IsDragging()) then
-		local droppable = dragndrop.GetDroppable()
-
-		if (droppable and droppable[1]) then
-			local itemPanel = droppable[1]
-
-			if (IsValid(itemPanel) and itemPanel.GetItemTable) then
-				local itemTable = itemPanel:GetItemTable()
-
-				if (itemTable and PLUGIN:CanItemFitSlot(itemTable, self.slotID)) then
-					if (self:IsHovered()) then
-						draw.RoundedBox(4, 0, 0, w, h, Color(80, 180, 80, 40))
-					else
-						draw.RoundedBox(4, 0, 0, w, h, Color(80, 180, 80, 15))
-					end
-				end
-			end
-		end
-	end
-end
-
-vgui.Register("ixGearSlot", SLOT_PANEL, "DPanel")
-
--- ============================================================
--- ixGearMenu: Main gear menu panel
+-- ixGearMenu Panel
 -- ============================================================
 local PANEL = {}
 
 function PANEL:Init()
-	if (IsValid(ix.gui.gearMenu)) then
-		ix.gui.gearMenu:Remove()
-	end
-
+	if (IsValid(ix.gui.gearMenu)) then ix.gui.gearMenu:Remove() end
 	ix.gui.gearMenu = self
 
 	self:SetTitle("")
@@ -441,9 +49,9 @@ function PANEL:Init()
 
 	self.bNoBackgroundBlur = false
 
-	-- ---- Left Side: Equipment Panel ----
-	local equipWidth = panelW * 0.3
+	local equipWidth = panelW * 0.4
 
+	-- Left: Equipment
 	self.equipPanel = self:Add("DPanel")
 	self.equipPanel:SetWide(equipWidth)
 	self.equipPanel:Dock(LEFT)
@@ -451,10 +59,26 @@ function PANEL:Init()
 	self.equipPanel.Paint = function(_, w, h)
 		draw.RoundedBox(4, 0, 0, w, h, Color(20, 20, 20, 220))
 	end
+	
+	-- Correctly positioned highlight for equipment zone
+	self.equipPanel.PaintOver = function(this, w, h)
+		local panels = dragndrop.GetDroppable("ixInventoryItem")
+		if (panels and IsValid(panels[1])) then
+			local panel = panels[1]
+			local item = panel:GetItemTable()
+			if (item and item.functions and item.functions.Equip) then
+				local mx, my = this:CursorPos()
+				if (mx > 0 and my > 32 and mx < w and my < h) then
+					surface.SetDrawColor(100, 255, 100, 20)
+					surface.DrawRect(0, 32, w, h - 32)
+				end
+			end
+		end
+	end
 
 	local equipHeader = self.equipPanel:Add("DLabel")
 	equipHeader:SetFont("ixMediumFont")
-	equipHeader:SetText("Equipment")
+	equipHeader:SetText(L"Equipment")
 	equipHeader:SetTextColor(Color(220, 220, 220))
 	equipHeader:Dock(TOP)
 	equipHeader:DockMargin(8, 8, 8, 4)
@@ -464,37 +88,36 @@ function PANEL:Init()
 	sep:SetTall(1)
 	sep:Dock(TOP)
 	sep:DockMargin(8, 0, 8, 4)
-	sep.Paint = function(_, w, h)
-		surface.SetDrawColor(80, 80, 80)
-		surface.DrawRect(0, 0, w, h)
+	sep.Paint = function(_, w, h) surface.SetDrawColor(80, 80, 80) surface.DrawRect(0, 0, w, h) end
+
+	self.gearScroll = self.equipPanel:Add("DScrollPanel")
+	self.gearScroll:Dock(FILL)
+	self.gearScroll:DockMargin(4, 4, 4, 4)
+
+	self.gearCanvas = self.gearScroll:Add("DTileLayout")
+	self.gearCanvas:Dock(TOP)
+	self.gearCanvas:SetBorder(0)
+	self.gearCanvas:SetSpaceX(0)
+	self.gearCanvas:SetSpaceY(0)
+	self.gearCanvas:SetBaseSize(80)
+
+	-- Drop handler for drag and drop equipping
+	local function DropHandler(receiver, panels, bDropped, menuIndex, x, y)
+		if (!bDropped) then return end
+		local panel = panels[1]
+		if (!IsValid(panel)) then return end
+		local itemTable = panel:GetItemTable()
+		if (!itemTable) then return end
+		-- Only allow items that have an Equip function
+		if (!itemTable.functions or !itemTable.functions.Equip) then return end
+		RequestEquip(itemTable.id)
 	end
 
-	self.slotScroll = self.equipPanel:Add("DScrollPanel")
-	self.slotScroll:Dock(FILL)
-	self.slotScroll:DockMargin(4, 4, 4, 4)
+	self.equipPanel:Receiver("ixInventoryItem", DropHandler)
+	self.gearScroll:Receiver("ixInventoryItem", DropHandler)
+	self.gearCanvas:Receiver("ixInventoryItem", DropHandler)
 
-	local sbar = self.slotScroll:GetVBar()
-	sbar:SetWide(4)
-	sbar.Paint = function(_, w, h) draw.RoundedBox(2, 0, 0, w, h, Color(30, 30, 30, 100)) end
-	sbar.btnUp.Paint = function() end
-	sbar.btnDown.Paint = function() end
-	sbar.btnGrip.Paint = function(_, w, h) draw.RoundedBox(2, 0, 0, w, h, Color(100, 100, 100, 150)) end
-
-	self.slotPanels = {}
-
-	local character = LocalPlayer():GetCharacter()
-	local slots = character and PLUGIN:GetCharacterGearSlots(character) or PLUGIN.GearSlots
-
-	for i, slotData in ipairs(slots) do
-		local slot = self.slotScroll:Add("ixGearSlot")
-		slot:SetSlotInfo(slotData, i)
-		slot:Dock(TOP)
-		slot:DockMargin(0, 0, 0, 2)
-
-		self.slotPanels[i] = slot
-	end
-
-	-- ---- Right Side: Inventory Panel ----
+	-- Right: Inventory
 	self.invContainer = self:Add("DPanel")
 	self.invContainer:Dock(FILL)
 	self.invContainer:DockMargin(2, 4, 4, 4)
@@ -504,7 +127,7 @@ function PANEL:Init()
 
 	local invHeader = self.invContainer:Add("DLabel")
 	invHeader:SetFont("ixMediumFont")
-	invHeader:SetText("Inventory")
+	invHeader:SetText(L("Inventory"))
 	invHeader:SetTextColor(Color(220, 220, 220))
 	invHeader:Dock(TOP)
 	invHeader:DockMargin(8, 8, 8, 4)
@@ -514,38 +137,304 @@ function PANEL:Init()
 	sep2:SetTall(1)
 	sep2:Dock(TOP)
 	sep2:DockMargin(8, 0, 8, 4)
-	sep2.Paint = function(_, w, h)
-		surface.SetDrawColor(80, 80, 80)
-		surface.DrawRect(0, 0, w, h)
-	end
+	sep2.Paint = function(_, w, h) surface.SetDrawColor(80, 80, 80) surface.DrawRect(0, 0, w, h) end
 
 	self.invScroll = self.invContainer:Add("DScrollPanel")
 	self.invScroll:Dock(FILL)
 	self.invScroll:DockMargin(4, 4, 4, 4)
 
-	local sbar2 = self.invScroll:GetVBar()
-	sbar2:SetWide(4)
-	sbar2.Paint = function(_, w, h) draw.RoundedBox(2, 0, 0, w, h, Color(30, 30, 30, 100)) end
-	sbar2.btnUp.Paint = function() end
-	sbar2.btnDown.Paint = function() end
-	sbar2.btnGrip.Paint = function(_, w, h) draw.RoundedBox(2, 0, 0, w, h, Color(100, 100, 100, 150)) end
-
 	self.invCanvas = self.invScroll:Add("DTileLayout")
 	self.invCanvas:Dock(TOP)
 	self.invCanvas:SetBorder(0)
 	self.invCanvas:SetSpaceX(2)
+	self.invCanvas:SetSpaceX(2)
 	self.invCanvas:SetSpaceY(2)
 
 	self:LoadInventory()
-	self:RefreshSlots()
+	self:RefreshGearInv()
 
 	self.nextRefresh = 0
 end
 
 function PANEL:Think()
 	if (CurTime() > self.nextRefresh) then
-		self.nextRefresh = CurTime() + 0.3
-		self:RefreshSlots()
+		self.nextRefresh = CurTime() + 0.5
+		self:RefreshGearInv()
+	end
+end
+
+local BASE_PRIO = {
+	["base_weapons"] = 1,
+	["base_armor"] = 2,
+	["base_houtfit"] = 3
+}
+
+local CAT_PRIO = {
+	-- Weapons
+	["primary"] = 1,
+	["secondary"] = 2,
+	["melee"] = 3,
+	["grenade"] = 4,
+
+	-- Armor/Outfits
+	["head"] = 1,
+	["body"] = 2,
+}
+
+function PANEL:RefreshGearInv()
+	if (!IsValid(self.gearCanvas)) then return end
+
+	local character = LocalPlayer():GetCharacter()
+	if (!character) then return end
+
+	local gearInvID = PLUGIN.gearInvID
+	local gearInv = gearInvID and gearInvID > 0 and ix.item.inventories[gearInvID]
+
+	local equippedItems = {}
+	if (gearInv) then
+		for id, item in pairs(gearInv:GetItems()) do
+			if (item:GetData("equip") == true) then
+				equippedItems[#equippedItems + 1] = item
+			end
+		end
+	end
+
+	-- Sophisticated sorting
+	table.sort(equippedItems, function(a, b)
+		local aBase = a.base or ""
+		local bBase = b.base or ""
+		local aPrio = BASE_PRIO[aBase] or 99
+		local bPrio = BASE_PRIO[bBase] or 99
+
+		if (aPrio != bPrio) then
+			return aPrio < bPrio
+		end
+
+		local aCat = a.weaponCategory or a.outfitCategory or a.category or ""
+		local bCat = b.weaponCategory or b.outfitCategory or b.category or ""
+		local aCatPrio = CAT_PRIO[aCat] or 99
+		local bCatPrio = CAT_PRIO[bCat] or 99
+
+		if (aCatPrio != bCatPrio) then
+			return aCatPrio < bCatPrio
+		end
+
+		local aTime = a:GetData("equipTime", 0)
+		local bTime = b:GetData("equipTime", 0)
+
+		if (aTime != bTime) then
+			return aTime < bTime
+		end
+
+		return a:GetName() < b:GetName()
+	end)
+
+	-- Build a hash to avoid needless redraws
+	local hash = ""
+	for _, item in ipairs(equippedItems) do
+		hash = hash .. item.id .. ","
+	end
+	if (self.lastHash == hash) then return end
+	self.lastHash = hash
+
+	self.gearCanvas:Clear()
+
+	local iconSize = 80
+
+	for _, item in ipairs(equippedItems) do
+		local icon = self.gearCanvas:Add("ixItemIcon")
+		icon:SetSize(item.width * iconSize, item.height * iconSize)
+		icon:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
+		icon:SetItemTable(item)
+		icon:SetInventoryID(item.invID or 0)
+		icon.gridW = item.width
+		icon.gridH = item.height
+		icon.gridX = 1
+		icon.gridY = 1
+
+		icon:Droppable("ixInventoryItem")
+
+		icon.OnMousePressed = function(this, mcode)
+			if (mcode == MOUSE_RIGHT) then
+				this:DoRightClick()
+				return
+			end
+
+			if (mcode != MOUSE_LEFT) then return end
+
+			if (IsValid(this.dragProxy)) then
+				this.dragProxy:Remove()
+			end
+
+			local cellSize = (IsValid(ix.gui.inv1) and ix.gui.inv1.iconSize) or 64
+
+			local proxy = vgui.Create("ixItemIcon", ix.gui.gearMenu)
+			proxy:SetSize(cellSize * item.width, cellSize * item.height)
+			proxy:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
+			proxy:SetItemTable(item)
+			proxy:SetInventoryID(PLUGIN.gearInvID)
+			proxy.gridX = 1
+			proxy.gridY = 1
+			proxy.gridW = item.width
+			proxy.gridH = item.height
+
+			if (item.exRender) then
+				proxy.Icon:SetVisible(false)
+				proxy.ExtraPaint = function(this_proxy, panelX, panelY)
+					local bg = item:GetData("bodygroups", item.bodyGroups)
+					local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "") .. "Gear"
+
+					local exIcon = ikon:GetIcon(renderKey)
+					if (exIcon) then
+						surface.SetMaterial(exIcon)
+						surface.SetDrawColor(color_white)
+						surface.DrawTexturedRect(0, 0, panelX, panelY)
+					else
+						ikon:renderIcon(renderKey, panelX, panelY, item:GetModel(), item.iconCam, nil, bg)
+					end
+				end
+			else
+				ix.gui.RenderNewIcon(proxy, item)
+			end
+
+			proxy:Droppable("ixInventoryItem")
+			
+			proxy.OnDrop = function(proxyPnl, bDragging, inventoryPanel, inventory, gridX, gridY)
+				if (!bDragging) then return end
+
+				if (IsValid(inventoryPanel)) then
+					if (inventoryPanel.combineItem) then
+						local combineItem = inventoryPanel.combineItem
+						if (combineItem.isBag) then
+							RequestUnequip(item.id, combineItem:GetData("id"))
+						else
+							local invID = combineItem.invID
+							if (invID) then
+								net.Start("ixInventoryAction")
+									net.WriteString("combine")
+									net.WriteUInt(combineItem.id, 32)
+									net.WriteUInt(invID, 32)
+									net.WriteTable({item.id})
+								net.SendToServer()
+							end
+						end
+					elseif (inventoryPanel.invID and gridX and gridY) then
+						RequestUnequip(item.id, inventoryPanel.invID, gridX, gridY)
+					else
+						RequestUnequip(item.id)
+					end
+				else
+					RequestUnequip(item.id)
+				end
+
+				proxyPnl:Remove()
+			end
+
+			proxy.Think = function(proxyPnl)
+				if (!input.IsMouseDown(MOUSE_LEFT) and !dragndrop.IsDragging()) then
+					proxyPnl:Remove()
+				end
+			end
+
+			proxy:SetPos(-9999, -9999)
+			proxy:MouseCapture(true)
+			proxy:DragMousePress(mcode)
+			this.dragProxy = proxy
+		end
+
+		icon.OnMouseReleased = function(this, mcode)
+			if (mcode != MOUSE_LEFT) then return end
+			if (IsValid(this.dragProxy)) then
+				this.dragProxy:DragMouseRelease(mcode)
+				this.dragProxy:MouseCapture(false)
+			end
+		end
+
+		icon.OnRemove = function(this)
+			if (IsValid(this.dragProxy)) then
+				this.dragProxy:Remove()
+				this.dragProxy = nil
+			end
+		end
+
+		if (item.exRender) then
+			icon.Icon:SetVisible(false)
+			icon.ExtraPaint = function(this, panelX, panelY)
+				local bg = item:GetData("bodygroups", item.bodyGroups)
+				local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "") .. "Gear"
+
+				local exIcon = ikon:GetIcon(renderKey)
+				if (exIcon) then
+					surface.SetMaterial(exIcon)
+					surface.SetDrawColor(color_white)
+					surface.DrawTexturedRect(0, 0, panelX, panelY)
+				else
+					ikon:renderIcon(renderKey, panelX, panelY, item:GetModel(), item.iconCam, nil, bg)
+				end
+			end
+		else
+			ix.gui.RenderNewIcon(icon, item)
+		end
+
+		icon:SetHelixTooltip(function(tooltip)
+			ix.hud.PopulateItemTooltip(tooltip, item)
+		end)
+
+		icon.DoRightClick = function()
+			local menu = DermaMenu()
+			menu:AddOption(L("Unequip"), function()
+				RequestUnequip(item.id)
+			end):SetIcon("icon16/cross.png")
+
+			if (item.functions) then
+				for k, v in SortedPairs(item.functions) do
+					if (k == "drop" or k == "combine" or k == "Equip" or k == "EquipUn") then continue end
+					if (v.OnCanRun and v.OnCanRun(item) == false) then continue end
+
+					menu:AddOption(L(v.name or k), function()
+						net.Start("ixInventoryAction")
+							net.WriteString(k)
+							net.WriteUInt(item.id, 32)
+							net.WriteUInt(item.invID, 32)
+							net.WriteTable({})
+						net.SendToServer()
+					end):SetImage(v.icon or "icon16/brick.png")
+				end
+			end
+
+			menu:Open()
+		end
+
+		icon.OnDrop = function(this, bDragging)
+			if (!bDragging) then return end
+			
+			local hovered = vgui.GetHoveredPanel()
+			local invPanel
+			
+			while (IsValid(hovered)) do
+				if (hovered.GetClassName and hovered:GetClassName() == "ixInventory") then
+					invPanel = hovered
+					break
+				end
+				hovered = hovered:GetParent()
+			end
+
+			if (invPanel and invPanel.GetInventory) then
+				local inv = invPanel:GetInventory()
+				local cursorX, cursorY = invPanel:CursorPos()
+				local iconS = invPanel.iconSize or 64
+				
+				local dropX = math.ceil((cursorX - 4 - (this.gridW - 1) * (iconS / 2)) / iconS)
+				local dropY = math.ceil((cursorY - invPanel:GetPadding(2) - (this.gridH - 1) * (iconS / 2)) / iconS)
+				
+				dropX = math.max(1, dropX)
+				dropY = math.max(1, dropY)
+				
+				RequestUnequip(item.id, inv:GetID(), dropX, dropY)
+			else
+				RequestUnequip(item.id)
+			end
+		end
 	end
 end
 
@@ -571,38 +460,34 @@ function PANEL:LoadInventory()
 	ix.gui.menuInventoryContainer = self.invCanvas
 
 	if (ix.option.Get("openBags", true)) then
-		for k, _ in inventory:Iter() do
-			if (!k.isBag) then continue end
-
+		for _, k in pairs(ix.item.instances) do
+			if (!k.isBag or k:GetData("equip") != true) then continue end
+			
 			local viewFunc = k.functions.View
 			if (viewFunc and viewFunc.OnClick) then
-				viewFunc.OnClick(k)
+				local ret = viewFunc.OnClick(k)
+				if (ret == false) then -- Failed to open natively because it's in gear inv
+					local bagInvID = k:GetData("id")
+					if (bagInvID) then
+						local bagInv = ix.item.inventories[bagInvID]
+						if (bagInv) then
+							local bagPanel = vgui.Create("ixInventory")
+							bagPanel:ShowCloseButton(true)
+							bagPanel:SetTitle(k:GetName())
+							bagPanel:SetInventory(bagInv)
+							if (IsValid(ix.gui.inv1)) then
+								bagPanel:MoveRightOf(ix.gui.inv1, 4)
+							end
+							bagPanel:MakePopup()
+							ix.gui["inv" .. bagInvID] = bagPanel
+						end
+					end
+				end
 			end
 		end
 	end
 
 	self.invCanvas:Layout()
-end
-
-function PANEL:RefreshSlots()
-	local gearInvID = PLUGIN.gearInvID
-	local gearInv = gearInvID and gearInvID > 0 and ix.item.inventories[gearInvID]
-
-	for i, slotPanel in ipairs(self.slotPanels) do
-		local equippedItem = nil
-
-		if (gearInv) then
-			-- Scan all items in the gear inventory for a matching equipSlot data tag.
-			for _, item in pairs(gearInv:GetItems()) do
-				if (item:GetData("equipSlot") == slotPanel.slotID) then
-					equippedItem = item
-					break
-				end
-			end
-		end
-
-		slotPanel:SetEquippedItem(equippedItem)
-	end
 end
 
 function PANEL:Paint(w, h)

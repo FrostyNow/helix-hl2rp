@@ -33,10 +33,12 @@ if (SERVER) then
 
 	-- Update when items are equipped/unequipped
 	function PLUGIN:OnItemEquipped(item, client)
+		if (!IsValid(client)) then return end
 		RefreshEquippedItems(client:GetCharacter())
 	end
 
 	function PLUGIN:OnItemUnequipped(item, client)
+		if (!IsValid(client)) then return end
 		RefreshEquippedItems(client:GetCharacter())
 	end
 
