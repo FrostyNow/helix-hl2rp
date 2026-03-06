@@ -17,12 +17,13 @@ local function RequestEquip(itemID)
 	net.SendToServer()
 end
 
-local function RequestUnequip(itemID, targetInvID, x, y)
+local function RequestUnequip(itemID, targetInvID, x, y, bDropToGround)
 	net.Start("ixGearUnequipReq")
 		net.WriteUInt(itemID, 32)
 		net.WriteUInt(targetInvID or 0, 32)
 		net.WriteInt(x or -1, 16)
 		net.WriteInt(y or -1, 16)
+		net.WriteBool(bDropToGround or false)
 	net.SendToServer()
 end
 
@@ -73,6 +74,10 @@ function PANEL:Init()
 					surface.DrawRect(0, 32, w, h - 32)
 				end
 			end
+		end
+
+		if (self.bShowEmptyMessage) then
+			draw.DrawText(L"gearTooltip", "ixMediumFont", w / 2, h / 2, Color(150, 150, 150, 150), TEXT_ALIGN_CENTER)
 		end
 	end
 
@@ -146,9 +151,9 @@ function PANEL:Init()
 	self.invCanvas = self.invScroll:Add("DTileLayout")
 	self.invCanvas:Dock(TOP)
 	self.invCanvas:SetBorder(0)
-	self.invCanvas:SetSpaceX(2)
-	self.invCanvas:SetSpaceX(2)
-	self.invCanvas:SetSpaceY(2)
+	self.invCanvas:SetBaseSize(1)
+	self.invCanvas:SetSpaceX(4)
+	self.invCanvas:SetSpaceY(4)
 
 	self:LoadInventory()
 	self:RefreshGearInv()
@@ -234,7 +239,13 @@ function PANEL:RefreshGearInv()
 	for _, item in ipairs(equippedItems) do
 		hash = hash .. item.id .. ","
 	end
-	if (self.lastHash == hash) then return end
+
+	self.bShowEmptyMessage = (#equippedItems == 0)
+
+	if (self.lastHash == hash) then
+		self:RefreshBags()
+		return
+	end
 	self.lastHash = hash
 
 	self.gearCanvas:Clear()
@@ -324,7 +335,7 @@ function PANEL:RefreshGearInv()
 						RequestUnequip(item.id)
 					end
 				else
-					RequestUnequip(item.id)
+					RequestUnequip(item.id, nil, nil, nil, true)
 				end
 
 				proxyPnl:Remove()
@@ -392,12 +403,27 @@ function PANEL:RefreshGearInv()
 					if (v.OnCanRun and v.OnCanRun(item) == false) then continue end
 
 					menu:AddOption(L(v.name or k), function()
-						net.Start("ixInventoryAction")
-							net.WriteString(k)
-							net.WriteUInt(item.id, 32)
-							net.WriteUInt(item.invID, 32)
-							net.WriteTable({})
-						net.SendToServer()
+						item.player = LocalPlayer()
+						local bSend = true
+
+						if (v.OnClick) then
+							bSend = v.OnClick(item)
+						end
+
+						if (v.sound) then
+							surface.PlaySound(v.sound)
+						end
+
+						if (bSend != false) then
+							net.Start("ixInventoryAction")
+								net.WriteString(k)
+								net.WriteUInt(item.id, 32)
+								net.WriteUInt(item.invID, 32)
+								net.WriteTable({})
+							net.SendToServer()
+						end
+
+						item.player = nil
 					end):SetImage(v.icon or "icon16/brick.png")
 				end
 			end
@@ -432,8 +458,87 @@ function PANEL:RefreshGearInv()
 				
 				RequestUnequip(item.id, inv:GetID(), dropX, dropY)
 			else
-				RequestUnequip(item.id)
+				RequestUnequip(item.id, nil, nil, nil, true)
 			end
+		end
+	end
+
+	self:RefreshBags()
+end
+
+function PANEL:RefreshBags()
+	if (!ix.option.Get("openBags", true)) then return end
+
+	local character = LocalPlayer():GetCharacter()
+	if (!character) then return end
+
+	local inventory = character:GetInventory()
+	if (!inventory) then return end
+
+	local gearInvID = PLUGIN.gearInvID
+	local gearInv = gearInvID and gearInvID > 0 and ix.item.inventories[gearInvID]
+
+	-- Collect all bag items currently in possession (equipped in gear or in main inventory)
+	local validBags = {}
+	local mainInvID = inventory:GetID()
+
+	if (gearInv) then
+		for _, itm in pairs(gearInv:GetItems()) do
+			if (itm.isBag and itm:GetData("equip") == true) then
+				local bagInvID = itm:GetData("id")
+				-- Verify the item actually thinks it's in the gear inventory
+				if (bagInvID and itm.invID == gearInvID) then 
+					validBags[bagInvID] = itm 
+				end
+			end
+		end
+	end
+
+	for _, itm in pairs(inventory:GetItems()) do
+		if (itm.isBag) then
+			local bagInvID = itm:GetData("id")
+			-- Verify the item actually thinks it's in the main inventory
+			if (bagInvID and itm.invID == mainInvID) then 
+				validBags[bagInvID] = itm 
+			end
+		end
+	end
+
+	-- Build hash to detect changes
+	local bagHash = ""
+	for id, _ in SortedPairs(validBags) do
+		bagHash = bagHash .. id .. ","
+	end
+
+	-- Clean up panels for bags no longer in possession
+	for _, child in ipairs(self.invCanvas:GetChildren()) do
+		if (child == ix.gui.inv1) then continue end
+		if (child.invID) then
+			local id = child.invID
+			if (!validBags[id]) then
+				child:Remove()
+				ix.gui["inv" .. id] = nil
+			end
+		end
+	end
+
+	-- Open missing panels for valid bags (always check, regardless of hash)
+	local bOpened = false
+	for bagInvID, itm in pairs(validBags) do
+		if (!IsValid(ix.gui["inv" .. bagInvID])) then
+			local viewFunc = itm.functions and itm.functions.View
+			if (viewFunc and viewFunc.OnClick) then
+				viewFunc.OnClick(itm)
+				bOpened = true
+			end
+		end
+	end
+
+	if (bOpened or self.lastBagHash != bagHash) then
+		self.lastBagHash = bagHash
+
+		if (IsValid(self.invCanvas)) then
+			self.invCanvas:Layout()
 		end
 	end
 end
@@ -459,34 +564,19 @@ function PANEL:LoadInventory()
 	-- Ensure Helix knows where to open bag panels.
 	ix.gui.menuInventoryContainer = self.invCanvas
 
+	-- Open main inventory bags natively
 	if (ix.option.Get("openBags", true)) then
-		for _, k in pairs(ix.item.instances) do
-			if (!k.isBag or k:GetData("equip") != true) then continue end
-			
+		for k, _ in inventory:Iter() do
+			if (!k.isBag) then continue end
+
 			local viewFunc = k.functions.View
 			if (viewFunc and viewFunc.OnClick) then
-				local ret = viewFunc.OnClick(k)
-				if (ret == false) then -- Failed to open natively because it's in gear inv
-					local bagInvID = k:GetData("id")
-					if (bagInvID) then
-						local bagInv = ix.item.inventories[bagInvID]
-						if (bagInv) then
-							local bagPanel = vgui.Create("ixInventory")
-							bagPanel:ShowCloseButton(true)
-							bagPanel:SetTitle(k:GetName())
-							bagPanel:SetInventory(bagInv)
-							if (IsValid(ix.gui.inv1)) then
-								bagPanel:MoveRightOf(ix.gui.inv1, 4)
-							end
-							bagPanel:MakePopup()
-							ix.gui["inv" .. bagInvID] = bagPanel
-						end
-					end
-				end
+				viewFunc.OnClick(k)
 			end
 		end
 	end
 
+	-- Equipped bags are handled by RefreshBags via RefreshGearInv
 	self.invCanvas:Layout()
 end
 
@@ -499,6 +589,14 @@ function PANEL:OnRemove()
 	if (IsValid(ix.gui.inv1) and ix.gui.inv1:GetParent() == self.invCanvas) then
 		ix.gui.inv1:Remove()
 	end
+
+	if (IsValid(self.invCanvas)) then
+		for _, child in ipairs(self.invCanvas:GetChildren()) do
+			if (IsValid(child)) then
+				child:Remove()
+			end
+		end
+	end
 end
 
 vgui.Register("ixGearMenu", PANEL, "DFrame")
@@ -507,6 +605,8 @@ vgui.Register("ixGearMenu", PANEL, "DFrame")
 -- Tab Menu Integration
 -- ============================================================
 hook.Add("CreateMenuButtons", "ixGearMenu", function(tabs)
+	tabs["inv"] = nil -- hide default inventory tab
+
 	tabs["gear"] = {
 		Create = function(info, container)
 			local gearMenu = container:Add("ixGearMenu")

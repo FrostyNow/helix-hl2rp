@@ -10,11 +10,13 @@ PLUGIN.GearInvHeight = 50
 
 ix.lang.AddTable("english", {
 	["gear"] = "Inventory",
+	gearTooltip = "Drag and drop\nto equip or unequip.",
 })
 ix.lang.AddTable("korean", {
 	["gear"] = "소지품 및 장비",
 	["Inventory"] = "소지품",
 	["Equipment"] = "장비",
+	gearTooltip = "장비를 드래그 드랍하여\n장착하거나 해제하실 수 있습니다.",
 })
 
 ix.inventory.Register("ixGearInv", PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, true)
