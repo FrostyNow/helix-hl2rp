@@ -41,7 +41,7 @@ function PANEL:AddLine(text, color, expireTime, ...)
 	self.lines[index] = {
 		text = "<:: " .. text,
 		color = color or color_white,
-		expireTime = (expireTime != 0 and (CurTime() + (expireTime or 8)) or 0),
+		expireTime = (expireTime != 0 and (CurTime() + (expireTime or 10)) or 0),
 		character = 1
 	}
 

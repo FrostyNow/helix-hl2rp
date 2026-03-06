@@ -214,7 +214,7 @@ hook.Add("Think", "AmbientMessages", function()
 			lastmessage = message
 		end
 
-		nextmessage = CurTime() + math.random(3, 4) -- this is the timer for when these show, increase numbers for longer times between messages
+		nextmessage = CurTime() + math.random(5, 10) -- this is the timer for when these show, increase numbers for longer times between messages
 	end
 end)
 
