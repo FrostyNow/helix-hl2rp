@@ -404,3 +404,31 @@ ix.command.Add("Heal", {
 		end
 	end
 })
+
+ix.command.Add("ItemRemove", {
+	description = "@cmdItemRemove",
+	adminOnly = true,
+	arguments = {
+		bit.bor(ix.type.number, ix.type.optional)
+	},
+	OnRun = function(self, client, range)
+		range = range or 128
+
+		local trace = client:GetEyeTraceNoCursor()
+		local pos = trace.HitPos
+		local count = 0
+
+		for _, v in ipairs(ents.FindInSphere(pos, range)) do
+			if (v:GetClass() == "ix_item") then
+				v:Remove()
+				count = count + 1
+			end
+		end
+
+		if (count > 0) then
+			client:NotifyLocalized("itemsRemoved", count)
+		else
+			client:NotifyLocalized("noItemsInRange")
+		end
+	end
+})
