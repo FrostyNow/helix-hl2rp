@@ -21,6 +21,7 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("handheld_radio", 1)
 	inventory:Add("grenade", 1)
 	inventory:Add("health_vial", 2)
+	inventory:Add("ota_supplements", 2)
 end
 
 function FACTION:GetDefaultName(client)

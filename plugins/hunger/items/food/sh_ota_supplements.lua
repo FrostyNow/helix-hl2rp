@@ -1,0 +1,26 @@
+
+ITEM.name = "OTA Supplements"
+ITEM.model = Model("models/probs_misc/tobbcco_box-1.mdl")
+ITEM.description = "otaSupplementsDesc"
+ITEM.category = "Utility"
+ITEM.factions = {FACTION_OTA}
+ITEM.hunger = 100
+ITEM.thirst = 100
+ITEM.price = 50
+ITEM.heal = 0
+ITEM.usenum = 2
+ITEM.sound = "items/suitchargeok1.wav"
+
+ITEM.functions.Eat.OnCanRun = function(item)
+	return item.player:Team() == FACTION_OTA
+end
+
+if (CLIENT) then
+	function ITEM:PopulateTooltip(tooltip)
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
+		data:SetText(L("securitizedItemTooltip"))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+end

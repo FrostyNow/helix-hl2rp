@@ -77,7 +77,13 @@ if SERVER then
 
 	function PLUGIN:PlayerSpawn(client)
 		local char = client:GetCharacter()
-		local enabled = client:GetCharacter() and client:Team() != FACTION_OTA and !Schema:IsCombineRank(client:Name(), "SCN")
+		local enabled = client:GetCharacter()
+		
+		if (ix.plugin.list["scanner"]) then
+			if client.ixScn then enabled = nil end
+		elseif (enabled and !Schema:IsCombineRank(client:Name(), "SCN")) then
+			enabled = nil
+		end
 		
 		if (client.resetHunger) then
 			char:SetData("hunger", 100)
