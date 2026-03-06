@@ -6,6 +6,7 @@ ITEM.price = 100
 
 ITEM.functions.Use = {
 	name = "Read",
+	icon = "icon16/book_open.png",
 	OnRun = function(item)
 		local client = item.player
 		local int = client:GetCharacter():GetAttribute("int", 0)

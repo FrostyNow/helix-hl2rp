@@ -8,6 +8,7 @@ ITEM.category = "Utility"
 ITEM.classes = {CLASS_MPU, CLASS_EMP, CLASS_OWS, CLASS_EOW}
 
 ITEM.functions.Use = {
+	icon = "icon16/asterisk_orange.png",
 	OnRun = function(item)
 		local client = item.player
 

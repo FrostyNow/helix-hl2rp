@@ -7,6 +7,7 @@ ITEM.isjunk = true
 
 ITEM.functions.Use = {
 	name = "Break",
+	icon = "icon16/arrow_inout.png",
 	OnRun = function(item)
 		local client = item.player
 		local character = client:GetCharacter()
