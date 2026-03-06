@@ -83,7 +83,7 @@ function ENT:Draw()
 		
 	if ( LocalPlayer():GetPos():Distance( self:GetPos() ) > 1000 ) then return end
 		
-	local area = LocalPlayer():GetArea()
+	local area = LocalPlayer():GetAreaName()
 
 	if ( !area or area == "" ) then
 		area = L("terminalUnknownLocation")

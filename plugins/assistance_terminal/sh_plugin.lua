@@ -19,7 +19,9 @@ ix.lang.AddTable("english", {
     terminalUnidentified = "Unidentified",
     terminalRemainInPlace = "REMAIN IN PLACE",
     terminalPressTo = "PRESS TO",
-    terminalRequestAssistance = "REQUEST ASSISTANCE"
+    terminalRequestAssistance = "REQUEST ASSISTANCE",
+    terminalRequesting = "Requesting Assistance...",
+    terminalCooldown = "This terminal is recharging. Please try again in %s seconds."
 })
 
 ix.lang.AddTable("korean", {
@@ -34,5 +36,17 @@ ix.lang.AddTable("korean", {
     terminalUnidentified = "신원 미상",
     terminalRemainInPlace = "제자리에 대기하라",
     terminalPressTo = "버튼을 눌러",
-    terminalRequestAssistance = "지원 요청"
+    terminalRequestAssistance = "지원 요청",
+    terminalRequesting = "지원 요청 중...",
+    terminalCooldown = "터미널이 재충전 중입니다. %s초 후에 다시 시도하세요."
+})
+
+ix.config.Add("assistanceTerminalCooldown", 60, "The cooldown for each assistance terminal use (in seconds).", nil, {
+    data = {min = 0, max = 3600},
+    category = "Assistance Terminal"
+})
+
+ix.config.Add("assistanceTerminalActionTime", 5, "The time it takes to use an assistance terminal (in seconds).", nil, {
+    data = {min = 0, max = 60},
+    category = "Assistance Terminal"
 })
