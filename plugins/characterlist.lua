@@ -576,7 +576,7 @@ if (CLIENT) then
 
             -- Delete button
             local deleteBtn = row:Add("DButton")
-            deleteBtn:SetText("X")
+            deleteBtn:SetText("×")
             deleteBtn:SetTextColor(Color(255, 100, 100))
             deleteBtn:SetFont("ixSmallFont")
             deleteBtn.xFrac = x

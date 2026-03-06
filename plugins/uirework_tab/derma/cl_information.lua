@@ -402,8 +402,13 @@ function PANEL:Update(character)
 	if (self.name) then
 		self.name:SetText(character:GetName())
 
+		self.name.backgroundColor = ix.config.Get("color")
 		if (faction) then
-			self.name.backgroundColor = ColorAlpha(faction.color, 150) or Color(0, 0, 0, 150)
+			if class and class.color then
+				self.name.backgroundColor = ColorAlpha(class.color, 150)
+			else
+				self.name.backgroundColor = ColorAlpha(faction.color, 150)
+			end
 		end
 
 		self.name:SizeToContents()

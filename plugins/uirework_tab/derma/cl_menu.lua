@@ -40,7 +40,7 @@ function PANEL:Init()
 	self.buttons:SetPaintedManually(true)
 
 	local close = self.buttons:Add("ixMenuButton")
-	close:SetText("X")
+	close:SetText("×")
 	close:SetTextInset(0, 0)
 	close:SetContentAlignment(5)
 	close:SizeToContents()

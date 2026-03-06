@@ -282,7 +282,7 @@ if (CLIENT) then
 		self.closeButton:Dock(RIGHT)
 		self.closeButton:DockMargin(0, 10, 10, 10)
 		self.closeButton:SetWide(34)
-		self.closeButton:SetText("X")
+		self.closeButton:SetText("×")
 		self.closeButton:SetFont("ixMediumFont")
 		self.closeButton.DoClick = function()
 			self:Remove()
