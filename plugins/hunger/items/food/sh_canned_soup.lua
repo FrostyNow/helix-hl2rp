@@ -1,5 +1,5 @@
 ITEM.name = "Canned Soup"
-ITEM.model = "models/bioschockinfinite/canned_soup.mdl"
+ITEM.model = "models/bioshockinfinite/canned_soup.mdl"
 ITEM.description = "itemCannedDesc"
 ITEM.hunger = 40
 ITEM.thirst = 10

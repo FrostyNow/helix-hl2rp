@@ -6,5 +6,4 @@ ITEM.thirst = 25
 ITEM.price = 3
 ITEM.empty = "water_sparkling_empty"
 ITEM.heal = 10
-ITEM.cookable = true
 ITEM.sound = "interface/inv_drink_can2.ogg"

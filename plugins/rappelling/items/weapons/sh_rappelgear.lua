@@ -1,5 +1,5 @@
 ITEM.name = "Rappelling Gear"
-ITEM.description = "A hook used to rappel down buildings."
+ITEM.description = "itemRappellingGearDesc"
 ITEM.category = "Utility"
 ITEM.model = "models/gibs/metal_gib4.mdl"
 ITEM.class = "rappel_gear"

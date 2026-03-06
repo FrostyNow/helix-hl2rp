@@ -15,6 +15,14 @@ ix.util.Include("sv_plugin.lua")
 ix.util.Include("sh_hooks.lua")
 ix.util.Include("sv_hooks.lua")
 
+ix.lang.AddTable("english", {
+	itemRappellingGearDesc = "A hook used to rappel down buildings.",
+})
+ix.lang.AddTable("korean", {
+	["Rappelling Gear"] = "강하 장비",
+	itemRappellingGearDesc = "건물에서 강하해서 내려올 수 있는 고리입니다.",
+})
+
 function PLUGIN:StartRappel(client)
 	client.rappelling = true
 	client.rappelPos = client:GetPos()

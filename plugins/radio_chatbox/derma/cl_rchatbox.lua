@@ -98,26 +98,20 @@ function PANEL:AddLine(elements, bShouldScroll)
 	end
 
 	if (CHAT_CLASS) then
+		local font = CHAT_CLASS.font or "ixChatFont"
+
+		if (ix.config.Get("radioYellBig", true) and CHAT_CLASS.uniqueID == "radio_yell") then
+			font = "ixRadioFont"
+		elseif (ix.config.Get("radioWhisperSmall", true) and CHAT_CLASS.uniqueID == "radio_whisper") then
+			font = "ixRadioWhisperFont"
+		end
+
 		buffer[#buffer + 1] = "<font="
-		buffer[#buffer + 1] = CHAT_CLASS.font or "ixChatFont"
+		buffer[#buffer + 1] = font
 		buffer[#buffer + 1] = ">"
 	end
 	
-	local lastElement = elements[#elements]
-	if (isstring(lastElement)) then
-		local firstQuote = lastElement:find('"')
-		
-		if (firstQuote) then
-			local prefix = lastElement:sub(1, firstQuote - 1)
-			local message = lastElement:sub(firstQuote)
-			
-			if (prefix != "") then
-				elements[#elements] = prefix
-				elements[#elements + 1] = elements[#elements - 1] -- Copy previous color
-				elements[#elements + 1] = message
-			end
-		end
-	end
+
 
 	--local ct = 0
 	for _, v in ipairs(elements) do
@@ -146,12 +140,7 @@ function PANEL:AddLine(elements, bShouldScroll)
 		end
 	end
 	
-	if (ix.config.Get("radioYellBig", true) and (CHAT_CLASS.uniqueID == "radio_yell")) then
-		buffer[#buffer] = "<font=ixRadioFont>" .. buffer[#buffer] .. "</font>"
-	end
-	if (ix.config.Get("radioWhisperSmall", true) and (CHAT_CLASS.uniqueID == "radio_whisper")) then
-		buffer[#buffer] = "<font=ixRadioWhisperFont>" .. buffer[#buffer] .. "</font>"
-	end
+
 
 	local panel = self:Add("ixChatMessage")
 	panel:Dock(TOP)

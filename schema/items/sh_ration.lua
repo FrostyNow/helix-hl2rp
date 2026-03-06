@@ -6,6 +6,7 @@ ITEM.items = {"supplements", "crackers", "water"}
 ITEM.price = 100
 
 ITEM.functions.Open = {
+	icon = "icon16/email_open.png",
 	OnRun = function(itemTable)
 		local client = itemTable.player
 		local character = client:GetCharacter()

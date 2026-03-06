@@ -69,6 +69,7 @@ LANGUAGE = {
 	cmdCharSetNameTitle = "캐릭터 이름 설정",
 	cmdHeal = "대상 플레이어를 최대 체력으로 회복시킵니다.",
 	cmdItemRemove = "주변의 드랍된 아이템들을 제거합니다.",
+	cmdServerCfg = "서버의 이름과 비밀번호를 설정합니다.",
 
 	scoreboardRecognitionMenu = "인식",
 	scoreboardRecognitionSelf = "대상을 나에게 인식",
@@ -93,12 +94,14 @@ LANGUAGE = {
 	targetHealed = "%s님을 회복시켰습니다.",
 	itemsRemoved = "%d개의 아이템을 제거했습니다.",
 	noItemsInRange = "범위 내에 제거할 아이템이 없습니다.",
+	serverCfgChanged = "서버 설정이 성공적으로 변경되었습니다.",
+	tooFar = "대상으로부터 너무 멀리 떨어졌습니다!",
 	
 	["Intelligence"] = "지능",
 	["Endurance"] = "지구력",
 	["Strength"] = "근력",
 	["Dexterity"] = "민첩성",
-	["Stamina"] = "체력",
+	["Stamina"] = "행동력",
 	["Agility"] = "민첩성",
 	["Luck"] = "행운",
 	["Faction"] = "세력",

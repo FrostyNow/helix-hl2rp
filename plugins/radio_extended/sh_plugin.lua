@@ -1092,9 +1092,12 @@ function PLUGIN:OverwriteClasses()
 			local garbleOffset = ix.config.Get("garbleOffset",0)
 			local frac = math.min(math.max(0, frac+garbleOffset), 100)
 
-			local lastChar = text:sub(-1)
-			if (lastChar != "." and lastChar != "!" and lastChar != "?") then
-				text = text .. "."
+			if (ix.config.Get("chatAutoFormat", true)) then
+				local lastChar = text:sub(-1)
+
+				if (lastChar != "." and lastChar != "!" and lastChar != "?") then
+					text = text .. "."
+				end
 			end
 
 			if (ix.config.Get("garbleRadio",true)) then text = mangleString(text, frac) else text = text end -- Garbling happens here
@@ -1328,6 +1331,14 @@ function PLUGIN:OverwriteClasses()
 		function CLASS:OnChatAdd(speaker, text, bAnonymous, data)
 			-- text = string.format("<:: %s ::>", text)
 			local dist = LocalPlayer():GetPos():Distance(speaker:GetPos())
+
+			if (ix.config.Get("chatAutoFormat", true)) then
+				local lastChar = text:sub(-1)
+
+				if (lastChar != "." and lastChar != "!" and lastChar != "?") then
+					text = text .. "."
+				end
+			end
 
 			-- Sending sound handling
 			if !data.quiet then

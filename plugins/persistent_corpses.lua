@@ -71,7 +71,6 @@ do
 		lowMedicalSkill = "You don't have enough medical skill to use this.",
 		searchingCorpse = "Searching...",
 		revivingCorpse = "Reviving...",
-		tooFar = "You are too far from the corpse.",
 	})
 
 	ix.lang.AddTable("korean", {
@@ -85,7 +84,6 @@ do
 		lowMedicalSkill = "이 도구를 사용하기 위한 의료 기술이 부족합니다.",
 		searchingCorpse = "수색 중...",
 		revivingCorpse = "소생 중...",
-		tooFar = "시체에서 너무 멉니다.",
 	})
 end
 

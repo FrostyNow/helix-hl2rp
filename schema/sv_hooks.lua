@@ -73,6 +73,8 @@ function Schema:PostPlayerLoadout(client)
 	local char = client:GetCharacter()
 
 	if (client:IsCombine()) then
+		local runSpeed = ix.config.Get("runSpeed")
+
 		if (client:Team() == FACTION_OTA) then
 			client:SetMaxHealth(50)
 			client:SetMaxArmor(255)
@@ -87,22 +89,11 @@ function Schema:PostPlayerLoadout(client)
 			client:SetHealth(40)
 			client:SetMaxArmor(100)
 			client:SetArmor(self:IsCombineRank(client:Name(), "RCT") and 50 or 100)
-		-- elseif (client:IsScanner()) then
-		-- 	client:SetMaxHealth(30)
-		-- 	client:SetHealth(30)
-		-- 	client:SetMaxArmor(200)
-		-- 	client:SetArmor(200)
-		-- 	client:GetCharacter():SetAttrib("str", 0)
-		-- 	client:GetCharacter():SetAttrib("end", 0)
-		-- 	client:GetCharacter():SetAttrib("stm", 0)
-		-- 	client:GetCharacter():SetAttrib("int", 0)
-
-		-- 	client.ixScanner:SetHealth(client:Health())
-		-- 	client.ixScanner:SetMaxHealth(client:GetMaxHealth())
-		-- 	client:StripWeapons()
 		else
 			client:SetArmor(100)
 		end
+
+		client:SetRunSpeed(runSpeed * 1.1)
 
 		local factionTable = ix.faction.Get(client:Team())
 

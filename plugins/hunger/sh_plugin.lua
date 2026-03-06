@@ -12,7 +12,7 @@ local entityMeta = FindMetaTable("Entity")
 
 function entityMeta:IsStove()
 	local class = self:GetClass()
-	return ( class == "ix_stove" or class == "ix_bucket" or class == "ix_barrel" )
+	return ( class == "ix_stove" or class == "ix_bucket" or class == "ix_bonfire" )
 end
 
 local playerMeta = FindMetaTable("Player")
@@ -259,7 +259,7 @@ if SERVER then
 
 		for _, v in ipairs(ents.GetAll()) do
 			local class = v:GetClass()
-			if (class == "ix_stove" or class == "ix_barrel" or class == "ix_bucket") then
+			if (class == "ix_stove" or class == "ix_bonfire" or class == "ix_bucket") then
 				data[#data + 1] = {
 					class = class,
 					pos = v:GetPos(),

@@ -41,6 +41,8 @@ ix.lang.AddTable("english", {
 	hintJunks = "You can find useful items in the junks.",
 	hintRecycle = "You can recycle items to get some money.",
 	hintLaundry = "You can wash clothes to get some money.",
+	hintJunksWarn = "Rummaging through junks may get you classified as a suspicious person.",
+	hintItemClass = "You may be punished for possessing unauthorized or sociocidal items.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -73,6 +75,8 @@ ix.lang.AddTable("korean", {
 	hintJunks = "쓰레기 더미에서 유용한 아이템을 찾을 수 있습니다.",
 	hintRecycle = "쓰레기를 재활용하여 돈을 벌 수 있습니다.",
 	hintLaundry = "옷을 세탁하여 돈을 벌 수 있습니다.",
+	hintJunksWarn = "쓰레기를 뒤지고 다니면 거동 수상자로 분류될 것입니다.",
+	hintItemClass = "인가되지 않은 물품과 반사회 물품을 소지한 경우 처벌받을 것입니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -122,6 +126,8 @@ ix.hints.Register("hintCommand")
 ix.hints.Register("hintJunks")
 ix.hints.Register("hintRecycle")
 ix.hints.Register("hintLaundry")
+ix.hints.Register("hintJunksWarn")
+ix.hints.Register("hintItemClass")
 
 ix.command.Add("Hint", {
 	description = "@cmdHintDesc",

@@ -554,7 +554,7 @@ if (CLIENT) then
 		end
 
 		if (mode == MODE_RADIO) then
-			local canUseRadio = self:CanUseRadio()
+			local canUseRadio = self:CanSendRadio()
 
 			if (!canUseRadio) then
 				LocalPlayer():Notify(TL("voiceMenuRadioUnavailable", "Cannot send by radio right now."))

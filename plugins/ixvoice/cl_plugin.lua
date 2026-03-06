@@ -1,5 +1,5 @@
-local RADIO_NOISE_DISTANCE = 1200
-local RADIO_NOISE_DISTANCE_SQR = RADIO_NOISE_DISTANCE * RADIO_NOISE_DISTANCE
+local RADIO_NOISE_DISTANCE = PLUGIN.radioNoiseDistance
+local RADIO_NOISE_DISTANCE_SQR = PLUGIN.radioNoiseDistanceSqr
 local FORCE_RADIO_NOISE_TEST = false
 local RADIO_FILTER_DSP = 31
 local RADIO_FILTER_MIN_PITCH = 95
@@ -81,7 +81,7 @@ netstream.Hook("voicePlay", function(sounds, volume, index, isRadioTransmission,
 			) and loweredClass != "overwatch"
 
 			if (shouldUseRadioFilter) then
-				playRadioFilteredVoice(client, sounds, volume)
+				playRadioFilteredVoice(client, sounds, volume * 0.5)
 			else
 				playVoiceSequence(client, sounds, volume)
 			end

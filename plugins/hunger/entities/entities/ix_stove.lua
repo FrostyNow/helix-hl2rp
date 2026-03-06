@@ -12,8 +12,7 @@ if (SERVER) then
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetNetVar("active", false)
 		self:SetUseType(SIMPLE_USE)
-		self.loopsound = CreateSound(self, "ambient/fire/fire_small_loop1.wav")
-		self.loopsound:SetSoundLevel(60)
+
 		local physicsObject = self:GetPhysicsObject()
 
 		if (IsValid(physicsObject)) then
@@ -22,9 +21,6 @@ if (SERVER) then
 	end
 
 	function ENT:OnRemove()
-		if (self.loopsound) then
-			self.loopsound:Stop()
-		end
 	end
 
 	function ENT:Use(activator)
@@ -33,16 +29,40 @@ if (SERVER) then
 
 		if bActive then
 			self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 100, 0.8)
-			self.loopsound:PlayEx(0.8, 100)
 		else
 			self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 250, 0.8)
-			self.loopsound:Stop()
 		end
 	end
 else
 	function ENT:Initialize()
 		self.emitter = ParticleEmitter(self:GetPos())
 		self.emittime = CurTime()
+	end
+
+	function ENT:Think()
+		if self:GetNetVar("active") then
+			if (!self.loopsound) then
+				self.loopsound = CreateSound(self, "ambient/fire/fire_small_loop1.wav")
+				self.loopsound:SetSoundLevel(60)
+				self.loopsound:PlayEx(0.8, 100)
+			elseif (!self.loopsound:IsPlaying()) then
+				self.loopsound:PlayEx(0.8, 100)
+			end
+		elseif (self.loopsound) then
+			self.loopsound:Stop()
+			self.loopsound = nil
+		end
+	end
+
+	function ENT:OnRemove()
+		if (self.loopsound) then
+			self.loopsound:Stop()
+			self.loopsound = nil
+		end
+
+		if (self.emitter) then
+			self.emitter:Finish()
+		end
 	end
 	
 	local GLOW_MATERIAL = Material("sprites/glow04_noz.vmt")

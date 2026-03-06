@@ -67,6 +67,7 @@ LANGUAGE = {
 	cmdCharSetNameTitle = "Set Character Name",
 	cmdHeal = "Heals target player to his/her max health.",
 	cmdItemRemove = "Removes nearby dropped items.",
+	cmdServerCfg = "Sets the server hostname and password.",
 
 	scoreboardRecognitionMenu = "Recognition",
 	scoreboardRecognitionSelf = "Recognize Target (Me)",
@@ -91,6 +92,8 @@ LANGUAGE = {
 	targetHealed = "You healed %s.",
 	itemsRemoved = "Removed %d items.",
 	noItemsInRange = "No items in range to remove.",
+	serverCfgChanged = "Server configuration has been updated successfully.",
+	tooFar = "You are too far from target!",
 
 	pistolDesc = "A semi-automatic pistol utilising 9mm ammunition.",
 	smg1Desc = "A compact, fully automatic sub-machine gun.",

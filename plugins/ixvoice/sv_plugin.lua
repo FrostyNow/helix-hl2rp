@@ -78,19 +78,41 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 					or chatType == "broadcast"
 				local isRadioTransmission = mode == MODE_RADIO
 				local voiceClassName = string.lower(definition or "")
+				local isEavesdrop = string.find(chatType, "eavesdrop")
 
 				if (isGlobalVoice) then
 					netstream.Start(nil, "voicePlay", sounds, volume, nil, isRadioTransmission, voiceClassName)
 				else
-					netstream.Start(nil, "voicePlay", sounds, volume, speaker:EntIndex(), isRadioTransmission, voiceClassName)
+					local threshold = PLUGIN.radioNoiseDistanceSqr
+
+					if (!isEavesdrop) then
+						netstream.Start(nil, "voicePlay", sounds, volume, speaker:EntIndex(), isRadioTransmission, voiceClassName)
+					end
 	
-					if ((chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper" or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell" or chatType == "radio_eavesdrop_whisper" or chatType == "request" or chatType == "request_eavesdrop") and receivers) then
+					if (isRadioTransmission and receivers) then
+						local playedPositions = {speaker:GetPos()}
+
 						for k, v in pairs(receivers) do
 							if (v == speaker) then
 								continue
 							end
-	
-							netstream.Start(nil, "voicePlay", sounds, volume * 0.9, v:EntIndex(), isRadioTransmission, voiceClassName)
+
+							local pos = v:GetPos()
+							local alreadyAudible = false
+
+							for _, p in ipairs(playedPositions) do
+								if (pos:DistToSqr(p) <= threshold) then
+									alreadyAudible = true
+									break
+								end
+							end
+
+							if (alreadyAudible) then
+								continue
+							end
+
+							playedPositions[#playedPositions + 1] = pos
+							netstream.Start(nil, "voicePlay", sounds, volume * 0.45, v:EntIndex(), isRadioTransmission, voiceClassName)
 						end
 					end
 						
@@ -113,7 +135,11 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 			end
 		end
 
-		if (Schema:CanPlayerSeeCombineOverlay(speaker)) then
+		if (Schema:CanPlayerSeeCombineOverlay(speaker) or chatType == "dispatch") then
+			if (sounds) then
+				return text
+			end
+
 			return string.format("<:: %s ::>", text)
 		end
 	end

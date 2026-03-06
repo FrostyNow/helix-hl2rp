@@ -432,3 +432,25 @@ ix.command.Add("ItemRemove", {
 		end
 	end
 })
+
+ix.command.Add("ServerCfg", {
+	alias = {"ServerCfg", "Cfg", "Hostname", "Password", "Pw"},
+	description = "@cmdServerCfg",
+	superAdminOnly = true,
+	arguments = {
+		ix.type.string,
+		bit.bor(ix.type.text, ix.type.optional)
+	},
+	syntax = "<string hostname> [string password]",
+	OnRun = function(self, client, hostname, password)
+		if (hostname and hostname != "") then
+			RunConsoleCommand("hostname", hostname)
+		end
+
+		if (password) then
+			RunConsoleCommand("sv_password", password)
+		end
+
+		return "@serverCfgChanged"
+	end
+})

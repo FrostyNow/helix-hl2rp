@@ -42,7 +42,8 @@ function PANEL:Init()
 	self:SetSizable(false)
 
 	local scrW, scrH = ScrW(), ScrH()
-	local panelW = math.min(scrW * 0.8, 900)
+	local modelPanelWidth = scrW * 0.2
+	local panelW = math.min(scrW * 0.8, 900) + modelPanelWidth
 	local panelH = math.min(scrH * 0.75, 650)
 
 	self:SetSize(panelW, panelH)
@@ -50,7 +51,7 @@ function PANEL:Init()
 
 	self.bNoBackgroundBlur = false
 
-	local equipWidth = panelW * 0.4
+	local equipWidth = (panelW - modelPanelWidth) * 0.4
 
 	-- Left: Equipment
 	self.equipPanel = self:Add("DPanel")
@@ -122,10 +123,10 @@ function PANEL:Init()
 	self.gearScroll:Receiver("ixInventoryItem", DropHandler)
 	self.gearCanvas:Receiver("ixInventoryItem", DropHandler)
 
-	-- Right: Inventory
+	-- Middle: Inventory
 	self.invContainer = self:Add("DPanel")
 	self.invContainer:Dock(FILL)
-	self.invContainer:DockMargin(2, 4, 4, 4)
+	self.invContainer:DockMargin(2, 4, 2, 4)
 	self.invContainer.Paint = function(_, w, h)
 		draw.RoundedBox(4, 0, 0, w, h, Color(20, 20, 20, 220))
 	end
@@ -155,6 +156,122 @@ function PANEL:Init()
 	self.invCanvas:SetSpaceX(4)
 	self.invCanvas:SetSpaceY(4)
 
+	-- Right: Character Model Preview
+	self.modelContainer = self:Add("DPanel")
+	self.modelContainer:SetWide(modelPanelWidth)
+	self.modelContainer:Dock(RIGHT)
+	self.modelContainer:DockMargin(2, 4, 4, 4)
+	self.modelContainer.Paint = function(_, w, h)
+		draw.RoundedBox(4, 0, 0, w, h, Color(20, 20, 20, 220))
+	end
+
+	self.model = self.modelContainer:Add("ixModelPanel")
+	self.model:Dock(FILL)
+	self.model:DockMargin(4, 4, 4, 4)
+	self.model:SetFOV(30)
+	self.model:SetCamPos(Vector(85, 7, 50))
+	self.model:SetLookAt(Vector(0, 0, 38))
+
+	-- Initial setup
+	self.model.currentAngles = Angle(0, -15, 0)
+	self.model.isDragging = false
+	self.model.lastMouseX = 0
+
+	self.model.LayoutEntity = function(this, entity)
+		this:RunAnimation()
+
+		-- Hide early if menu is closing to avoid "delay" feeling
+		if (IsValid(ix.gui.menu) and ix.gui.menu.bClosing) then
+			this:SetAlpha(0)
+			return
+		end
+
+		-- Fix eyes looking weird (set target in front of head)
+		local head = entity:LookupBone("ValveBiped.Bip01_Head1")
+		if (head) then
+			local pos = entity:GetBonePosition(head)
+			entity:SetEyeTarget(pos + entity:GetForward() * 32)
+		end
+
+		-- Apply rotation
+		entity:SetAngles(this.currentAngles)
+
+		Schema:ApplyMaskScale(entity)
+	end
+
+	-- Overwrite Paint to support alpha modulation during menu fade
+	self.model.Paint = function(this, w, h)
+		if (!IsValid(this.Entity)) then return end
+
+		local alpha = this:GetAlpha() / 255
+		if (IsValid(ix.gui.menu)) then
+			alpha = alpha * (ix.gui.menu:GetAlpha() / 255)
+		end
+
+		if (alpha <= 0) then return end
+
+		local x, y = this:LocalToScreen(0, 0)
+
+		-- Use the original DrawModel but with modulation
+		this:LayoutEntity(this.Entity)
+
+		cam.Start3D(this.vCamPos, (this.vLookatPos - this.vCamPos):Angle(), this.fFOV, x, y, w, h)
+			render.SuppressEngineLighting(true)
+			render.SetLightingOrigin(this.Entity:GetPos())
+
+			-- Modulate lighting by alpha
+			local br = 1.5 * alpha
+			local br2 = 0.4 * alpha
+			local br3 = 0.04 * alpha
+
+			render.SetModelLighting(0, br, br, br)
+			for i = 1, 4 do
+				render.SetModelLighting(i, br2, br2, br2)
+			end
+			render.SetModelLighting(5, br3, br3, br3)
+
+			render.SetColorModulation(alpha, alpha, alpha)
+			this.Entity:DrawModel()
+			render.SetColorModulation(1, 1, 1)
+
+			render.SuppressEngineLighting(false)
+		cam.End3D()
+
+		this.LastPaint = RealTime()
+	end
+
+	self.model.OnMousePressed = function(this, code)
+		if (code == MOUSE_LEFT) then
+			this.isDragging = true
+			this.lastMouseX = gui.MouseX()
+			this:SetCursor("sizewe")
+		end
+	end
+
+	self.model.OnMouseReleased = function(this, code)
+		if (code == MOUSE_LEFT) then
+			this.isDragging = false
+			this:SetCursor("none")
+		end
+	end
+
+	self.model.OnCursorMoved = function(this, x, y)
+		if (this.isDragging) then
+			local mouseX = gui.MouseX()
+			local delta = mouseX - this.lastMouseX
+			this.lastMouseX = mouseX
+
+			this.currentAngles.y = (this.currentAngles.y + delta * 0.5) % 360
+		end
+	end
+
+	self.model.OnCursorExited = function(this)
+		this.isDragging = false
+		this:SetCursor("none")
+	end
+
+	self:UpdateModel()
+
 	self:LoadInventory()
 	self:RefreshGearInv()
 
@@ -165,6 +282,89 @@ function PANEL:Think()
 	if (CurTime() > self.nextRefresh) then
 		self.nextRefresh = CurTime() + 0.5
 		self:RefreshGearInv()
+		self:CheckModelUpdate()
+	end
+end
+
+function PANEL:CheckModelUpdate()
+	if (!IsValid(self.model) or !IsValid(self.model.Entity)) then
+		self:UpdateModel()
+		return
+	end
+
+	local client = LocalPlayer()
+	local curModel = self.model.Entity:GetModel():lower():gsub("\\", "/")
+	local clientModel = client:GetModel():lower():gsub("\\", "/")
+
+	if (curModel != clientModel) then
+		self:UpdateModel()
+		return
+	end
+
+	if (self.model.Entity:GetSkin() != client:GetSkin()) then
+		self:UpdateModel()
+		return
+	end
+
+	-- Check bodygroups
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		if (self.model.Entity:GetBodygroup(i) != client:GetBodygroup(i)) then
+			self:UpdateModel()
+			return
+		end
+	end
+end
+
+function PANEL:UpdateModel()
+	if (!IsValid(self.model)) then return end
+
+	local client = LocalPlayer()
+	local character = client.GetCharacter and client:GetCharacter()
+	if (!character) then return end
+
+	local bIsLocal = (character:GetPlayer() == client)
+	local model = (bIsLocal and client:GetModel()) or character:GetModel()
+	local skin = (bIsLocal and client:GetSkin()) or character:GetData("skin", 0)
+	local bModelChanged = false
+
+	if (!IsValid(self.model.Entity) or self.model.Entity:GetModel():lower():gsub("\\", "/") != model:lower():gsub("\\", "/")) then
+		self.model:SetModel(model, skin)
+		bModelChanged = true
+	end
+
+	if (IsValid(self.model.Entity)) then
+		if (self.model.Entity:GetSkin() != skin) then
+			self.model.Entity:SetSkin(skin)
+		end
+
+		local groups = (bIsLocal and {}) or character:GetData("groups", {})
+		if (bIsLocal) then
+			for i = 0, client:GetNumBodyGroups() - 1 do
+				groups[i] = client:GetBodygroup(i)
+			end
+		end
+
+		for k, v in pairs(groups) do
+			self.model.Entity:SetBodygroup(k, v)
+		end
+
+		if (bModelChanged) then
+			local min, max = self.model.Entity:GetRenderBounds()
+			local height = max.z - min.z
+			local width = max.x - min.x
+			local depth = max.y - min.y
+			local size = math.max(height, width, depth)
+
+			local fov = self.model:GetFOV()
+			local distance = (size * 0.3) / math.tan(math.rad(fov * 0.55))
+
+			local center = (min + max) * 0.65
+
+			local verticalAngleOffset = distance * math.tan(math.rad(10))
+
+			self.model:SetCamPos(Vector(distance, 0, center.z + (height * 0.1)))
+			self.model:SetLookAt(Vector(center.x, center.y, self.model.vCamPos.z - verticalAngleOffset))
+		end
 	end
 end
 

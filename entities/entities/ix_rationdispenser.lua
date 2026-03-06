@@ -166,7 +166,10 @@ if (SERVER) then
 				return
 			end
 
-			local cid = client:GetCharacter():GetInventory():HasItem("cid")
+			local char = client:GetCharacter()
+			local inv = char:GetInventory()
+			local cid = inv:HasItem("cid")
+			local token = inv:HasItem("ration_token")
 
 			if (!cid) then
 				self:DisplayError(7)
@@ -180,13 +183,18 @@ if (SERVER) then
 
 			-- check cid ration time and dispense if allowed
 			timer.Simple(math.random(1.8, 2.2), function()
-				if (cid:GetData("nextRationTime", 0) < os.time()) then
+				if (cid:GetData("nextRationTime", 0) < os.time() or token) then
+					
 					self:SetDisplay(8)
 					self:EmitSound("ambient/machines/combine_terminal_idle3.wav")
 
 					timer.Simple(10.2, function()
 						self:StartDispense()
-						cid:SetData("nextRationTime", os.time() + ix.config.Get("rationInterval", 1))
+						if token then
+							token:Remove()
+						else
+							cid:SetData("nextRationTime", os.time() + ix.config.Get("rationInterval", 1))
+						end
 					end)
 				else
 					self:DisplayError(4)

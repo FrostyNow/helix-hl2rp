@@ -77,8 +77,9 @@ ITEM.functions.Eat = {
 
 		if (baseHeal != 0) then
 			-- Luck reflects base scale (increase/decrease)
-			-- Range: -2 (at 0 lck) to +2 (at 100 lck)
-			local luckBonus = math.floor((luck - 50) / 25)
+			-- Range: -2 (at 0 lck) to +2 (at max lck)
+			local maxAttrib = ix.config.Get("maxAttributes", 10)
+			local luckBonus = math.floor((luck - (maxAttrib / 2)) / (maxAttrib / 4))
 			local cookBonus = 0
 
 			-- Cooking quality bonus/penalty
@@ -153,22 +154,30 @@ ITEM.functions.Cook = {
 			if (IsValid(entity) and entity:IsStove()) then
 				if (entity:GetNetVar("active")) then
 					local character = client:GetCharacter()
-					local intelligence = character:GetAttribute("int", 0)
+					local cookingSkill = character:GetAttribute("cooking", 0)
 					local luck = character:GetAttribute("lck", 0)
-					local skill = intelligence + (luck * 0.5) -- Intelligence is core, Luck adds a bonus
-					local max = 150 -- Combined theoretical max (100 + 100*0.5)
-					
-					local qcap = 100 / 10
-					local baseboost = 0.1
-					local chanceboost = 1.5
-					local expboost = 0.1
 
-					local chancedice = math.Clamp(skill * baseboost + math.random(1, 100) * (skill / max * chanceboost), 0, 100)
-					local f_quality = math.Clamp(math.abs(math.floor(chancedice / qcap)), 1, 9)
+					local maxAttrib = ix.config.Get("maxAttributes", 10)
+					-- Cooking skill is the primary factor, luck is secondary
+					-- Weighted: 70% cooking, 30% luck
+					local weightedSkill = (cookingSkill * 0.7 + luck * 0.3) / maxAttrib
+
+					-- Base quality from skill (0-1 skill maps to ~1-8 quality)
+					-- At 0 skill: baseQuality ~ 1, at max skill: baseQuality ~ 8
+					local baseQuality = 1 + weightedSkill * 7
+
+					-- Random variance: ±1.5, scaled down slightly by skill (skilled cooks are more consistent)
+					local consistency = math.Clamp(cookingSkill / maxAttrib, 0, 1) -- 0 to 1
+					local variance = (math.random() * 2 - 1) * (1.5 - consistency * 0.5)
+
+					local f_quality = math.Clamp(math.Round(baseQuality + variance), 1, 9)
+
+					-- Experience: lower quality results give more experience (you learn from mistakes)
+					local expboost = 0.15
 					local exp = (1 - (f_quality / 9)) * expboost
 
 					item:SetData("cooklevel", f_quality)
-					character:UpdateAttrib("int", exp)
+					character:UpdateAttrib("cooking", exp)
 
 					client:EmitSound("player/pl_burnpain" .. math.random(1, 3) .. ".wav", 75, 140)
 					client:NotifyLocalized("notice_cooked", L(item.name, client))

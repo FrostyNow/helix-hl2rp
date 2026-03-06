@@ -90,6 +90,9 @@ LANGUAGE = {
 	itemHeadcrabPlatterDesc = "찐 헤드크랩을 접시에 담아냈습니다.",
 	["Onion"] = "양파",
 	itemOnionDesc = "둥글게 생긴 맵고 자극적인 채소입니다.",
+	["OTA Supplements"] = "감시 부대 영양팩",
+	itemOTASupplementsDesc = "감시 부대원들에게 지급되는 영양팩입니다. 흉부에 위치한 관을 통해 주입합니다.",
+
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",
 	starvingPeriodic = "극심한 굶주림 때문에 기력이 하나도 없습니다.",
@@ -138,6 +141,10 @@ LANGUAGE = {
 	usesLabel = "%s번 먹을 수 있습니다.",
 	statusLabel = "%s",
 	ix_stove = "조리대",
-	ix_barrel = "조리용 드럼통",
+	ix_bonfire = "모닥불",
 	ix_bucket = "조리용 양동이",
+	lighting = "불을 붙이는 중...",
+	extinguishing = "불을 끄는 중...",
+	["Cooking"] = "요리 실력",
+	cooking_desc = "음식을 조리하는 기술입니다. 요리 실력이 높을수록 더 좋은 품질의 요리를 만들어냅니다.",
 }

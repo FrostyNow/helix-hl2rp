@@ -1,5 +1,5 @@
 ENT.Type = "anim"
-ENT.PrintName = "Bucket"
+ENT.PrintName = "Bonfire"
 ENT.Author = "Black Tea"
 ENT.Spawnable = true
 ENT.AdminOnly = true
@@ -8,7 +8,7 @@ ENT.RenderGroup = RENDERGROUP_BOTH
 
 if (SERVER) then
 	function ENT:Initialize()
-		self:SetModel("models/props_junk/MetalBucket01a.mdl")
+		self:SetModel("models/props_unique/firepit_campground.mdl")
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetNetVar("active", false)
@@ -50,20 +50,16 @@ if (SERVER) then
 		if (self:GetNetVar("active", false)) then
 			local pos = self:GetPos()
 
-			for _, v in ipairs(ents.FindInSphere(pos, 40)) do
+			for _, v in ipairs(ents.FindInSphere(pos, 10)) do
 				if (v:IsPlayer() and v:Alive()) then
-					local relPos = self:WorldToLocal(v:GetPos())
+					local dmgInfo = DamageInfo()
+					dmgInfo:SetDamage(5)
+					dmgInfo:SetDamageType(DMG_BURN)
+					dmgInfo:SetAttacker(self)
+					dmgInfo:SetInflictor(self)
+					dmgInfo:SetDamagePosition(pos)
 
-					if (relPos:Length2D() < 12 and relPos.z >= 0 and relPos.z < 40) then
-						local dmgInfo = DamageInfo()
-						dmgInfo:SetDamage(5)
-						dmgInfo:SetDamageType(DMG_BURN)
-						dmgInfo:SetAttacker(self)
-						dmgInfo:SetInflictor(self)
-						dmgInfo:SetDamagePosition(pos)
-
-						v:TakeDamageInfo(dmgInfo)
-					end
+					v:TakeDamageInfo(dmgInfo)
 				end
 			end
 		end
@@ -87,7 +83,7 @@ else
 				self.loopsound:PlayEx(0.8, 100)
 			end
 
-			local firepos = self:GetPos() + self:GetUp() * 5
+			local firepos = self:GetPos() + self:GetUp() * 10
 			local dlight = DynamicLight(self:EntIndex())
 			
 			if (dlight) then
@@ -95,8 +91,8 @@ else
 				dlight.r = 255
 				dlight.g = 100
 				dlight.b = 20
-				dlight.Brightness = 2
-				dlight.Size = 150
+				dlight.Brightness = 3
+				dlight.Size = 256
 				dlight.Decay = 1000
 				dlight.DieTime = CurTime() + 0.1
 			end
@@ -126,15 +122,15 @@ else
 		-- Add particles
 		if self.nextParticle < CurTime() then
 			-- Main Fire
-			for i = 1, 2 do
-				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 2)
+			for i = 1, 3 do
+				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 4)
 				if (p) then
-					p:SetVelocity(up * math.Rand(30, 50) + VectorRand() * 5)
-					p:SetDieTime(math.Rand(0.4, 0.6))
-					p:SetStartAlpha(180)
+					p:SetVelocity(up * math.Rand(40, 70) + VectorRand() * 10)
+					p:SetDieTime(math.Rand(0.5, 0.8))
+					p:SetStartAlpha(200)
 					p:SetEndAlpha(0)
-					p:SetStartSize(math.Rand(6, 9))
-					p:SetEndSize(math.Rand(1.5, 3.5))
+					p:SetStartSize(math.Rand(12, 18))
+					p:SetEndSize(math.Rand(4, 7))
 					p:SetRoll(math.Rand(0, 360))
 					p:SetRollDelta(math.Rand(-10, 10))
 					p:SetColor(255, 100 + math.random(50), 30)
@@ -143,36 +139,36 @@ else
 			end
 			
 			-- Embers
-			if math.random(1, 6) == 1 then
-				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 1)
+			if math.random(1, 4) == 1 then
+				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 2)
 				if (p) then
-					p:SetVelocity(up * math.Rand(50, 90) + VectorRand() * 10)
-					p:SetDieTime(math.Rand(0.8, 1.5))
+					p:SetVelocity(up * math.Rand(50, 100) + VectorRand() * 15)
+					p:SetDieTime(math.Rand(1, 2))
 					p:SetStartAlpha(255)
 					p:SetEndAlpha(0)
-					p:SetStartSize(math.Rand(0.5, 1.5))
+					p:SetStartSize(math.Rand(1, 2))
 					p:SetEndSize(0)
 					p:SetColor(255, 150, 50)
-					p:SetGravity(Vector(0, 0, 20))
+					p:SetGravity(Vector(0, 0, 30))
 					p:SetAirResistance(50)
 					p:SetLighting(false)
 				end
 			end
 
 			-- Smoke
-			if math.random(1, 5) == 1 then
-				local p = self.emitter:Add("particle/smokesprites_000" .. math.random(1, 9), firepos + up * 10)
+			if math.random(1, 4) == 1 then
+				local p = self.emitter:Add("particle/smokesprites_000" .. math.random(1, 9), firepos + up * 15)
 				if (p) then
-					p:SetVelocity(up * math.Rand(20, 40) + VectorRand() * 5)
-					p:SetDieTime(math.Rand(1.5, 3))
-					p:SetStartAlpha(math.Rand(30, 60))
+					p:SetVelocity(up * math.Rand(30, 60) + VectorRand() * 10)
+					p:SetDieTime(math.Rand(2, 4))
+					p:SetStartAlpha(math.Rand(40, 90))
 					p:SetEndAlpha(0)
-					p:SetStartSize(math.Rand(3, 8))
-					p:SetEndSize(math.Rand(30, 50))
+					p:SetStartSize(math.Rand(5, 15))
+					p:SetEndSize(math.Rand(50, 80))
 					p:SetRoll(math.Rand(0, 360))
 					p:SetRollDelta(math.Rand(-1, 1))
-					p:SetColor(35, 35, 35)
-					p:SetGravity(Vector(0, 0, 15))
+					p:SetColor(30, 30, 30)
+					p:SetGravity(Vector(0, 0, 20))
 					p:SetAirResistance(150)
 				end
 			end
@@ -181,9 +177,10 @@ else
 		end
 		
 		-- Core Glow
-		local size = 22 + math.sin(RealTime() * 2) * 1.5
+		local size = 45 + math.sin(RealTime() * 2) * 3
 		render.SetMaterial(GLOW_MATERIAL)
-		render.DrawSprite(firepos + up * 5, size, size, Color(255, 120, 0, 150))
+		render.DrawSprite(firepos + up * 10, size, size, Color(255, 100, 0, 150))
+		render.DrawSprite(firepos + up * 5, size * 0.5, size * 0.5, Color(255, 200, 150, 200))
 	end
 
 	function ENT:OnRemove()

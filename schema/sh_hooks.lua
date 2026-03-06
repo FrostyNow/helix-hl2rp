@@ -43,6 +43,14 @@ function Schema:CanDrive(client)
 	return client:IsAdmin()
 end
 
+function Schema:AdjustStaminaOffset(client, offset)
+	if (offset > 0) then -- Only buff regeneration
+		if (client:Team() == FACTION_OTA) then
+			return offset * 1.5
+		end
+	end
+end
+
 if (SERVER) then
 	local ADMIN_SET_VALUE_MAX = 2000
 	local ADMIN_RECOGNITION_SELF = 1
