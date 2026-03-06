@@ -175,13 +175,6 @@ local BASE_PRIO = {
 }
 
 local CAT_PRIO = {
-	-- Weapons
-	["primary"] = 1,
-	["secondary"] = 2,
-	["melee"] = 3,
-	["grenade"] = 4,
-
-	-- Armor/Outfits
 	["head"] = 1,
 	["body"] = 2,
 }

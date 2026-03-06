@@ -192,46 +192,6 @@ hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
 end)
 
 -- ============================================================
--- FIX: Override RemoveOutfit AFTER items are loaded
--- The base sh_outfit.lua only scans character:GetInventory()
--- so items in gear inv lose their bodygroups on unequip.
--- ============================================================
-
-local function SetupBodygroupFix()
-    local baseOutfit = ix.item.list and ix.item.list["base_outfit"]
-    if (!baseOutfit) then return end
-    if (baseOutfit.ixGearMenuOverridden) then return end
-    baseOutfit.ixGearMenuOverridden = true
-
-    local origRemoveOutfit = baseOutfit.RemoveOutfit
-
-    baseOutfit.RemoveOutfit = function(self, client)
-        origRemoveOutfit(self, client)
-
-        if (!IsValid(client) or !client:GetCharacter()) then return end
-        local charID = client:GetCharacter():GetID()
-
-        for _, item in pairs(ix.item.instances) do
-            if (item.id != self.id and item.characterID == charID and item:GetData("equip") == true) then
-                local bgs = item.eqBodyGroups or item.bodyGroups
-
-                if (istable(bgs) and !table.IsEmpty(bgs)) then
-                    for bgName, bgValue in pairs(bgs) do
-                        local index = tonumber(bgName) or client:FindBodygroupByName(tostring(bgName))
-                        if (index and index > -1) then
-                            client:SetBodygroup(index, tonumber(bgValue) or 0)
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
-hook.Add("InitializedSchema", "ixGearMenuBodygroupFix", SetupBodygroupFix)
-SetupBodygroupFix() -- run immediately for hot-reload
-
--- ============================================================
 -- Network Receivers
 -- ============================================================
 
@@ -491,17 +451,4 @@ function PLUGIN:PostPlayerLoadout(client)
 			end
 		end
 	end)
-end
-
-function PLUGIN:CanPlayerEquipItem(client, item)
-	if (!item or !item.isWeapon or !item.weaponCategory) then return end
-	local character = client:GetCharacter()
-	if (!character) then return end
-	local charID = character:GetID()
-	for id, other in pairs(ix.item.instances) do
-		if (other.id != item.id and other.isWeapon and other.weaponCategory == item.weaponCategory and other:GetData("equip") == true and other.characterID == charID) then
-			client:NotifyLocalized("weaponSlotFilled", item.weaponCategory)
-			return false
-		end
-	end
 end
