@@ -26,6 +26,7 @@ function PLUGIN:HUDPaint()
 	
 	if (!ix.option.Get("spawnerESP", false)) then return end
 	if (client:GetMoveType() != MOVETYPE_NOCLIP) then return end
+	if (client:InVehicle()) then return end
 	if (!CAMI.PlayerHasAccess(client, "Helix - Item Spawner", nil)) then return end
 	
 	if (!PLUGIN.spawner.positions) then return end

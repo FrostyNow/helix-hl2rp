@@ -23,7 +23,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
-	['vendorTitleInvSize'] = "인벤토리 크기",
+	['vendorTitleInvSize'] = "소지품창 크기",
 	['vendorSlideWInvSize'] = "너비",
 	['vendorSlideHInvSize'] = "높이",
 	['vendorResizeBtnInvSize'] = "크기 재설정",

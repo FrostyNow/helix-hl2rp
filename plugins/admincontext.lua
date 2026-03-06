@@ -24,6 +24,15 @@ local ADMIN_RECOGNITION_SELF = 1
 local ADMIN_RECOGNITION_ALL = 2
 local ADMIN_UNRECOGNITION_ALL = 3
 
+ix.lang.AddTable("english", {
+	viewInventory = "View Inventory"
+})
+
+ix.lang.AddTable("korean", {
+	viewInventory = "소지품 보기"
+})
+
+
 if (CLIENT) then
 	local function FitTextToWidth(text, font, maxWidth)
 		text = tostring(text or "")
@@ -481,3 +490,30 @@ properties.Add("ixEditFlagsProperty", {
 		end
 	end
 })
+
+if (CLIENT) then
+	function PLUGIN:PopulateScoreboardPlayerMenu(target, menu)
+		if (CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Admin Context Options", nil)) then
+			menu:AddOption(L("viewInventory"), function()
+				net.Start("ixAdminViewInventory")
+					net.WriteEntity(target)
+				net.SendToServer()
+			end):SetIcon("icon16/briefcase.png")
+		end
+	end
+end
+
+if (SERVER) then
+	util.AddNetworkString("ixAdminViewInventory")
+
+	net.Receive("ixAdminViewInventory", function(len, client)
+		if (CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil)) then
+			local target = net.ReadEntity()
+
+			if (IsValid(target) and target:IsPlayer() and target:GetCharacter()) then
+				Schema:SearchPlayer(client, target)
+			end
+		end
+	end)
+end
+

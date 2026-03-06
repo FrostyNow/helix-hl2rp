@@ -24,8 +24,17 @@ end
 function Schema:PlayerUse(client, entity)
 	local character = client:GetCharacter()
 	local inv = character and character:GetInventory()
+	local hasItem = inv:HasItem("comkey") or inv:HasItem("unionkey")
 
-	if ((client:IsCombine() or (inv and (inv:HasItem("comkey") or inv:HasItem("unionkey")))) and entity:IsDoor() and IsValid(entity.ixLock) and client:KeyDown(IN_SPEED)) then
+	for _, v in pairs(inv:GetItems()) do
+		if (v.uniqueID == "cid") then
+			if (v:GetData("class") != "Second Class Citizen") then
+				hasItem = true
+			end
+		end
+	end
+
+	if ((client:IsCombine() or (inv and hasItem)) and entity:IsDoor() and IsValid(entity.ixLock) and client:KeyDown(IN_SPEED)) then
 		entity.ixLock:Toggle(client)
 		return false
 	end
