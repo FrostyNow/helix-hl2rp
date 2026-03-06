@@ -2,6 +2,7 @@ ITEM.name = "Manhack Parts"
 ITEM.model = "models/gibs/manhack_gib01.mdl"
 ITEM.description = "itemManhackPartsDesc"
 ITEM.isjunk = true
+ITEM.price = 5
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
