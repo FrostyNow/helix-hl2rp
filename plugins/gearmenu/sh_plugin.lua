@@ -7,12 +7,14 @@ PLUGIN.Version = "1.0.0"
 
 -- Define all available gear slots. Base slots.
 PLUGIN.GearSlots = {
-	{id = "head", name = "Head", icon = "icon16/user.png"},
-	{id = "face", name = "Face", icon = "icon16/eye.png"},
-	{id = "torso", name = "Torso", icon = "icon16/shield.png"},
+	{id = "headgear", name = "Head", icon = "icon16/user.png"},
+	{id = "mask", name = "Face", icon = "icon16/eye.png"},
+	{id = "torso", name = "Torso"},
+	{id = "kevlar", name = "Vest", icon = "icon16/shield.png"},
 	{id = "legs", name = "Legs", icon = "icon16/arrow_down.png"},
 	{id = "back", name = "Back", icon = "icon16/basket.png"},
 	{id = "belt", name = "Belt"},
+	{id = "outfit", name = "Outfit"},
 	{id = "weapon1", name = "Weapon", icon = "icon16/gun.png"}
 }
 
@@ -20,6 +22,8 @@ PLUGIN.GearSlots = {
 -- Each slot maps to Y position: slot index 1 = y:1, slot index 2 = y:2, etc.
 PLUGIN.GearInvWidth = 15
 PLUGIN.GearInvHeight = 30
+
+ix.inventory.Register("ixGearInv", PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, false)
 
 -- Allow other plugins to add or modify gear slots per character.
 function PLUGIN:GetCharacterGearSlots(character)
@@ -74,9 +78,21 @@ end
 
 -- Helper: check if an item can be placed in a given gear slot.
 function PLUGIN:CanItemFitSlot(itemTable, slotID)
-	if (!itemTable or !itemTable.gearSlot) then
-		return false
+	if (!itemTable) then return false end
+
+	if slotID == ("item1" or "item2" or "item3" or "item4") then
+		return true
 	end
+
+	if slotID == ("weapon1" or "weapon2" or "weapon3" or "weapon4") then
+		return itemTable.isWeapon
+	end
+
+	if slotID == itemTable.outfitCategory then
+		return true
+	end
+
+	if (!itemTable.gearSlot) then return false end
 
 	if (istable(itemTable.gearSlot)) then
 		for _, v in ipairs(itemTable.gearSlot) do
@@ -88,13 +104,45 @@ function PLUGIN:CanItemFitSlot(itemTable, slotID)
 		return false
 	end
 
-	return itemTable.gearSlot == slotID
+	return slotID == itemTable.gearSlot
 end
 
 -- Helper: check if an inventory is a gear inventory.
 function PLUGIN:IsGearInventory(invID)
 	local inv = ix.item.inventories[invID]
 	return inv and inv.vars and inv.vars.isGear
+end
+
+-- ============================================================
+-- GLOBAL OVERRIDE: ix.meta.inventory
+-- Make GetItems() universally return Gear Items for compatibility
+-- ============================================================
+local ix_inv = ix.meta.inventory
+if (ix_inv) then
+	ix_inv.GearOriginalGetItems = ix_inv.GearOriginalGetItems or ix_inv.GetItems
+
+	function ix_inv:GetItems(onlyMain)
+		local items = self:GearOriginalGetItems(onlyMain)
+
+		-- Only inject gear items when directly querying a character's primary main inventory.
+		-- onlyMain = false natively allows bags via base GetItems. Here we extend it to gear.
+		if (onlyMain != true and !self.vars.isBag and !self.vars.isGear and self.owner) then
+			local character = ix.char.loaded and ix.char.loaded[self.owner]
+			
+			if (character and character:GetInventory() == self) then
+				local gearID = character:GetData("gearInvID")
+				local gearInv = gearID and ix.item.inventories[gearID]
+
+				if (gearInv and gearInv != self) then
+					for itemID, itemInst in pairs(gearInv:GearOriginalGetItems(true)) do
+						items[itemID] = itemInst
+					end
+				end
+			end
+		end
+
+		return items
+	end
 end
 
 ix.util.Include("sv_plugin.lua")

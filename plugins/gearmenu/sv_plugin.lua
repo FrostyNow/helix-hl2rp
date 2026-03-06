@@ -101,10 +101,7 @@ net.Receive("ixGearEquip", function(len, client)
 			return
 		end
 
-		if (item.OnUnequip) then item:OnUnequip() end
 		item:SetData("equipSlot", targetSlotID)
-		if (item.OnEquip) then item:OnEquip() end
-		item.player = nil
 		return
 	end
 
@@ -112,7 +109,7 @@ net.Receive("ixGearEquip", function(len, client)
 	-- If something is already there, put it back in the main inventory first.
 	if (existingItem) then
 		existingItem.player = client
-		if (existingItem.OnUnequip) then existingItem:OnUnequip() end
+		if (existingItem.functions.EquipUn.OnRun) then existingItem.functions.EquipUn.OnRun(existingItem) end
 		existingItem:SetData("equipSlot", nil)
 		
 		local mainInv = character:GetInventory()
@@ -129,8 +126,13 @@ net.Receive("ixGearEquip", function(len, client)
 	end
 
 	-- Clear basic equip flags temporarily so hooking plugins don't block the transfer
-	if (item.OnUnequip) then item:OnUnequip() end
-
+	item.player = client
+	if (item.OnUnequip) then
+		item:OnUnequip()
+	elseif (item.functions and item.functions.EquipUn and item.functions.EquipUn.OnRun) then 
+		item.functions.EquipUn.OnRun(item) 
+	end
+	item.player = nil
 	-- Find an empty slot in the internal gear inventory pack
 	local emptyX, emptyY = gearInv:FindEmptySlot(item.width, item.height)
 	if (!emptyX or !emptyY) then
@@ -147,7 +149,13 @@ net.Receive("ixGearEquip", function(len, client)
 		client:NotifyLocalized(err or "Failed to equip.")
 	else
 		item:SetData("equipSlot", targetSlotID)
-		if (item.OnEquip) then item:OnEquip() end
+		
+		item.player = client
+		if (item.OnEquip) then 
+			item:OnEquip() 
+		elseif (item.functions and item.functions.Equip and item.functions.Equip.OnRun) then
+			item.functions.Equip.OnRun(item)
+		end
 	end
 	
 	item.player = nil
@@ -204,17 +212,27 @@ net.Receive("ixGearUnequip", function(len, client)
 	end
 
 	item.player = client
-	if (item.OnUnequip) then item:OnUnequip() end
+	if (item.OnUnequip) then
+		item:OnUnequip()
+	elseif (item.functions and item.functions.EquipUn and item.functions.EquipUn.OnRun) then 
+		item.functions.EquipUn.OnRun(item) 
+	end
 	item:SetData("equipSlot", nil)
 	item.player = nil
 
+	item.bGearEquipping = true
 	local bStatus, error = item:Transfer(destInvID, destX, destY, client)
+	item.bGearEquipping = nil
 
 	if (!bStatus) then
 		-- Revert
 		item.player = client
 		item:SetData("equipSlot", item:GetData("equipSlot")) -- Actually, previous slot needs saving if we properly revert, but sticking to basics.
-		if (item.OnEquip) then item:OnEquip() end
+		if (item.OnEquip) then
+			item:OnEquip()
+		elseif (item.functions and item.functions.Equip and item.functions.Equip.OnRun) then 
+			item.functions.Equip.OnRun(item) 
+		end
 		item.player = nil
 		client:NotifyLocalized(error or "unknownError")
 	end
@@ -223,6 +241,10 @@ end)
 -- Validate transfers TO gear inventory natively (prevent drag/drop natively into gear inv)
 function PLUGIN:CanTransferItem(item, curInv, newInv)
 	if (!item or !curInv or !newInv) then return end
+
+	if (item.bGearEquipping) then
+		return -- Allow authorized transfers triggered by the gear menu logic
+	end
 
 	local curIsGear = curInv.vars and curInv.vars.isGear
 	local newIsGear = newInv.vars and newInv.vars.isGear
@@ -248,11 +270,49 @@ function PLUGIN:CharacterLoaded(character)
 						inv:AddReceiver(client)
 						inv:Sync(client)
 						inv.vars.isGear = true
+						
+						-- Trigger OnLoadout for already loaded items inside the gear inventory
+						-- once it finishes restoring so they apply properly to the active player model
+						for _, item in pairs(inv:GetItems()) do
+							if (item.Call) then
+								item:Call("OnLoadout", client)
+							end
+							
+							if (item:GetData("equip") and item.attribBoosts) then
+								for attribKey, attribValue in pairs(item.attribBoosts) do
+									character:AddBoost(item.uniqueID, attribKey, attribValue)
+								end
+							end
+						end
 					end
 
 					SyncGearSlots(client)
 				end)
 			end
 		end)
+	end
+end
+
+-- Hook into player spawning to re-trigger gear item loadouts synchronously for future respawns
+function PLUGIN:PostPlayerLoadout(client)
+	local character = client:GetCharacter()
+	if (character) then
+		local gearInvID = character:GetData("gearInvID")
+		if (gearInvID) then
+			local gearInv = ix.item.inventories[gearInvID]
+			if (gearInv) then
+				for _, item in pairs(gearInv:GetItems()) do
+					if (item.Call) then
+						item:Call("OnLoadout", client)
+					end
+
+					if (item:GetData("equip") and item.attribBoosts) then
+						for attribKey, attribValue in pairs(item.attribBoosts) do
+							character:AddBoost(item.uniqueID, attribKey, attribValue)
+						end
+					end
+				end
+			end
+		end
 	end
 end

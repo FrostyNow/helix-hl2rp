@@ -2,7 +2,7 @@ ITEM.name = "2 Slot Belt"
 ITEM.description = "A belt that provides an additional slot for equipment."
 ITEM.model = "models/props_junk/popcan01a.mdl"
 ITEM.width = 2
-ITEM.height = 1
+ITEM.height = 1.
 ITEM.gearSlot = "belt"
 
 if (CLIENT) then
