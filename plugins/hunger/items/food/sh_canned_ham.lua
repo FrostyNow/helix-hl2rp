@@ -4,6 +4,7 @@ ITEM.description = "itemCannedHamDesc"
 ITEM.hunger = 20
 ITEM.thirst = -10
 ITEM.price = 5
+ITEM.empty = "empty_can"
 ITEM.heal = 10
 ITEM.cookable = true
 ITEM.sound = "interface/inv_eat_can.ogg"
