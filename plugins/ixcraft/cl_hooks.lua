@@ -12,7 +12,7 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 
 	local name = tooltip:AddRow("name")
 	name:SetImportant()
-	name:SetText(L(recipe.category..": "..(recipe.GetName and recipe:GetName() or recipe.name)))
+	name:SetText(L(recipe.category)..": "..L(recipe.GetName and recipe:GetName() or recipe.name))
 	name:SetMaxWidth(math.max(name:GetMaxWidth(), ScrW() * 0.5))
 	name:SizeToContents()
 
@@ -44,7 +44,7 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 			local itemName = v
 
 			if (itemTable) then
-			    itemName = itemTable.name
+			    itemName = L(itemTable.name)
 			end
 
 			toolString = toolString..itemName..", "
@@ -69,7 +69,7 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 		local itemName = k
 
 		if (itemTable) then
-		    itemName = itemTable.name
+		    itemName = L(itemTable.name)
 		end
 
 		requirementString = requirementString..v.."x "..itemName..", "
@@ -94,7 +94,7 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 		local amount = v
 
 		if (itemTable) then
-		    itemName = itemTable.name
+		    itemName = L(itemTable.name)
 		end
 
 		if (istable(v)) then

@@ -97,8 +97,8 @@ if SERVER then
 
 		-- Curfew logic
 		local date = ix.date.Get()
-		local hour = date:gethour()
-		local minute = date:getmin()
+		local hour = date:gethours()
+		local minute = date:getminutes()
 
 		if (minute != self.lastCurfewMinute) then
 			if (ix.config.Get("notifyCurfew", false)) then

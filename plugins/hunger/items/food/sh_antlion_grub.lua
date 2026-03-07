@@ -1,0 +1,10 @@
+ITEM.name = "Antlion Grub"
+ITEM.model = "models/ccr/props/grub_vial_full.mdl"
+ITEM.description = "itemAntlionGrubDesc"
+ITEM.hunger = -10
+ITEM.thirst = -5
+ITEM.price = 60
+ITEM.heal = 5
+ITEM.cookable = true
+ITEM.usenum = 4
+ITEM.sound = "interface/inv_eat_mutant_food.ogg"

@@ -60,7 +60,7 @@ else
 			self.loopsound = nil
 		end
 
-		if (self.emitter) then
+		if (IsValid(self.emitter)) then
 			self.emitter:Finish()
 		end
 	end
@@ -75,22 +75,28 @@ else
 			render.SetMaterial(GLOW_MATERIAL)
 			render.DrawSprite(position, size, size, Color(255, 162, 76, 255))
 			
-			if self.emittime < CurTime() then
-				local smoke = self.emitter:Add("particle/smokesprites_000" .. math.random(1, 9), position)
-				if (smoke) then
-					smoke:SetVelocity(Vector(0, 0, 120))
-					smoke:SetDieTime(math.Rand(0.2, 1.3))
-					smoke:SetStartAlpha(math.Rand(150, 200))
-					smoke:SetEndAlpha(0)
-					smoke:SetStartSize(math.random(0, 5))
-					smoke:SetEndSize(math.random(20, 30))
-					smoke:SetRoll(math.Rand(180, 480))
-					smoke:SetRollDelta(math.Rand(-3, 3))
-					smoke:SetColor(50, 50, 50)
-					smoke:SetGravity(Vector(0, 0, 10))
-					smoke:SetAirResistance(200)
+			if (self.emittime < CurTime()) then
+				if (!IsValid(self.emitter)) then
+					self.emitter = ParticleEmitter(self:GetPos())
 				end
-				self.emittime = CurTime() + 0.1
+
+				if (IsValid(self.emitter)) then
+					local smoke = self.emitter:Add("particle/smokesprites_000" .. math.random(1, 9), position)
+					if (smoke) then
+						smoke:SetVelocity(Vector(0, 0, 120))
+						smoke:SetDieTime(math.Rand(0.2, 1.3))
+						smoke:SetStartAlpha(math.Rand(150, 200))
+						smoke:SetEndAlpha(0)
+						smoke:SetStartSize(math.random(0, 5))
+						smoke:SetEndSize(math.random(20, 30))
+						smoke:SetRoll(math.Rand(180, 480))
+						smoke:SetRollDelta(math.Rand(-3, 3))
+						smoke:SetColor(50, 50, 50)
+						smoke:SetGravity(Vector(0, 0, 10))
+						smoke:SetAirResistance(200)
+					end
+					self.emittime = CurTime() + 0.1
+				end
 			end
 		end
 	end

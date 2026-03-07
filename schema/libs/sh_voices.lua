@@ -140,6 +140,10 @@ end
 function Schema.voices.GetClass(client)
 	local classes = {}
 
+	if (!IsValid(client)) then
+		return classes
+	end
+
 	for k, v in pairs(Schema.voices.classes) do
 		if (v.condition(client)) then
 			classes[#classes + 1] = k

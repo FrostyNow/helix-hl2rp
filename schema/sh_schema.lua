@@ -130,7 +130,7 @@ function Schema:IsConceptCombine(client)
 end
 
 function Schema:CanPlayerSeeCombineOverlay(client)
-	if (!client:IsCombine()) then
+	if (!IsValid(client) or !client:IsCombine()) then
 		return false
 	end
 
@@ -180,6 +180,10 @@ do
 	CLASS.format = "chatDispatchFormat"
 
 	function CLASS:CanSay(speaker, text)
+		if (!IsValid(speaker)) then
+			return true
+		end
+
 		if (!speaker:IsDispatch()) then
 			speaker:NotifyLocalized("notAllowed")
 
@@ -215,8 +219,10 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
+		local name = IsValid(speaker) and speaker:Name() or "Console"
 		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
-		addNameColoredMessage(self.color, speaker, L(self.format, speaker:Name(), text))
+
+		addNameColoredMessage(self.color, speaker, L(self.format, name, text))
 	end
 
 	ix.chat.Register("radio", CLASS)
@@ -246,8 +252,10 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
+		local name = IsValid(speaker) and speaker:Name() or "Console"
 		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
-		chat.AddText(self.color, L(self.format, speaker:Name(), text))
+
+		chat.AddText(self.color, L(self.format, name, text))
 	end
 
 	ix.chat.Register("radio_eavesdrop", CLASS)
@@ -263,7 +271,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		local name = hook.Run("GetCharacterName", speaker, "request") or speaker:Name()
+		local name = hook.Run("GetCharacterName", speaker, "request") or (IsValid(speaker) and speaker:Name() or "Console")
 		chat.AddText(self.color, L(self.format, name, text))
 	end
 
@@ -287,7 +295,7 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		local name = hook.Run("GetCharacterName", speaker, "request_eavesdrop") or speaker:Name()
+		local name = hook.Run("GetCharacterName", speaker, "request_eavesdrop") or (IsValid(speaker) and speaker:Name() or "Console")
 		chat.AddText(self.color, L(self.format, name, text))
 	end
 
@@ -301,6 +309,10 @@ do
 	CLASS.prefix = {"/Broadcast", "/B"}
 
 	function CLASS:CanSay(speaker, text)
+		if (!IsValid(speaker)) then
+			return true
+		end
+
 		if (speaker:IsRestricted()) then
 			speaker:NotifyLocalized("notNow")
 
@@ -330,7 +342,8 @@ do
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, L(self.format, speaker:Name(), text))
+		local name = IsValid(speaker) and speaker:Name() or "Console"
+		chat.AddText(self.color, L(self.format, name, text))
 	end
 
 	ix.chat.Register("broadcast", CLASS)

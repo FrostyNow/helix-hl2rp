@@ -1,8 +1,6 @@
 ITEM.name = "Headcrab"
 ITEM.model = "models/arachnit/steamvr/hla/headcrab_dinner/headcrab_dinner.mdl"
 ITEM.description = "itemHeadcrabDesc"
-ITEM.width = 2
-ITEM.height = 2
 ITEM.hunger = 100
 ITEM.thirst = -10
 ITEM.price = 30

@@ -97,9 +97,14 @@ function RECIPE:OnCanCraft(client)
 	for uniqueID, amount in pairs(self.requirements or {}) do
 		if (inventory:GetItemCount(uniqueID) < amount) then
 			local itemTable = ix.item.Get(uniqueID)
-			bHasItems = false
+			local itemName = itemTable and itemTable.name or uniqueID
 
-			missing = missing..(itemTable and itemTable.name or uniqueID)..", "
+			if (CLIENT) then
+				itemName = L(itemName)
+			end
+
+			bHasItems = false
+			missing = missing..itemName..", "
 		end
 	end
 
@@ -114,9 +119,14 @@ function RECIPE:OnCanCraft(client)
 	for _, uniqueID in pairs(self.tools or {}) do
 		if (!inventory:HasItem(uniqueID)) then
 			local itemTable = ix.item.Get(uniqueID)
-			bHasTools = false
+			local itemName = itemTable and itemTable.name or uniqueID
 
-			missing = itemTable and itemTable.name or uniqueID
+			if (CLIENT) then
+				itemName = L(itemName)
+			end
+
+			bHasTools = false
+			missing = itemName
 
 			break
 		end
@@ -199,7 +209,13 @@ if (SERVER) then
 			end
 		end
 
-		return true, "@CraftSuccess", self.GetName and self:GetName() or self.name
+		local recipeName = self.GetName and self:GetName() or self.name
+
+		if (CLIENT) then
+			recipeName = L(recipeName)
+		end
+
+		return true, "@CraftSuccess", recipeName
 	end
 end
 

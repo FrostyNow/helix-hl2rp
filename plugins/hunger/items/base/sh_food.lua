@@ -159,16 +159,17 @@ ITEM.functions.Cook = {
 
 					local maxAttrib = ix.config.Get("maxAttributes", 10)
 					-- Cooking skill is the primary factor, luck is secondary
-					-- Weighted: 70% cooking, 30% luck
-					local weightedSkill = (cookingSkill * 0.7 + luck * 0.3) / maxAttrib
+					-- Weighted: 80% cooking, 20% luck (More skill reliant, less erratic)
+					local weightedSkill = (cookingSkill * 0.8 + luck * 0.2) / maxAttrib
 
-					-- Base quality from skill (0-1 skill maps to ~1-8 quality)
-					-- At 0 skill: baseQuality ~ 1, at max skill: baseQuality ~ 8
-					local baseQuality = 1 + weightedSkill * 7
+					-- Shifted floor: even skill 0 shouldn't burn everything.
+					-- Skill 0 starts at 3 (Bad/Not Good territory), Skill 10 reaches 9 (Best)
+					local baseQuality = 3 + weightedSkill * 6
 
-					-- Random variance: ±1.5, scaled down slightly by skill (skilled cooks are more consistent)
-					local consistency = math.Clamp(cookingSkill / maxAttrib, 0, 1) -- 0 to 1
-					local variance = (math.random() * 2 - 1) * (1.5 - consistency * 0.5)
+					-- Random variance: narrowed down slightly for better consistency.
+					-- Base variance ±1.2, reduced by skill.
+					local consistency = math.Clamp(cookingSkill / maxAttrib, 0, 1)
+					local variance = (math.random() * 2 - 1) * (1.2 - consistency * 0.4)
 
 					local f_quality = math.Clamp(math.Round(baseQuality + variance), 1, 9)
 

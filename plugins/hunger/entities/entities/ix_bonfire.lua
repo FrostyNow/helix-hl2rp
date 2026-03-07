@@ -120,7 +120,7 @@ else
 		local up = self:GetUp()
 
 		-- Add particles
-		if self.nextParticle < CurTime() then
+		if (self.nextParticle < CurTime() and IsValid(self.emitter)) then
 			-- Main Fire
 			for i = 1, 3 do
 				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 4)
@@ -189,7 +189,7 @@ else
 			self.loopsound = nil
 		end
 
-		if (self.emitter) then
+		if (IsValid(self.emitter)) then
 			self.emitter:Finish()
 		end
 	end
