@@ -4,6 +4,6 @@ ITEM.description = "itemCokeDesc"
 ITEM.skin = 1
 ITEM.thirst = 25
 ITEM.price = 3
-ITEM.empty = "water_sparkling_empty"
+ITEM.empty = "water_empty"
 ITEM.heal = 10
 ITEM.sound = "interface/inv_drink_can2.ogg"

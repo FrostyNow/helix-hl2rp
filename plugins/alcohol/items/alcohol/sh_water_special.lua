@@ -5,7 +5,7 @@ ITEM.skin = 2
 ITEM.force = 5
 ITEM.thirst = 20
 ITEM.price = 6
-ITEM.empty = "water_special_empty"
+ITEM.empty = "water_empty"
 
 ITEM:Hook("Eat", function(item)
 	local client = item.player

@@ -2,5 +2,5 @@
 ITEM.name = "Coffee Pot"
 ITEM.description = "itemCoffeePotDesc"
 ITEM.price = 1
-ITEM.model = "models/mosi/fallout4/props/junk/coffeepot.mdl"
+ITEM.model = "models/hls/alyxports/coffee_maker.mdl"
 ITEM.isjunk = true

@@ -1,6 +1,6 @@
 
 ITEM.name = "Flashlight"
-ITEM.model = Model("models/props_combine/breenlight.mdl")
+ITEM.model = Model("models/hls/alyxports/flashlight.mdl")
 ITEM.width = 1
 ITEM.height = 1
 ITEM.description = "itemFlashlightDesc"

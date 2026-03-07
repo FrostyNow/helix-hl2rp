@@ -1,5 +1,5 @@
 ITEM.name = "Canned Ham"
-ITEM.model = "models/hlvr/food/can_square.mdl"
+ITEM.model = "models/hls/alyxports/can_square.mdl"
 ITEM.description = "itemCannedHamDesc"
 ITEM.hunger = 20
 ITEM.thirst = -10

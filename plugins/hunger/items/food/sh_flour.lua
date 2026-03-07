@@ -1,5 +1,5 @@
 ITEM.name = "Bag of Flour"
-ITEM.model = "models/hlvr/food/bag_flour_1.mdl"
+ITEM.model = "models/hls/hawke/bag_flour_1.mdl"
 ITEM.description = "itemFlourDesc"
 ITEM.hunger = 10
 ITEM.thirst = -10

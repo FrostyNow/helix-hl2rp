@@ -1,6 +1,6 @@
 
 ITEM.name = "Combine Keycard"
-ITEM.model = Model("models/dorado/tarjeta2.mdl")
+ITEM.model = Model("models/synapse/misc_props/synapse_misc_combine_card.mdl")
 ITEM.description = "itemCombineKeycardDesc"
 ITEM.category = "Utility"
 ITEM.price = 2000

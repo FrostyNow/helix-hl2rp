@@ -2,7 +2,7 @@
 ITEM.name = "Gunpowder"
 ITEM.description = "itemGunpowderDesc"
 ITEM.price = 4
-ITEM.model = "models/props_lab/box01a.mdl"
+ITEM.model = "models/mosi/fallout4/props/junk/components/asbestos.mdl"
 ITEM.isjunk = true
 
 if (CLIENT) then

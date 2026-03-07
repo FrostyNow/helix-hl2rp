@@ -1,6 +1,6 @@
 
 ITEM.name = "Citizen ID"
-ITEM.model = Model("models/dorado/tarjeta1.mdl")
+ITEM.model = Model("models/synapse/props/id_card.mdl")
 ITEM.description = "cidDesc"
 ITEM.price = 50
 ITEM.noDeathDrop = true

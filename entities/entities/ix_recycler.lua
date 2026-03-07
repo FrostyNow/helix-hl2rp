@@ -39,9 +39,7 @@ if (SERVER) then
 	-- These are the item unique IDs that can be recycled. 
 	-- You should update these to match your schema's item IDs.
 	local RecycleTargets = {
-		"water_empty",
-		"water_sparkling_empty",
-		"water_special_empty"
+		"water_empty"
 		-- Standard ixHL2RP junk examples (uncomment if needed):
 		-- "empty_can", "wood", "glass", "plastic"
 	}
