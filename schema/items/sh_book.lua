@@ -12,8 +12,9 @@ ITEM.functions.Use = {
 		local int = client:GetCharacter():GetAttribute("int", 0)
 		local lck = client:GetCharacter():GetAttribute("lck", 0)
 		local amount = 0.5 + lck * 0.5
+		local maxAttributes = ix.config.Get("maxAttributes", 30)
 		
-		if amount <= maxAttributes then
+		if int + amount <= maxAttributes then
 			client:GetCharacter():SetAttrib("int", int + amount)
 		else
 			client:GetCharacter():SetAttrib("int", maxAttributes)
@@ -32,6 +33,6 @@ ITEM.functions.Use = {
 		local client = item.player
 		local int = client:GetCharacter():GetAttribute("int", 0)
 		local maxAttributes = ix.config.Get("maxAttributes", 30)
-		return int + 0.5 <= maxAttributes
+		return int < maxAttributes
 	end
 }
