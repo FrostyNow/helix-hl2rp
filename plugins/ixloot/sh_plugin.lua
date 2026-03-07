@@ -44,7 +44,7 @@ PLUGIN.randomLoot.common = {
 	["pressurecooker"] = 2,
 	["request_device"] = 1,
 	["steel"] = 4,
-	["turpentine"] = 3,
+	-- ["turpentine"] = 3,
 	["water_empty"] = 6,
 	["wood"] = 5,
 	["wrench"] = 1,
@@ -115,7 +115,7 @@ PLUGIN.randomLoot.rare = {
 	["scanner_gib02"] = 1,
 	["scanner_gib04"] = 1,
 	["scanner_gib05"] = 1,
-	["sensormodule"] = 1,
+	-- ["sensormodule"] = 1,
 }
 
 ix.util.Include("sv_plugin.lua")
