@@ -6,6 +6,24 @@ PLUGIN.version = 1.0
 
 if not StormFox2 then return end
 
+ix.config.Add("notifyTimeChange", true, "Whether or not to notify players when the time changes (Day/Night).", nil, {
+	category = "StormFox 2"
+})
+
+ix.config.Add("dayLength", 14, "The length of the day in hours.", nil, {
+	data = {min = 1, max = 23},
+	category = "StormFox 2"
+})
+
+ix.config.Add("nightLength", 10, "The length of the night in hours.", nil, {
+	data = {min = 1, max = 23},
+	category = "StormFox 2"
+})
+
+ix.config.Add("notifyCurfew", true, "Whether or not to automatically announce the night curfew.", nil, {
+	category = "StormFox 2"
+})
+
 local function PerformTimeSync()
 	if not StormFox2 then return end
 
@@ -19,12 +37,15 @@ local function PerformTimeSync()
 	local helixTimeScale = ix.config.Get("secondsPerMinute", 60)
 
 	if helixTimeScale > 0 then
-		local phaseLength = 12 * helixTimeScale
+		local dayLength = ix.config.Get("dayLength", 12)
+		local nightLength = ix.config.Get("nightLength", 12)
+		local dayPhase = dayLength * helixTimeScale
+		local nightPhase = nightLength * helixTimeScale
 		
 		if StormFox2.Setting then
-			StormFox2.Setting.Set("day_length", phaseLength)
-			StormFox2.Setting.Set("night_length", phaseLength)
-			print("[Helix] StormFox2 day/night length synchronized to " .. tostring(phaseLength) .. " minutes each.")
+			StormFox2.Setting.Set("day_length", dayPhase)
+			StormFox2.Setting.Set("night_length", nightPhase)
+			print(string.format("[Helix] StormFox2 synchronized: Day %dh (%dm), Night %dh (%dm)", dayLength, dayPhase, nightLength, nightPhase))
 		end
 	end
 end
@@ -37,6 +58,83 @@ if SERVER then
 			bHasSync = true
 		end
 	end)
+
+	PLUGIN.nextDayCheck = 0
+	PLUGIN.isDay = nil
+	PLUGIN.lastCurfewMinute = -1
+
+	function PLUGIN:Tick()
+		if (self.nextDayCheck > CurTime()) then return end
+		self.nextDayCheck = CurTime() + 1
+
+		if (not StormFox2) then return end
+
+		-- Day/Night change notification
+		if (ix.config.Get("notifyTimeChange", false)) then
+			local bIsDay = StormFox2.Time.IsDay()
+
+			if (self.isDay == nil) then
+				self.isDay = bIsDay
+			elseif (bIsDay ~= self.isDay) then
+				local phrase = bIsDay and "dayNotify" or "nightNotify"
+				local playersByLang = {}
+
+				for _, v in ipairs(player.GetAll()) do
+					if (v:GetCharacter()) then
+						local lang = ix.option.Get(v, "language", "english")
+						playersByLang[lang] = playersByLang[lang] or {}
+						table.insert(playersByLang[lang], v)
+					end
+				end
+
+				for lang, receivers in pairs(playersByLang) do
+					ix.chat.Send(nil, "event", L(phrase, receivers[1]), nil, receivers)
+				end
+
+				self.isDay = bIsDay
+			end
+		end
+
+		-- Curfew logic
+		local date = ix.date.Get()
+		local hour = date:gethour()
+		local minute = date:getmin()
+
+		if (minute != self.lastCurfewMinute) then
+			if (ix.config.Get("notifyCurfew", false)) then
+				local bIsCurfewStart = (hour == 0 and minute == 0)
+				local bIsCurfewEnd = (hour == 6 and minute == 0)
+
+				if (bIsCurfewStart or bIsCurfewEnd) then
+					local bHasDispatcher = false
+					for _, v in ipairs(player.GetAll()) do
+						if (v:GetCharacter() and v:IsDispatch()) then
+							bHasDispatcher = true
+							break
+						end
+					end
+
+					if (bHasDispatcher) then
+						local phrase = bIsCurfewStart and "curfewStartNotify" or "curfewEndNotify"
+						local playersByLang = {}
+
+						for _, v in ipairs(player.GetAll()) do
+							if (v:GetCharacter()) then
+								local lang = ix.option.Get(v, "language", "english")
+								playersByLang[lang] = playersByLang[lang] or {}
+								table.insert(playersByLang[lang], v)
+							end
+						end
+
+						for lang, receivers in pairs(playersByLang) do
+							ix.chat.Send(nil, "dispatch", L(phrase, receivers[1]), nil, receivers)
+						end
+					end
+				end
+			end
+			self.lastCurfewMinute = minute
+		end
+	end
 end
 
 ix.lang.AddTable("english", {
@@ -46,6 +144,10 @@ ix.lang.AddTable("english", {
 	cmdTimeSet = "Set the current time.",
 	timeSet = "The time has been set to %s.",
 	invalidTime = "Invalid time format! Use HHMM (e.g., 2330).",
+	dayNotify = "The sun begins to rise, signaling the start of a new day.",
+	nightNotify = "The sun sets, and darkness begins to fall over the land.",
+	curfewStartNotify = "Attention citizens. A night curfew is now in effect. Move to your residential block immediately.",
+	curfewEndNotify = "Attention citizens. The night curfew has been lifted. Return to your assigned duties.",
 })
 
 ix.lang.AddTable("korean", {
@@ -55,6 +157,10 @@ ix.lang.AddTable("korean", {
 	cmdTimeSet = "현재 시간을 설정합니다.",
 	timeSet = "시간이 %s으로 설정되었습니다.",
 	invalidTime = "잘못된 시간 형식입니다! HHMM 형식을 사용하세요 (예: 2330).",
+	dayNotify = "지평선 위로 해가 뜨기 시작하며 새로운 아침이 밝아옵니다.",
+	nightNotify = "해가 지고, 어둠이 서서히 내려앉기 시작합니다.",
+	curfewStartNotify = "시민에게 알린다. 야간 통행 금지령이 발효되었다. 시민 거주구로 즉시 이동하라.",
+	curfewEndNotify = "시민에게 알린다. 야간 통행 금지령이 해제되었다. 지정된 업무에 종사하라.",
 })
 
 ix.command.Add("TimeSync", {

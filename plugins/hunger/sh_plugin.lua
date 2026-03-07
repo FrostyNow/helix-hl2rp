@@ -8,6 +8,20 @@ PLUGIN.name = "Hunger+++ (merged with Survival System)"
 PLUGIN.author = "LiGyH, ZeMysticalTaco | Modified by Frosty"
 PLUGIN.description = "A survival system consisting of hunger and thirst."
 
+ix.config.Add("hunger_decay_speed", 6048, "How long it takes for hunger to decay by 1.", nil, {
+	data = {min = 1, max = 10000},
+	category = "Survival"
+})
+
+ix.config.Add("thirst_decay_speed", 2592, "How long it takes for thirst to decay by 1.", nil, {
+	data = {min = 1, max = 10000},
+	category = "Survival"
+})
+
+ix.config.Add("syncSurvivalWithTime", true, "Whether or not to synchronize survival decay with time scale.", nil, {
+	category = "Survival"
+})
+
 local entityMeta = FindMetaTable("Entity")
 
 function entityMeta:IsStove()
@@ -173,14 +187,20 @@ if SERVER then
 	end
 
 	function PLUGIN:PlayerTick(ply)
+		local scale = 1
+
+		if (ix.config.Get("syncSurvivalWithTime", false)) then
+			scale = math.max(0.01, ix.config.Get("secondsPerMinute", 60) / 60)
+		end
+
 		if ply:GetNetVar("hungertick", 0) <= CurTime() then
-			ply:SetNetVar("hungertick", ix.config.Get("hunger_decay_speed", 300) + CurTime())
+			ply:SetNetVar("hungertick", (ix.config.Get("hunger_decay_speed", 300) * scale) + CurTime())
 			ply:TickHunger(1, 1)
 		end
 
 		if ply:GetNetVar("thirsttick", 0) <= CurTime() then
-			ply:SetNetVar("thirsttick", ix.config.Get("thirst_decay_speed", 300) + CurTime())
-			ply:TickThirst(2, 1)
+			ply:SetNetVar("thirsttick", (ix.config.Get("thirst_decay_speed", 2592) * scale) + CurTime())
+			ply:TickThirst(1, 1)
 		end
 	end
 	
