@@ -108,7 +108,15 @@ if (SERVER) then
 	end
 
 	net.Receive("ixCraftRecipe", function(length, client)
-		PLUGIN.craft.CraftRecipe(client, net.ReadString())
+		local uniqueID = net.ReadString()
+		local stationID = net.ReadString()
+
+		-- Store station context on the player for validation
+		if (stationID and stationID != "") then
+			client.ixCurrentStation = stationID
+		end
+
+		PLUGIN.craft.CraftRecipe(client, uniqueID)
 
 		timer.Simple(0.2, function()
 			net.Start("ixCraftRefresh")

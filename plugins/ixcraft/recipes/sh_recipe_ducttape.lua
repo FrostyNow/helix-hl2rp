@@ -1,15 +1,15 @@
 
-RECIPE.name = "Purified Water"
-RECIPE.description = "recipePurifiedWaterDesc"
-RECIPE.category = "Consumable"
+RECIPE.name = "Duct Tape"
+RECIPE.description = "recipeDuctTapeDesc"
+RECIPE.category = "Assembly"
 RECIPE.model = "models/props_junk/PopCan01a.mdl"
 RECIPE.requirements = {
-	["water_dirty"] = 1,
 	["cloth"] = 1,
-	["charcoal"] = 1,
+	["plastic"] = 2,
+	["glue"] = 1,
 }
 RECIPE.results = {
-	["purified_water"] = 1
+	["ducttape"] = 1
 }
 
 RECIPE:PostHook("OnCanCraft", function(recipeTable, client)

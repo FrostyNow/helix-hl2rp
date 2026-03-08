@@ -39,6 +39,8 @@ function PANEL:DoClick()
 	if (self.recipeTable) then
 		net.Start("ixCraftRecipe")
 			net.WriteString(self.recipeTable.uniqueID)
+			-- Send current station context
+			net.WriteString(LocalPlayer().ixCurrentStation or "")
 		net.SendToServer()
 	end
 end
@@ -83,6 +85,19 @@ function PANEL:Init()
 		if (self.selected) then
 			self:LoadRecipes(self.selected.category, text:find("%S") and text or nil)
 			self.scroll:InvalidateLayout()
+		end
+	end
+
+	-- Station mode header
+	if (self.stationID) then
+		local stationTable = PLUGIN.craft.stations[self.stationID]
+		if (stationTable) then
+			local header = self:Add("DLabel")
+			header:Dock(TOP)
+			header:SetTall(24)
+			header:SetText("  " .. L("CraftingAtStation") .. ": " .. L(stationTable.name or self.stationID))
+			header:SetFont("ixMenuButtonFont")
+			header:SetTextColor(Color(100, 200, 100))
 		end
 	end
 
@@ -131,6 +146,11 @@ function PANEL:Init()
 	end
 end
 
+function PANEL:SetStation(stationID)
+	self.stationID = stationID
+	LocalPlayer().ixCurrentStation = stationID
+end
+
 function PANEL:LoadRecipes(category, search)
 	category = category	or "Crafting"
 	local recipes = PLUGIN.craft.recipes
@@ -157,8 +177,16 @@ function PANEL:LoadRecipes(category, search)
 	end
 end
 
+function PANEL:OnRemove()
+	-- Clear station context when closing crafting panel
+	LocalPlayer().ixCurrentStation = nil
+end
+
 vgui.Register("ixCrafting", PANEL, "EditablePanel")
 
+-- ============================================
+-- Menu button (non-station mode)
+-- ============================================
 hook.Add("CreateMenuButtons", "ixCrafting", function(tabs)
 	if (hook.Run("BuildCraftingMenu") != false) then
 		tabs["crafting"] = function(container)
@@ -167,10 +195,55 @@ hook.Add("CreateMenuButtons", "ixCrafting", function(tabs)
 	end
 end)
 
+-- ============================================
+-- Station mode: receive ixStationOpen
+-- ============================================
+net.Receive("ixStationOpen", function()
+	local stationID = net.ReadString()
+	local entIndex = net.ReadUInt(16)
+
+	LocalPlayer().ixCurrentStation = stationID
+	LocalPlayer().ixCurrentStationEnt = Entity(entIndex)
+
+	-- Open a standalone crafting frame
+	if (IsValid(ix.gui.stationCrafting)) then
+		ix.gui.stationCrafting:Remove()
+	end
+
+	local frame = vgui.Create("DFrame")
+	frame:SetSize(ScrW() * 0.6, ScrH() * 0.6)
+	frame:Center()
+	frame:MakePopup()
+
+	local stationTable = PLUGIN.craft.stations[stationID]
+	frame:SetTitle(L("crafting") .. " - " .. L(stationTable and stationTable.name or stationID))
+
+	local craftPanel = frame:Add("ixCrafting")
+	craftPanel:SetStation(stationID)
+	craftPanel:Dock(FILL)
+
+	frame.OnRemove = function()
+		LocalPlayer().ixCurrentStation = nil
+		LocalPlayer().ixCurrentStationEnt = nil
+	end
+
+	ix.gui.stationCrafting = frame
+end)
+
 net.Receive("ixCraftRefresh", function()
 	local craftPanel = ix.gui.crafting
 
 	if (IsValid(craftPanel)) then
 		craftPanel.search:OnChange()
+	end
+
+	-- Also refresh station crafting panel
+	if (IsValid(ix.gui.stationCrafting)) then
+		for _, child in ipairs(ix.gui.stationCrafting:GetChildren()) do
+			if (child.search and child.search.OnChange) then
+				child.search:OnChange()
+				break
+			end
+		end
 	end
 end)

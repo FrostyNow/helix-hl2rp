@@ -41,6 +41,72 @@ function RECIPE:PostHook(name, func)
 	self.postHooks[name] = func
 end
 
+--- Parse a requirement entry into a normalized table
+-- Handles both old format (number) and new format (table)
+-- @param entry number|table The requirement entry
+-- @return table Normalized requirement table {amount, preserve, substitutes}
+local function ParseRequirement(entry)
+	if (isnumber(entry)) then
+		return {amount = entry, preserve = false, substitutes = nil}
+	elseif (istable(entry)) then
+		return {
+			amount = entry.amount or 1,
+			preserve = entry.preserve or false,
+			substitutes = entry.substitutes or nil
+		}
+	end
+
+	return {amount = 1, preserve = false, substitutes = nil}
+end
+
+--- Parse a substitute entry into a normalized table
+-- @param entry number|table The substitute entry
+-- @param parentPreserve bool The parent requirement's preserve value
+-- @return table Normalized substitute table {amount, preserve}
+local function ParseSubstitute(entry, parentPreserve)
+	if (isnumber(entry)) then
+		return {amount = entry, preserve = parentPreserve}
+	elseif (istable(entry)) then
+		return {
+			amount = entry.amount or 1,
+			preserve = entry.preserve != nil and entry.preserve or parentPreserve
+		}
+	end
+
+	return {amount = 1, preserve = parentPreserve}
+end
+
+--- Check how many of an item (or its substitutes) the player has
+-- @param inventory The player's inventory
+-- @param uniqueID The required item's unique ID
+-- @param req The parsed requirement table
+-- @return bool Whether the player has enough
+-- @return string Missing item names (for error message)
+function RECIPE:CheckRequirement(inventory, uniqueID, req)
+	local needed = req.amount
+	local has = inventory:GetItemCount(uniqueID)
+
+	-- Check substitutes
+	if (has < needed and req.substitutes) then
+		for subID, _ in pairs(req.substitutes) do
+			has = has + inventory:GetItemCount(subID)
+		end
+	end
+
+	if (has >= needed) then
+		return true
+	end
+
+	local itemTable = ix.item.Get(uniqueID)
+	local itemName = itemTable and itemTable.name or uniqueID
+
+	if (CLIENT) then
+		itemName = L(itemName)
+	end
+
+	return false, itemName
+end
+
 function RECIPE:OnCanSee(client)
 	local character = client:GetCharacter()
 
@@ -94,17 +160,14 @@ function RECIPE:OnCanCraft(client)
 		return false, "@CraftMissingFlag", self.flag
 	end
 
-	for uniqueID, amount in pairs(self.requirements or {}) do
-		if (inventory:GetItemCount(uniqueID) < amount) then
-			local itemTable = ix.item.Get(uniqueID)
-			local itemName = itemTable and itemTable.name or uniqueID
+	-- Check requirements (unified format)
+	for uniqueID, entry in pairs(self.requirements or {}) do
+		local req = ParseRequirement(entry)
+		local bHas, missingName = self:CheckRequirement(inventory, uniqueID, req)
 
-			if (CLIENT) then
-				itemName = L(itemName)
-			end
-
+		if (!bHas) then
 			bHasItems = false
-			missing = missing..itemName..", "
+			missing = missing .. missingName .. ", "
 		end
 	end
 
@@ -116,6 +179,7 @@ function RECIPE:OnCanCraft(client)
 		return false, "@CraftMissingItem", missing
 	end
 
+	-- Check tools (legacy support)
 	for _, uniqueID in pairs(self.tools or {}) do
 		if (!inventory:HasItem(uniqueID)) then
 			local itemTable = ix.item.Get(uniqueID)
@@ -134,6 +198,31 @@ function RECIPE:OnCanCraft(client)
 
 	if (bHasTools == false) then
 		return false, "@CraftMissingTool", missing
+	end
+
+	-- Check station requirement
+	if (self.station) then
+		local currentStation = client.ixCurrentStation
+
+		if (SERVER) then
+			-- Verify player is actually near the required station
+			local bNearStation = false
+
+			for _, v in pairs(ents.FindByClass("ix_station_" .. self.station)) do
+				if (client:GetPos():DistToSqr(v:GetPos()) < 150 * 150) then
+					bNearStation = true
+					break
+				end
+			end
+
+			if (!bNearStation) then
+				return false, "@CraftMissingStation", self.station
+			end
+		elseif (CLIENT) then
+			if (currentStation != self.station) then
+				return false, "@CraftMissingStation", self.station
+			end
+		end
 	end
 
 	if (self.postHooks and self.postHooks["OnCanCraft"]) then
@@ -168,18 +257,51 @@ if (SERVER) then
 
 		if (self.requirements) then
 			local removedItems = {}
+			local items = inventory:GetItems()
 
-			for _, itemTable in pairs(inventory:GetItems()) do
-				local uniqueID = itemTable.uniqueID
+			for uniqueID, entry in pairs(self.requirements) do
+				local req = ParseRequirement(entry)
 
-				if (self.requirements[uniqueID]) then
-					local amountRemoved = removedItems[uniqueID] or 0
-					local amount = self.requirements[uniqueID]
+				-- Skip preserved items
+				if (req.preserve) then
+					continue
+				end
 
-					if (amountRemoved < amount) then
+				local amountToRemove = req.amount
+				local amountRemoved = 0
+
+				-- First try to remove the primary item
+				for _, itemTable in pairs(items) do
+					if (amountRemoved >= amountToRemove) then break end
+
+					if (itemTable.uniqueID == uniqueID and !removedItems[itemTable.id]) then
+						removedItems[itemTable.id] = true
 						itemTable:Remove()
+						amountRemoved = amountRemoved + 1
+					end
+				end
 
-						removedItems[uniqueID] = amountRemoved + 1
+				-- If not enough primary items, try substitutes
+				if (amountRemoved < amountToRemove and req.substitutes) then
+					for subID, subEntry in pairs(req.substitutes) do
+						if (amountRemoved >= amountToRemove) then break end
+
+						local sub = ParseSubstitute(subEntry, req.preserve)
+
+						-- Skip preserved substitutes
+						if (sub.preserve) then
+							continue
+						end
+
+						for _, itemTable in pairs(items) do
+							if (amountRemoved >= amountToRemove) then break end
+
+							if (itemTable.uniqueID == subID and !removedItems[itemTable.id]) then
+								removedItems[itemTable.id] = true
+								itemTable:Remove()
+								amountRemoved = amountRemoved + 1
+							end
+						end
 					end
 				end
 			end

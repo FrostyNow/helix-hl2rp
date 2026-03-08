@@ -4,11 +4,15 @@ LANGUAGE = {
 	["CraftMissingFlag"] = "%s 플래그가 없습니다.",
 	["CraftMissingTool"] = "%s(이)가 없습니다.",
 	["CraftMissingItem"] = "%s(이)가 없습니다.",
+	["CraftMissingStation"] = "%s 근처에 있어야 합니다.",
 	["CraftSuccess"] = "%s(을)를 성공적으로 만들었습니다.",
 
 	["CraftTools"] = "도구",
 	["CraftRequirements"] = "재료",
 	["CraftResults"] = "결과",
+	["CraftStation"] = "스테이션",
+	["CraftOr"] = "또는",
+	["CraftingAtStation"] = "제작 중",
 
 	["cmdCraftRecipe"] = "제작법을 따라 제작을 시도합니다.",
 
@@ -16,6 +20,7 @@ LANGUAGE = {
 
 	["Workbench"] = "작업대",
 	stationWorkbenchDesc = "제작을 위한 작업대입니다.",
+	["StationUseHint"] = "E키를 눌러 제작을 시작하세요.",
 
 	["Ammunition"] = "탄약",
 	["Food"] = "음식",

@@ -15,6 +15,8 @@ function ENT:SetupDataTables()
 end
 
 if (SERVER) then
+	util.AddNetworkString("ixStationOpen")
+
 	function ENT:Initialize()
 		if (!self.uniqueID) then
 			self:Remove()
@@ -26,6 +28,7 @@ if (SERVER) then
 		self:SetMoveType(MOVETYPE_NONE)
 		self:SetSolid(SOLID_VPHYSICS)
 		self:PhysicsInit(SOLID_VPHYSICS)
+		self:SetUseType(SIMPLE_USE)
 
 		local physObj = self:GetPhysicsObject()
 
@@ -33,6 +36,25 @@ if (SERVER) then
 			physObj:EnableMotion(false)
 			physObj:Sleep()
 		end
+	end
+
+	function ENT:Use(activator, caller)
+		if (!IsValid(activator) or !activator:IsPlayer()) then return end
+
+		local character = activator:GetCharacter()
+		if (!character) then return end
+
+		local stationID = self:GetStationID()
+		if (!stationID or stationID == "") then return end
+
+		-- Store current station on the player for server-side validation
+		activator.ixCurrentStation = stationID
+		activator.ixCurrentStationEnt = self
+
+		net.Start("ixStationOpen")
+			net.WriteString(stationID)
+			net.WriteUInt(self:EntIndex(), 16)
+		net.Send(activator)
 	end
 
 	function ENT:OnVarChanged(name, oldID, newID)
