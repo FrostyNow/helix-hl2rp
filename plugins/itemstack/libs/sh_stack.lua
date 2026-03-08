@@ -268,6 +268,11 @@ local function ReplicateSlotState(inventory, x, y, receivers, representative, pr
 		return
 	end
 
+	if (previousRepresentative and representative and previousRepresentative.id == representative.id) then
+		SyncStackSlot(inventory, x, y, receivers)
+		return
+	end
+
 	if (previousRepresentative and (!representative or previousRepresentative.id != representative.id)) then
 		net.Start("ixInventoryRemove")
 			net.WriteUInt(previousRepresentative.id, 32)
@@ -494,8 +499,7 @@ function PLUGIN.stack.TransferStack(item, targetInv, x, y, client, noReplication
 		end
 
 		if (istable(targetReceivers) and targetRepresentative) then
-			targetInv:SendSlot(x, y, targetRepresentative)
-			SyncStackSlot(targetInv, x, y, targetReceivers)
+			ReplicateSlotState(targetInv, x, y, targetReceivers, targetRepresentative, nil)
 		end
 	end
 
@@ -582,9 +586,7 @@ function PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, newX, newY)
 	if (istable(targetReceivers)) then
 		local targetRepresentative = GetRepresentativeAt(targetInv, newX, newY)
 
-		if (targetItem) then
-			SyncStackSlot(targetInv, newX, newY, targetReceivers)
-		elseif (targetRepresentative) then
+		if (targetRepresentative) then
 			ReplicateSlotState(targetInv, newX, newY, targetReceivers, targetRepresentative, previousTargetRepresentative)
 		end
 	end
@@ -828,10 +830,13 @@ end
 -- ============================================
 if (SERVER) then
 	util.AddNetworkString("ixStackSync")
+	util.AddNetworkString("ixStackReset")
 	util.AddNetworkString("ixStackPop")
 	util.AddNetworkString("ixStackReorder")
 	util.AddNetworkString("ixStackCombine")
 	util.AddNetworkString("ixStackMoveSingle")
+	util.AddNetworkString("ixStackRequestSync")
+	util.AddNetworkString("ixStackRefreshPanel")
 
 	META.ixcOrigSync = META.ixcOrigSync or META.Sync
 	META.ixcOrigSendSlot = META.ixcOrigSendSlot or META.SendSlot
@@ -839,6 +844,10 @@ if (SERVER) then
 	--- Override Sync to include stack data
 	function META:Sync(receiver)
 		PLUGIN.stack.RebuildForInventory(self)
+
+		net.Start("ixStackReset")
+			net.WriteUInt(self:GetID(), 32)
+		net.Send(receiver)
 
 		local slots = {}
 
@@ -894,9 +903,10 @@ if (SERVER) then
 			return false
 		end
 
-	RebuildInventories(sourceInv, inventory)
+		RebuildInventories(sourceInv, inventory)
 		local sourceX, sourceY = sourceItem.gridX, sourceItem.gridY
 		local targetX, targetY = targetItem.gridX, targetItem.gridY
+		local previousTargetRepresentative = targetItem
 		local sourceKey = SlotKey(sourceX, sourceY)
 		local sourceStack = sourceInv.stacks and sourceInv.stacks[sourceKey] or {sourceItem}
 		local previousSourceRepresentative = sourceStack and sourceStack[1] or nil
@@ -962,7 +972,10 @@ if (SERVER) then
 
 		local targetReceivers = inventory:GetReceivers()
 		if (istable(targetReceivers)) then
-			SyncStackSlot(inventory, targetX, targetY, targetReceivers)
+			local targetRepresentative = GetRepresentativeAt(inventory, targetX, targetY)
+			if (targetRepresentative) then
+				ReplicateSlotState(inventory, targetX, targetY, targetReceivers, targetRepresentative, previousTargetRepresentative)
+			end
 		end
 
 		return true
@@ -1106,14 +1119,7 @@ if (SERVER) then
 				return
 			end
 
-			local targetItem = targetInv:GetItemAt(x, y)
-			local success, err
-
-			if (targetItem and PLUGIN.stack.CanStack(targetItem, item)) then
-				success, err = PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, x, y)
-			else
-				success, err = item:Transfer(targetInvID, x, y, client)
-			end
+			local success, err = PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, x, y)
 
 			if (!success and err and err != "same inv" and err != "sameSlot") then
 				client:NotifyLocalized(err)
@@ -1126,6 +1132,27 @@ if (SERVER) then
 		if (!success and err and err != "sameSlot") then
 			client:NotifyLocalized(err)
 		end
+
+	end)
+	net.Receive("ixStackRequestSync", function(length, client)
+		local invID = net.ReadUInt(32)
+		local character = client:GetCharacter()
+
+		if (!character) then return end
+
+		local inventory = ix.item.inventories[invID]
+		if (!inventory) then return end
+
+		if (!((inventory.owner and inventory.owner == character:GetID()) or inventory:OnCheckAccess(client))) then
+			return
+		end
+
+		PLUGIN.stack.RebuildForInventory(inventory)
+		inventory:Sync(client)
+		net.Start("ixStackRefreshPanel")
+			net.WriteUInt(invID, 32)
+		net.Send(client)
+
 	end)
 
 	net.Receive("ixStackCombine", function(length, client)
@@ -1259,6 +1286,22 @@ end
 -- CLIENT: Network receivers
 -- ============================================
 if (CLIENT) then
+	net.Receive("ixStackReset", function()
+		local invID = net.ReadUInt(32)
+		local inventory = ix.item.inventories[invID]
+
+		if (!inventory) then
+			return
+		end
+
+		inventory.stacks = {}
+
+		local stackManager = ix.gui and ix.gui.stackManager
+		if (IsValid(stackManager) and stackManager.inventory == inventory) then
+			stackManager:Close()
+		end
+	end)
+
 	net.Receive("ixStackSync", function()
 		local invID = net.ReadUInt(32)
 		local x = net.ReadUInt(6)
@@ -1522,6 +1565,8 @@ hook.Add("InventoryItemAdded", "ixItemStack", function(oldInv, newInv, item)
 		PLUGIN.stack.DoStack(newInv, targetItem, item)
 	end
 end)
+
+
 
 
 

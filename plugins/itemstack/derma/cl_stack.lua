@@ -282,6 +282,74 @@ local ixInventory = vgui.GetControlTable("ixInventory")
 
 if (ixInventory) then
 	local originalOnTransfer = ixInventory.OnTransfer
+	local originalSetInventory = ixInventory.SetInventory
+
+	local function ClearInventoryPanel(panel)
+		if (!IsValid(panel) or !panel.panels) then
+			return
+		end
+
+		for itemID, icon in pairs(panel.panels) do
+			if (IsValid(icon)) then
+				for _, slot in ipairs(icon.slots or {}) do
+					if (slot.item == icon) then
+						slot.item = nil
+					end
+				end
+
+				icon:Remove()
+			end
+
+			panel.panels[itemID] = nil
+		end
+	end
+
+	local function RefreshInventoryPanel(panel, inventory)
+		if (!IsValid(panel) or !inventory) then
+			return
+		end
+
+		ClearInventoryPanel(panel)
+		panel.ixStackSkipSyncRequest = true
+		originalSetInventory(panel, inventory)
+		panel.ixStackSkipSyncRequest = nil
+		panel:RebuildItems()
+		panel:InvalidateLayout(true)
+		panel:InvalidateParent(true)
+		panel:InvalidateChildren(true)
+		panel:InvalidateChildren(true)
+		panel:InvalidateLayout(true)
+	end
+
+	function ixInventory:SetInventory(inventory, bFitParent)
+		local result = originalSetInventory(self, inventory, bFitParent)
+
+		if (!self.ixStackSkipSyncRequest and inventory and inventory.GetID) then
+			net.Start("ixStackRequestSync")
+				net.WriteUInt(inventory:GetID(), 32)
+			net.SendToServer()
+		end
+
+		return result
+	end
+
+	net.Receive("ixStackRefreshPanel", function()
+		local invID = net.ReadUInt(32)
+		local inventory = ix.item.inventories[invID]
+
+		if (!inventory) then
+			return
+		end
+
+		local localInvID = LocalPlayer():GetCharacter() and LocalPlayer():GetCharacter():GetInventory():GetID() or nil
+		local panelID = (localInvID and invID == localInvID) and 1 or invID
+		local panel = ix.gui["inv" .. panelID]
+
+		if (IsValid(panel)) then
+			RefreshInventoryPanel(panel, inventory)
+		end
+	end)
+
 
 	function ixInventory:OnTransfer(oldX, oldY, x, y, oldInventory, noSend)
 		local inventories = ix.item.inventories
