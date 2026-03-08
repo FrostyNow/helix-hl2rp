@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -E \"\\\\.\\(lua\\)$\")",
+      "Read(//e/Garry''''s Mod/roleplaying/garrysmod/gamemodes/helix/**)"
+    ]
+  }
+}

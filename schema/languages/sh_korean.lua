@@ -506,6 +506,8 @@ LANGUAGE = {
     itemSpringsDesc = "탄성을 이용해 에너지를 저장하거나 충격을 흡수하는 기계 부품입니다.",
 	["Relocation Coupon"] = "거주 이전 쿠폰",
 	couponDesc = "거주지 이전을 허가받았다는 증표입니다. 없어진다면 큰 문제가 생길 수도 있습니다.",
+	["Shot Glass"] = "유리잔",
+	itemShotGlassDesc = "술이나 음료를 따라 마실 수 있는 작은 유리잔입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

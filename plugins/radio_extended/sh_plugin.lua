@@ -120,6 +120,7 @@ ix.lang.AddTable("korean", {
 	["Listen"] = "듣기 모드",
 	["Silence"] = "음소거",
 	["Scan"] = "스캔",
+	["Synchronize"] = "동기화",
 
 	["Handheld Radio"] = "휴대용 무전기",
 	itemHandheldRadioDesc = "주파수 조정이 가능한 휴대용 무전기입니다.\n현재 %s%s 상태입니다.",

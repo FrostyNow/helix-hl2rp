@@ -2,7 +2,7 @@
 RECIPE.name = "Bobby Pin Box"
 RECIPE.description = "recipeBobbyPinDesc"
 RECIPE.category = "Assembly"
-RECIPE.model = "models/props_lab/box01a.mdl"
+RECIPE.model = "models/mosi/fallout4/props/junk/bobbypinbox.mdl"
 RECIPE.requirements = {
 	["steel"] = 1,
 	["gears"] = 1,

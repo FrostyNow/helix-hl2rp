@@ -73,7 +73,9 @@ function ITEM:GetDescription()
 		notWalkie and safeL("itemRadioFreqTuner") or "",
 		enabled and safeL("itemRadioOn") or safeL("itemRadioOff")
 	)
-	ret = ret .. " (" .. (duplexTrue and self:GetData("listenfrequency", "100.0") or self:GetData("frequency","100.0")) .. "MHz)"
+	if notWalkie then
+		ret = ret .. " (" .. (duplexTrue and self:GetData("listenfrequency", "100.0") or self:GetData("frequency","100.0")) .. "MHz)"
+	end
 
 	if enabled then
 		if self.hybrid then
@@ -787,6 +789,7 @@ function ITEM.postHooks.Activate(item, status)
 end
 
 ITEM.functions.Synchronize = {
+	icon = "icon16/feed_disk.png",
 	OnRun = function(itemTable)
 		--print(itemTable.radiotypes)
 		local character = itemTable.player:GetCharacter()
@@ -839,6 +842,7 @@ ITEM.functions.Synchronize = {
 }
 
 ITEM.functions.Scan = {
+	icon = "icon16/feed_magnify.png",
 	OnRun = function(itemTable)
 		--print(itemTable.radiotypes)
 		local character = itemTable.player:GetCharacter()

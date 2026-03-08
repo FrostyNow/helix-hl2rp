@@ -412,7 +412,7 @@ ix.command.Add("ItemRemove", {
 		bit.bor(ix.type.number, ix.type.optional)
 	},
 	OnRun = function(self, client, range)
-		range = range or 128
+		range = range or 20
 
 		local trace = client:GetEyeTraceNoCursor()
 		local pos = trace.HitPos

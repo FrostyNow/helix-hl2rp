@@ -234,6 +234,7 @@ LANGUAGE = {
     itemSilverDesc = "A precious metal used in jewelry, coinage, and precision electronics.",
     itemSpringsDesc = "Elastic mechanical components used to store energy or absorb shock.",
 	couponDesc = "A coupon to prove yourself that you have been granted permission to move to a new residence. If you lose it, you'll might be in a huge problem.",
+	itemShotGlassDesc = "A small glass for drinking alcohol or beverages.",
 
 	itemMetropoliceDesc = "An uniform that metropolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

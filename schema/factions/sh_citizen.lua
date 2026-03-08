@@ -72,21 +72,12 @@ function FACTION:OnCharacterCreated(client, character)
 
 	character:SetData("cid", id)
 
+	inventory:Add("coupon", 1)
 	inventory:Add("suitcase", 1)
 	inventory:Add("cid", 1, {
 		name = character:GetName(),
 		id = id
 	})
-
-	--inventory:Add("smg1", 1)
-	--inventory:Add("smg1ammo", 3)
-	--inventory:Add("pistol", 1)
-	--inventory:Add("pistolammo", 2)
-	--inventory:Add("grenade", 1)
-	--inventory:Add("walkietalkie", 1)
-	--inventory:Add("bandage", 3)
-	--inventory:Add("bandage", 3)
-	--inventory:Add("flashlight", 1)
 end
 
 FACTION.bodyGroups = {
