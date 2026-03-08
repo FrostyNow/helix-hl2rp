@@ -806,6 +806,8 @@ if (SERVER) then
 
 	--- Override Sync to include stack data
 	function META:Sync(receiver)
+		PLUGIN.stack.RebuildForInventory(self)
+
 		local slots = {}
 
 		for x, items in pairs(self.slots) do
