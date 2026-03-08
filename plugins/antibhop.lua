@@ -11,7 +11,10 @@ if SERVER then
 	util.AddNetworkString( "Jump" )
 	net.Receive("Jump",function(len,client)
 		local endurance = client:GetCharacter():GetAttribute("end", 0)
-		client:SetLocalVar("stm", math.Clamp(client:GetLocalVar("stm",0) - ix.config.Get("jumpStamina", 20) + endurance, 1, 100))
+		local maxAttr = ix.config.Get("maxAttributes", 100)
+		local jumpStamina = ix.config.Get("jumpStamina", 20)
+		local endBonus = (endurance / maxAttr) * jumpStamina
+		client:SetLocalVar("stm", math.Clamp(client:GetLocalVar("stm",0) - jumpStamina + endBonus, 1, 100))
 	end)
 end
 

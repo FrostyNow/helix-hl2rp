@@ -393,7 +393,10 @@ if (SERVER) then
 			local char = client:GetCharacter()
 			local lck = char:GetAttribute("lck", 0)
 			local lckMlt = ix.config.Get("luckMultiplier", 1)
-			local amount = math.floor(math.random(char:GetMoney() / ( 2 / ( lck * lckMlt ) ) ))
+			local maxAttr = ix.config.Get("maxAttributes", 100)
+			local luckFactor = math.Clamp(1 - (lck / maxAttr) * lckMlt, 0, 1)
+			local maxDrop = math.floor(char:GetMoney() / 2 * luckFactor)
+			local amount = maxDrop > 0 and math.random(0, maxDrop) or 0
 			
 			if (amount > 0) then
 				char:TakeMoney(amount)

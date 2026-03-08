@@ -434,7 +434,7 @@ ITEM.functions.Repair = {
 				if (v.uniqueID == "repair_tools") then
 					item:SetData("Durability", math.min(item:GetData("Durability") + item:GetRepairAmount(client), item.maxDurability))
 					item:UpdateResistance(client)
-					character:SetAttrib("int", math.Clamp(int + 0.2, 0, 10))
+					character:SetAttrib("int", math.Clamp(int + 0.2, 0, ix.config.Get("maxAttributes", 100)))
 					client:EmitSound(randomsound)
 					v:Remove()
 					
@@ -459,14 +459,15 @@ ITEM.functions.Repair = {
 function ITEM:GetRepairAmount(client)
 	local character = client:GetCharacter()
 	local int = character:GetAttribute("int", 0)
-	
-	if (int < 2) then
-	   return self.maxDurability * 0.2
-	elseif (int < 4) then
+	local maxAttr = ix.config.Get("maxAttributes", 100)
+
+	if (int < maxAttr * 0.2) then
+		return self.maxDurability * 0.2
+	elseif (int < maxAttr * 0.4) then
 		return self.maxDurability * 0.4
-	elseif (int < 6) then
+	elseif (int < maxAttr * 0.6) then
 		return self.maxDurability * 0.6
-	elseif (int < 8) then
+	elseif (int < maxAttr * 0.8) then
 		return self.maxDurability * 0.8
 	else
 		return self.maxDurability * 1

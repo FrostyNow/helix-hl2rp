@@ -33,16 +33,18 @@ if SERVER then
 			local luckMlt = ix.config.Get("luckMultiplier", 1)
 			local endurance = char:GetAttribute("end", 0)
 			local endMlt = ix.config.Get("enduranceMultiplier", 0.5)
-			
+			local maxAttr = ix.config.Get("maxAttributes", 100)
+			local normFactor = 100 / maxAttr
+
 			local baseChance = ix.config.Get("legShootChance", 40)
-			
-			local threshold = baseChance - (luck * luckMlt) - (endurance * endMlt)
-			
+
+			local threshold = baseChance - (luck * normFactor * luckMlt) - (endurance * normFactor * endMlt)
+
 			if ply:Armor() > 0 then
 				threshold = threshold * 0.5
 			end
 			if (math.random(1, 100) <= threshold) then
-				local duration = math.max(math.random(2, 4) - (luck * 0.1), 1)
+				local duration = math.max(math.random(2, 4) - (luck * normFactor * 0.1), 1)
 				ply:SetRagdolled(true, duration)
 			end
 		end
