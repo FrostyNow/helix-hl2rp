@@ -1,5 +1,5 @@
 ITEM.name = "Water Drug"
-ITEM.model = "models/synapse/misc_props/synapse_medicine_bottles_1.mdl"
+ITEM.model = "models/willardnetworks/skills/pills1.mdl"
 ITEM.description = "itemWaterDrugDesc"
 ITEM.price = 1
 

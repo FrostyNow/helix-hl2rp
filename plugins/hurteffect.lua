@@ -10,8 +10,9 @@ if (SERVER) then
 			client.ixNextPain = CurTime() + 0.33
 			if (damage > 10 and client:Armor() == 0) then
 				local endurance = client:GetCharacter():GetAttribute("end", 0)
-				
-				if (endurance and damage - endurance * 0.5 > 10) then
+			local maxAttr = ix.config.Get("maxAttributes", 100)
+
+				if (damage - (endurance / maxAttr * 50) > 10) then
 				else
 					client:ScreenFade(1, Color(255, 255, 255, 255), 3, 0)
 					client:ViewPunch(Angle(-1.3, 1.8, 0))

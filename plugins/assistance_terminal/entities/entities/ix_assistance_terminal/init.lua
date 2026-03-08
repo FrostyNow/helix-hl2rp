@@ -85,7 +85,8 @@ function ENT:Use(ply)
 
 	local actionTime = ix.config.Get("assistanceTerminalActionTime", 5)
 
-	ply:SetAction("@terminalRequesting", actionTime, function()
+	ply:SetAction("@terminalRequesting", actionTime)
+	ply:DoStaredAction(self, function()
 		if (!IsValid(self) or !IsValid(ply)) then return end
 		if (ply:GetPos():DistToSqr(self:GetPos()) > 6400) then
 			ply:NotifyLocalized("tooFar")
@@ -133,6 +134,8 @@ function ENT:Use(ply)
 		end
 
 		self.nextUseTime = CurTime() + ix.config.Get("assistanceTerminalCooldown", 60)
+	end, actionTime, function()
+		ply:SetAction(false)
 	end)
 end
 

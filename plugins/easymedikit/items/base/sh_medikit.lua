@@ -22,9 +22,10 @@ ITEM.functions.selfheal = {
 		local client = itemTable.player
 		local character = client:GetCharacter()
 		local int = character:GetAttribute("int", 0)
+		local maxAttr = ix.config.Get("maxAttributes", 100)
 		if int >= itemTable.medAttr then
 			client:SetNetworkedFloat("NextBandageuse", 2 + CurTime())
-			local amount = itemTable.healthPoint + int
+			local amount = math.floor(itemTable.healthPoint * (1 + int / maxAttr))
 			local newHealth = client:Health() + amount
 
 			if (newHealth <= 0) then
@@ -61,6 +62,7 @@ ITEM.functions.heal = {
 		local client = itemTable.player
 		local character = client:GetCharacter()
 		local int = character:GetAttribute("int", 0)
+		local maxAttr = ix.config.Get("maxAttributes", 100)
 		local data = {}
 			data.start = client:GetShootPos()
 			data.endpos = data.start + client:GetAimVector() * 96
@@ -76,7 +78,7 @@ ITEM.functions.heal = {
 		if (IsValid(entity) and entity:IsPlayer()) then
 			if int >= itemTable.medAttr then
 				entity:SetNetworkedFloat("NextBandageuse", 2 + CurTime())
-				local amount = itemTable.healthPoint + int
+				local amount = math.floor(itemTable.healthPoint * (1 + int / maxAttr))
 				local newHealth = entity:Health() + amount
 
 				if (newHealth <= 0) then

@@ -21,7 +21,7 @@ ITEM.functions.OverloadDoor = {
 			local randomChance = math.random(1,10)
 			local lck = ply:GetCharacter():GetAttribute("lck", 0)
 			local lckMlt = ix.config.Get("luckMultiplier", 1)
-			local lckAmt = (lck * lckMlt) / 10
+			local lckAmt = (lck / ix.config.Get("maxAttributes", 100)) * 10 * lckMlt
 
 			if not (target:HasSpawnFlags(256) and target:HasSpawnFlags(1024)) then
 				ply:Freeze(true)

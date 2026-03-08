@@ -193,11 +193,12 @@ function SWEP:PrimaryAttack()
 	local damage = self.Primary.Damage
 	local character = self.Owner:GetCharacter()
 	local strength = (character and character:GetAttribute("str", 0)) or 0
+	local maxAttr = ix.config.Get("maxAttributes", 100)
 
 	if (self:GetActivated()) then
-		damage = math.Clamp(3 + (strength * 0.35), 3, 20)
+		damage = math.Clamp(3 + (strength / maxAttr * 17), 3, 20)
 	else
-		damage = math.Clamp(1 + (strength * 0.25), 1, 15)
+		damage = math.Clamp(1 + (strength / maxAttr * 14), 1, 15)
 	end
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
@@ -295,7 +296,8 @@ function SWEP:SecondaryAttack()
 			self:SetNextSecondaryFire(CurTime() + 0.4)
 			self:SetNextPrimaryFire(CurTime() + 1)
 		elseif (entity:IsPlayer()) then
-			local direction = self.Owner:GetAimVector() * (300 + (self.Owner:GetCharacter():GetAttribute("str", 0) * 3))
+			local pushStr = self.Owner:GetCharacter() and self.Owner:GetCharacter():GetAttribute("str", 0) or 0
+			local direction = self.Owner:GetAimVector() * (300 + (pushStr / ix.config.Get("maxAttributes", 100) * 300))
 				direction.z = 0
 			entity:SetVelocity(direction)
 

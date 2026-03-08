@@ -1,6 +1,6 @@
 ITEM.name = "Bobby pin box"
 ITEM.description = "itemBobbyPinDesc"
-ITEM.model = "models/props_lab/box01a.mdl"
+ITEM.model = "models/mosi/fallout4/props/junk/bobbypinbox.mdl"
 ITEM.category = "Utility"
 ITEM.width = 1
 ITEM.height = 1

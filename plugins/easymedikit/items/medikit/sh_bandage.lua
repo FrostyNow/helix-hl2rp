@@ -1,6 +1,6 @@
 ITEM.name = "Bandage"
 ITEM.description = "bandageDesc"
-ITEM.model = "models/props_lab/box01a.mdl"
+ITEM.model = "models/stuff/bandages.mdl"
 ITEM.category = "Medical"
 ITEM.price = 15
 ITEM.healthPoint = 10 -- Health point that the player will get

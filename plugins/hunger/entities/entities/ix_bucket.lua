@@ -27,14 +27,15 @@ if (SERVER) then
 	function ENT:Use(activator)
 		local bActive = self:GetNetVar("active", false)
 		local action = bActive and "extinguishing" or "lighting"
-		
-		activator:SetAction(L(action, activator), 1.5, function()
+
+		activator:SetAction(L(action, activator), 1.5)
+		activator:DoStaredAction(self, function()
 			if (!IsValid(self) or !IsValid(activator) or activator:GetPos():DistToSqr(self:GetPos()) > 6400) then
 				activator:SetAction()
 				activator:NotifyLocalized("tooFar")
 				return
 			end
-			
+
 			local bNewActive = !self:GetNetVar("active", false)
 			self:SetNetVar("active", bNewActive)
 
@@ -43,6 +44,8 @@ if (SERVER) then
 			else
 				self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 250, 0.8)
 			end
+		end, 1.5, function()
+			activator:SetAction()
 		end)
 	end
 

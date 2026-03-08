@@ -167,7 +167,8 @@ function SWEP:SecondaryAttack()
 			self:SetNextSecondaryFire(CurTime() + 0.4)
 			self:SetNextPrimaryFire(CurTime() + 1)
 		elseif (entity:IsPlayer()) then
-			local direction = self.Owner:GetAimVector() * (300 + (self.Owner:GetCharacter():GetAttribute("str", 0) * 3))
+			local pushStr = self.Owner:GetCharacter() and self.Owner:GetCharacter():GetAttribute("str", 0) or 0
+			local direction = self.Owner:GetAimVector() * (300 + (pushStr / ix.config.Get("maxAttributes", 100) * 300))
 				direction.z = 0
 			entity:SetVelocity(direction)
 
