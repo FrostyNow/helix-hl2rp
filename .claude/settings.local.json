@@ -3,6 +3,9 @@
     "allow": [
       "Bash(grep -E \"\\\\.\\(lua\\)$\")",
       "Read(//e/Garry''''s Mod/roleplaying/garrysmod/gamemodes/helix/**)"
+    ],
+    "additionalDirectories": [
+      "e:\\Garry''''s Mod\\roleplaying\\garrysmod\\gamemodes\\ixhl2rp\\plugins\\scrollpanel\\entities\\entities"
     ]
   }
 }

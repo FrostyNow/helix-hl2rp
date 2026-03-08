@@ -491,6 +491,40 @@ properties.Add("ixEditFlagsProperty", {
 	end
 })
 
+properties.Add("ixViewInventoryProperty", {
+	MenuLabel = "View Inventory",
+	Order = 1.5,
+	MenuIcon = "icon16/briefcase.png",
+
+	Filter = function(self, entity, client)
+		return CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil) and entity:IsPlayer() and entity:GetCharacter()
+	end,
+
+	Action = function(self, entity)
+		self:MsgStart()
+			net.WriteEntity(entity)
+		self:MsgEnd()
+	end,
+
+	Receive = function(self, length, client)
+		if (CAMI.PlayerHasAccess(client, "Helix - Admin Context Options", nil)) then
+			local entity = net.ReadEntity()
+
+			if (IsValid(entity) and entity:IsPlayer() and entity:GetCharacter()) then
+				local inventory = entity:GetCharacter():GetInventory()
+
+				if (inventory) then
+					ix.storage.Open(client, inventory, {
+						entity = entity,
+						name = L("viewInventory", client),
+						bMultipleUsers = true
+					})
+				end
+			end
+		end
+	end
+})
+
 if (CLIENT) then
 	function PLUGIN:PopulateScoreboardPlayerMenu(target, menu)
 		if (CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Admin Context Options", nil)) then
@@ -511,7 +545,17 @@ if (SERVER) then
 			local target = net.ReadEntity()
 
 			if (IsValid(target) and target:IsPlayer() and target:GetCharacter()) then
-				Schema:SearchPlayer(client, target)
+				local inventory = target:GetCharacter():GetInventory()
+
+				if (inventory) then
+					ix.storage.Open(client, inventory, {
+						entity = target,
+						name = L("viewInventory", client),
+						bMultipleUsers = true
+					})
+				else
+					client:NotifyLocalized("charNoExist")
+				end
 			end
 		end
 	end)
