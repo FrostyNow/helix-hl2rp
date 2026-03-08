@@ -174,8 +174,14 @@ function PLUGIN.stack.RebuildForInventory(inventory)
 
 	inventory.stacks = {}
 
-	-- Helix restore only keeps one item per occupied slot in inventory.slots.
-	-- Rebuild by scanning all live item instances for this inventory instead.
+	for x, column in pairs(inventory.slots or {}) do
+		for y, slotItem in pairs(column) do
+			if (istable(slotItem) and slotItem.isStackable) then
+				column[y] = nil
+			end
+		end
+	end
+
 	local positionMap = {}
 
 	for _, item in pairs(ix.item.instances) do
@@ -189,23 +195,20 @@ function PLUGIN.stack.RebuildForInventory(inventory)
 	for key, items in pairs(positionMap) do
 		local parts = string.Explode(":", key)
 		local x, y = tonumber(parts[1]), tonumber(parts[2])
-		local slotRep = x and y and inventory:GetItemAt(x, y) or nil
 
 		table.sort(items, function(a, b)
-			if (slotRep) then
-				if (a.id == slotRep.id) then
-					return true
-				elseif (b.id == slotRep.id) then
-					return false
-				end
-			end
-
 			return a.id < b.id
 		end)
 
 		if (x and y and items[1]) then
-			inventory.slots[x] = inventory.slots[x] or {}
-			inventory.slots[x][y] = items[1]
+			for x2 = 0, items[1].width - 1 do
+				local slotX = x + x2
+				inventory.slots[slotX] = inventory.slots[slotX] or {}
+
+				for y2 = 0, items[1].height - 1 do
+					inventory.slots[slotX][y + y2] = items[1]
+				end
+			end
 		end
 
 		if (#items > 1) then
@@ -357,11 +360,43 @@ local function SaveStackPosition(stack, invID, x, y, noSave)
 	end
 end
 
+local function RebuildInventories(...)
+	local seen = {}
+
+	for index = 1, select("#", ...) do
+		local inventory = select(index, ...)
+
+		if (inventory and !seen[inventory]) then
+			PLUGIN.stack.RebuildForInventory(inventory)
+			seen[inventory] = true
+		end
+	end
+end
+
+local function GetRepresentativeAt(inventory, x, y)
+	if (!inventory or !x or !y) then
+		return nil
+	end
+
+	return inventory:GetItemAt(x, y)
+end
+
+local function RunInventoryItemAdded(oldInv, newInv, item)
+	if (!item) then
+		return
+	end
+
+	item.ixSkipAutoStack = true
+	hook.Run("InventoryItemAdded", oldInv, newInv, item)
+	item.ixSkipAutoStack = nil
+end
+
 function PLUGIN.stack.MoveStack(inventory, item, newX, newY, client)
 	if (!inventory or !item or !inventory.stacks) then
 		return false, "invalidInventory"
 	end
 
+	RebuildInventories(inventory)
 	local oldX, oldY = item.gridX, item.gridY
 	local oldKey = SlotKey(oldX, oldY)
 	local stack = inventory.stacks[oldKey]
@@ -374,18 +409,16 @@ function PLUGIN.stack.MoveStack(inventory, item, newX, newY, client)
 		return false, "noFit"
 	end
 
-	inventory.stacks[oldKey] = nil
-	ClearItemSlots(inventory, item, oldX, oldY)
+	ClearSlotArea(inventory, oldX, oldY, item.width, item.height)
 
 	for _, stackItem in ipairs(stack) do
 		stackItem.gridX = newX
 		stackItem.gridY = newY
 	end
 
-	local newKey = SlotKey(newX, newY)
-	inventory.stacks[newKey] = stack
 	FillItemSlots(inventory, stack[1], newX, newY)
 	SaveStackPosition(stack, inventory:GetID(), newX, newY, inventory.noSave)
+	RebuildInventories(inventory)
 
 	local receivers = inventory:GetReceivers()
 	local filtered = FilterReceivers(receivers, client)
@@ -409,9 +442,11 @@ function PLUGIN.stack.TransferStack(item, targetInv, x, y, client, noReplication
 		return false, "invalidInventory"
 	end
 
+	RebuildInventories(sourceInv, targetInv)
 	local oldX, oldY = item.gridX, item.gridY
 	local oldKey = SlotKey(oldX, oldY)
 	local stack = sourceInv.stacks[oldKey]
+	local previousRepresentative = stack and stack[1] or nil
 
 	if (!stack or #stack <= 1) then
 		return false, "invalidStack"
@@ -429,12 +464,7 @@ function PLUGIN.stack.TransferStack(item, targetInv, x, y, client, noReplication
 		return false, "noFit"
 	end
 
-	sourceInv.stacks[oldKey] = nil
-	ClearItemSlots(sourceInv, stack[1], oldX, oldY)
-
-	targetInv.stacks = targetInv.stacks or {}
-	local newKey = SlotKey(x, y)
-	targetInv.stacks[newKey] = stack
+	ClearSlotArea(sourceInv, oldX, oldY, item.width, item.height)
 
 	for _, stackItem in ipairs(stack) do
 		stackItem.invID = targetInv:GetID()
@@ -446,52 +476,53 @@ function PLUGIN.stack.TransferStack(item, targetInv, x, y, client, noReplication
 		end
 
 		hook.Run("OnItemTransferred", stackItem, sourceInv, targetInv)
-		hook.Run("InventoryItemAdded", sourceInv, targetInv, stackItem)
+		RunInventoryItemAdded(sourceInv, targetInv, stackItem)
 	end
 
 	FillItemSlots(targetInv, stack[1], x, y)
 	SaveStackPosition(stack, targetInv:GetID(), x, y, targetInv.noSave)
+	RebuildInventories(sourceInv, targetInv)
 
 	if (!noReplication) then
 		local sourceReceivers = sourceInv:GetReceivers()
 		local targetReceivers = targetInv:GetReceivers()
+		local sourceRepresentative = GetRepresentativeAt(sourceInv, oldX, oldY)
+		local targetRepresentative = GetRepresentativeAt(targetInv, x, y)
 
 		if (istable(sourceReceivers)) then
-			net.Start("ixInventoryRemove")
-				net.WriteUInt(stack[1].id, 32)
-				net.WriteUInt(sourceInv:GetID(), 32)
-			net.Send(sourceReceivers)
-
-			SyncStackSlot(sourceInv, oldX, oldY, sourceReceivers)
+			ReplicateSlotState(sourceInv, oldX, oldY, sourceReceivers, sourceRepresentative, previousRepresentative)
 		end
 
-		if (istable(targetReceivers)) then
-			targetInv:SendSlot(x, y, stack[1])
+		if (istable(targetReceivers) and targetRepresentative) then
+			targetInv:SendSlot(x, y, targetRepresentative)
 			SyncStackSlot(targetInv, x, y, targetReceivers)
 		end
 	end
 
 	return true
 end
+
 function PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, newX, newY)
 	if (!sourceInv or !targetInv or !item or !sourceInv.stacks) then
 		return false, "invalidInventory"
 	end
 
+	RebuildInventories(sourceInv, targetInv)
 	local oldX, oldY = item.gridX, item.gridY
+	local oldKey = SlotKey(oldX, oldY)
+	local sourceStack = sourceInv.stacks[oldKey]
+	local previousSourceRepresentative = sourceStack and sourceStack[1] or nil
 
 	if (sourceInv == targetInv and oldX == newX and oldY == newY) then
 		return false, "sameSlot"
 	end
-
-	local oldKey = SlotKey(oldX, oldY)
-	local sourceStack = sourceInv.stacks[oldKey]
 
 	if (!sourceStack or #sourceStack <= 1 or sourceStack[1].id != item.id) then
 		return false, "invalidStack"
 	end
 
 	local targetItem = targetInv:GetItemAt(newX, newY)
+	local previousTargetRepresentative = targetItem
 
 	if (targetItem) then
 		if (!PLUGIN.stack.CanStack(targetItem, item)) then
@@ -501,23 +532,25 @@ function PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, newX, newY)
 		return false, "noFit"
 	end
 
-	local sourceNewRep = PLUGIN.stack.Unregister(sourceInv, item)
-
-	if (!sourceNewRep) then
-		ClearItemSlots(sourceInv, item, oldX, oldY)
+	if (#sourceStack <= 2) then
+		ClearSlotArea(sourceInv, oldX, oldY, item.width, item.height)
+		if (#sourceStack == 2) then
+			local remainingItem = sourceStack[2]
+			if (remainingItem and remainingItem.id == item.id) then
+				remainingItem = sourceStack[1]
+			end
+			if (remainingItem) then
+				FillItemSlots(sourceInv, remainingItem, oldX, oldY)
+			end
+		end
 	end
 
 	item.gridX = newX
 	item.gridY = newY
 	item.invID = targetInv:GetID()
 
-	if (targetItem) then
-		targetInv.stacks = targetInv.stacks or {}
-		PLUGIN.stack.Register(targetInv, targetItem)
-		PLUGIN.stack.Register(targetInv, item)
-	else
+	if (!targetItem) then
 		FillItemSlots(targetInv, item, newX, newY)
-		PLUGIN.stack.Register(targetInv, item)
 	end
 
 	if (sourceInv != targetInv) then
@@ -526,7 +559,7 @@ function PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, newX, newY)
 		end
 
 		hook.Run("OnItemTransferred", item, sourceInv, targetInv)
-		hook.Run("InventoryItemAdded", sourceInv, targetInv, item)
+		RunInventoryItemAdded(sourceInv, targetInv, item)
 	end
 
 	if (!targetInv.noSave) then
@@ -538,22 +571,21 @@ function PLUGIN.stack.TransferSingle(sourceInv, item, targetInv, newX, newY)
 		query:Execute()
 	end
 
+	RebuildInventories(sourceInv, targetInv)
+
 	local sourceReceivers = sourceInv:GetReceivers()
 	if (istable(sourceReceivers)) then
-		net.Start("ixInventoryRemove")
-			net.WriteUInt(item.id, 32)
-			net.WriteUInt(sourceInv:GetID(), 32)
-		net.Send(sourceReceivers)
-
-		ReplicateSlotState(sourceInv, oldX, oldY, sourceReceivers, sourceNewRep)
+		ReplicateSlotState(sourceInv, oldX, oldY, sourceReceivers, GetRepresentativeAt(sourceInv, oldX, oldY), previousSourceRepresentative)
 	end
 
 	local targetReceivers = targetInv:GetReceivers()
 	if (istable(targetReceivers)) then
+		local targetRepresentative = GetRepresentativeAt(targetInv, newX, newY)
+
 		if (targetItem) then
 			SyncStackSlot(targetInv, newX, newY, targetReceivers)
-		else
-			targetInv:SendSlot(newX, newY, item)
+		elseif (targetRepresentative) then
+			ReplicateSlotState(targetInv, newX, newY, targetReceivers, targetRepresentative, previousTargetRepresentative)
 		end
 	end
 
@@ -862,15 +894,13 @@ if (SERVER) then
 			return false
 		end
 
+	RebuildInventories(sourceInv, inventory)
 		local sourceX, sourceY = sourceItem.gridX, sourceItem.gridY
 		local targetX, targetY = targetItem.gridX, targetItem.gridY
 		local sourceKey = SlotKey(sourceX, sourceY)
 		local sourceStack = sourceInv.stacks and sourceInv.stacks[sourceKey] or {sourceItem}
+		local previousSourceRepresentative = sourceStack and sourceStack[1] or nil
 		local maxStack = targetItem.maxStack or sourceItem.maxStack or 16
-
-		inventory.stacks = inventory.stacks or {}
-		PLUGIN.stack.Register(inventory, targetItem)
-
 		local targetCount = PLUGIN.stack.GetCount(targetItem)
 		local moveCount = math.min(maxStack - targetCount, #sourceStack)
 
@@ -885,20 +915,20 @@ if (SERVER) then
 			moveItems[#moveItems + 1] = sourceStack[index]
 		end
 
-		local sourceRepMoved = false
+		if (moveCount >= #sourceStack) then
+			ClearSlotArea(sourceInv, sourceX, sourceY, sourceItem.width, sourceItem.height)
+		end
+
+		local sourceRepresentativeMoved = false
 
 		for _, movingItem in ipairs(moveItems) do
-			if (movingItem.id == sourceItem.id) then
-				sourceRepMoved = true
+			if (previousSourceRepresentative and movingItem.id == previousSourceRepresentative.id) then
+				sourceRepresentativeMoved = true
 			end
-
-			PLUGIN.stack.Unregister(sourceInv, movingItem)
 
 			movingItem.gridX = targetX
 			movingItem.gridY = targetY
 			movingItem.invID = inventory:GetID()
-
-			PLUGIN.stack.Register(inventory, movingItem)
 
 			if (!inventory.noSave) then
 				local query = mysql:Update("ix_items")
@@ -908,24 +938,23 @@ if (SERVER) then
 					query:Where("item_id", movingItem.id)
 				query:Execute()
 			end
+
+			if (sourceInv != inventory) then
+				if (movingItem.OnTransferred) then
+					movingItem:OnTransferred(sourceInv, inventory)
+				end
+
+				hook.Run("OnItemTransferred", movingItem, sourceInv, inventory)
+				RunInventoryItemAdded(sourceInv, inventory, movingItem)
+			end
 		end
 
-		local remainingSourceStack = sourceInv.stacks and sourceInv.stacks[sourceKey]
-		local sourceNewRep = remainingSourceStack and remainingSourceStack[1] or nil
-
-		if (!sourceNewRep) then
-			ClearSlotArea(sourceInv, sourceX, sourceY, sourceItem.width, sourceItem.height)
-		end
+		RebuildInventories(sourceInv, inventory)
 
 		local sourceReceivers = sourceInv:GetReceivers()
 		if (istable(sourceReceivers)) then
-			if (sourceRepMoved) then
-				net.Start("ixInventoryRemove")
-					net.WriteUInt(sourceItem.id, 32)
-					net.WriteUInt(sourceInv:GetID(), 32)
-				net.Send(sourceReceivers)
-
-				ReplicateSlotState(sourceInv, sourceX, sourceY, sourceReceivers, sourceNewRep)
+			if (sourceRepresentativeMoved) then
+				ReplicateSlotState(sourceInv, sourceX, sourceY, sourceReceivers, GetRepresentativeAt(sourceInv, sourceX, sourceY), previousSourceRepresentative)
 			else
 				SyncStackSlot(sourceInv, sourceX, sourceY, sourceReceivers)
 			end
@@ -1266,14 +1295,8 @@ if (CLIENT) then
 			inventory.stacks[key] = nil
 		end
 
-		-- Update slot representative when the server includes one.
-		if (#syncedItems > 0) then
-			local rep = syncedItems[1]
-			inventory.slots[x] = inventory.slots[x] or {}
-			inventory.slots[x][y] = rep
-		elseif (inventory.slots[x]) then
-			inventory.slots[x][y] = nil
-		end
+		-- Helix inventory sync owns slot representatives and icon panels.
+		-- Stack sync only updates hidden members and ordering for a slot.
 
 		local stackManager = ix.gui and ix.gui.stackManager
 		if (IsValid(stackManager) and stackManager.inventory == inventory and stackManager.stackX == x and stackManager.stackY == y) then
@@ -1486,7 +1509,7 @@ end)
 
 -- Register new items into stacks at runtime
 hook.Add("InventoryItemAdded", "ixItemStack", function(oldInv, newInv, item)
-	if (!SERVER or !item or !item.isStackable or !newInv) then
+	if (!SERVER or !item or item.ixSkipAutoStack or !item.isStackable or !newInv) then
 		return
 	end
 
@@ -1499,5 +1522,6 @@ hook.Add("InventoryItemAdded", "ixItemStack", function(oldInv, newInv, item)
 		PLUGIN.stack.DoStack(newInv, targetItem, item)
 	end
 end)
+
 
 
