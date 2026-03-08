@@ -4,7 +4,6 @@ ITEM.category = "Alcohol"
 ITEM.model = "models/props_lab/bindergraylabel01b.mdl"
 ITEM.width = 1
 ITEM.height = 1
-ITEM.force = 0
 ITEM.strength = 1
 ITEM.usenum = 4
 ITEM.thirst = 0

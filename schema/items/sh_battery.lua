@@ -4,6 +4,7 @@ ITEM.model = Model("models/Items/battery.mdl")
 ITEM.description = "batteryDesc"
 ITEM.price = 75
 ITEM.category = "Utility"
+ITEM.isStackable = true
 
 ITEM.classes = {CLASS_MPU, CLASS_EMP, CLASS_OWS, CLASS_EOW}
 

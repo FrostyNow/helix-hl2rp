@@ -4,3 +4,4 @@ ITEM.description = "itemConcreteDesc"
 ITEM.price = 1
 ITEM.model = "models/mosi/fallout4/props/junk/components/concrete.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true

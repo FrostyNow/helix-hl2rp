@@ -2,6 +2,7 @@
 ITEM.name = "Ration"
 ITEM.model = Model("models/weapons/w_package.mdl")
 ITEM.description = "rationDesc"
+ITEM.category = "Utility"
 ITEM.items = {"supplements", "crackers", "water"}
 ITEM.price = 100
 

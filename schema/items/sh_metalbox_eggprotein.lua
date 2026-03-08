@@ -4,3 +4,4 @@ ITEM.description = "itemEggProteinDesc"
 ITEM.price = 10
 ITEM.skin = 2
 ITEM.isjunk = true
+ITEM.isStackable = true

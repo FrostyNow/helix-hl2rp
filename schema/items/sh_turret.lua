@@ -10,10 +10,13 @@ ITEM.price = 200
 ITEM.functions.Use = {
 	name = "Place It",
 	icon = "icon16/cursor.png",
-	OnRun = function(item, player, client)
+	OnRun = function(item, player)
 		item.player:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
 			
 		local ent = ents.Create("npc_turret_floor")
+		local trace = item.player:GetEyeTraceNoCursor()
+		local pos = trace.HitPos
+		local min = ent:OBBMins()
 
 		for k, v in pairs(ents.GetAll()) do
 			if(v:IsPlayer()) then
@@ -25,7 +28,7 @@ ITEM.functions.Use = {
 			end
 		end
 
-		ent:SetPos(item.player:EyePos() + ( item.player:GetAimVector() * 100))
+		ent:SetPos(pos - Vector(0, 0, min.z))
 		ent:SetAngles(item.player:GetAngles())
 		ent:Spawn()
 

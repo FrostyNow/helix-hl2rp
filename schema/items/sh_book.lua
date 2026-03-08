@@ -3,6 +3,7 @@ ITEM.name = "Book"
 ITEM.model = Model("models/props_lab/binderblue.mdl")
 ITEM.description = "bookDesc"
 ITEM.price = 100
+ITEM.isStackable = true
 
 ITEM.functions.Use = {
 	name = "Read",

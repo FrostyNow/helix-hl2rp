@@ -4,6 +4,7 @@ ITEM.description = "itemAntiDepressantsDesc"
 ITEM.category = "Medical"
 ITEM.model = "models/hlvr/props/bottles/medicine_bottle_2.mdl"
 ITEM.price = 15
+ITEM.isStackable = true
 ITEM.functions.Use = {
 	text = "Swallow",
 	OnRun = function(item)

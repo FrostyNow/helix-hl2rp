@@ -4,6 +4,7 @@ ITEM.description = "itemBallisticFiberDesc"
 ITEM.price = 5
 ITEM.model = "models/mosi/fallout4/props/junk/components/ballisticfiber.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

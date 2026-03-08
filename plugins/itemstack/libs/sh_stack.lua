@@ -910,7 +910,7 @@ if (SERVER) then
 		local sourceKey = SlotKey(sourceX, sourceY)
 		local sourceStack = sourceInv.stacks and sourceInv.stacks[sourceKey] or {sourceItem}
 		local previousSourceRepresentative = sourceStack and sourceStack[1] or nil
-		local maxStack = targetItem.maxStack or sourceItem.maxStack or 16
+		local maxStack = targetItem.maxStack or sourceItem.maxStack or 6
 		local targetCount = PLUGIN.stack.GetCount(targetItem)
 		local moveCount = math.min(maxStack - targetCount, #sourceStack)
 
