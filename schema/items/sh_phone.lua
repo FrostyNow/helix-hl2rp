@@ -4,3 +4,4 @@ ITEM.description = "itemTelephoneDesc"
 ITEM.price = 5
 ITEM.model = "models/mosi/fallout4/props/junk/phone.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true

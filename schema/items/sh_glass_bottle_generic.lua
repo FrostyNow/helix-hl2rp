@@ -4,6 +4,7 @@ ITEM.description = "itemEmptyBottleDesc"
 ITEM.price = 4
 ITEM.model = "models/props_junk/garbage_glassbottle003a.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true
 
 -- obsolete
 -- ITEM.functions.Use = {

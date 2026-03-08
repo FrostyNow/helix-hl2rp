@@ -4,3 +4,4 @@ ITEM.description = "itemCafeteriaTrayDesc"
 ITEM.price = 2
 ITEM.model = "models/mosi/fnv/props/junk/cafeteriatray.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true

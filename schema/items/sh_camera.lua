@@ -4,3 +4,4 @@ ITEM.description = "itemCameraDesc"
 ITEM.price = 12
 ITEM.model = "models/mosi/fallout4/props/junk/camera.mdl"
 ITEM.isjunk = true
+ITEM.isStackable = true

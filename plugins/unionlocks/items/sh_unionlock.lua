@@ -1,5 +1,6 @@
 ITEM.name = "Union Lock"
 ITEM.description = "unionLockDesc"
+ITEM.category = "Utility"
 ITEM.model = Model("models/props_combine/combine_lock01.mdl")
 ITEM.width = 1
 ITEM.height = 2

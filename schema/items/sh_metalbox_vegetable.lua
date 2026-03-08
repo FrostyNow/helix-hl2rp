@@ -4,3 +4,4 @@ ITEM.description = "itemDriedVegetablesDesc"
 ITEM.price = 5
 ITEM.skin = 1
 ITEM.isjunk = true
+ITEM.isStackable = true

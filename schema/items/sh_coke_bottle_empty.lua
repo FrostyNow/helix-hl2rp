@@ -9,6 +9,7 @@ ITEM.bodyGroups = {
 }
 ITEM.isjunk = true
 ITEM.exRender = true
+ITEM.isStackable = true
 
 function ITEM:OnInstantiated()
 	self.bodyGroups = self:GetData("bodygroups", self.bodyGroups)

@@ -18,7 +18,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
-	scrollPanelAddDesc = "조준한 벽면에 스케롤 텍스트 패널을 배치합니다.",
+	scrollPanelAddDesc = "조준한 벽면에 스크롤 텍스트 패널을 배치합니다.",
 	scrollPanelEditDesc = "조준한 스크롤 패널의 텍스트 및 크기를 수정합니다.",
 	scrollPanelRemoveDesc = "조준한 스크롤 패널을 제거합니다.",
 	scrollPanelNoSurface = "배치할 표면을 찾을 수 없습니다.",

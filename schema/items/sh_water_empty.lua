@@ -4,3 +4,4 @@ ITEM.description = "itemEmptyCanDesc"
 ITEM.price = 1
 ITEM.skin = 3
 ITEM.isjunk = true
+ITEM.isStackable = true

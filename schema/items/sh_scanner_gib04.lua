@@ -3,6 +3,7 @@ ITEM.model = "models/gibs/scanner_gib04.mdl"
 ITEM.description = "itemScannerPartsDesc"
 ITEM.price = 20
 ITEM.isjunk = true
+ITEM.isStackable = true
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
