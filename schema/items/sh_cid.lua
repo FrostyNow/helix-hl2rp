@@ -3,6 +3,7 @@ ITEM.name = "Citizen ID"
 ITEM.model = Model("models/synapse/props/id_card.mdl")
 ITEM.description = "cidDesc"
 ITEM.price = 50
+ITEM.isStackable = true
 ITEM.noDeathDrop = true
 ITEM.functions.Use = {
 	name = "Assign",

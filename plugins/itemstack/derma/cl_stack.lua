@@ -7,6 +7,7 @@ local PLUGIN = PLUGIN
 local PANEL = {}
 
 function PANEL:Init()
+	ix.gui.stackManager = self
 	self:SetSize(300, 400)
 	self:SetTitle(L("StackManage"))
 	self:MakePopup()
@@ -21,9 +22,15 @@ function PANEL:SetStack(inventory, stackItems, x, y)
 	self.inventory = inventory
 	self.stackX = x
 	self.stackY = y
-	self.stackItems = stackItems
+	self.stackItems = table.Copy(stackItems)
 
 	self:Populate()
+end
+
+function PANEL:OnRemove()
+	if (ix.gui and ix.gui.stackManager == self) then
+		ix.gui.stackManager = nil
+	end
 end
 
 function PANEL:Populate()
@@ -46,6 +53,11 @@ function PANEL:Populate()
 			surface.SetDrawColor(60, 60, 60, 255)
 			surface.DrawOutlinedRect(0, 0, w, h)
 		end
+
+		entry:SetHelixTooltip(function(tooltip)
+			ix.hud.PopulateItemTooltip(tooltip, item)
+			tooltip:SizeToContents()
+		end)
 
 		local icon = entry:Add("SpawnIcon")
 		icon:Dock(LEFT)
@@ -102,7 +114,7 @@ function PANEL:Populate()
 				upBtn:Dock(TOP)
 				upBtn:DockMargin(0, 2, 0, 0)
 				upBtn:SetTall(14)
-				upBtn:SetText("▲")
+				upBtn:SetText("^")
 				upBtn.DoClick = function()
 					self:MoveItem(i, i - 1)
 				end
@@ -113,7 +125,7 @@ function PANEL:Populate()
 				downBtn:Dock(TOP)
 				downBtn:DockMargin(0, 2, 0, 0)
 				downBtn:SetTall(14)
-				downBtn:SetText("▼")
+				downBtn:SetText("v")
 				downBtn.DoClick = function()
 					self:MoveItem(i, i + 1)
 				end
@@ -200,6 +212,41 @@ if (ixItemIcon) then
 			surface.DrawText(count)
 		end
 	end
+	local origOnDrop = ixItemIcon.OnDrop
+
+	ixItemIcon.OnDrop = function(self, bDragging, inventoryPanel, inventory, gridX, gridY)
+		local item = self.itemTable
+
+		if (bDragging and item and item.isStackable) then
+			local invID = self.inventoryID or item.invID
+			local sourceInventory = invID and ix.item.inventories[invID]
+			local key = self.gridX and self.gridY and (self.gridX .. ":" .. self.gridY)
+			local stack = sourceInventory and sourceInventory.stacks and key and sourceInventory.stacks[key]
+			local isRepresentative = stack and #stack > 1 and stack[1] and stack[1].id == item.id
+			local isCtrlDown = input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)
+
+			if (isCtrlDown and isRepresentative and IsValid(inventoryPanel) and inventoryPanel.combineItem) then
+				local combineItem = inventoryPanel.combineItem
+
+				if (combineItem and combineItem.id != item.id and combineItem.isStackable and combineItem.uniqueID == item.uniqueID) then
+					net.Start("ixStackMoveSingle")
+						net.WriteUInt(invID, 32)
+						net.WriteUInt(inventoryPanel.invID, 32)
+						net.WriteUInt(item.id, 32)
+						net.WriteUInt(combineItem.gridX, 6)
+						net.WriteUInt(combineItem.gridY, 6)
+					net.SendToServer()
+
+					return
+				end
+			end
+		end
+
+		if (origOnDrop) then
+			return origOnDrop(self, bDragging, inventoryPanel, inventory, gridX, gridY)
+		end
+	end
+
 end
 
 -- ============================================
@@ -230,3 +277,51 @@ hook.Add("CreateItemInteractionMenu", "ixStackManage", function(icon, menu, item
 		end):SetImage("icon16/layers.png")
 	end
 end)
+
+local ixInventory = vgui.GetControlTable("ixInventory")
+
+if (ixInventory) then
+	local originalOnTransfer = ixInventory.OnTransfer
+
+	function ixInventory:OnTransfer(oldX, oldY, x, y, oldInventory, noSend)
+		local inventories = ix.item.inventories
+		local sourceInventory = inventories[oldInventory.invID]
+		local targetInventory = inventories[self.invID]
+		local item = sourceInventory and sourceInventory:GetItemAt(oldX, oldY)
+
+		if (!noSend and item and item.isStackable and sourceInventory and sourceInventory.stacks) then
+			local key = item.gridX and item.gridY and (item.gridX .. ":" .. item.gridY)
+			local stack = key and sourceInventory.stacks[key]
+			local isRepresentative = stack and #stack > 1 and stack[1] and stack[1].id == item.id
+			local isCtrlDown = input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)
+
+			if (isRepresentative and isCtrlDown) then
+				net.Start("ixStackMoveSingle")
+					net.WriteUInt(oldInventory.invID, 32)
+					net.WriteUInt(self != oldInventory and self.invID or oldInventory.invID, 32)
+					net.WriteUInt(item.id, 32)
+					net.WriteUInt(x, 6)
+					net.WriteUInt(y, 6)
+				net.SendToServer()
+
+				return false
+			end
+
+			if (isRepresentative and self != oldInventory) then
+				net.Start("ixInventoryMove")
+					net.WriteUInt(oldX, 6)
+					net.WriteUInt(oldY, 6)
+					net.WriteUInt(x, 6)
+					net.WriteUInt(y, 6)
+					net.WriteUInt(oldInventory.invID, 32)
+					net.WriteUInt(self.invID, 32)
+				net.SendToServer()
+
+				return false
+			end
+		end
+
+		return originalOnTransfer(self, oldX, oldY, x, y, oldInventory, noSend)
+	end
+end
+
