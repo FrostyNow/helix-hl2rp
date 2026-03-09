@@ -216,12 +216,12 @@ if SERVER then
 				local thirst = v:GetLocalVar("thirst", 100)
 
 				-- Damage logic
-				if (hunger < 20) then
+				if (hunger <= 0) then
 					v:TakeDamage(1, v, v:GetActiveWeapon())
 				end
 
-				if (thirst < 20) then
-					v:TakeDamage(1.5, v, v:GetActiveWeapon())
+				if (thirst <= 0) then
+					v:TakeDamage(2, v, v:GetActiveWeapon())
 				end
 
 				-- Notification logic
