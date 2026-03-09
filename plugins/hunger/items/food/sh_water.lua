@@ -1,7 +1,7 @@
 ITEM.name = "Breen's Water"
-ITEM.model = "models/props_junk/PopCan01a.mdl"
+ITEM.model = "models/hls/alyxports/popcan01a_hls.mdl"
 ITEM.description = "itemWaterDesc"
-ITEM.thirst = 50
+ITEM.thirst = 15
 ITEM.price = 1
 ITEM.empty = "water_empty"
 ITEM.sound = "interface/inv_drink_can2.ogg"

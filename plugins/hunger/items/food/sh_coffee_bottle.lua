@@ -1,7 +1,7 @@
 ITEM.name = "Coffee"
 ITEM.model = "models/bioshockinfinite/xoffee_mug_closed.mdl"
 ITEM.description = "itemCoffeeDesc"
-ITEM.thirst = 50
+ITEM.thirst = 25
 ITEM.price = 20
 ITEM.heal = 5
 ITEM.usenum = 2

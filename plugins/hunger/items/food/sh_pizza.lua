@@ -1,7 +1,7 @@
 ITEM.name = "Pizza"
 ITEM.model = "models/griim/foodpack/pepperonipizza.mdl"
 ITEM.description = "itemPizzaDesc"
-ITEM.hunger = 100
+ITEM.hunger = 30
 ITEM.thirst = -10
 ITEM.price = 12
 ITEM.heal = 10

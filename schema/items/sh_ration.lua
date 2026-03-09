@@ -1,10 +1,16 @@
 
 ITEM.name = "Ration"
-ITEM.model = Model("models/weapons/w_package.mdl")
+ITEM.model = Model("models/hls/alyxports/ration_package.mdl")
 ITEM.description = "rationDesc"
 ITEM.category = "Utility"
-ITEM.items = {"supplements", "crackers", "water"}
+ITEM.items = {"supplements", "supplements_bar"}
 ITEM.price = 100
+ITEM.exRender = true
+ITEM.iconCam = {
+	pos = Vector(11.14, -6.38, 129.97),
+	ang = Angle(86.81, -181.38, 0),
+	fov = 8.58
+}
 
 ITEM.functions.Open = {
 	icon = "icon16/email_open.png",

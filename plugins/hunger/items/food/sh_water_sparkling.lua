@@ -1,5 +1,5 @@
 ITEM.name = "Coke"
-ITEM.model = "models/props_junk/PopCan01a.mdl"
+ITEM.model = "models/hls/can_1.mdl"
 ITEM.description = "itemCokeDesc"
 ITEM.skin = 1
 ITEM.thirst = 25

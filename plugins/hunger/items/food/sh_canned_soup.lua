@@ -1,7 +1,7 @@
 ITEM.name = "Canned Soup"
 ITEM.model = "models/bioshockinfinite/canned_soup.mdl"
 ITEM.description = "itemCannedDesc"
-ITEM.hunger = 40
+ITEM.hunger = 30
 ITEM.thirst = 10
 ITEM.price = 5
 ITEM.empty = "empty_can"

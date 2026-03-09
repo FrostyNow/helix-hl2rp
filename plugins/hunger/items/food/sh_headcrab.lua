@@ -1,7 +1,7 @@
 ITEM.name = "Headcrab"
 ITEM.model = "models/arachnit/steamvr/hla/headcrab_dinner/headcrab_dinner.mdl"
 ITEM.description = "itemHeadcrabDesc"
-ITEM.hunger = 100
+ITEM.hunger = 15
 ITEM.thirst = -10
 ITEM.price = 30
 ITEM.heal = -5

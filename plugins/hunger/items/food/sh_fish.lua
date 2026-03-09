@@ -1,7 +1,7 @@
 ITEM.name = "Canned Fish"
 ITEM.model = "models/bioshockinfinite/cardine_can_open.mdl"
 ITEM.description = "itemFishDesc"
-ITEM.hunger = 50
+ITEM.hunger = 30
 ITEM.thirst = -10
 ITEM.price = 12
 ITEM.heal = 5
