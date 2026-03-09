@@ -25,11 +25,16 @@ function PLUGIN.craft.LoadFromDir(directory, pathType)
 
 				if (!scripted_ents.Get("ix_station_"..niceName)) then
 					local STATION_ENT = scripted_ents.Get("ix_station")
-					STATION_ENT.PrintName = STATION.name
-					STATION_ENT.uniqueID = niceName
-					STATION_ENT.Spawnable = true
-					STATION_ENT.AdminOnly = true
-					scripted_ents.Register(STATION_ENT, "ix_station_"..niceName)
+
+					if (STATION_ENT) then
+						STATION_ENT.PrintName = STATION.name
+						STATION_ENT.uniqueID = niceName
+						STATION_ENT.Spawnable = true
+						STATION_ENT.AdminOnly = false
+						STATION_ENT.Category = "Helix"
+
+						scripted_ents.Register(STATION_ENT, "ix_station_"..niceName)
+					end
 				end
 
 				PLUGIN.craft.stations[niceName] = STATION

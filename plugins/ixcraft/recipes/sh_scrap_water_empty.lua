@@ -1,7 +1,7 @@
 RECIPE.name = "Scrap Aluminium Can"
 RECIPE.description = "recipeScrapAluminiumCanDesc"
 RECIPE.category = "Scrap"
-RECIPE.model = "models/props_junk/cardboard_box004a.mdl"
+RECIPE.model = "models/hls/alyxports/popcan01a_hls.mdl"
 RECIPE.requirements = {
 	["water_empty"] = 1,
 }

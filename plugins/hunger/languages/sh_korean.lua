@@ -1,4 +1,6 @@
 LANGUAGE = {
+	["Survival"] = "생존",
+
 	notHungry = "배고프지 않음",
 	notThirsty = "목마르지 않음",
 	["Food"] = "음식",
@@ -94,6 +96,8 @@ LANGUAGE = {
 	itemOTASupplementsDesc = "감시 부대원들에게 지급되는 영양팩입니다. 흉부에 위치한 관을 통해 주입합니다.",
 	["Antlion Grub"] = "개미귀신 유충",
 	itemAntlionGrubDesc = "개미귀신 둥지에서 찾을 수 있는 유충이 유리병에 들어 있습니다.",
+	["Dirty Water"] = "더러운 물",
+	itemDirtyWaterDesc = "사람이 마실 수 없을 정도로 더러운 물입니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",

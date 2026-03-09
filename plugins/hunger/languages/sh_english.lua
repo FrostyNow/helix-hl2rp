@@ -46,6 +46,7 @@ LANGUAGE = {
 	itemOnionDesc = "A spicy and pungent vegetable in round shape.",
 	itemOTASupplementsDesc = "A nutritional pack distributed to Overwatch Transhuman Army troopers. Each vials are supposed to be injected through a tube located on the chest.",
 	itemAntlionGrub = "A grub that is found in the antlion nest is in a glass vial.",
+	itemDirtyWaterDesc = "A bottle of water so dirty that it is unfit for human consumption.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

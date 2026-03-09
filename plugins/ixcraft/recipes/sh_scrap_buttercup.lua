@@ -1,7 +1,7 @@
 RECIPE.name = "Scrap Buttercup"
 RECIPE.description = "recipeScrapButtercupDesc"
 RECIPE.category = "Scrap"
-RECIPE.model = "models/props_junk/cardboard_box004a.mdl"
+RECIPE.model = "models/mosi/fallout4/props/junk/buttercup_toy.mdl"
 RECIPE.requirements = {
 	["buttercup"] = 1,
 }

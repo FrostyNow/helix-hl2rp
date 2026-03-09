@@ -2,9 +2,10 @@
 local PLUGIN = PLUGIN
 
 ENT.Type = "anim"
-ENT.PrintName = "Station"
+ENT.PrintName = "Base Station"
 ENT.Category = "Helix"
 ENT.Spawnable = false
+ENT.AdminOnly = true
 
 function ENT:SetupDataTables()
 	self:NetworkVar("String", 0, "StationID")
@@ -19,15 +20,49 @@ if (SERVER) then
 
 	function ENT:Initialize()
 		if (!self.uniqueID) then
+			local class = self:GetClass()
+			if (class:sub(1, 11) == "ix_station_") then
+				self.uniqueID = class:sub(12)
+			end
+		end
+
+		if (!self.uniqueID and self:GetClass() != "ix_station") then
+			print("[Helix] Error: Station spawned without uniqueID! (" .. self:GetClass() .. ")")
 			self:Remove()
 
 			return
 		end
 
-		self:SetStationID(self.uniqueID)
+		if (self.uniqueID) then
+			self:SetStationID(self.uniqueID)
+			
+			local stationTable = self:GetStationTable()
+			if (!stationTable) then
+				for k, v in pairs(PLUGIN.craft.stations) do
+					if (k:lower() == self.uniqueID:lower()) then
+						stationTable = v
+						self:SetStationID(k)
+						break
+					end
+				end
+			end
+
+			if (stationTable) then
+				self:SetModel(stationTable:GetModel())
+			end
+		end
+
+		if (self:GetModel() == "" or self:GetModel() == "models/error.mdl") then
+			self:SetModel("models/props_junk/watermelon01.mdl")
+		end
+
 		self:SetMoveType(MOVETYPE_NONE)
 		self:SetSolid(SOLID_VPHYSICS)
-		self:PhysicsInit(SOLID_VPHYSICS)
+		
+		if (!self:PhysicsInit(SOLID_VPHYSICS)) then
+			self:PhysicsInitStatic(SOLID_VPHYSICS)
+		end
+
 		self:SetUseType(SIMPLE_USE)
 
 		local physObj = self:GetPhysicsObject()

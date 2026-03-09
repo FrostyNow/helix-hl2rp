@@ -1,11 +1,11 @@
 RECIPE.name = "Charcoal"
-RECIPE.description = "recipeScrapHideDesc"
+RECIPE.description = "recipeCharcoalDesc"
 RECIPE.category = "Transform"
-RECIPE.model = "models/props_junk/cardboard_box004a.mdl"
-RECIPE.station = "ix_station_craftingTable"
+RECIPE.model = "models/willardnetworks/props/charcoal.mdl"
+RECIPE.station = "ix_station_craftingtable"
 RECIPE.requirements = {
 	["misc_plank"] = 1
 }
 RECIPE.results = {
-	["charcoal"] = 1
+	["misc_charcoal"] = 1
 }

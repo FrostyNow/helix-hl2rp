@@ -226,18 +226,10 @@ if (ixItemIcon) then
 		if (stack and #stack > 1) then
 			local count = tostring(#stack)
 
-			surface.SetFont("ixMenuButtonFont")
-			local tw, th = surface.GetTextSize(count)
-
-			local badgeX = width - tw - 6
-			local badgeY = height - th - 2
-
-			surface.SetDrawColor(0, 0, 0, 180)
-			surface.DrawRect(badgeX - 2, badgeY, tw + 4, th)
-
-			surface.SetTextColor(255, 255, 255, 255)
-			surface.SetTextPos(badgeX, badgeY)
-			surface.DrawText(count)
+			draw.SimpleTextOutlined(
+				count, "DermaDefault", 5, 5,
+				color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP, 1, color_black
+			)
 		end
 	end
 	local origOnDrop = ixItemIcon.OnDrop

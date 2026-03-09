@@ -82,7 +82,7 @@ end
 -- @param req The parsed requirement table
 -- @return bool Whether the player has enough
 -- @return string Missing item names (for error message)
-function RECIPE:CheckRequirement(inventory, uniqueID, req)
+function RECIPE:CheckRequirement(inventory, uniqueID, req, client)
 	local needed = req.amount
 	local has = inventory:GetItemCount(uniqueID)
 
@@ -100,9 +100,7 @@ function RECIPE:CheckRequirement(inventory, uniqueID, req)
 	local itemTable = ix.item.Get(uniqueID)
 	local itemName = itemTable and itemTable.name or uniqueID
 
-	if (CLIENT) then
-		itemName = L(itemName)
-	end
+	itemName = CLIENT and L(itemName) or L(itemName, client)
 
 	return false, itemName
 end
@@ -163,7 +161,7 @@ function RECIPE:OnCanCraft(client)
 	-- Check requirements (unified format)
 	for uniqueID, entry in pairs(self.requirements or {}) do
 		local req = ParseRequirement(entry)
-		local bHas, missingName = self:CheckRequirement(inventory, uniqueID, req)
+		local bHas, missingName = self:CheckRequirement(inventory, uniqueID, req, client)
 
 		if (!bHas) then
 			bHasItems = false
@@ -185,9 +183,7 @@ function RECIPE:OnCanCraft(client)
 			local itemTable = ix.item.Get(uniqueID)
 			local itemName = itemTable and itemTable.name or uniqueID
 
-			if (CLIENT) then
-				itemName = L(itemName)
-			end
+			itemName = CLIENT and L(itemName) or L(itemName, client)
 
 			bHasTools = false
 			missing = itemName
@@ -333,9 +329,7 @@ if (SERVER) then
 
 		local recipeName = self.GetName and self:GetName() or self.name
 
-		if (CLIENT) then
-			recipeName = L(recipeName)
-		end
+		recipeName = CLIENT and L(recipeName) or L(recipeName, client)
 
 		return true, "@CraftSuccess", recipeName
 	end

@@ -68,7 +68,7 @@ if ( CLIENT ) then
 				self.lastFlashlightStates[client] = bFlashlight
 			end
 
-			if ( !bFlashlight or (bNoclip and client != LocalPlayer()) ) then
+			if ( !bFlashlight or !client:Alive() or (bNoclip and client != LocalPlayer()) ) then
 				if ( IsValid(self.flashlights[client]) ) then
 					self.flashlights[client]:Remove()
 					self.flashlights[client] = nil
@@ -144,7 +144,7 @@ if ( CLIENT ) then
 end
 
 if ( SERVER ) then
-	function PLUGIN:Initialize(client)
+	function PLUGIN:PlayerInitialSpawn(client)
 		client:SetNetVar("flashlight", false)
 	end
 
@@ -153,6 +153,10 @@ if ( SERVER ) then
 	end
 
 	function PLUGIN:DoPlayerDeath(client)
+		client:SetNetVar("flashlight", false)
+	end
+
+	function PLUGIN:PlayerDeath(client)
 		client:SetNetVar("flashlight", false)
 	end
 
@@ -173,7 +177,9 @@ if ( SERVER ) then
 			return false
 		end
 
-		if ((inventory and inventory:HasItem("flashlight")) or client:IsCombine()) then
+		local bHasFlashlightItem = ix.item.list["flashlight"] != nil
+
+		if (!bHasFlashlightItem or (inventory and inventory:GetItemCount("flashlight") > 0) or client:IsCombine()) then
 			client:SetNetVar("flashlight", !client:GetNetVar("flashlight", false))
 		end
 

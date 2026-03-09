@@ -6,7 +6,7 @@ RECIPE.model = "models/props_junk/PopCan01a.mdl"
 RECIPE.requirements = {
 	["water_dirty"] = 1,
 	["cloth"] = 1,
-	["charcoal"] = 1,
+	["misc_charcoal"] = 1,
 }
 RECIPE.results = {
 	["purified_water"] = 1

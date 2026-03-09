@@ -1,7 +1,7 @@
 RECIPE.name = "Scrap Empty Can"
 RECIPE.description = "recipeScrapEmptyCanDesc"
 RECIPE.category = "Scrap"
-RECIPE.model = "models/props_junk/cardboard_box004a.mdl"
+RECIPE.model = "models/props_junk/garbage_metalcan002a.mdl"
 RECIPE.requirements = {
 	["empty_can"] = 1,
 }

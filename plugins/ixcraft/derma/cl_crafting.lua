@@ -47,6 +47,11 @@ end
 
 function PANEL:PaintBackground(width, height)
 	local alpha = self.currentBackgroundAlpha
+	local recipeTable = self.recipeTable
+
+	if (recipeTable and recipeTable:OnCanCraft(LocalPlayer())) then
+		alpha = math.max(alpha, 100)
+	end
 
 	derma.SkinFunc("DrawImportantBackground", 0, 0, width, height, ColorAlpha(self.backgroundColor, alpha))
 end

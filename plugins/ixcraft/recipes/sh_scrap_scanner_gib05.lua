@@ -1,7 +1,7 @@
 RECIPE.name = "Scrap Scanner Body"
 RECIPE.description = "recipeScrapScannerBodyDesc"
 RECIPE.category = "Scrap"
-RECIPE.model = "models/props_junk/cardboard_box004a.mdl"
+RECIPE.model = "models/gibs/scanner_gib05.mdl"
 RECIPE.requirements = {
 	["scanner_gib05"] = 1,
 }
