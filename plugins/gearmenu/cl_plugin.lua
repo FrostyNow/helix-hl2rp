@@ -27,6 +27,35 @@ local function RequestUnequip(itemID, targetInvID, x, y, bDropToGround)
 	net.SendToServer()
 end
 
+local function SetupGearIcon(panel, item)
+	if (item.exRender) then
+		panel.Icon:SetVisible(false)
+		panel.ExtraPaint = function(this, panelX, panelY)
+			local bg = item:GetData("bodygroups", item.bodyGroups)
+			local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "")
+			local exIcon = ikon:GetIcon(renderKey)
+
+			if (exIcon) then
+				surface.SetMaterial(exIcon)
+				surface.SetDrawColor(color_white)
+				surface.DrawTexturedRect(0, 0, panelX, panelY)
+			else
+				ikon:renderIcon(
+					renderKey,
+					item.width or 1,
+					item.height or 1,
+					item:GetModel(),
+					item.iconCam,
+					nil,
+					bg
+				)
+			end
+		end
+	else
+		ix.gui.RenderNewIcon(panel, item)
+	end
+end
+
 -- ============================================================
 -- ixGearMenu Panel
 -- ============================================================
@@ -448,6 +477,8 @@ function PANEL:RefreshGearInv()
 	for _, item in ipairs(equippedItems) do
 		local icon = self.gearCanvas:Add("ixItemIcon")
 		icon:SetSize(item.width * iconSize, item.height * iconSize)
+		icon:SetZPos(999)
+		icon:InvalidateLayout(true)
 		icon:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
 		icon:SetItemTable(item)
 		icon:SetInventoryID(item.invID or 0)
@@ -474,6 +505,8 @@ function PANEL:RefreshGearInv()
 
 			local proxy = vgui.Create("ixItemIcon", ix.gui.gearMenu)
 			proxy:SetSize(cellSize * item.width, cellSize * item.height)
+			proxy:SetZPos(999)
+			proxy:InvalidateLayout(true)
 			proxy:SetModel(item:GetModel() or "models/props_junk/popcan01a.mdl", item:GetSkin())
 			proxy:SetItemTable(item)
 			proxy:SetInventoryID(PLUGIN.gearInvID)
@@ -482,24 +515,7 @@ function PANEL:RefreshGearInv()
 			proxy.gridW = item.width
 			proxy.gridH = item.height
 
-			if (item.exRender) then
-				proxy.Icon:SetVisible(false)
-				proxy.ExtraPaint = function(this_proxy, panelX, panelY)
-					local bg = item:GetData("bodygroups", item.bodyGroups)
-					local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "") .. "Gear"
-
-					local exIcon = ikon:GetIcon(renderKey)
-					if (exIcon) then
-						surface.SetMaterial(exIcon)
-						surface.SetDrawColor(color_white)
-						surface.DrawTexturedRect(0, 0, panelX, panelY)
-					else
-						ikon:renderIcon(renderKey, panelX, panelY, item:GetModel(), item.iconCam, nil, bg)
-					end
-				end
-			else
-				ix.gui.RenderNewIcon(proxy, item)
-			end
+			SetupGearIcon(proxy, item)
 
 			proxy:Droppable("ixInventoryItem")
 			
@@ -561,24 +577,7 @@ function PANEL:RefreshGearInv()
 			end
 		end
 
-		if (item.exRender) then
-			icon.Icon:SetVisible(false)
-			icon.ExtraPaint = function(this, panelX, panelY)
-				local bg = item:GetData("bodygroups", item.bodyGroups)
-				local renderKey = item.uniqueID .. (istable(bg) and util.CRC(util.TableToJSON(bg)) or "") .. "Gear"
-
-				local exIcon = ikon:GetIcon(renderKey)
-				if (exIcon) then
-					surface.SetMaterial(exIcon)
-					surface.SetDrawColor(color_white)
-					surface.DrawTexturedRect(0, 0, panelX, panelY)
-				else
-					ikon:renderIcon(renderKey, panelX, panelY, item:GetModel(), item.iconCam, nil, bg)
-				end
-			end
-		else
-			ix.gui.RenderNewIcon(icon, item)
-		end
+		SetupGearIcon(icon, item)
 
 		icon:SetHelixTooltip(function(tooltip)
 			ix.hud.PopulateItemTooltip(tooltip, item)
