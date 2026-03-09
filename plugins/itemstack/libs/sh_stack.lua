@@ -910,7 +910,7 @@ if (SERVER) then
 		local sourceKey = SlotKey(sourceX, sourceY)
 		local sourceStack = sourceInv.stacks and sourceInv.stacks[sourceKey] or {sourceItem}
 		local previousSourceRepresentative = sourceStack and sourceStack[1] or nil
-		local maxStack = targetItem.maxStack or sourceItem.maxStack or 6
+		local maxStack = targetItem.maxStack or sourceItem.maxStack or 16
 		local targetCount = PLUGIN.stack.GetCount(targetItem)
 		local moveCount = math.min(maxStack - targetCount, #sourceStack)
 
@@ -1278,6 +1278,10 @@ if (SERVER) then
 
 		if (stack and istable(receivers)) then
 			ReplicateSlotState(inventory, x, y, receivers, stack[1], oldRepresentative)
+
+			net.Start("ixStackRefreshPanel")
+				net.WriteUInt(invID, 32)
+			net.Send(receivers)
 		end
 	end)
 end
@@ -1286,18 +1290,29 @@ end
 -- CLIENT: Network receivers
 -- ============================================
 if (CLIENT) then
+	PLUGIN.stack = PLUGIN.stack or {}
+	PLUGIN.stack.clientStacks = PLUGIN.stack.clientStacks or {}
+
+	local function GetClientStackCache(invID)
+		if (!invID) then
+			return nil
+		end
+
+		PLUGIN.stack.clientStacks[invID] = PLUGIN.stack.clientStacks[invID] or {}
+		return PLUGIN.stack.clientStacks[invID]
+	end
+
 	net.Receive("ixStackReset", function()
 		local invID = net.ReadUInt(32)
 		local inventory = ix.item.inventories[invID]
+		local cache = GetClientStackCache(invID)
 
-		if (!inventory) then
-			return
+		for key in pairs(cache or {}) do
+			cache[key] = nil
 		end
 
-		inventory.stacks = {}
-
 		local stackManager = ix.gui and ix.gui.stackManager
-		if (IsValid(stackManager) and stackManager.inventory == inventory) then
+		if (IsValid(stackManager) and stackManager.inventory and stackManager.inventory:GetID() == invID) then
 			stackManager:Close()
 		end
 	end)
@@ -1309,7 +1324,8 @@ if (CLIENT) then
 		local count = net.ReadUInt(8)
 
 		local inventory = ix.item.inventories[invID]
-		if (!inventory) then return end
+		local cache = GetClientStackCache(invID)
+		if (!cache) then return end
 
 		local key = SlotKey(x, y)
 		local syncedItems = {}
@@ -1330,19 +1346,14 @@ if (CLIENT) then
 			end
 		end
 
-		inventory.stacks = inventory.stacks or {}
-
 		if (#syncedItems > 1) then
-			inventory.stacks[key] = syncedItems
+			cache[key] = syncedItems
 		else
-			inventory.stacks[key] = nil
+			cache[key] = nil
 		end
 
-		-- Helix inventory sync owns slot representatives and icon panels.
-		-- Stack sync only updates hidden members and ordering for a slot.
-
 		local stackManager = ix.gui and ix.gui.stackManager
-		if (IsValid(stackManager) and stackManager.inventory == inventory and stackManager.stackX == x and stackManager.stackY == y) then
+		if (IsValid(stackManager) and stackManager.inventory and stackManager.inventory:GetID() == invID and stackManager.stackX == x and stackManager.stackY == y) then
 			if (#syncedItems > 1) then
 				stackManager.stackItems = table.Copy(syncedItems)
 				stackManager:Populate()
@@ -1385,9 +1396,10 @@ if (CLIENT) then
 				end
 			end
 
-			-- Also set on stacked items
-			if (inventory.stacks) then
-				for stackKey, stack in pairs(inventory.stacks) do
+			-- Also set on stacked items from the client-side stack cache
+			local cache = GetClientStackCache(inventory:GetID())
+			if (cache) then
+				for stackKey, stack in pairs(cache) do
 					local parts = string.Explode(":", stackKey)
 					local sx, sy = tonumber(parts[1]), tonumber(parts[2])
 
@@ -1408,6 +1420,211 @@ end
 -- ============================================
 local stackCanStack = PLUGIN.stack.CanStack
 local stackDoStack = SERVER and PLUGIN.stack.DoStack or nil
+
+local function BuildStackCombineData(sourceItemID, data, isSingle)
+	local combineData = {}
+
+	if (istable(data)) then
+		for key, value in pairs(data) do
+			if (key != "ixStackSingle" and key != "ixStackWrappedCall") then
+				combineData[key] = value
+			end
+		end
+	end
+
+	combineData[1] = sourceItemID
+	combineData.ixStackSingle = isSingle == true
+	combineData.ixStackWrappedCall = true
+
+	return combineData
+end
+
+local function GetRepresentativeSourceStack(sourceItem)
+	if (!sourceItem or !sourceItem.isStackable or !sourceItem.gridX or !sourceItem.gridY) then
+		return nil, nil
+	end
+
+	local sourceInv = ix.item.inventories[sourceItem.invID or 0]
+	if (!sourceInv) then
+		return nil, nil
+	end
+
+	PLUGIN.stack.RebuildForInventory(sourceInv)
+
+	local key = SlotKey(sourceItem.gridX, sourceItem.gridY)
+	local stack = sourceInv.stacks and sourceInv.stacks[key]
+	if (!stack or #stack <= 1 or !stack[1] or stack[1].id != sourceItem.id) then
+		return nil, sourceInv
+	end
+
+	return stack, sourceInv
+end
+
+local function RunOriginalCombine(originalRun, targetItem, data)
+	if (originalRun) then
+		return originalRun(targetItem, data)
+	end
+
+	return false
+end
+
+local function GetCombineTargetInventory(targetItem)
+	if (!targetItem) then
+		return nil
+	end
+
+	if (targetItem.GetInventory) then
+		local inventory = targetItem:GetInventory()
+
+		if (inventory) then
+			return inventory
+		end
+	end
+
+	local inventoryID = targetItem.GetData and targetItem:GetData("id", 0) or 0
+
+	if (inventoryID and inventoryID != 0) then
+		return ix.item.inventories[inventoryID]
+	end
+
+	return nil
+end
+
+local function CreateInventoryBackedCombineFunc(itemTable)
+	itemTable.functions = itemTable.functions or {}
+	itemTable.functions.combine = itemTable.functions.combine or {}
+
+	local combineFunc = itemTable.functions.combine
+
+	if (!combineFunc.OnRun) then
+		combineFunc.OnRun = function(item, data)
+			if (!SERVER or !data or !data[1]) then
+				return false
+			end
+
+			local targetInv = GetCombineTargetInventory(item)
+			local sourceItem = ix.item.instances[data[1]]
+
+			if (!targetInv or !sourceItem) then
+				return false
+			end
+
+			sourceItem:Transfer(targetInv:GetID(), nil, nil, item.player)
+			return false
+		end
+	end
+
+	if (!combineFunc.OnCanRun) then
+		combineFunc.OnCanRun = function(item, data)
+			return GetCombineTargetInventory(item) != nil and data and data[1] != nil
+		end
+	end
+
+	combineFunc.ixStackGenerated = true
+
+	return combineFunc
+end
+
+local function WrappedCombineCanRun(targetItem, data, originalCanRun)
+	if (!data or !data[1]) then
+		return false
+	end
+
+	local sourceItem = ix.item.instances[data[1]]
+	if (!sourceItem) then
+		return false
+	end
+
+	if (originalCanRun) then
+		return originalCanRun(targetItem, BuildStackCombineData(sourceItem.id, data, data.ixStackSingle == true)) != false
+	end
+
+	return true
+end
+
+local function WrappedCombineRun(targetItem, data, originalRun, originalCanRun)
+	if (!SERVER or !data or !data[1] or data.ixStackWrappedCall) then
+		return RunOriginalCombine(originalRun, targetItem, data)
+	end
+
+	local sourceItem = ix.item.instances[data[1]]
+	local stack, sourceInv = nil, nil
+	if (sourceItem) then
+		stack, sourceInv = GetRepresentativeSourceStack(sourceItem)
+	end
+	local targetInv = GetCombineTargetInventory(targetItem)
+
+	if (stack and sourceInv and targetInv) then
+		if (data.ixStackSingle == true) then
+			local x, y, actualTargetInv = targetInv:FindEmptySlot(sourceItem.width, sourceItem.height)
+			actualTargetInv = actualTargetInv or targetInv
+
+			if (!x or !y or !actualTargetInv) then
+				if (IsValid(targetItem.player)) then
+					targetItem.player:NotifyLocalized("noFit")
+				end
+
+				return false
+			end
+
+			local success, err = PLUGIN.stack.TransferSingle(sourceInv, sourceItem, actualTargetInv, x, y)
+			if (!success and err and IsValid(targetItem.player)) then
+				targetItem.player:NotifyLocalized(err)
+			end
+
+			return false
+		end
+
+		local success, err = PLUGIN.stack.TransferStack(sourceItem, targetInv, nil, nil, targetItem.player)
+		if (!success and err and IsValid(targetItem.player)) then
+			targetItem.player:NotifyLocalized(err)
+		end
+
+		return false
+	end
+
+	if (!stack) then
+		return RunOriginalCombine(originalRun, targetItem, data)
+	end
+
+	if (data.ixStackSingle == true) then
+		local singleData = BuildStackCombineData(sourceItem.id, data, true)
+
+		if (originalCanRun and originalCanRun(targetItem, singleData) == false) then
+			return false
+		end
+
+		return RunOriginalCombine(originalRun, targetItem, singleData)
+	end
+
+	local sourceIDs = {}
+
+	for _, stackItem in ipairs(stack) do
+		sourceIDs[#sourceIDs + 1] = stackItem.id
+	end
+
+	for _, sourceID in ipairs(sourceIDs) do
+		local currentSource = ix.item.instances[sourceID]
+
+		if (!currentSource) then
+			continue
+		end
+
+		local combineData = BuildStackCombineData(currentSource.id, data, false)
+
+		if (originalCanRun and originalCanRun(targetItem, combineData) == false) then
+			break
+		end
+
+		RunOriginalCombine(originalRun, targetItem, combineData)
+
+		if (!ix.item.instances[targetItem.id]) then
+			break
+		end
+	end
+
+	return false
+end
 
 local COMBINE_FUNC = {
 	OnCanRun = function(item, data)
@@ -1440,9 +1657,9 @@ local COMBINE_FUNC = {
 }
 
 hook.Add("InitializedPlugins", "ixItemStack", function()
-	local count = 0
+	for _, itemTable in pairs(ix.item.list) do
+		itemTable.functions = itemTable.functions or {}
 
-	for uniqueID, itemTable in pairs(ix.item.list) do
 		if (itemTable.isStackable) then
 			itemTable.functions.combine = COMBINE_FUNC
 
@@ -1470,28 +1687,30 @@ hook.Add("InitializedPlugins", "ixItemStack", function()
 
 				dropFunc.ixStackWrapped = true
 			end
+		end
 
-			count = count + 1
+		local hasInventoryTarget = itemTable.isBag or isfunction(itemTable.GetInventory) or isfunction(itemTable.GetInv)
+		local combineFunc = itemTable.functions.combine
 
-			print("[ItemStack] Added combine to: " .. uniqueID
-				.. " | functions table: " .. tostring(itemTable.functions)
-				.. " | combine: " .. tostring(itemTable.functions.combine))
+		if (!combineFunc and !itemTable.isStackable and hasInventoryTarget) then
+			combineFunc = CreateInventoryBackedCombineFunc(itemTable)
+		end
+
+		if (combineFunc and !combineFunc.ixStackWrapped and !itemTable.isStackable) then
+			local originalCombineRun = combineFunc.OnRun
+			local originalCombineCanRun = combineFunc.OnCanRun
+
+			combineFunc.OnRun = function(item, data)
+				return WrappedCombineRun(item, data, originalCombineRun, originalCombineCanRun)
+			end
+
+			combineFunc.OnCanRun = function(item, data)
+				return WrappedCombineCanRun(item, data, originalCombineCanRun)
+			end
+
+			combineFunc.ixStackWrapped = true
 		end
 	end
-
-	print("[ItemStack] Total: " .. count .. " stackable items")
-
-	-- Verify instances can see it
-	timer.Simple(5, function()
-		for id, instance in pairs(ix.item.instances) do
-			if (instance.isStackable) then
-				print("[ItemStack] Instance " .. id .. " (" .. instance.uniqueID .. ")"
-					.. " | functions: " .. tostring(instance.functions)
-					.. " | combine: " .. tostring(instance.functions and instance.functions.combine))
-				break -- only print first one
-			end
-		end
-	end)
 end)
 
 local function RebuildLoadedInventories(syncReceivers)

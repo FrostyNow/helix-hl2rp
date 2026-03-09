@@ -1,6 +1,34 @@
 
 local PLUGIN = PLUGIN
 
+PLUGIN.stack = PLUGIN.stack or {}
+PLUGIN.stack.clientStacks = PLUGIN.stack.clientStacks or {}
+
+local function GetClientStackCache(inventoryOrID)
+	local invID = isnumber(inventoryOrID) and inventoryOrID or (inventoryOrID and inventoryOrID.GetID and inventoryOrID:GetID())
+
+	if (!invID) then
+		return nil
+	end
+
+	PLUGIN.stack.clientStacks[invID] = PLUGIN.stack.clientStacks[invID] or {}
+	return PLUGIN.stack.clientStacks[invID]
+end
+
+local function GetClientStack(inventory, x, y)
+	if (!inventory or x == nil or y == nil) then
+		return nil
+	end
+
+	local cache = GetClientStackCache(inventory)
+	return cache and cache[x .. ":" .. y] or nil
+end
+
+local function IsStackRepresentative(inventory, item, x, y)
+	local stack = GetClientStack(inventory, x, y)
+	return stack and #stack > 1 and stack[1] and item and stack[1].id == item.id
+end
+
 -- ============================================
 -- Stack Management Panel
 -- ============================================
@@ -185,7 +213,7 @@ if (ixItemIcon) then
 		if (!invID) then return end
 
 		local inventory = ix.item.inventories[invID]
-		if (!inventory or !inventory.stacks) then return end
+		if (!inventory) then return end
 
 		-- Use the PANEL's grid position (set by AddIcon), not the item instance's
 		local gx = self.gridX
@@ -193,7 +221,7 @@ if (ixItemIcon) then
 		if (!gx or !gy) then return end
 
 		local key = gx .. ":" .. gy
-		local stack = inventory.stacks[key]
+		local stack = GetClientStack(inventory, gx, gy)
 
 		if (stack and #stack > 1) then
 			local count = tostring(#stack)
@@ -220,8 +248,7 @@ if (ixItemIcon) then
 		if (bDragging and item and item.isStackable) then
 			local invID = self.inventoryID or item.invID
 			local sourceInventory = invID and ix.item.inventories[invID]
-			local key = self.gridX and self.gridY and (self.gridX .. ":" .. self.gridY)
-			local stack = sourceInventory and sourceInventory.stacks and key and sourceInventory.stacks[key]
+			local stack = sourceInventory and self.gridX and self.gridY and GetClientStack(sourceInventory, self.gridX, self.gridY)
 			local isRepresentative = stack and #stack > 1 and stack[1] and stack[1].id == item.id
 			local isCtrlDown = input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)
 
@@ -236,6 +263,34 @@ if (ixItemIcon) then
 						net.WriteUInt(combineItem.gridX, 6)
 						net.WriteUInt(combineItem.gridY, 6)
 					net.SendToServer()
+
+					return
+				end
+			end
+
+			if (isRepresentative and IsValid(inventoryPanel) and inventoryPanel.combineItem) then
+				local combineItem = inventoryPanel.combineItem
+				local combineInfo = combineItem and combineItem.functions and combineItem.functions.combine
+
+				if (combineItem and combineItem.id != item.id and combineInfo and !combineItem.isStackable) then
+					local data = {item.id}
+
+					if (isCtrlDown) then
+						data.ixStackSingle = true
+					end
+
+					combineItem.player = LocalPlayer()
+						if (combineInfo.sound) then
+							surface.PlaySound(combineInfo.sound)
+						end
+
+						net.Start("ixInventoryAction")
+							net.WriteString("combine")
+							net.WriteUInt(combineItem.id, 32)
+							net.WriteUInt(combineItem.invID, 32)
+							net.WriteTable(data)
+						net.SendToServer()
+					combineItem.player = nil
 
 					return
 				end
@@ -265,10 +320,10 @@ hook.Add("CreateItemInteractionMenu", "ixStackManage", function(icon, menu, item
 	if (!invID) then return end
 
 	local inventory = ix.item.inventories[invID]
-	if (!inventory or !inventory.stacks) then return end
+	if (!inventory) then return end
 
 	local key = gx .. ":" .. gy
-	local stack = inventory.stacks[key]
+	local stack = GetClientStack(inventory, gx, gy)
 
 	if (stack and #stack > 1) then
 		menu:AddOption(L("StackManage"), function()
@@ -304,6 +359,30 @@ if (ixInventory) then
 		end
 	end
 
+	local function RecalculatePanelRepresentatives(panel, inventory)
+		if (!IsValid(panel) or !inventory or !panel.panels) then
+			return
+		end
+
+		for itemID, icon in pairs(panel.panels) do
+			if (IsValid(icon)) then
+				local gx, gy = icon.gridX, icon.gridY
+				local representative = gx and gy and inventory:GetItemAt(gx, gy) or nil
+
+				if (!representative or representative.id != itemID) then
+					for _, slot in ipairs(icon.slots or {}) do
+						if (slot.item == icon) then
+							slot.item = nil
+						end
+					end
+
+					icon:Remove()
+					panel.panels[itemID] = nil
+				end
+			end
+		end
+	end
+
 	local function RefreshInventoryPanel(panel, inventory)
 		if (!IsValid(panel) or !inventory) then
 			return
@@ -313,6 +392,7 @@ if (ixInventory) then
 		panel.ixStackSkipSyncRequest = true
 		originalSetInventory(panel, inventory)
 		panel.ixStackSkipSyncRequest = nil
+		RecalculatePanelRepresentatives(panel, inventory)
 		panel:RebuildItems()
 		panel:InvalidateLayout(true)
 		panel:InvalidateParent(true)
@@ -357,9 +437,8 @@ if (ixInventory) then
 		local targetInventory = inventories[self.invID]
 		local item = sourceInventory and sourceInventory:GetItemAt(oldX, oldY)
 
-		if (!noSend and item and item.isStackable and sourceInventory and sourceInventory.stacks) then
-			local key = item.gridX and item.gridY and (item.gridX .. ":" .. item.gridY)
-			local stack = key and sourceInventory.stacks[key]
+		if (!noSend and item and item.isStackable and sourceInventory) then
+			local stack = item.gridX and item.gridY and GetClientStack(sourceInventory, item.gridX, item.gridY)
 			local isRepresentative = stack and #stack > 1 and stack[1] and stack[1].id == item.id
 			local isCtrlDown = input.IsKeyDown(KEY_LCONTROL) or input.IsKeyDown(KEY_RCONTROL)
 
