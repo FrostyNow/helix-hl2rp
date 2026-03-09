@@ -2,7 +2,7 @@ RECIPE.name = "Charcoal"
 RECIPE.description = "recipeCharcoalDesc"
 RECIPE.category = "Transform"
 RECIPE.model = "models/willardnetworks/props/charcoal.mdl"
-RECIPE.station = "ix_station_craftingtable"
+RECIPE.station = "craftingtable"
 RECIPE.requirements = {
 	["misc_plank"] = 1
 }

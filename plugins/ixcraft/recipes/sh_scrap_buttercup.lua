@@ -1,13 +1,13 @@
 RECIPE.name = "Scrap Buttercup"
 RECIPE.description = "recipeScrapButtercupDesc"
-RECIPE.category = "Scrap"
+RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/buttercup_toy.mdl"
 RECIPE.requirements = {
-	["buttercup"] = 1,
+	["misc_buttercup"] = 1,
 }
 RECIPE.results = {
-	["gear"] = 3,
-	["screw"] = 4,
-	["spring"] = 4,
-	["steel"] = 5
+	["comp_gear"] = 3,
+	["comp_screw"] = 4,
+	["comp_spring"] = 4,
+	["comp_steel"] = 5
 }

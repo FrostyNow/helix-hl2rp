@@ -120,6 +120,12 @@ function RECIPE:OnCanSee(client)
 		end
 	end
 
+	if (self.station and client.ixCurrentStation != self.station) then
+		return false
+	elseif (client.ixCurrentStation and !self.station) then
+		return false
+	end
+
 	if (self.flag and !character:HasFlags(self.flag)) then
 		return false
 	end

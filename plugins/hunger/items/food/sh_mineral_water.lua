@@ -1,7 +1,6 @@
 ITEM.name = "Mineral Water"
 ITEM.model = "models/hlvr/props/bottles/plastic_bottle_1.mdl"
 ITEM.description = "itemMineralWaterDesc"
-ITEM.thirst = 100
+ITEM.thirst = 25
 ITEM.price = 10
 ITEM.empty = "empty_can"
-ITEM.heal = 5

@@ -25,10 +25,11 @@ LANGUAGE = {
 	["Ammunition"] = "탄약",
 	["Food"] = "음식",
 	["Scrap"] = "폐품",
+	["Disassemble"] = "분해",
 	["Weapon"] = "무기",
 	["Armor"] = "방어구",
 	["Consumable"] = "소모품",
-	["Assembly"] = "조립품",
+	["Assembly"] = "조립",
 	["Transform"] = "변환",
 
 	["Manhack"] = "맨핵",
