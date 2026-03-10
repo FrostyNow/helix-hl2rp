@@ -1,5 +1,142 @@
 local PLUGIN = PLUGIN
 
+local DEFAULT_ACT_MENU_BIND = "NONE"
+
+local INVALID_BIND_CODES = {
+	[KEY_ESCAPE] = true,
+	[KEY_TAB] = true
+}
+local BIND_ALIASES = {
+	[""] = "NONE",
+	OFF = "NONE",
+	DISABLE = "NONE",
+	DISABLED = "NONE",
+	ESC = "ESCAPE",
+	RETURN = "ENTER"
+}
+local bUpdatingBindOption = false
+
+local function TL(key, fallback, ...)
+	local value = L(key, ...)
+
+	if (value == key) then
+		return fallback or key
+	end
+
+	return value
+end
+
+local function resolveBindCode(bindText)
+	local normalized = string.upper(string.Trim(tostring(bindText or "")))
+	normalized = normalized:gsub("^KEY_", "")
+	normalized = normalized:gsub("[%s%-]+", "_")
+	normalized = BIND_ALIASES[normalized] or normalized
+
+	if (normalized == "NONE") then
+		return KEY_NONE, normalized
+	end
+
+	local keyCode = input.GetKeyCode and input.GetKeyCode(normalized) or nil
+
+	if (isnumber(keyCode) and keyCode != KEY_NONE) then
+		return keyCode, normalized
+	end
+
+	keyCode = _G[normalized]
+
+	if (isnumber(keyCode)) then
+		return keyCode, normalized
+	end
+
+	keyCode = _G["KEY_" .. normalized]
+
+	if (isnumber(keyCode)) then
+		return keyCode, normalized
+	end
+end
+
+local function normalizeBindText(bindText)
+	local keyCode, normalized = resolveBindCode(bindText)
+
+	if (!isnumber(keyCode) or INVALID_BIND_CODES[keyCode]) then
+		return nil
+	end
+
+	if (keyCode == KEY_NONE) then
+		return "NONE", keyCode
+	end
+
+	local keyName = input.GetKeyName and input.GetKeyName(keyCode) or normalized
+
+	if (!isstring(keyName) or keyName == "") then
+		keyName = normalized
+	end
+
+	return string.upper(keyName), keyCode
+end
+
+local function applyActMenuBind(bindText, bNotify)
+	local normalized, keyCode = normalizeBindText(bindText)
+
+	if (!normalized) then
+		if (bNotify and IsValid(LocalPlayer())) then
+			LocalPlayer():Notify(TL("actMenuBindInvalid", "Invalid act menu bind. Use values like N, F6, KP_ENTER, or NONE."))
+		end
+
+		return false
+	end
+
+	if (ix.option.Get("actMenuBind", DEFAULT_ACT_MENU_BIND) != normalized) then
+		bUpdatingBindOption = true
+		ix.option.Set("actMenuBind", normalized)
+		bUpdatingBindOption = false
+	end
+
+	if (bNotify and IsValid(LocalPlayer())) then
+		if (keyCode == KEY_NONE) then
+			LocalPlayer():Notify(TL("actMenuBindDisabled", "Act menu bind disabled."))
+		else
+			LocalPlayer():Notify(TL("actMenuBindUpdated", "Act menu bind set to %s.", normalized))
+		end
+	end
+
+	return true, keyCode, normalized
+end
+
+local function getActMenuBindName()
+	local normalized = normalizeBindText(ix.option.Get("actMenuBind", DEFAULT_ACT_MENU_BIND))
+
+	return normalized or DEFAULT_ACT_MENU_BIND
+end
+
+local function getActMenuBindCode()
+	local _, keyCode = normalizeBindText(ix.option.Get("actMenuBind", DEFAULT_ACT_MENU_BIND))
+
+	if (isnumber(keyCode)) then
+		return keyCode
+	end
+
+	return KEY_NONE
+end
+
+ix.option.Add("actMenuBind", ix.type.string, DEFAULT_ACT_MENU_BIND, {
+	category = "general",
+	OnChanged = function(_, value)
+		if (bUpdatingBindOption) then
+			return
+		end
+
+		local normalized = normalizeBindText(value)
+		local nextValue = normalized or DEFAULT_ACT_MENU_BIND
+
+		if (nextValue != value) then
+			bUpdatingBindOption = true
+			ix.option.Set("actMenuBind", nextValue)
+			bUpdatingBindOption = false
+		end
+	end
+})
+
 function PLUGIN:OpenActMenu()
 	if (IsValid(ix.gui.actMenu)) then
 		ix.gui.actMenu:Remove()
@@ -176,3 +313,33 @@ concommand.Add("-actmenu", function()
 		ix.gui.actMenu:Remove()
 	end
 end)
+
+concommand.Add("ix_actmenu_bind", function(_, _, arguments)
+	local bindText = string.Trim(table.concat(arguments or {}, " "))
+
+	if (bindText == "") then
+		LocalPlayer():Notify(TL("actMenuBindCurrent", "Current act menu bind: %s.", getActMenuBindName()))
+		return
+	end
+
+	applyActMenuBind(bindText, true)
+end)
+
+function PLUGIN:PlayerButtonDown(client, button)
+	local curTime = CurTime()
+	local bindCode = getActMenuBindCode()
+
+	if (bindCode != KEY_NONE and button == bindCode) then
+		if (IsValid(ix.gui.actMenu)) then
+			return
+		end
+
+		if ((client.nextActMenuBindOpen or 0) > curTime) then
+			return
+		end
+
+		self:OpenActMenu()
+		client.nextActMenuBindOpen = curTime + 0.2
+		return
+	end
+end
