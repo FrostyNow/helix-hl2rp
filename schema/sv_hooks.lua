@@ -182,9 +182,9 @@ end
 function Schema:DoPlayerDeath(client, attacker, damageinfo)
 	client.ixDeathAmmo = client:GetAmmo()
 	client.ixDeathWeapons = {}
-	client.ixDeathHunger = client:GetHunger()
-	client.ixDeathThirst = client:GetThirst()
-	
+	client.ixDeathHunger = client.GetHunger and client:GetHunger() or nil
+	client.ixDeathThirst = client.GetThirst and client:GetThirst() or nil
+
 	for _, v in ipairs(client:GetWeapons()) do
 		client.ixDeathWeapons[v:GetClass()] = {
 			clip1 = v:Clip1(),
