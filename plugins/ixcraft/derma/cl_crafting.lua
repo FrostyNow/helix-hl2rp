@@ -7,6 +7,13 @@ local ALL_CATEGORY = "__all"
 
 local PANEL = {}
 
+local function GetRecipeState(recipeTable)
+	local canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true
+	local stationBlocked = recipeTable.station and !recipeTable:HasStationAccess(LocalPlayer()) or false
+
+	return canCraft, stationBlocked
+end
+
 function PANEL:Init()
 	self:Dock(TOP)
 	self:SetTall(64)
@@ -14,7 +21,16 @@ function PANEL:Init()
 	self:SetText("")
 end
 
-function PANEL:SetRecipe(recipeTable)
+function PANEL:UpdateCraftState()
+	if (!self.recipeTable) then
+		return
+	end
+
+	self.canCraft, self.stationBlocked = GetRecipeState(self.recipeTable)
+	self:SetBackgroundColor(self.canCraft and color_green or color_red)
+end
+
+function PANEL:SetRecipe(recipeTable, craftState)
 	self.recipeTable = recipeTable
 
 	self.icon = self:Add("SpawnIcon")
@@ -33,7 +49,14 @@ function PANEL:SetRecipe(recipeTable)
 	self.name:SetExpensiveShadow(1, Color(0, 0, 0, 200))
 	self.name:SetText(L(recipeTable.GetName and recipeTable:GetName() or recipeTable.name))
 
-	self:SetBackgroundColor(recipeTable:OnCanCraft(LocalPlayer()) and color_green or color_red)
+	self.canCraft = craftState and craftState.canCraft
+	self.stationBlocked = craftState and craftState.stationBlocked
+
+	if (self.canCraft == nil or self.stationBlocked == nil) then
+		self:UpdateCraftState()
+	else
+		self:SetBackgroundColor(self.canCraft and color_green or color_red)
+	end
 end
 
 function PANEL:DoClick()
@@ -48,10 +71,11 @@ function PANEL:DoClick()
 end
 
 function PANEL:PaintBackground(width, height)
-	local alpha = self.currentBackgroundAlpha
-	local recipeTable = self.recipeTable
+	self:UpdateCraftState()
 
-	if (recipeTable and recipeTable:OnCanCraft(LocalPlayer())) then
+	local alpha = self.currentBackgroundAlpha
+
+	if (self.recipeTable and self.canCraft) then
 		alpha = math.max(alpha, 100)
 	end
 
@@ -75,7 +99,7 @@ function PANEL:GetVisibleRecipes(category, search)
 	local searchText = search and search:lower() or nil
 
 	for uniqueID, recipeTable in pairs(PLUGIN.craft.recipes) do
-		if (recipeTable:OnCanSee(LocalPlayer()) == false) then
+		if (recipeTable:CanList(LocalPlayer()) == false) then
 			continue
 		end
 
@@ -95,13 +119,18 @@ function PANEL:GetVisibleRecipes(category, search)
 			uniqueID = uniqueID,
 			recipeTable = recipeTable,
 			displayName = L(recipeTable.GetName and recipeTable:GetName() or recipeTable.name),
-			canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true
+			canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true,
+			stationBlocked = recipeTable.station and !recipeTable:HasStationAccess(LocalPlayer()) or false
 		}
 	end
 
 	table.sort(recipes, function(a, b)
 		if (a.canCraft != b.canCraft) then
 			return a.canCraft
+		end
+
+		if (a.stationBlocked != b.stationBlocked) then
+			return a.stationBlocked == false
 		end
 
 		return a.displayName:lower() < b.displayName:lower()
@@ -122,7 +151,7 @@ function PANEL:BuildCategoryList()
 	local categoryEntries = {}
 
 	for _, recipeTable in pairs(PLUGIN.craft.recipes) do
-		if (recipeTable:OnCanSee(LocalPlayer()) == false) then
+		if (recipeTable:CanList(LocalPlayer()) == false) then
 			continue
 		end
 
@@ -258,7 +287,7 @@ function PANEL:LoadRecipes(category, search)
 
 	for _, entry in ipairs(self:GetVisibleRecipes(category, search)) do
 		local recipeButton = self.scroll:Add("ixCraftingRecipe")
-		recipeButton:SetRecipe(entry.recipeTable)
+		recipeButton:SetRecipe(entry.recipeTable, entry)
 		recipeButton:SetHelixTooltip(function(tooltip)
 			PLUGIN:PopulateRecipeTooltip(tooltip, entry.recipeTable)
 		end)

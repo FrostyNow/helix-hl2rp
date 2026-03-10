@@ -9,6 +9,12 @@ RECIPE.description = "undefined"
 RECIPE.uniqueID = "undefined"
 RECIPE.category = "Crafting"
 
+local cookingStations = {
+	"ix_bucket",
+	"ix_bonfire",
+	"ix_stove"
+}
+
 function RECIPE:GetName()
 	return self.name
 end
@@ -105,6 +111,60 @@ function RECIPE:CheckRequirement(inventory, uniqueID, req, client)
 	return false, itemName
 end
 
+function RECIPE:GetStationName(client)
+	if (!self.station) then
+		return nil
+	end
+
+	local stationTable = PLUGIN.craft.stations[self.station]
+	local stationName = stationTable and (stationTable.GetName and stationTable:GetName() or stationTable.name) or self.station
+
+	return CLIENT and L(stationName) or L(stationName, client)
+end
+
+function RECIPE:HasStationAccess(client)
+	if (!self.station) then
+		return true
+	end
+
+	local currentStation = client.ixCurrentStation
+
+	if (SERVER) then
+		for _, v in pairs(ents.FindByClass("ix_station_" .. self.station)) do
+			if (client:GetPos():DistToSqr(v:GetPos()) < 150 * 150) then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	if (CLIENT and currentStation != self.station) then
+		return false
+	end
+
+	return true
+end
+
+function RECIPE:GetNearbyCookingStation(client)
+	local maxDist = 100 * 100
+	local currentStationEnt = client.ixCurrentStationEnt
+
+	if (IsValid(currentStationEnt) and currentStationEnt.IsStove and currentStationEnt:IsStove()) then
+		if (client:GetPos():DistToSqr(currentStationEnt:GetPos()) < maxDist) then
+			return currentStationEnt
+		end
+	end
+
+	for _, className in ipairs(cookingStations) do
+		for _, entity in ipairs(ents.FindByClass(className)) do
+			if (client:GetPos():DistToSqr(entity:GetPos()) < maxDist) then
+				return entity
+			end
+		end
+	end
+end
+
 function RECIPE:OnCanSee(client)
 	local character = client:GetCharacter()
 
@@ -120,10 +180,34 @@ function RECIPE:OnCanSee(client)
 		end
 	end
 
-	if (self.station and client.ixCurrentStation != self.station) then
+	if (self.flag and !character:HasFlags(self.flag)) then
 		return false
-	elseif (client.ixCurrentStation and !self.station) then
+	end
+
+	if (self.postHooks and self.postHooks["OnCanSee"]) then
+		local a, b, c, d, e, f = self.postHooks["OnCanSee"](self, client)
+
+		if (a != nil) then
+			return a, b, c, d, e, f
+		end
+	end
+
+	return true
+end
+
+function RECIPE:CanList(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
 		return false
+	end
+
+	if (self.preHooks and self.preHooks["OnCanSee"]) then
+		local a, b, c, d, e, f = self.preHooks["OnCanSee"](self, client)
+
+		if (a != nil) then
+			return a, b, c, d, e, f
+		end
 	end
 
 	if (self.flag and !character:HasFlags(self.flag)) then
@@ -134,6 +218,10 @@ function RECIPE:OnCanSee(client)
 		local a, b, c, d, e, f = self.postHooks["OnCanSee"](self, client)
 
 		if (a != nil) then
+			if (self.category == "Food" and a == false) then
+				return true
+			end
+
 			return a, b, c, d, e, f
 		end
 	end
@@ -203,37 +291,19 @@ function RECIPE:OnCanCraft(client)
 	end
 
 	-- Check station requirement
-	if (self.station) then
-		local currentStation = client.ixCurrentStation
-
-		if (SERVER) then
-			-- Verify player is actually near the required station
-			local bNearStation = false
-
-			for _, v in pairs(ents.FindByClass("ix_station_" .. self.station)) do
-				if (client:GetPos():DistToSqr(v:GetPos()) < 150 * 150) then
-					bNearStation = true
-					break
-				end
-			end
-
-			if (!bNearStation) then
-				return false, "@CraftMissingStation", self.station
-			end
-		elseif (CLIENT) then
-			if (currentStation != self.station) then
-				return false, "@CraftMissingStation", self.station
-			end
-		end
+	if (!self:HasStationAccess(client)) then
+		return false, "@CraftMissingStation", self:GetStationName(client)
 	end
 
-	if (SERVER and self.category == "Food") then
-		local currentStationEnt = client.ixCurrentStationEnt
+	if (self.category == "Food") then
+		local cookingStation = self:GetNearbyCookingStation(client)
 
-		if (IsValid(currentStationEnt) and currentStationEnt.IsStove and currentStationEnt:IsStove()) then
-			if (!currentStationEnt:GetNetVar("active", false)) then
-				return false, "@CraftStoveInactive"
-			end
+		if (!IsValid(cookingStation)) then
+			return false, "@CraftMissingCookingStation"
+		end
+
+		if (!cookingStation:GetNetVar("active", false)) then
+			return false, "@CraftStoveInactive"
 		end
 	end
 

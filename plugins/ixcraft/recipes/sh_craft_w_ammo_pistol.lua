@@ -1,6 +1,6 @@
 
-RECIPE.name = "권총 탄환 제작"
-RECIPE.description = "권총 탄환을 제작합니다."
+RECIPE.name = "Craft Pistol ammo"
+RECIPE.description = "recipePistolAmmoDesc"
 RECIPE.category = "Weapons"
 RECIPE.model = "models/items/boxsrounds.mdl"
 RECIPE.station = "craftingtable"

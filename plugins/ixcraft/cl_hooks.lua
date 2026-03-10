@@ -1,7 +1,6 @@
 
 local PLUGIN = PLUGIN
 
---- Helper to parse a requirement entry for display
 local function ParseRequirement(entry)
 	if (isnumber(entry)) then
 		return {amount = entry, preserve = false, substitutes = nil}
@@ -14,6 +13,55 @@ local function ParseRequirement(entry)
 	end
 
 	return {amount = 1, preserve = false, substitutes = nil}
+end
+
+local function ParseSubstitute(entry, parentPreserve)
+	if (isnumber(entry)) then
+		return {amount = entry, preserve = parentPreserve}
+	elseif (istable(entry)) then
+		return {
+			amount = entry.amount or 1,
+			preserve = entry.preserve != nil and entry.preserve or parentPreserve
+		}
+	end
+
+	return {amount = 1, preserve = parentPreserve}
+end
+
+local function GetItemName(uniqueID)
+	local itemTable = ix.item.Get(uniqueID)
+
+	return itemTable and L(itemTable.name) or uniqueID
+end
+
+local function BuildRequirementText(uniqueID, entry)
+	local req = ParseRequirement(entry)
+	local text = req.amount .. "x " .. GetItemName(uniqueID)
+
+	if (req.substitutes) then
+		local substitutes = {}
+
+		for subID, subEntry in SortedPairs(req.substitutes) do
+			local sub = ParseSubstitute(subEntry, req.preserve)
+			substitutes[#substitutes + 1] = sub.amount .. "x " .. GetItemName(subID)
+		end
+
+		if (#substitutes > 0) then
+			text = text .. " (" .. L("CraftOr") .. ": " .. table.concat(substitutes, ", ") .. ")"
+		end
+	end
+
+	return text, req
+end
+
+local function AddListRow(tooltip, id, entries)
+	if (#entries == 0) then
+		return
+	end
+
+	local row = tooltip:AddRow(id)
+	row:SetText("- " .. table.concat(entries, ", "))
+	row:SizeToContents()
 end
 
 function PLUGIN:BuildCraftingMenu()
@@ -49,86 +97,47 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 	-- Station requirement
 	if (recipe.station) then
 		local stationRow = tooltip:AddRow("station")
-		local stationTable = PLUGIN.craft.stations[recipe.station]
-		local stationName = stationTable and L(stationTable.name or recipe.station) or recipe.station
+		local stationName = recipe:GetStationName(LocalPlayer()) or recipe.station
 
 		stationRow:SetText(L("CraftStation") .. ": " .. stationName)
 		stationRow:SetBackgroundColor(Color(100, 50, 150))
 		stationRow:SizeToContents()
 	end
 
-	-- Tools (legacy)
+	local toolEntries = {}
+
 	if (recipe.tools) then
+		for _, uniqueID in ipairs(recipe.tools) do
+			toolEntries[#toolEntries + 1] = "1x " .. GetItemName(uniqueID)
+		end
+	end
+
+	local requirementEntries = {}
+
+	for uniqueID, entry in SortedPairs(recipe.requirements or {}) do
+		local text, req = BuildRequirementText(uniqueID, entry)
+
+		if (req.preserve) then
+			toolEntries[#toolEntries + 1] = text
+		else
+			requirementEntries[#requirementEntries + 1] = text
+		end
+	end
+
+	if (#toolEntries > 0) then
 		local tools = tooltip:AddRow("tools")
 		tools:SetText(L("CraftTools"))
 		tools:SetBackgroundColor(Color(150,150,25))
 		tools:SizeToContents()
-
-		local toolString = ""
-
-		for _, v in pairs(recipe.tools) do
-			local itemTable = ix.item.Get(v)
-			local itemName = v
-
-			if (itemTable) then
-			    itemName = L(itemTable.name)
-			end
-
-			toolString = toolString..itemName..", "
-		end
-
-		if (toolString != "") then
-			local tools = tooltip:AddRow("toolList")
-			tools:SetText("- "..string.sub(toolString, 0, #toolString-2))
-			tools:SizeToContents()
-		end
+		AddListRow(tooltip, "toolList", toolEntries)
 	end
 
-	-- Requirements
-	local requirements = tooltip:AddRow("requirements")
-	requirements:SetText(L("CraftRequirements"))
-	requirements:SetBackgroundColor(Color(25,150,150))
-	requirements:SizeToContents()
-
-	local requirementString = ""
-
-	for k, v in pairs(recipe.requirements or {}) do
-		local req = ParseRequirement(v)
-		local itemTable = ix.item.Get(k)
-		local itemName = k
-
-		if (itemTable) then
-		    itemName = L(itemTable.name)
-		end
-
-		local prefix = ""
-		if (req.preserve) then
-			prefix = "🔒 "
-		end
-
-		requirementString = requirementString .. prefix .. req.amount .. "x " .. itemName
-
-		-- Show substitutes
-		if (req.substitutes) then
-			local subNames = {}
-			for subID, _ in pairs(req.substitutes) do
-				local subItem = ix.item.Get(subID)
-				local subName = subItem and L(subItem.name) or subID
-				table.insert(subNames, subName)
-			end
-
-			if (#subNames > 0) then
-				requirementString = requirementString .. " (" .. L("CraftOr") .. ": " .. table.concat(subNames, ", ") .. ")"
-			end
-		end
-
-		requirementString = requirementString .. ", "
-	end
-
-	if (requirementString != "") then
-		local requirement = tooltip:AddRow("ingredientList")
-		requirement:SetText("- "..string.sub(requirementString, 0, #requirementString-2))
-		requirement:SizeToContents()
+	if (#requirementEntries > 0) then
+		local requirements = tooltip:AddRow("requirements")
+		requirements:SetText(L("CraftRequirements"))
+		requirements:SetBackgroundColor(Color(25,150,150))
+		requirements:SizeToContents()
+		AddListRow(tooltip, "ingredientList", requirementEntries)
 	end
 
 	-- Results

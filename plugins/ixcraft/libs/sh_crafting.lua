@@ -49,7 +49,7 @@ function PLUGIN.craft.GetCategories(client)
 	for k, v in pairs(PLUGIN.craft.recipes) do
 		local category = v.category or "Crafting"
 
-		if (v:OnCanSee(client)) then
+		if (v:CanList(client)) then
 			if (!categories[category]) then
 				categories[category] = {}
 			end

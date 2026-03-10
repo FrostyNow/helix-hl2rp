@@ -1,5 +1,5 @@
-RECIPE.name = "건조 첨가물 분해"
-RECIPE.description = "포장재인 금속통을 분해합니다."
+RECIPE.name = "Scrap Dried Additives Box"
+RECIPE.description = "Disassemble a metal packaging box."
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/synapse/misc_props/synapse_misc_large_metal_box.mdl"
 RECIPE.requirements = {

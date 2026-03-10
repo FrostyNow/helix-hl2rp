@@ -1,5 +1,5 @@
-RECIPE.name = "커피 포트 분해"
-RECIPE.description = "커피 포트를 분해합니다."
+RECIPE.name = "Scrap Coffee Pot"
+RECIPE.description = "Disassemble a coffee pot."
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/hls/alyxports/coffee_maker.mdl"
 RECIPE.requirements = {

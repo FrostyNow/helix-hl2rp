@@ -4,6 +4,7 @@ LANGUAGE = {
 	["CraftMissingTool"] = "You are missing a %s.",
 	["CraftMissingItem"] = "You are missing: %s.",
 	["CraftMissingStation"] = "You need to be near a %s.",
+	["CraftMissingCookingStation"] = "You need to be near a cooking station.",
 	["CraftStoveInactive"] = "The cooking station must be turned on.",
 	["CraftSuccess"] = "You have successfully crafted %s.",
 
@@ -20,6 +21,7 @@ LANGUAGE = {
 	["noWorkbench"] = "You need to be near a workbench.",
 
 	stationWorkbenchDesc = "A workbench used for crafting.",
+	stationCraftingTableDesc = "A crafting table used for crafting and scraping.",
 	["StationUseHint"] = "Press E to open crafting.",
 
 	recipeManhackDesc = "Assemble some parts to craft a Manhack.",
@@ -37,6 +39,14 @@ LANGUAGE = {
 	recipeRepairKitDesc = "Combine screws, a screwdriver, and oil to make a repair tool.",
 	recipeSplintDesc = "Combine wood scraps and cloth to make a first-aid splint.",
 	recipeZipTieDesc = "Use plastic and rubber to make zip ties.",
+	recipeSMG1Desc = "Craft an SMG.",
+	recipePistolDesc = "Craft a 9mm pistol.",
+	recipeSMGAmmoDesc = "Craft SMG ammunition.",
+	recipePistolAmmoDesc = "Craft pistol ammunition.",
+	recipe762AmmoDesc = "Craft 7.62mm ammunition.",
+	recipeAKMDesc = "Craft an AKM.",
+	recipeScrewdriverDesc = "Craft a tool for driving or removing screws by fitting a sturdy aluminum shaft into a plastic handle.",
+	recipeHammerDesc = "Craft a tool for driving nails by fitting a heavy steel head onto a wooden handle.",
 	
 	recipeScrapButtercupDesc = "Disassemble a buttercup to extract parts.",
 	recipeScrapEmptyCanDesc = "Disassemble an empty can to extract parts.",
@@ -48,9 +58,18 @@ LANGUAGE = {
 	recipeScrapAluminiumCanDesc = "Disassemble an aluminium can to extract parts.",
 	recipeScrapTelephoneDesc = "Disassemble a telephone to extract parts.",
 	recipeScrapTurpentineDesc = "Disassemble turpentine to extract parts.",
+	recipePlasticBottleDesc = "Break down a plastic bottle.",
+	recipePlankDesc = "Break down a wooden plank into usable scraps.",
+	recipeScrapMoneyDesc = "Tear up useless paper money into a more usable form.",
+	recipeScrapEmptyBottleDesc = "Break down an empty bottle into usable glass materials.",
 
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
+	recipeFiberglassDesc = "Craft fiberglass by drawing glass into fine threads.",
+	recipeGearsDesc = "Craft gears by molding and shaping steel.",
+	recipeScrewDesc = "Craft screws by sharpening and threading aluminum.",
+	recipeSpringDesc = "Craft a spring by drawing aluminum into a wire and coiling it.",
+	recipeGunpowderDesc = "Craft gunpowder by mixing nitrate fertilizer and charcoal.",
 
 	recipeMeatSoupDesc = "Craft meat soup.",
 	recipeVegetSoupDesc = "Craft vegetable soup.",

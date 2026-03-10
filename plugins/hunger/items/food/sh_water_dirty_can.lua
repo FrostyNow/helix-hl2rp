@@ -1,4 +1,4 @@
-ITEM.name = "Dirty Water(Can)"
+ITEM.name = "Dirty Water"
 ITEM.model = "models/hls/alyxports/popcan01a_hls.mdl"
 ITEM.skin = 3
 ITEM.description = "itemDirtyWaterDesc"

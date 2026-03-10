@@ -1,5 +1,5 @@
-RECIPE.name = "냄비 분해"
-RECIPE.description = "냄비를 분해합니다."
+RECIPE.name = "Scrap Pot"
+RECIPE.description = "Disassemble a pot."
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/synapse/alyxports/pan_2.mdl"
 RECIPE.requirements = {

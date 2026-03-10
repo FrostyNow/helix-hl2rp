@@ -1,5 +1,5 @@
-RECIPE.name = "양동이 분해"
-RECIPE.description = "양동이를 분해합니다."
+RECIPE.name = "Scrap Bucket"
+RECIPE.description = "Disassemble a bucket."
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/bucket.mdl"
 RECIPE.requirements = {

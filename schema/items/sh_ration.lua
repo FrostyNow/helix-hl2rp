@@ -7,9 +7,9 @@ ITEM.items = {"supplements", "supplements_bar"}
 ITEM.price = 100
 ITEM.exRender = true
 ITEM.iconCam = {
-	pos = Vector(11.14, -6.38, 129.97),
-	ang = Angle(86.81, -181.38, 0),
-	fov = 8.58
+	pos = Vector(356.67, 303.02, 565.94),
+	ang = Angle(50.52, 221.21, 0),
+	fov = 1.88
 }
 
 ITEM.functions.Open = {

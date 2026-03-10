@@ -1,6 +1,6 @@
 
-RECIPE.name = "AKM 제작"
-RECIPE.description = "AKM을 제작합니다."
+RECIPE.name = "Craft AKM"
+RECIPE.description = "recipeAKMDesc"
 RECIPE.category = "Weapons"
 RECIPE.model = "models/weapons/rtb/akm.mdl"
 RECIPE.station = "craftingtable"

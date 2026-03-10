@@ -1,4 +1,4 @@
-ITEM.name = "Purified Water(Bottle)"
+ITEM.name = "Purified Water"
 ITEM.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
 ITEM.description = "itemPurifiedWaterDesc"
 ITEM.empty = "misc_plasticbottle"

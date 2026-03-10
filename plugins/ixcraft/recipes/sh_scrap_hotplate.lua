@@ -1,5 +1,5 @@
-RECIPE.name = "전열기 분해"
-RECIPE.description = "전열기를 분해합니다."
+RECIPE.name = "Scrap Hotplate"
+RECIPE.description = "Disassemble a hotplate."
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/hotplate.mdl"
 RECIPE.requirements = {

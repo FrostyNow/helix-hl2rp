@@ -1,6 +1,6 @@
 
-RECIPE.name = "9mm 권총 제작"
-RECIPE.description = "9mm 권총을 제작합니다."
+RECIPE.name = "Craft Pistol"
+RECIPE.description = "recipePistolDesc"
 RECIPE.category = "Weapons"
 RECIPE.model = "models/weapons/juniez/pistol.mdl"
 RECIPE.station = "craftingtable"

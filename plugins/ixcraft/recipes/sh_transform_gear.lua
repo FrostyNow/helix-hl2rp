@@ -1,6 +1,6 @@
 
 RECIPE.name = "Gears"
-RECIPE.description = "강철을 성형해서 톱니바퀴를 만듭니다."
+RECIPE.description = "recipeGearsDesc"
 RECIPE.category = "Transform"
 RECIPE.model = "models/mosi/fallout4/props/junk/components/gears.mdl"
 RECIPE.station = "craftingtable"

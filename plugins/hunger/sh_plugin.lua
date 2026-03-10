@@ -122,12 +122,16 @@ function PLUGIN:PatchCookingEntityMenus()
 		entityTable.ixHungerOriginalOnOptionSelected = entityTable.ixHungerOriginalOnOptionSelected or entityTable.OnOptionSelected
 
 		function entityTable:GetEntityMenu(client)
-			local options = {}
 			local craftPlugin = ix.plugin.list["ixcraft"]
 			local categories = craftPlugin and craftPlugin.craft.GetCategories(client)
 			local isActive = self:GetNetVar("active", false)
+			local options = {}
 
-			if (isActive and categories and categories[cookingCraftCategory] and !table.IsEmpty(categories[cookingCraftCategory])) then
+			if (!isActive) then
+				return options
+			end
+
+			if (categories and categories[cookingCraftCategory] and !table.IsEmpty(categories[cookingCraftCategory])) then
 				if (CLIENT) then
 					options[L("stoveOpenCrafting", client)] = function()
 						hungerPlugin:OpenCookingCraftingMenu(self)
@@ -161,6 +165,20 @@ end
 
 function PLUGIN:InitializedPlugins()
 	self:PatchCookingEntityMenus()
+end
+
+function PLUGIN:PlayerUse(client, entity)
+	if (IsValid(entity) and entity.IsStove and entity:IsStove() and !entity:GetNetVar("active", false)) then
+		return true
+	end
+end
+
+if (CLIENT) then
+	function PLUGIN:ShowEntityMenu(entity)
+		if (IsValid(entity) and entity.IsStove and entity:IsStove() and !entity:GetNetVar("active", false)) then
+			return false
+		end
+	end
 end
 
 function playerMeta:GetHunger()

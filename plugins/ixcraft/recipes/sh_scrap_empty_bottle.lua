@@ -1,5 +1,5 @@
-RECIPE.name = "빈 병 분해"
-RECIPE.description = "병을 잘라내거나 성형하여 적절한 형태로 가공합니다."
+RECIPE.name = "Scrap Empty Bottle"
+RECIPE.description = "recipeScrapEmptyBottleDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/props_junk/GlassBottle01a.mdl"
 RECIPE.requirements = {
