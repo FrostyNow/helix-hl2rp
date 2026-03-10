@@ -115,11 +115,16 @@ if (SERVER) then
 	net.Receive("ixCraftRecipe", function(length, client)
 		local uniqueID = net.ReadString()
 		local stationID = net.ReadString()
+		local stationEntIndex = net.ReadUInt(16)
 
 		-- Store station context on the player for validation
 		if (stationID and stationID != "") then
 			client.ixCurrentStation = stationID
+		else
+			client.ixCurrentStation = nil
 		end
+
+		client.ixCurrentStationEnt = stationEntIndex > 0 and Entity(stationEntIndex) or nil
 
 		PLUGIN.craft.CraftRecipe(client, uniqueID)
 

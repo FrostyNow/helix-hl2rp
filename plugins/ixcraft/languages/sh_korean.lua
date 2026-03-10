@@ -5,12 +5,14 @@ LANGUAGE = {
 	["CraftMissingTool"] = "%s(이)가 없습니다.",
 	["CraftMissingItem"] = "%s(이)가 없습니다.",
 	["CraftMissingStation"] = "%s 근처에 있어야 합니다.",
+	["CraftStoveInactive"] = "조리대를 켜야 조리할 수 있습니다.",
 	["CraftSuccess"] = "%s(을)를 성공적으로 만들었습니다.",
 
 	["CraftTools"] = "도구",
 	["CraftRequirements"] = "재료",
 	["CraftResults"] = "결과",
 	["CraftStation"] = "스테이션",
+	["All"] = "전체",
 	["CraftOr"] = "또는",
 	["CraftingAtStation"] = "제작 중",
 

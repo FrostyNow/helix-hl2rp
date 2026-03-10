@@ -3,6 +3,7 @@ local PLUGIN = PLUGIN
 
 local color_green = Color(50,150,100)
 local color_red = Color(150, 50, 50)
+local ALL_CATEGORY = "__all"
 
 local PANEL = {}
 
@@ -41,6 +42,7 @@ function PANEL:DoClick()
 			net.WriteString(self.recipeTable.uniqueID)
 			-- Send current station context
 			net.WriteString(LocalPlayer().ixCurrentStation or "")
+			net.WriteUInt(IsValid(LocalPlayer().ixCurrentStationEnt) and LocalPlayer().ixCurrentStationEnt:EntIndex() or 0, 16)
 		net.SendToServer()
 	end
 end
@@ -59,6 +61,134 @@ end
 vgui.Register("ixCraftingRecipe", PANEL, "ixMenuButton")
 
 PANEL = {}
+
+function PANEL:IsCategoryAllowed(category)
+	return !self.allowedCategories or self.allowedCategories[category] == true
+end
+
+function PANEL:GetCategoryLabel(category)
+	return category == ALL_CATEGORY and L("All") or L(category)
+end
+
+function PANEL:GetVisibleRecipes(category, search)
+	local recipes = {}
+	local searchText = search and search:lower() or nil
+
+	for uniqueID, recipeTable in pairs(PLUGIN.craft.recipes) do
+		if (recipeTable:OnCanSee(LocalPlayer()) == false) then
+			continue
+		end
+
+		if (!self:IsCategoryAllowed(recipeTable.category)) then
+			continue
+		end
+
+		if (category != ALL_CATEGORY and recipeTable.category != category) then
+			continue
+		end
+
+		if (searchText and searchText != "" and !L(recipeTable.name):lower():find(searchText, 1, true)) then
+			continue
+		end
+
+		recipes[#recipes + 1] = {
+			uniqueID = uniqueID,
+			recipeTable = recipeTable,
+			displayName = L(recipeTable.GetName and recipeTable:GetName() or recipeTable.name),
+			canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true
+		}
+	end
+
+	table.sort(recipes, function(a, b)
+		if (a.canCraft != b.canCraft) then
+			return a.canCraft
+		end
+
+		return a.displayName:lower() < b.displayName:lower()
+	end)
+
+	return recipes
+end
+
+function PANEL:BuildCategoryList()
+	if (!IsValid(self.categories)) then
+		return
+	end
+
+	self.categories:Clear()
+	self.categoryPanels = {}
+	self.selected = nil
+
+	local categoryEntries = {}
+
+	for _, recipeTable in pairs(PLUGIN.craft.recipes) do
+		if (recipeTable:OnCanSee(LocalPlayer()) == false) then
+			continue
+		end
+
+		if (!self:IsCategoryAllowed(recipeTable.category)) then
+			continue
+		end
+
+		if (!categoryEntries[recipeTable.category]) then
+			categoryEntries[recipeTable.category] = true
+		end
+	end
+
+	local categories = {}
+
+	if (!table.IsEmpty(categoryEntries)) then
+		categories[#categories + 1] = ALL_CATEGORY
+	end
+
+	for category in pairs(categoryEntries) do
+		categories[#categories + 1] = category
+	end
+
+	table.sort(categories, function(a, b)
+		if (a == ALL_CATEGORY or b == ALL_CATEGORY) then
+			return a == ALL_CATEGORY
+		end
+
+		return self:GetCategoryLabel(a):lower() < self:GetCategoryLabel(b):lower()
+	end)
+
+	for _, category in ipairs(categories) do
+		local realName = category
+		local button = self.categories:Add("ixMenuButton")
+		button:Dock(TOP)
+		button:SetText(self:GetCategoryLabel(category))
+		button:SizeToContents()
+		button.Paint = function(this, w, h)
+			surface.SetDrawColor(self.selected == this and ix.config.Get("color") or color_transparent)
+			surface.DrawRect(0, 0, w, h)
+		end
+		button.DoClick = function(this)
+			if (self.selected != this) then
+				self.selected = this
+				self:LoadRecipes(realName)
+				timer.Simple(0.01, function()
+					if (IsValid(self.scroll)) then
+						self.scroll:InvalidateLayout()
+					end
+				end)
+			end
+		end
+		button.category = realName
+
+		if (!self.selected or realName == self.defaultCategory) then
+			self.selected = button
+		end
+
+		self.categoryPanels[realName] = button
+	end
+
+	if (self.selected) then
+		self:LoadRecipes(self.selected.category)
+	else
+		self.scroll:Clear()
+	end
+end
 
 function PANEL:Init()
 	ix.gui.crafting = self
@@ -106,49 +236,7 @@ function PANEL:Init()
 		end
 	end
 
-	local first = true
-
-	for k, v in pairs(PLUGIN.craft.recipes) do
-		if (v:OnCanSee(LocalPlayer()) == false) then
-			continue
-		end
-
-		if (!self.categoryPanels[L(v.category)]) then
-			self.categoryPanels[L(v.category)] = v.category
-		end
-	end
-
-	for category, realName in SortedPairs(self.categoryPanels) do
-		local button = self.categories:Add("ixMenuButton")
-		button:Dock(TOP)
-		button:SetText(L(category))
-		button:SizeToContents()
-		button.Paint = function(this, w, h)
-			surface.SetDrawColor(self.selected == this and ix.config.Get("color") or color_transparent)
-			surface.DrawRect(0, 0, w, h)
-		end
-		button.DoClick = function(this)
-			if (self.selected != this) then
-				self.selected = this
-				self:LoadRecipes(realName)
-				timer.Simple(0.01, function()
-					self.scroll:InvalidateLayout()
-				end)
-			end
-		end
-		button.category = realName
-
-		if (first) then
-			self.selected = button
-			first = false
-		end
-
-		self.categoryPanels[realName] = button
-	end
-
-	if (self.selected) then
-		self:LoadRecipes(self.selected.category)
-	end
+	self:BuildCategoryList()
 end
 
 function PANEL:SetStation(stationID)
@@ -156,29 +244,24 @@ function PANEL:SetStation(stationID)
 	LocalPlayer().ixCurrentStation = stationID
 end
 
+function PANEL:SetCategoryFilter(allowedCategories, defaultCategory)
+	self.allowedCategories = allowedCategories
+	self.defaultCategory = defaultCategory
+	self:BuildCategoryList()
+end
+
 function PANEL:LoadRecipes(category, search)
-	category = category	or "Crafting"
-	local recipes = PLUGIN.craft.recipes
+	category = category or self.defaultCategory or ALL_CATEGORY
 
 	self.scroll:Clear()
 	self.scroll:InvalidateLayout(true)
 
-	for uniqueID, recipeTable in SortedPairsByMemberValue(recipes, "name") do
-		if (recipeTable:OnCanSee(LocalPlayer()) == false) then
-			continue
-		end
-
-		if (recipeTable.category == category) then
-			if (search and search != "" and !L(recipeTable.name):lower():find(search, 1, true)) then
-				continue
-			end
-
-			local recipeButton = self.scroll:Add("ixCraftingRecipe")
-			recipeButton:SetRecipe(recipeTable)
-			recipeButton:SetHelixTooltip(function(tooltip)
-				PLUGIN:PopulateRecipeTooltip(tooltip, recipeTable)
-			end)
-		end
+	for _, entry in ipairs(self:GetVisibleRecipes(category, search)) do
+		local recipeButton = self.scroll:Add("ixCraftingRecipe")
+		recipeButton:SetRecipe(entry.recipeTable)
+		recipeButton:SetHelixTooltip(function(tooltip)
+			PLUGIN:PopulateRecipeTooltip(tooltip, entry.recipeTable)
+		end)
 	end
 end
 

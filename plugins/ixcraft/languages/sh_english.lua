@@ -4,12 +4,14 @@ LANGUAGE = {
 	["CraftMissingTool"] = "You are missing a %s.",
 	["CraftMissingItem"] = "You are missing: %s.",
 	["CraftMissingStation"] = "You need to be near a %s.",
+	["CraftStoveInactive"] = "The cooking station must be turned on.",
 	["CraftSuccess"] = "You have successfully crafted %s.",
 
 	["CraftTools"] = "TOOLS",
 	["CraftRequirements"] = "REQUIREMENTS",
 	["CraftResults"] = "RESULTS",
 	["CraftStation"] = "STATION",
+	["All"] = "All",
 	["CraftOr"] = "or",
 	["CraftingAtStation"] = "Crafting at",
 

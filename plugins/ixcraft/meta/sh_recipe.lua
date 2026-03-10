@@ -227,6 +227,16 @@ function RECIPE:OnCanCraft(client)
 		end
 	end
 
+	if (SERVER and self.category == "Food") then
+		local currentStationEnt = client.ixCurrentStationEnt
+
+		if (IsValid(currentStationEnt) and currentStationEnt.IsStove and currentStationEnt:IsStove()) then
+			if (!currentStationEnt:GetNetVar("active", false)) then
+				return false, "@CraftStoveInactive"
+			end
+		end
+	end
+
 	if (self.postHooks and self.postHooks["OnCanCraft"]) then
 		local a, b, c, d, e, f = self.postHooks["OnCanCraft"](self, client)
 
