@@ -23,13 +23,134 @@ ix.config.Add("syncSurvivalWithTime", true, "Whether or not to synchronize survi
 })
 
 local entityMeta = FindMetaTable("Entity")
+local cookingEntityClasses = {
+	"ix_stove",
+	"ix_bucket",
+	"ix_bonfire"
+}
+local cookingEntityLookup = {
+	ix_stove = true,
+	ix_bucket = true,
+	ix_bonfire = true
+}
+
+local function GetCookingEntityTable(className)
+	local stored = scripted_ents.GetStored(className)
+
+	if (stored and stored.t) then
+		return stored.t
+	end
+
+	return scripted_ents.Get(className)
+end
+
+local function GetCookingTogglePhrase(entity)
+	return entity:GetNetVar("active", false) and "stoveTurnOff" or "stoveTurnOn"
+end
 
 function entityMeta:IsStove()
-	local class = self:GetClass()
-	return ( class == "ix_stove" or class == "ix_bucket" or class == "ix_bonfire" )
+	return cookingEntityLookup[self:GetClass()] == true
 end
 
 local playerMeta = FindMetaTable("Player")
+
+function PLUGIN:HasIXCraft()
+	return ix.plugin.list["ixcraft"] != nil
+end
+
+if (CLIENT) then
+	function PLUGIN:OpenCookingCraftingMenu(entity)
+		local craftPlugin = ix.plugin.list["ixcraft"]
+
+		if (!craftPlugin or !vgui.GetControlTable("ixCrafting")) then
+			return false
+		end
+
+		if (IsValid(ix.gui.stationCrafting)) then
+			ix.gui.stationCrafting:Remove()
+		end
+
+		LocalPlayer().ixCurrentStation = nil
+		LocalPlayer().ixCurrentStationEnt = entity
+
+		local frame = vgui.Create("DFrame")
+		frame:SetSize(ScrW() * 0.6, ScrH() * 0.6)
+		frame:Center()
+		frame:MakePopup()
+		frame:SetTitle(L("crafting") .. " - " .. L(entity:GetClass()))
+
+		local craftPanel = frame:Add("ixCrafting")
+		craftPanel:Dock(FILL)
+
+		frame.OnRemove = function()
+			LocalPlayer().ixCurrentStation = nil
+
+			if (LocalPlayer().ixCurrentStationEnt == entity) then
+				LocalPlayer().ixCurrentStationEnt = nil
+			end
+		end
+
+		ix.gui.stationCrafting = frame
+		return true
+	end
+end
+
+function PLUGIN:PatchCookingEntityMenus()
+	if (!self:HasIXCraft()) then
+		return
+	end
+
+	for _, className in ipairs(cookingEntityClasses) do
+		local entityTable = GetCookingEntityTable(className)
+
+		if (!entityTable or entityTable.ixHungerCraftMenuPatched) then
+			continue
+		end
+
+		entityTable.ixHungerCraftMenuPatched = true
+		entityTable.ixHungerOriginalUse = entityTable.ixHungerOriginalUse or entityTable.Use
+		entityTable.ixHungerOriginalOnOptionSelected = entityTable.ixHungerOriginalOnOptionSelected or entityTable.OnOptionSelected
+
+		function entityTable:GetEntityMenu(client)
+			local options = {}
+
+			if (CLIENT) then
+				local craftPlugin = ix.plugin.list["ixcraft"]
+
+				if (craftPlugin and !table.IsEmpty(craftPlugin.craft.GetCategories(client))) then
+					options[L("stoveOpenCrafting", client)] = function()
+						PLUGIN:OpenCookingCraftingMenu(self)
+						return false
+					end
+				end
+			else
+				options["stoveOpenCrafting"] = true
+			end
+
+			options[L(GetCookingTogglePhrase(self), client)] = true
+
+			return options
+		end
+
+		function entityTable:OnOptionSelected(client, option, data)
+			if (option == L(GetCookingTogglePhrase(self), client)) then
+				if (isfunction(self.ixHungerOriginalUse)) then
+					self:ixHungerOriginalUse(client)
+				end
+
+				return
+			end
+
+			if (isfunction(self.ixHungerOriginalOnOptionSelected)) then
+				return self:ixHungerOriginalOnOptionSelected(client, option, data)
+			end
+		end
+	end
+end
+
+function PLUGIN:InitializedPlugins()
+	self:PatchCookingEntityMenus()
+end
 
 function playerMeta:GetHunger()
 	local char = self:GetCharacter()
