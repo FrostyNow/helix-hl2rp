@@ -1,4 +1,6 @@
 
+ix.config.language = "korean"
+
 ix.currency.symbol = "₮"
 ix.currency.singular = "currencySingular"
 ix.currency.plural = "currencyPlural"
