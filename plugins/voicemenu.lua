@@ -2,9 +2,9 @@ local PLUGIN = PLUGIN
 
 PLUGIN.name = "Menu Voces"
 PLUGIN.author = "UltraDev | Modified by Frosty"
-PLUGIN.description = "View menu voices press [N]."
+PLUGIN.description = "View menu voices."
 
-PLUGIN.bind = KEY_N
+local DEFAULT_VOICE_MENU_BIND = "N"
 
 ix.lang.AddTable("english", {
 	voiceMenuTitle = "Voice Menu",
@@ -24,7 +24,13 @@ ix.lang.AddTable("english", {
 	voiceMenuInfoBreencast = "Breencast. This is a broadcast channel only.",
 	voiceMenuInfoDispatch = "Overwatch Dispatch. This is a dispatch channel only.",
 	voiceMenuInfoOverwatch = "Overwatch Radio. This is a radio channel only.",
-	voiceMenuInfoDefault = "You can select a general/radio channel on left lick."
+	voiceMenuInfoDefault = "You can select a general/radio channel on left lick.",
+	voiceMenuBindUpdated = "Voice menu bind set to %s.",
+	voiceMenuBindDisabled = "Voice menu bind disabled.",
+	voiceMenuBindInvalid = "Invalid voice menu bind. Use values like N, F6, KP_ENTER, or NONE.",
+	voiceMenuBindCurrent = "Current voice menu bind: %s.",
+	optVoiceMenuBind = "Voice menu bind",
+	optdVoiceMenuBind = "Key used to open the voice menu. Use values like N, F6, KP_ENTER, or NONE to disable it."
 })
 
 ix.lang.AddTable("korean", {
@@ -45,7 +51,13 @@ ix.lang.AddTable("korean", {
 	voiceMenuInfoBreencast = "브린 박사의 방송입니다. 브로드캐스트 채널 전용입니다.",
 	voiceMenuInfoDispatch = "감시인 디스패치 방송입니다. 디스패치 채널 전용입니다.",
 	voiceMenuInfoOverwatch = "감시인 무전입니다. 라디오 채널 전용입니다.",
-	voiceMenuInfoDefault = "항목을 선택하면 일반/라디오 채널을 선택하실 수 있습니다."
+	voiceMenuInfoDefault = "항목을 선택하면 일반/라디오 채널을 선택하실 수 있습니다.",
+	voiceMenuBindUpdated = "음성 메뉴 바인드를 %s(으)로 설정했습니다.",
+	voiceMenuBindDisabled = "음성 메뉴 바인드를 비활성화했습니다.",
+	voiceMenuBindInvalid = "유효하지 않은 음성 메뉴 바인드입니다. N, F6, KP_ENTER, NONE 같은 값을 사용해 주세요.",
+	voiceMenuBindCurrent = "현재 음성 메뉴 바인드: %s",
+	optVoiceMenuBind = "음성 메뉴 바인드",
+	optdVoiceMenuBind = "음성 메뉴를 여는 키입니다. N, F6, KP_ENTER 같은 값을 쓰고, NONE으로 비활성화할 수 있습니다."
 })
 
 if (SERVER) then
@@ -70,6 +82,140 @@ if (CLIENT) then
 	local FAVORITES_CLASS = "__favorites"
 	local FAVORITES_DIRECTORY = "ixhl2rp"
 	local FAVORITES_FILE = FAVORITES_DIRECTORY .. "/voice_favorites.json"
+	local INVALID_BIND_CODES = {
+		[KEY_ESCAPE] = true,
+		[KEY_TAB] = true
+	}
+	local BIND_ALIASES = {
+		[""] = "NONE",
+		OFF = "NONE",
+		DISABLE = "NONE",
+		DISABLED = "NONE",
+		ESC = "ESCAPE",
+		RETURN = "ENTER"
+	}
+	local bUpdatingBindOption = false
+
+	local function TL(key, fallback, ...)
+		local value = L(key, ...)
+
+		if (value == key) then
+			return fallback or key
+		end
+
+		return value
+	end
+
+	local function resolveBindCode(bindText)
+		local normalized = string.upper(string.Trim(tostring(bindText or "")))
+		normalized = normalized:gsub("^KEY_", "")
+		normalized = normalized:gsub("[%s%-]+", "_")
+		normalized = BIND_ALIASES[normalized] or normalized
+
+		if (normalized == "NONE") then
+			return KEY_NONE, normalized
+		end
+
+		local keyCode = input.GetKeyCode and input.GetKeyCode(normalized) or nil
+
+		if (isnumber(keyCode) and keyCode != KEY_NONE) then
+			return keyCode, normalized
+		end
+
+		keyCode = _G[normalized]
+
+		if (isnumber(keyCode)) then
+			return keyCode, normalized
+		end
+
+		keyCode = _G["KEY_" .. normalized]
+
+		if (isnumber(keyCode)) then
+			return keyCode, normalized
+		end
+	end
+
+	local function normalizeBindText(bindText)
+		local keyCode, normalized = resolveBindCode(bindText)
+
+		if (!isnumber(keyCode) or INVALID_BIND_CODES[keyCode]) then
+			return nil
+		end
+
+		if (keyCode == KEY_NONE) then
+			return "NONE", keyCode
+		end
+
+		local keyName = input.GetKeyName and input.GetKeyName(keyCode) or normalized
+
+		if (!isstring(keyName) or keyName == "") then
+			keyName = normalized
+		end
+
+		return string.upper(keyName), keyCode
+	end
+
+	local function applyVoiceMenuBind(bindText, bNotify)
+		local normalized, keyCode = normalizeBindText(bindText)
+
+		if (!normalized) then
+			if (bNotify and IsValid(LocalPlayer())) then
+				LocalPlayer():Notify(TL("voiceMenuBindInvalid", "Invalid voice menu bind. Use values like N, F6, KP_ENTER, or NONE."))
+			end
+
+			return false
+		end
+
+		if (ix.option.Get("voiceMenuBind", DEFAULT_VOICE_MENU_BIND) != normalized) then
+			bUpdatingBindOption = true
+			ix.option.Set("voiceMenuBind", normalized)
+			bUpdatingBindOption = false
+		end
+
+		if (bNotify and IsValid(LocalPlayer())) then
+			if (keyCode == KEY_NONE) then
+				LocalPlayer():Notify(TL("voiceMenuBindDisabled", "Voice menu bind disabled."))
+			else
+				LocalPlayer():Notify(TL("voiceMenuBindUpdated", "Voice menu bind set to %s.", normalized))
+			end
+		end
+
+		return true, keyCode, normalized
+	end
+
+	local function getVoiceMenuBindName()
+		local normalized = normalizeBindText(ix.option.Get("voiceMenuBind", DEFAULT_VOICE_MENU_BIND))
+
+		return normalized or DEFAULT_VOICE_MENU_BIND
+	end
+
+	local function getVoiceMenuBindCode()
+		local _, keyCode = normalizeBindText(ix.option.Get("voiceMenuBind", DEFAULT_VOICE_MENU_BIND))
+
+		if (isnumber(keyCode)) then
+			return keyCode
+		end
+
+		return KEY_N
+	end
+
+	ix.option.Add("voiceMenuBind", ix.type.string, DEFAULT_VOICE_MENU_BIND, {
+		category = "general",
+		OnChanged = function(_, value)
+			if (bUpdatingBindOption) then
+				return
+			end
+
+			local normalized = normalizeBindText(value)
+			local nextValue = normalized or DEFAULT_VOICE_MENU_BIND
+
+			if (nextValue != value) then
+				bUpdatingBindOption = true
+				ix.option.Set("voiceMenuBind", nextValue)
+				bUpdatingBindOption = false
+			end
+		end
+	})
 
 	local function getFavoritesStorage()
 		if (istable(PLUGIN.voiceMenuFavorites)) then
@@ -109,16 +255,6 @@ if (CLIENT) then
 	local function saveFavoritesStorage()
 		file.CreateDir(FAVORITES_DIRECTORY)
 		file.Write(FAVORITES_FILE, util.TableToJSON(getFavoritesStorage()) or "{}")
-	end
-
-	local function TL(key, fallback, ...)
-		local value = L(key, ...)
-
-		if (value == key) then
-			return fallback or key
-		end
-
-		return value
 	end
 
 	local function getVoicePreviewText(command, info)
@@ -889,34 +1025,41 @@ if (CLIENT) then
 
 	vgui.Register("ixVoiceMenuLarge", PANEL, "DFrame")
 
-	local function toggleVoiceMenu(client)
-		if (!IsValid(client.menu)) then
-			local menu = vgui.Create("ixVoiceMenuLarge")
+	local function openVoiceMenu(client)
+		if (!IsValid(client) or IsValid(client.menu)) then
+			return
+		end
 
-			menu.OnRemove = function(panel)
-				PLUGIN.lastCategory = panel.selectedClass
+		local menu = vgui.Create("ixVoiceMenuLarge")
 
-				if (IsValid(panel.commandScroll)) then
-					PLUGIN.lastScroll = panel.commandScroll:GetVBar():GetScroll()
-				end
+		menu.OnRemove = function(panel)
+			PLUGIN.lastCategory = panel.selectedClass
 
-				if (client.menu == panel) then
-					client.menuOpen = false
-					client.menu = nil
-				end
+			if (IsValid(panel.commandScroll)) then
+				PLUGIN.lastScroll = panel.commandScroll:GetVBar():GetScroll()
 			end
 
-			client.menuOpen = true
-			client.menu = menu
-		else
+			if (client.menu == panel) then
+				client.menuOpen = false
+				client.menu = nil
+			end
+		end
+
+		client.menuOpen = true
+		client.menu = menu
+	end
+
+	local function closeVoiceMenu(client)
+		if (IsValid(client) and IsValid(client.menu)) then
 			client.menu:Remove()
 		end
 	end
 
 	function PLUGIN:PlayerButtonDown(client, button)
 		local curTime = CurTime()
+		local bindCode = getVoiceMenuBindCode()
 
-		if (button == self.bind) then
+		if (bindCode != KEY_NONE and button == bindCode) then
 			if (IsValid(client.menu)) then
 				return
 			end
@@ -925,24 +1068,60 @@ if (CLIENT) then
 				return
 			end
 
-			toggleVoiceMenu(client)
+			openVoiceMenu(client)
 			client.nextBindOpen = curTime + 0.2
 			return
 		end
 
 		if (IsValid(client.menu) and (button == KEY_ESCAPE or button == KEY_TAB)) then
-			client.menu:Remove()
+			closeVoiceMenu(client)
 			return
 		end
 	end
+
+	concommand.Add("ix_voicemenu", function()
+		openVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("+voicemenu", function()
+		openVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("-voicemenu", function()
+		closeVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("ix_voicepanel", function()
+		openVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("+voicepanel", function()
+		openVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("-voicepanel", function()
+		closeVoiceMenu(LocalPlayer())
+	end)
+
+	concommand.Add("ix_voicemenu_bind", function(_, _, arguments)
+		local bindText = string.Trim(table.concat(arguments or {}, " "))
+
+		if (bindText == "") then
+			LocalPlayer():Notify(TL("voiceMenuBindCurrent", "Current voice menu bind: %s.", getVoiceMenuBindName()))
+			return
+		end
+
+		applyVoiceMenuBind(bindText, true)
+	end)
+
 	net.Receive("ixToggleVoiceMenu", function()
-		toggleVoiceMenu(LocalPlayer())
+		openVoiceMenu(LocalPlayer())
 	end)
 end
 
 ix.command.Add("Voice", {
 	description = "@voiceMenuDesc",
-	alias = {"VoiceMenu"},
+	alias = {"VoiceMenu", "VoicePanel"},
 	OnRun = function(self, client)
 		net.Start("ixToggleVoiceMenu")
 		net.Send(client)
