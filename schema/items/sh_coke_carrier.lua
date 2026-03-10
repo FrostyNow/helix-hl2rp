@@ -2,7 +2,7 @@ ITEM.name = "Coke"
 ITEM.model = "models/bloocobalt/l4d/items/w_cola.mdl"
 ITEM.category = "Food"
 ITEM.description = "itemCokeDesc"
-ITEM.price = 120
+ITEM.price = 60
 ITEM.usenum = 6
 
 ITEM.bodyGroups = {

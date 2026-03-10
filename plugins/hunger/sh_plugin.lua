@@ -255,33 +255,33 @@ if SERVER then
 
 	function PLUGIN:PlayerSpawn(client)
 		local char = client:GetCharacter()
-		local enabled = client:GetCharacter()
 		
-		if (ix.plugin.list["scanner"]) then
-			if client.ixScn then enabled = nil end
-		elseif (enabled and !Schema:IsCombineRank(client:Name(), "SCN")) then
-			enabled = nil
-		end
-		
-		if (client.resetHunger) then
+		if (char and client.resetHunger) then
 			char:SetData("hunger", 100)
 			client:SetLocalVar("hunger", 100)
 			client.resetHunger = false
 		end
 		
-		if (client.resetThirst) then
+		if (char and client.resetThirst) then
 			char:SetData("thirst", 100)
 			client:SetLocalVar("thirst", 100)
 			client.resetThirst = false
 		end
 
-		if (enabled) then
-			char:SetData("hunger", 100)
-			client:SetLocalVar("hunger", 100)
-			char:SetData("thirst", 100)
-			client:SetLocalVar("thirst", 100)
-			client.resetThirst = false
-			client.resetHunger = false
+		if (char) then
+			local bIsCombine = false
+			if (FACTION_OTA and client:Team() == FACTION_OTA) then bIsCombine = true end
+			if (Schema:IsCombineRank(client:Name(), "SCN")) then bIsCombine = true end
+			if (ix.plugin.list["scanner"] and client.ixScn) then bIsCombine = true end
+			
+			if (bIsCombine) then
+				char:SetData("hunger", 100)
+				client:SetLocalVar("hunger", 100)
+				char:SetData("thirst", 100)
+				client:SetLocalVar("thirst", 100)
+				client.resetThirst = false
+				client.resetHunger = false
+			end
 		end
 	end
 

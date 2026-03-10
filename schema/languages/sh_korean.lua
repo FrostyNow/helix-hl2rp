@@ -526,6 +526,21 @@ LANGUAGE = {
 	itemDriedSpicesDesc = "음식에 향을 주는 데 사용되는 가루입니다.",
 	["Ration Token"] = "배급 쿠폰",
 	itemRationTokenDesc = "배급을 한 번 더 받을 수 있는 쿠폰입니다.",
+	["Pistol Parts"] = "권총 부품",
+	itemPistolPartsDesc = "수제작으로는 만들어내기 힘든 핵심 권총 부품들이 포함되어 있습니다.",
+	["Rifle Parts"] = "소총 부품",
+	itemRiflePartsDesc = "수제작으로는 만들어내기 힘든 핵심 소총 부품들이 포함되어 있습니다.",
+	["Shotgun Parts"] = "산탄총 부품",
+	itemShotgunPartsDesc = "수제작으로는 만들어내기 힘든 핵심 산탄총 부품들이 포함되어 있습니다.",
+	["SMG Parts"] = "기관단총 부품",
+	itemSMGPartsDesc = "수제작으로는 만들어내기 힘든 핵심 기관단총 부품들이 포함되어 있습니다.",
+	["Gasmask Filter"] = "가스마스크 정화통",
+	itemGasmaskFilterDesc = "가스마스크용 교체 정화통입니다.\n가스마스크의 내구도를 완전히 회복시키는 데 사용됩니다.",
+	replaceFilter = "정화통 교체하기",
+	gasmaskFilterReplaced = "가스마스크의 정화통을 성공적으로 교체했습니다.",
+	gasmaskNoNeedRepair = "정화통을 교체해야 할 가스마스크를 가지고 있지 않습니다.",
+	["Coffee Beans"] = "커피 원두",
+	itemCoffeBeansDesc = "커피를 재배해서 열매를 딴 뒤 볶는 과정을 거친 원두입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",
@@ -619,5 +634,6 @@ LANGUAGE = {
 	["Broadcast Console"] = "방송 콘솔",
 	broadcastConsoleDesc = "공공 방송을 하는 데 사용되는 콘솔입니다.",
 	broadcastConsoleUse = "/Broadcast 명령어를 입력하여 방송을 할 수 있습니다.",
+
 	modelNotSupported = "현재 캐릭터의 모델이 지원하지 않는 착용품입니다.",
 }

@@ -87,5 +87,7 @@ LANGUAGE = {
 	recipeHeadcrabPlatterDesc = "Cook a headcrab platter.",
 	recipeCheeseDesc = "Make cheese from milk.",
 	recipeOnionRingsDesc = "Fry onion rings.",
+	recipeTeaDesc = "Make some tea.",
+	recipeCoffeeDesc = "Make some coffee.",
 }
 

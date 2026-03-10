@@ -80,7 +80,9 @@ LANGUAGE = {
 	recipe762AmmoDesc = "7.62mm 탄약을 제작합니다.",
 	["Craft AKM"] = "AKM 제작",
 	recipeAKMDesc = "AKM을 제작합니다.",
-	recipeScrewdriverDesc = "길고 단단하게 성형한 알루미늄 심을 플라스틱 손잡이에 끼워 나사를 고정하거나 풀 수 있는 도구를 만듭니다.",recipeHammerDesc = "무거운 강철 머리를 목재 손잡이에 끼워넣어 못을 쳐넣을 수 있는 도구를 만듭니다.",
+	recipeScrewdriverDesc = "길고 단단하게 성형한 알루미늄 심을 플라스틱 손잡이에 끼워 나사를 고정하거나 풀 수 있는 도구를 만듭니다.",
+	recipeHammerDesc = "무거운 강철 머리를 목재 손잡이에 끼워넣어 못을 쳐넣을 수 있는 도구를 만듭니다.",
+	recipeGasmaskDesc = "간이 방독면을 제작합니다.",
 
 	["Scrap Buttercup"] = "버터컵 분해",
 	recipeScrapButtercupDesc = "버터컵을 분해하여 부품을 추출합니다.",
@@ -153,5 +155,7 @@ LANGUAGE = {
 	recipeCheeseDesc = "우유를 치즈로 만듭니다.",
 	["Onion Rings"] = "어니언 링",
 	recipeOnionRingsDesc = "양파로 어니언 링을 만듭니다.",
+	recipeTeaDesc = "차를 끓입니다.",
+	recipeCoffeeDesc = "커피를 끓입니다.",
 }
 

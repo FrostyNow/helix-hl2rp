@@ -100,6 +100,8 @@ LANGUAGE = {
 	itemAntlionGrubDesc = "개미귀신 둥지에서 찾을 수 있는 유충이 유리병에 들어 있습니다.",
 	["Dirty Water"] = "더러운 물",
 	itemDirtyWaterDesc = "사람이 마실 수 없을 정도로 더러운 물입니다.",
+	["Tea"] = "차",
+	itemTeaDesc = "찻나무 잎을 물에 우려낸 음료입니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",

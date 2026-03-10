@@ -246,6 +246,15 @@ LANGUAGE = {
 	itemMargarineDesc = "A cream like substance that is made from processed animal fat.",
 	itemDriedSpicesDesc = "A powder that is used to season food.",
 	itemRationTokenDesc = "A coupon to ration.",
+	itemPistolPartsDesc = "Includes core pistol parts that are hard to make by hand.",
+	itemRiflePartsDesc = "Includes core rifle parts that are hard to make by hand.",
+	itemShotgunPartsDesc = "Includes core shotgun parts that are hard to make by hand.",
+	itemSMGPartsDesc = "Includes core SMG parts that are hard to make by hand.",
+	itemGasmaskFilterDesc = "A replacement filter for a gasmask.\nCan be used to replenish the durability of the gasmask completely.",
+	replaceFilter = "Replace Filter",
+	gasmaskFilterReplaced = "You have successfully replaced the filter on your gasmask.",
+	gasmaskNoNeedRepair = "You do not have a gasmask that needs a new filter.",
+	itemCoffeBeansDesc = "Coffee beans that are used to make coffee.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",
@@ -297,5 +306,6 @@ LANGUAGE = {
 	["Broadcast Console"] = "Broadcast Console",
 	broadcastConsoleDesc = "A console used to make public announcements.",
 	broadcastConsoleUse = "Type /Broadcast to make an announcement.",
+
 	modelNotSupported = "Your model is not supported by this item.",
 }

@@ -24,6 +24,8 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
+	["Safe Name"] = "보관함 이름",
+	["Safe Password"] = "보관함 비밀번호",
 	["Set Password"] = "비밀번호 설정",
 	["Set Name"] = "이름 설정",
 	itemSafePasswordDesc = "개인 보관함을 비밀번호로 잠글 수 있습니다.",

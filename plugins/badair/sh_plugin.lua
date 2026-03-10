@@ -10,7 +10,8 @@ ix.lang.AddTable("korean", {
 	badairEnter3 = "공기 중에 무거운 입자가 깔리는 듯한 느낌이 듭니다.",
 	badairExit1 = "숨 쉬기가 한결 편안해졌습니다.",
 	badairExit2 = "불쾌한 냄새가 사라지는 것 같습니다.",
-	badairExit3 = "뭔가 상쾌해진 것 같습니다."
+	badairExit3 = "뭔가 상쾌해진 것 같습니다.",
+	badairMaskDepleted = "가스마스크의 정화통이 다 되어 숨이 막혀옵니다."
 })
 
 ix.lang.AddTable("english", {
@@ -20,7 +21,8 @@ ix.lang.AddTable("english", {
 	badairEnter3 = "It feels as though heavy particles are settling in the air.",
 	badairExit1 = "Breathing has become much easier.",
 	badairExit2 = "The unpleasant smell seems to have disappeared.",
-	badairExit3 = "It feels somehow refreshing."
+	badairExit3 = "It feels somehow refreshing.",
+	badairMaskDepleted = "The filter in your gasmask runs out, making it hard to breathe."
 })
 
 local badairEnterMessages = {
@@ -55,7 +57,8 @@ if (!CLIENT) then
 						local areaMeta = ix.area.stored[areaID]
 						
 						if (areaMeta and areaMeta.properties and areaMeta.properties.badair) then
-							local bIsProtected = client:GetNetVar("gasmask") or client:GetMoveType() == MOVETYPE_NOCLIP
+							local bIsProtected = client:GetMoveType() == MOVETYPE_NOCLIP
+							local bCombineProtected = false
 
 							if (!bIsProtected and client:IsCombine()) then
 								if (Schema:IsConceptCombine(client)) then
@@ -63,8 +66,44 @@ if (!CLIENT) then
 
 									if (index != -1 and client:GetBodygroup(index) >= 1) then
 										bIsProtected = true
+										bCombineProtected = true
 									end
 								else
+									bIsProtected = true
+									bCombineProtected = true
+								end
+							end
+
+							if (!bCombineProtected and client:GetNetVar("gasmask") and client:GetMoveType() != MOVETYPE_NOCLIP) then
+								local inv = char:GetInventory()
+								local activeMask
+
+								if (inv) then
+									for _, item in pairs(inv:GetItems()) do
+										if (item.base == "base_armor" and item:GetData("equip") and item.gasmask) then
+											activeMask = item
+											break
+										end
+									end
+								end
+
+								if (activeMask) then
+									local dur = activeMask:GetData("Durability", activeMask.maxDurability)
+									if (dur > 0) then
+										-- 10 minutes (600 seconds) to deplete full durability. 
+										-- Calculate deduction based on max durability so any gasmask lasts ~10 mins.
+										activeMask:SetData("Durability", math.max(0, dur - (activeMask.maxDurability / 600)))
+										
+										if (activeMask:GetData("Durability") <= 0) then
+											ix.chat.Send(client, "it", L("badairMaskDepleted", client), false, {client})
+											bIsProtected = false
+										end
+									else
+										bIsProtected = false
+									end
+								end
+								
+								if (activeMask and activeMask:GetData("Durability", activeMask.maxDurability) > 0) then
 									bIsProtected = true
 								end
 							end

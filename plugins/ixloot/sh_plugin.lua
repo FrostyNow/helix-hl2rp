@@ -104,6 +104,9 @@ PLUGIN.randomLoot.common = {
 	["headcrab"] = 1,
 	["tomato"] = 1,
 	["coke_bottle_empty"] = 5,
+	["ration_token"] = 1,
+	["coupon"] = 1,
+	["coffe_beans"] = 2,
 }
 
 PLUGIN.randomLoot.rare = {
@@ -151,7 +154,8 @@ PLUGIN.randomLoot.rare = {
 	["misc_gunparts_rifle"] = 1,
 	["misc_gunparts_shotgun"] = 1,
 	["misc_gunparts_smg"] = 1,
-	-- ["sensormodule"] = 1,
+	["citizen_gasmask"] = 1,
+	["gasmask_filter"] = 1,
 }
 
 ix.util.Include("sv_plugin.lua")
