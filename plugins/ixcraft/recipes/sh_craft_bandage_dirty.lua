@@ -7,5 +7,5 @@ RECIPE.requirements = {
 	["comp_cloth"] = 1,
 }
 RECIPE.results = {
-	["bandage"] = 1
+	["bandage_dirty"] = 1
 }

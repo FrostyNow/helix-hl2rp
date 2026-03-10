@@ -1,7 +1,7 @@
 RECIPE.name = "테레빈유 분해"
 RECIPE.description = "테레빈유를 분해합니다."
 RECIPE.category = "Disassemble"
-RECIPE.model = "models/props_debris/wood_board06a.mdl"
+RECIPE.model = "models/mosi/fallout4/props/junk/turpentine.mdl"
 RECIPE.requirements = {
 	["misc_turpentine"] = 1
 }

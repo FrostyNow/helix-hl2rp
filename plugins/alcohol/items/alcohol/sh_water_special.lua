@@ -3,8 +3,9 @@ ITEM.model = "models/props_junk/PopCan01a.mdl"
 ITEM.description = "itemBeerDesc"
 ITEM.skin = 2
 ITEM.force = 5
-ITEM.thirst = 20
-ITEM.price = 6
+ITEM.thirst = 35
+ITEM.usenum = 1
+ITEM.price = 35
 ITEM.empty = "water_empty"
 
 ITEM:Hook("Eat", function(item)
