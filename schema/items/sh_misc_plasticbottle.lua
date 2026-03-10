@@ -1,6 +1,7 @@
+
 ITEM.name = "Plastic Bottle"
-ITEM.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
 ITEM.description = "itemPlasticBottleDesc"
-ITEM.price = 1
+ITEM.price = 2
+ITEM.model = "models/synapse/alyxports/water_bottle_04.mdl"
 ITEM.isjunk = true
 ITEM.isStackable = true

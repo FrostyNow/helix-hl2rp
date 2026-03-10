@@ -1,6 +1,6 @@
 
 RECIPE.name = "Gunpowder"
-RECIPE.description = "recipeGunpowderDesc"
+RECIPE.description = "질산 비료와 숯을 혼합하여 화약을 만듭니다."
 RECIPE.category = "Transform"
 RECIPE.model = "models/mosi/fallout4/props/junk/components/asbestos.mdl"
 RECIPE.station = "craftingtable"

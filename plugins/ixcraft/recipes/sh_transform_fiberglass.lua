@@ -1,6 +1,6 @@
 
 RECIPE.name = "Fiberglass"
-RECIPE.description = "recipeFiberglassDesc"
+RECIPE.description = "유리를 가늘고 길게 뽑아내어 유리섬유를 만듭니다."
 RECIPE.category = "Transform"
 RECIPE.model = "models/mosi/fallout4/props/junk/components/fiberglass.mdl"
 RECIPE.station = "craftingtable"

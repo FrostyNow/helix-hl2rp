@@ -1,5 +1,7 @@
 ITEM.name = "Milk"
-ITEM.model = "models/props_junk/garbage_milkcarton002a.mdl"
+ITEM.model = "models/mosi/fallout4/props/drink/milkbottle.mdl"
+ITEM.skin = 1
+ITEM.empty = "glass_bottle_generic"
 ITEM.description = "itemMilkDesc"
 ITEM.thirst = 25
 ITEM.hunger = 5

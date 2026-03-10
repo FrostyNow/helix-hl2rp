@@ -9,5 +9,5 @@ RECIPE.results = {
 	["comp_aluminium"] = 4,
 	["comp_circuitry"] = 2,
 	["comp_crystal"] = 1,
-	["comp_gear"] = 1
+	["comp_gears"] = 1
 }

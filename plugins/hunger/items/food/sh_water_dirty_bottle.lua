@@ -1,5 +1,5 @@
-ITEM.name = "Dirty Water"
-ITEM.model = "models/mosi/fallout4/props/drink/dirtywater.mdl"
+ITEM.name = "Dirty Water(Bottle)"
+ITEM.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
 ITEM.description = "itemDirtyWaterDesc"
 ITEM.thirst = 25
 ITEM.hunger = -100

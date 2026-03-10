@@ -2,15 +2,16 @@
 RECIPE.name = "Purified Water"
 RECIPE.description = "recipePurifiedWaterDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/props_junk/PopCan01a.mdl"
+RECIPE.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
 RECIPE.requirements = {
-	["water_dirty"] = 1,
+	["water_dirty"] = {amount = 1, substitutes = {["water_dirty_bottle"] = 1, ["water_dirty_can"] = 1}},
 	["comp_cloth"] = 1,
 	["misc_charcoal"] = 1,
-	["coffeepot"] = {amount = 1, preserve = true, substitutes = {["pressurecooker"] = 1}}
+	["misc_plasticbottle"] = 1,
+	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["misc_tool_coffeepot"] = 1}}
 }
 RECIPE.results = {
-	["purified_water"] = 1
+	["water_purified_bottle"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

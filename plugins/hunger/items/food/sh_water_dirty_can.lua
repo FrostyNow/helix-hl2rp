@@ -1,7 +1,9 @@
-ITEM.name = "Dirty Water"
-ITEM.model = "models/mosi/fallout4/props/drink/dirtywater.mdl"
+ITEM.name = "Dirty Water(Can)"
+ITEM.model = "models/hls/alyxports/popcan01a_hls.mdl"
+ITEM.skin = 3
 ITEM.description = "itemDirtyWaterDesc"
 ITEM.thirst = 25
 ITEM.hunger = -100
+ITEM.empty = "empty_can"
 ITEM.price = 1
 ITEM.sound = "interface/inv_drink_can2.ogg"

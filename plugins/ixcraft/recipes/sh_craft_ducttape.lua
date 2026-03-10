@@ -2,7 +2,7 @@
 RECIPE.name = "Duct Tape"
 RECIPE.description = "recipeDuctTapeDesc"
 RECIPE.category = "Crafting"
-RECIPE.model = "models/props_junk/PopCan01a.mdl"
+RECIPE.model = "models/mosi/fallout4/props/junk/ducttape.mdl"
 RECIPE.requirements = {
 	["comp_cloth"] = 1,
 	["comp_plastic"] = 2,

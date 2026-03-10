@@ -10,5 +10,5 @@ RECIPE.requirements = {
 	["misc_glue"] = 1,
 }
 RECIPE.results = {
-	["misc_hammer"] = 1,
+	["misc_tool_hammer"] = 1,
 }

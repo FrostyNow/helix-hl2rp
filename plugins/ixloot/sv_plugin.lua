@@ -7,8 +7,10 @@ function PLUGIN:GetRandomItem(lootTable)
 		totalWeight = totalWeight + weight
 	end
 
-	local randomValue = math.random(1, totalWeight)
+	local randomValue = math.random(0, totalWeight)
 	local currentWeight = 0
+
+	print(randomValue)
 
 	for item, weight in pairs(lootTable) do
 		currentWeight = currentWeight + weight
@@ -42,10 +44,14 @@ function PLUGIN:SearchLootContainer(ent, ply)
 					for i = 1, lootAmount do
 						if (randomChance == math.random(1,20)) then
 							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
+							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
+
 							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
 							ply:GetCharacter():GetInventory():Add(randomLootItem)
 						else
 							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
+							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
+							
 							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
 							ply:GetCharacter():GetInventory():Add(randomLootItem)
 						end

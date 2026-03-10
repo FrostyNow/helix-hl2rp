@@ -7,6 +7,7 @@ RECIPE.requirements = {
 	["comp_steel"] = 1,
 	["comp_glass"] = 1,
 	["misc_battery"] = 1,
+	["misc_tool_screwdriver"] = {amount = 1, preserve = true}
 }
 RECIPE.results = {
 	["flashlight"] = 1

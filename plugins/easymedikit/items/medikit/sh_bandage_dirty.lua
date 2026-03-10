@@ -1,0 +1,10 @@
+ITEM.name = "Dirty Bandage"
+ITEM.description = "bandageDirtyDesc"
+ITEM.model = "models/stuff/bandages_dirty.mdl"
+ITEM.category = "Medical"
+ITEM.price = 5
+ITEM.healthPoint = 5 -- Health point that the player will get
+ITEM.bleeding = true
+ITEM.sound = "interface/inv_bandage_3p7.ogg"
+ITEM.isStackable = true
+ITEM.maxStack = 5
