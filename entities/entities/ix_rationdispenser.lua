@@ -183,17 +183,23 @@ if (SERVER) then
 
 			-- check cid ration time and dispense if allowed
 			timer.Simple(math.random(1.8, 2.2), function()
+				if (!IsValid(self)) then
+					return
+				end
+
 				if (cid:GetData("nextRationTime", 0) < os.time() or token) then
-					
 					self:SetDisplay(8)
 					self:EmitSound("ambient/machines/combine_terminal_idle3.wav")
 
+					if (token) then
+						token:Remove()
+					else
+						cid:SetData("nextRationTime", os.time() + ix.config.Get("rationInterval", 1))
+					end
+
 					timer.Simple(10.2, function()
-						self:StartDispense()
-						if token then
-							token:Remove()
-						else
-							cid:SetData("nextRationTime", os.time() + ix.config.Get("rationInterval", 1))
+						if (IsValid(self)) then
+							self:StartDispense()
 						end
 					end)
 				else
