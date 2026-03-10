@@ -126,7 +126,7 @@ if (SERVER) then
 		angles:RotateAroundAxis(angles:Up(), 270)
 
 		local entity = ents.Create("ix_forcefield")
-		entity:SetPos(trace.HitPos + Vector(0, 0, 40))
+		entity:SetPos(trace.HitPos + trace.HitNormal * 8 + Vector(0, 0, 40))
 		entity:SetAngles(angles:SnapTo("y", 90))
 		entity:Spawn()
 		entity:Activate()
@@ -264,7 +264,7 @@ else
 	function ENT:Draw()
 		self:DrawModel()
 
-		if (self:GetMode() == 1) then
+		if (self:GetMode() == 1 or (EyePos():DistToSqr(self:GetPos()) > 1048576)) then
 			return
 		end
 
