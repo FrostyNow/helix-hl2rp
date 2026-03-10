@@ -40,6 +40,7 @@ LANGUAGE = {
 	itemCannedHamDesc = "A can of ham that is canned.",
 	itemMineralWaterDesc = "A bottle of mineral water that is bottled.",
 	itemWashingDetergentDesc = "A bottle of washing detergent that is bottled.",
+	itemVegetableOilDesc = "A bottle of vegetable oil, primarily used for deep frying.",
 	itemFlourDesc = "A bag of grinded wheat.",
 	itemHeadcrabSoupDesc = "A bowl of thick soup boiled with headcrab and vegetables.",
 	itemHeadcrabPlatterDesc = "A platter of steamed headcrab.",
@@ -104,4 +105,5 @@ LANGUAGE = {
 	extinguishing = "Extinguishing...",
 	["Cooking"] = "Cooking",
 	cooking_desc = "The ability to prepare food. A higher cooking skill will produce better quality dishes.",
+	["Vegetable Oil"] = "Vegetable Oil",
 }

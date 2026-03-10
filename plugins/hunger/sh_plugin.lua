@@ -28,6 +28,7 @@ local cookingEntityClasses = {
 	"ix_bucket",
 	"ix_bonfire"
 }
+local cookingCraftCategory = "Food"
 local cookingEntityLookup = {
 	ix_stove = true,
 	ix_bucket = true,
@@ -66,6 +67,10 @@ if (CLIENT) then
 			return false
 		end
 
+		if (!IsValid(entity) or !entity:GetNetVar("active", false)) then
+			return false
+		end
+
 		if (IsValid(ix.gui.stationCrafting)) then
 			ix.gui.stationCrafting:Remove()
 		end
@@ -80,6 +85,9 @@ if (CLIENT) then
 		frame:SetTitle(L("crafting") .. " - " .. L(entity:GetClass()))
 
 		local craftPanel = frame:Add("ixCrafting")
+		craftPanel:SetCategoryFilter({
+			[cookingCraftCategory] = true
+		}, cookingCraftCategory)
 		craftPanel:Dock(FILL)
 
 		frame.OnRemove = function()
@@ -100,6 +108,8 @@ function PLUGIN:PatchCookingEntityMenus()
 		return
 	end
 
+	local hungerPlugin = self
+
 	for _, className in ipairs(cookingEntityClasses) do
 		local entityTable = GetCookingEntityTable(className)
 
@@ -113,18 +123,19 @@ function PLUGIN:PatchCookingEntityMenus()
 
 		function entityTable:GetEntityMenu(client)
 			local options = {}
+			local craftPlugin = ix.plugin.list["ixcraft"]
+			local categories = craftPlugin and craftPlugin.craft.GetCategories(client)
+			local isActive = self:GetNetVar("active", false)
 
-			if (CLIENT) then
-				local craftPlugin = ix.plugin.list["ixcraft"]
-
-				if (craftPlugin and !table.IsEmpty(craftPlugin.craft.GetCategories(client))) then
+			if (isActive and categories and categories[cookingCraftCategory] and !table.IsEmpty(categories[cookingCraftCategory])) then
+				if (CLIENT) then
 					options[L("stoveOpenCrafting", client)] = function()
-						PLUGIN:OpenCookingCraftingMenu(self)
+						hungerPlugin:OpenCookingCraftingMenu(self)
 						return false
 					end
+				else
+					options["stoveOpenCrafting"] = true
 				end
-			else
-				options["stoveOpenCrafting"] = true
 			end
 
 			options[L(GetCookingTogglePhrase(self), client)] = true

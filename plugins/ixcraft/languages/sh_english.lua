@@ -4,12 +4,14 @@ LANGUAGE = {
 	["CraftMissingTool"] = "You are missing a %s.",
 	["CraftMissingItem"] = "You are missing: %s.",
 	["CraftMissingStation"] = "You need to be near a %s.",
+	["CraftStoveInactive"] = "The cooking station must be turned on.",
 	["CraftSuccess"] = "You have successfully crafted %s.",
 
 	["CraftTools"] = "TOOLS",
 	["CraftRequirements"] = "REQUIREMENTS",
 	["CraftResults"] = "RESULTS",
 	["CraftStation"] = "STATION",
+	["All"] = "All",
 	["CraftOr"] = "or",
 	["CraftingAtStation"] = "Crafting at",
 
@@ -44,8 +46,20 @@ LANGUAGE = {
 	recipeScrapScannerAntennaDesc = "Disassemble a scanner antenna to extract parts.",
 	recipeScrapScannerBodyDesc = "Disassemble a scanner body to extract parts.",
 	recipeScrapAluminiumCanDesc = "Disassemble an aluminium can to extract parts.",
+	recipeScrapTelephoneDesc = "Disassemble a telephone to extract parts.",
+	recipeScrapTurpentineDesc = "Disassemble turpentine to extract parts.",
 
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
+
+	recipeMeatSoupDesc = "Craft meat soup.",
+	recipeVegetSoupDesc = "Craft vegetable soup.",
+	recipeHeadcrabSoupDesc = "Craft headcrab soup.",
+	recipePizzaDesc = "Craft a pizza.",
+	recipeBurgerDesc = "Craft a burger.",
+	recipeBrownieDesc = "Bake a brownie.",
+	recipeHeadcrabPlatterDesc = "Cook a headcrab platter.",
+	recipeCheeseDesc = "Make cheese from milk.",
+	recipeOnionRingsDesc = "Fry onion rings.",
 }
 
