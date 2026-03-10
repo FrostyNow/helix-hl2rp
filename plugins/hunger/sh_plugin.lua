@@ -100,6 +100,8 @@ function PLUGIN:PatchCookingEntityMenus()
 		return
 	end
 
+	local hungerPlugin = self
+
 	for _, className in ipairs(cookingEntityClasses) do
 		local entityTable = GetCookingEntityTable(className)
 
@@ -119,7 +121,7 @@ function PLUGIN:PatchCookingEntityMenus()
 
 				if (craftPlugin and !table.IsEmpty(craftPlugin.craft.GetCategories(client))) then
 					options[L("stoveOpenCrafting", client)] = function()
-						PLUGIN:OpenCookingCraftingMenu(self)
+						hungerPlugin:OpenCookingCraftingMenu(self)
 						return false
 					end
 				end

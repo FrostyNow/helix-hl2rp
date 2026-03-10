@@ -44,8 +44,20 @@ LANGUAGE = {
 	recipeScrapScannerAntennaDesc = "Disassemble a scanner antenna to extract parts.",
 	recipeScrapScannerBodyDesc = "Disassemble a scanner body to extract parts.",
 	recipeScrapAluminiumCanDesc = "Disassemble an aluminium can to extract parts.",
+	recipeScrapTelephoneDesc = "Disassemble a telephone to extract parts.",
+	recipeScrapTurpentineDesc = "Disassemble turpentine to extract parts.",
 
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
+
+	recipeMeatSoupDesc = "Craft meat soup.",
+	recipeVegetSoupDesc = "Craft vegetable soup.",
+	recipeHeadcrabSoupDesc = "Craft headcrab soup.",
+	recipePizzaDesc = "Craft a pizza.",
+	recipeBurgerDesc = "Craft a burger.",
+	recipeBrownieDesc = "Bake a brownie.",
+	recipeHeadcrabPlatterDesc = "Cook a headcrab platter.",
+	recipeCheeseDesc = "Make cheese from milk.",
+	recipeOnionRingsDesc = "Fry onion rings.",
 }
 

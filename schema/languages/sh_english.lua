@@ -241,6 +241,7 @@ LANGUAGE = {
 	itemAntisepticDesc = "A liquid that kills bacteria and other microorganisms.",
 	itemMargarineDesc = "A cream like substance that is made from processed animal fat.",
 	itemDriedSpicesDesc = "A powder that is used to season food.",
+	itemRationTokenDesc = "A coupon to ration.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

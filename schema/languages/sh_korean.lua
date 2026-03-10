@@ -525,6 +525,8 @@ LANGUAGE = {
 	itemMargarineDesc = "유제품을 가공하여 만든 단순한 지방 제품입니다.",
 	["Dried spices"] = "향신료",
 	itemDriedSpicesDesc = "음식에 향을 주는 데 사용되는 가루입니다.",
+	["Ration Token"] = "배급 쿠폰",
+	itemRationTokenDesc = "배급을 한 번 더 받을 수 있는 쿠폰입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

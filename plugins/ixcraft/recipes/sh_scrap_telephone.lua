@@ -1,5 +1,5 @@
-RECIPE.name = "전화기 분해"
-RECIPE.description = "전화기를 분해합니다."
+RECIPE.name = "Scrap Telephone"
+RECIPE.description = "recipeScrapTelephoneDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/phone.mdl"
 RECIPE.requirements = {
