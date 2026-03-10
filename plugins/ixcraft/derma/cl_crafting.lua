@@ -7,11 +7,30 @@ local ALL_CATEGORY = "__all"
 
 local PANEL = {}
 
+local function IsEnvironmentBlocked(recipeTable)
+	if (recipeTable.station and !recipeTable:HasStationAccess(LocalPlayer())) then
+		return true
+	end
+
+	if (recipeTable.category == "Food") then
+		local cookingStation = recipeTable:GetNearbyCookingStation(LocalPlayer())
+
+		if (!IsValid(cookingStation) or !cookingStation:GetNetVar("active", false)) then
+			return true
+		end
+	end
+
+	return false
+end
+
 local function GetRecipeState(recipeTable)
 	local canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true
-	local stationBlocked = recipeTable.station and !recipeTable:HasStationAccess(LocalPlayer()) or false
+	local environmentBlocked = IsEnvironmentBlocked(recipeTable)
 
-	return canCraft, stationBlocked
+	return {
+		canCraft = canCraft,
+		environmentBlocked = environmentBlocked
+	}
 end
 
 function PANEL:Init()
@@ -26,7 +45,10 @@ function PANEL:UpdateCraftState()
 		return
 	end
 
-	self.canCraft, self.stationBlocked = GetRecipeState(self.recipeTable)
+	local craftState = GetRecipeState(self.recipeTable)
+
+	self.canCraft = craftState.canCraft
+	self.environmentBlocked = craftState.environmentBlocked
 	self:SetBackgroundColor(self.canCraft and color_green or color_red)
 end
 
@@ -50,9 +72,9 @@ function PANEL:SetRecipe(recipeTable, craftState)
 	self.name:SetText(L(recipeTable.GetName and recipeTable:GetName() or recipeTable.name))
 
 	self.canCraft = craftState and craftState.canCraft
-	self.stationBlocked = craftState and craftState.stationBlocked
+	self.environmentBlocked = craftState and craftState.environmentBlocked
 
-	if (self.canCraft == nil or self.stationBlocked == nil) then
+	if (self.canCraft == nil or self.environmentBlocked == nil) then
 		self:UpdateCraftState()
 	else
 		self:SetBackgroundColor(self.canCraft and color_green or color_red)
@@ -75,7 +97,7 @@ function PANEL:PaintBackground(width, height)
 
 	local alpha = self.currentBackgroundAlpha
 
-	if (self.recipeTable and self.canCraft) then
+	if (self.recipeTable and (self.canCraft or self.environmentBlocked)) then
 		alpha = math.max(alpha, 100)
 	end
 
@@ -115,12 +137,14 @@ function PANEL:GetVisibleRecipes(category, search)
 			continue
 		end
 
+		local craftState = GetRecipeState(recipeTable)
+
 		recipes[#recipes + 1] = {
 			uniqueID = uniqueID,
 			recipeTable = recipeTable,
 			displayName = L(recipeTable.GetName and recipeTable:GetName() or recipeTable.name),
-			canCraft = recipeTable:OnCanCraft(LocalPlayer()) == true,
-			stationBlocked = recipeTable.station and !recipeTable:HasStationAccess(LocalPlayer()) or false
+			canCraft = craftState.canCraft,
+			environmentBlocked = craftState.environmentBlocked
 		}
 	end
 
@@ -129,8 +153,8 @@ function PANEL:GetVisibleRecipes(category, search)
 			return a.canCraft
 		end
 
-		if (a.stationBlocked != b.stationBlocked) then
-			return a.stationBlocked == false
+		if (a.environmentBlocked != b.environmentBlocked) then
+			return a.environmentBlocked == false
 		end
 
 		return a.displayName:lower() < b.displayName:lower()

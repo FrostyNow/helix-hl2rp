@@ -9,3 +9,4 @@ RECIPE.results = {
 	["comp_silver"] = 2,
 	["comp_screw"] = 2,
 }
+RECIPE.station = "craftingtable"

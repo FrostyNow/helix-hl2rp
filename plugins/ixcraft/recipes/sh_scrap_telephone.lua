@@ -10,3 +10,4 @@ RECIPE.results = {
 	["comp_copper"] = 1,
 	["comp_fiberglass"] = 2
 }
+RECIPE.station = "craftingtable"

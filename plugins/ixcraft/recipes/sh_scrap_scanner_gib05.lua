@@ -11,3 +11,4 @@ RECIPE.results = {
 	["comp_crystal"] = 1,
 	["comp_gears"] = 1
 }
+RECIPE.station = "craftingtable"

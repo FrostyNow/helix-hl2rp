@@ -29,7 +29,7 @@ LANGUAGE = {
 	recipeWaterDesc = "Mix somethings into a Breen's Water.",
 
 	recipeBandageDesc = "Mix antiseptic and cloth to make a bandage.",
-	recipeBobbyPinDesc = "Combine metal scraps and gears to make a box of bobby pins.",
+	recipeBobbyPinDesc = "Craft bobby pins.",
 	recipeBottleShardDesc = "Break an empty glass bottle to make a weapon.",
 	recipeDuctTapeDesc = "Craft duct tape for repairing or crafting other items.",
 	recipeEMPDesc = "Combine circuitry, copper, and batteries to make an EMP tool.",

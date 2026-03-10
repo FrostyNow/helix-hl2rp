@@ -1,7 +1,7 @@
 
 RECIPE.name = "Pipe"
 RECIPE.description = "recipePipeDesc"
-RECIPE.category = "Weapon"
+RECIPE.category = "Weapons"
 RECIPE.model = "models/props_canal/mattpipe.mdl"
 RECIPE.requirements = {
 	["comp_steel"] = 2,

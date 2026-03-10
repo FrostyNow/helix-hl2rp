@@ -15,6 +15,18 @@ local cookingStations = {
 	"ix_stove"
 }
 
+function RECIPE:GetStations()
+	if (!self.station) then
+		return nil
+	end
+
+	if (istable(self.station)) then
+		return self.station
+	end
+
+	return {self.station}
+end
+
 function RECIPE:GetName()
 	return self.name
 end
@@ -112,38 +124,58 @@ function RECIPE:CheckRequirement(inventory, uniqueID, req, client)
 end
 
 function RECIPE:GetStationName(client)
-	if (!self.station) then
+	local stations = self:GetStations()
+
+	if (!stations) then
 		return nil
 	end
 
-	local stationTable = PLUGIN.craft.stations[self.station]
-	local stationName = stationTable and (stationTable.GetName and stationTable:GetName() or stationTable.name) or self.station
+	local stationNames = {}
 
-	return CLIENT and L(stationName) or L(stationName, client)
+	for _, stationID in ipairs(stations) do
+		local stationTable = PLUGIN.craft.stations[stationID]
+		local stationName = stationTable and (stationTable.GetName and stationTable:GetName() or stationTable.name) or stationID
+
+		stationNames[#stationNames + 1] = CLIENT and L(stationName) or L(stationName, client)
+	end
+
+	return table.concat(stationNames, " " .. L("CraftOr", client) .. " ")
 end
 
 function RECIPE:HasStationAccess(client)
-	if (!self.station) then
+	local stations = self:GetStations()
+
+	if (!stations) then
 		return true
 	end
 
+	local maxDist = 100 * 100
 	local currentStation = client.ixCurrentStation
+	local currentStationEnt = client.ixCurrentStationEnt
 
-	if (SERVER) then
-		for _, v in pairs(ents.FindByClass("ix_station_" .. self.station)) do
-			if (client:GetPos():DistToSqr(v:GetPos()) < 150 * 150) then
+	if (IsValid(currentStationEnt) and table.HasValue(stations, currentStationEnt:GetStationID())) then
+		if (client:GetPos():DistToSqr(currentStationEnt:GetPos()) < maxDist) then
+			return true
+		end
+	end
+
+	for _, stationID in ipairs(stations) do
+		for _, entity in pairs(ents.FindByClass("ix_station_" .. stationID)) do
+			if (client:GetPos():DistToSqr(entity:GetPos()) < maxDist) then
 				return true
 			end
 		end
+	end
 
+	if (CLIENT and currentStation and table.HasValue(stations, currentStation)) then
+		return true
+	end
+
+	if (CLIENT) then
 		return false
 	end
 
-	if (CLIENT and currentStation != self.station) then
-		return false
-	end
-
-	return true
+	return false
 end
 
 function RECIPE:GetNearbyCookingStation(client)

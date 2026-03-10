@@ -34,6 +34,7 @@ local cookingEntityLookup = {
 	ix_bucket = true,
 	ix_bonfire = true
 }
+local stoveMenuSuppressDuration = 0.35
 
 local function GetCookingEntityTable(className)
 	local stored = scripted_ents.GetStored(className)
@@ -168,6 +169,12 @@ function PLUGIN:InitializedPlugins()
 end
 
 function PLUGIN:PlayerUse(client, entity)
+	if (IsValid(entity) and entity:GetClass() == "ix_stove" and !entity:GetNetVar("active", false)) then
+		client:SetLocalVar("ixSuppressCookingMenuEnt", entity:EntIndex())
+		client:SetLocalVar("ixSuppressCookingMenuUntil", CurTime() + stoveMenuSuppressDuration)
+		return true
+	end
+
 	if (IsValid(entity) and entity.IsStove and entity:IsStove() and !entity:GetNetVar("active", false)) then
 		return true
 	end
@@ -175,6 +182,13 @@ end
 
 if (CLIENT) then
 	function PLUGIN:ShowEntityMenu(entity)
+		local suppressUntil = LocalPlayer():GetLocalVar("ixSuppressCookingMenuUntil", 0)
+		local suppressEnt = LocalPlayer():GetLocalVar("ixSuppressCookingMenuEnt", 0)
+
+		if (IsValid(entity) and entity:GetClass() == "ix_stove" and suppressEnt == entity:EntIndex() and suppressUntil > CurTime()) then
+			return false
+		end
+
 		if (IsValid(entity) and entity.IsStove and entity:IsStove() and !entity:GetNetVar("active", false)) then
 			return false
 		end

@@ -11,3 +11,4 @@ RECIPE.results = {
 	["comp_spring"] = 4,
 	["comp_steel"] = 5
 }
+RECIPE.station = "craftingtable"

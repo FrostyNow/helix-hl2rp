@@ -8,3 +8,4 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["comp_steel"] = 3,
 }
+RECIPE.station = "craftingtable"
