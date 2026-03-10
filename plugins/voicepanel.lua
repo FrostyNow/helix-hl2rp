@@ -1,5 +1,5 @@
 PLUGIN.name = "Voice Overlay"
-PLUGIN.author = "Black Tea"
+PLUGIN.author = "Black Tea | Modified by Frosty"
 PLUGIN.desc = "This plugin makes voice overlay clear and look nice (really?)"
 
 if (CLIENT) then
