@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Hotplate"
-RECIPE.description = "Disassemble a hotplate."
+RECIPE.description = "recipeScrapHotplateDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/hotplate.mdl"
 RECIPE.requirements = {

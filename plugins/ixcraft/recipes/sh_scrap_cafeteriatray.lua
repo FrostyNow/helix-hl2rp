@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Cafeteria Tray"
-RECIPE.description = "Disassemble a cafeteria tray."
+RECIPE.description = "recipeScrapCafeteriaTrayDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/cafeteriatray.mdl"
 RECIPE.requirements = {

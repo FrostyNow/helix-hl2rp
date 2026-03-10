@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Coffee Pot"
-RECIPE.description = "Disassemble a coffee pot."
+RECIPE.description = "recipeScrapCoffeePotDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/hls/alyxports/coffee_maker.mdl"
 RECIPE.requirements = {

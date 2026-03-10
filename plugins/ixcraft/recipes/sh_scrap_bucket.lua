@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Bucket"
-RECIPE.description = "Disassemble a bucket."
+RECIPE.description = "recipeScrapBucketDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/mosi/fallout4/props/junk/bucket.mdl"
 RECIPE.requirements = {

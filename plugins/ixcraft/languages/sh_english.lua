@@ -63,6 +63,13 @@ LANGUAGE = {
 	recipeScrapMoneyDesc = "Tear up useless paper money into a more usable form.",
 	recipeScrapEmptyBottleDesc = "Break down an empty bottle into usable glass materials.",
 
+	recipeScrapBucketDesc = "Disassemble a bucket.",
+	recipeScrapCafeteriaTrayDesc = "Disassemble a cafeteria tray.",
+	recipeScrapCoffeePotDesc = "Disassemble a coffee pot.",
+	recipeScrapHotplateDesc = "Disassemble a hotplate.",
+	recipeScrapDriedBoxesDesc = "Disassemble a metal packaging box.",
+	recipeScrapPanDesc = "Disassemble a pan.",
+	recipeScrapPotDesc = "Disassemble a pot.",
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
 	recipeFiberglassDesc = "Craft fiberglass by drawing glass into fine threads.",

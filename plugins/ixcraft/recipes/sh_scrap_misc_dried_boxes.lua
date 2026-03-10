@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Dried Additives Box"
-RECIPE.description = "Disassemble a metal packaging box."
+RECIPE.description = "recipeScrapDriedBoxesDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/synapse/misc_props/synapse_misc_large_metal_box.mdl"
 RECIPE.requirements = {

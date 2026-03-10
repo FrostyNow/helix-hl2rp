@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Pan"
-RECIPE.description = "Disassemble a pan."
+RECIPE.description = "recipeScrapPanDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/synapse/alyxports/pan_1.mdl"
 RECIPE.requirements = {
