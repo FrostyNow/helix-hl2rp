@@ -53,7 +53,7 @@ if (SERVER) then
 		vendor:Spawn()
 		vendor:Activate()
 
-		Schema:SavePepsiMachines()
+		Schema:SaveVendingMachines()
 		return vendor
 	end
 

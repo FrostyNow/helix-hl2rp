@@ -20,7 +20,7 @@ if (SERVER) then
 		console:Spawn()
 		console:Activate()
 
-		Schema:SaveBroadcastConsoles()
+		Schema:SaveMachines()
 		return console
 	end
 
@@ -45,7 +45,7 @@ if (SERVER) then
 
     function ENT:OnRemove()
         if (!ix.shuttingDown) then
-            Schema:SaveBroadcastConsoles()
+            Schema:SaveMachines()
         end
     end
 else
