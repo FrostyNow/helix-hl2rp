@@ -200,8 +200,11 @@ else
 	local BAR_BONE = "healthbar"
 	local SPINNER_BONE_FALLBACK = 1
 	local BAR_BONE_FALLBACK = 2
+	local ACTIVE_BOB_RANGE = 1.3
+	local ACTIVE_BOB_SPEED = 12
 
 	function ENT:Draw()
+		self:UpdateBonePositions(FrameTime())
 		self:DrawModel()
 	end
 
@@ -210,10 +213,9 @@ else
 		self.lightPhase = 0
 		self.spinnerBone = self:GetSpinnerBoneIndex()
 		self.barBone = self:GetBarBoneIndex()
-
-		self:AddCallback("BuildBonePositions", function(ent)
-			ent:UpdateBonePositions(FrameTime())
-		end)
+		self.rootBone = self:GetBoneName(0) and 0 or nil
+		self.lastRootPos = nil
+		self.lastRootAng = nil
 	end
 
 	function ENT:GetSpinnerBoneIndex()
@@ -241,51 +243,58 @@ else
 		self.smoothUsed = math.Approach(self.smoothUsed or 0, self:GetUsed(), ft * (self.restoreRate + self.restoreCost) * 2)
 		self.spinnerBone = self:GetSpinnerBoneIndex()
 		self.barBone = self:GetBarBoneIndex()
+		self.rootBone = self.rootBone or (self:GetBoneName(0) and 0 or nil)
+		self:SetupBones()
 
-		local rootPos, rootAng = self:GetBonePosition(0)
+		local drainedFraction = self.smoothUsed
+		local rootPos
+		local rootAng
+		local rootMatrix = self.rootBone and self:GetBoneMatrix(self.rootBone) or nil
+
+		if (rootMatrix) then
+			rootPos = rootMatrix:GetTranslation()
+			rootAng = rootMatrix:GetAngles()
+		end
+
+		if (!rootPos or !rootAng) then
+			rootPos = self.lastRootPos
+			rootAng = self.lastRootAng
+		end
+
 		if (!rootPos or !rootAng) then
 			return
 		end
 
+		self.lastRootPos = rootPos
+		self.lastRootAng = rootAng
+
 		local up = rootAng:Up()
 		local right = rootAng:Right()
 		local forward = rootAng:Forward()
-		local drainedFraction = self.smoothUsed
-		local vary = math.sin(CurTime() * 12) / 2 + 0.5
 
 		if (self.spinnerBone and self.spinnerBone != -1) then
-			local spinnerPos
+			local spinnerHeight = 6.5 - (1.4 * drainedFraction)
 
 			if (drainedFraction >= 0.98) then
-				spinnerPos = rootPos + up * 5.1 - right * 7.8 - forward * 4.25
+				spinnerHeight = 5.1
 			elseif (self:IsActive()) then
-				spinnerPos = rootPos + up * (5.2 + 1.3 * vary) - right * 7.8 - forward * 4.25
-			else
-				spinnerPos = rootPos + up * 6.5 - right * 7.8 - forward * 4.25
+				spinnerHeight = 5.2 + (math.sin(CurTime() * ACTIVE_BOB_SPEED) * ACTIVE_BOB_RANGE)
 			end
 
-			self:SetBonePosition(self.spinnerBone, spinnerPos, rootAng)
+			self:SetBonePosition(self.spinnerBone, rootPos + up * spinnerHeight - right * 7.8 - forward * 4.25, rootAng)
 		end
 
 		if (self.barBone and self.barBone != -1) then
-			local barPos = rootPos + up * 4 - forward * 4.3 - right * (drainedFraction * 6)
-			self:SetBonePosition(self.barBone, barPos, rootAng)
+			self:SetBonePosition(self.barBone, rootPos + up * 4 - forward * 4.3 - right * (drainedFraction * 6), rootAng)
 		end
 	end
 
 	function ENT:DrawTranslucent()
 		local ft = FrameTime()
-		local idxSpinner = self:GetSpinnerBoneIndex()
 
 		self.lightPhase = self.lightPhase + ft * (self:IsActive() and 4 or 1)
 
-		local position = self:GetPos() + self:GetForward() * 7.5 + self:GetUp() * 4
-		if (idxSpinner and idxSpinner != -1) then
-			local bonePos = self:GetBonePosition(idxSpinner)
-			if (bonePos and bonePos != self:GetPos()) then
-				position = bonePos + self:GetForward() * 1.5 + self:GetRight() * -3 + self:GetUp() * 3
-			end
-		end
+		local position = self:GetPos() + self:GetForward() * 8 + self:GetUp() * 11 + self:GetRight() * 1
 		
 		render.SetMaterial(GLOW_MATERIAL)
 		render.DrawSprite(position, 8 + math.sin(self.lightPhase), 8 + math.sin(self.lightPhase), self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE)
