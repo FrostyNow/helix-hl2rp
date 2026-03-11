@@ -102,10 +102,18 @@ if SERVER then
 
 		if (minute != self.lastCurfewMinute) then
 			if (ix.config.Get("notifyCurfew", false)) then
-				local bIsCurfewStart = (hour == 0 and minute == 0)
-				local bIsCurfewEnd = (hour == 6 and minute == 0)
+				local phrase
+				if (hour == 23 and minute == 0) then
+					phrase = "curfewWarningNotify"
+				elseif (hour == 0 and minute == 0) then
+					phrase = "curfewStartNotify"
+				elseif (minute == 0 and (hour == 2 or hour == 4)) then
+					phrase = "curfewReminderNotify"
+				elseif (hour == 6 and minute == 0) then
+					phrase = "curfewEndNotify"
+				end
 
-				if (bIsCurfewStart or bIsCurfewEnd) then
+				if (phrase) then
 					local bHasDispatcher = false
 					for _, v in ipairs(player.GetAll()) do
 						if (v:GetCharacter() and v:IsDispatch()) then
@@ -115,14 +123,28 @@ if SERVER then
 					end
 
 					if (bHasDispatcher) then
-						local phrase = bIsCurfewStart and "curfewStartNotify" or "curfewEndNotify"
 						local playersByLang = {}
+						local soundFile
+						
+						if (phrase == "curfewWarningNotify") then 
+							soundFile = "npc/overwatch/cityvoice/curfew_warning.wav"
+						elseif (phrase == "curfewStartNotify") then 
+							soundFile = "npc/overwatch/cityvoice/curfew.wav"
+						elseif (phrase == "curfewReminderNotify") then 
+							soundFile = "npc/overwatch/cityvoice/curfew_reminder.wav"
+						elseif (phrase == "curfewEndNotify") then 
+							soundFile = "npc/overwatch/cityvoice/curfew_end.wav"
+						end
 
 						for _, v in ipairs(player.GetAll()) do
 							if (v:GetCharacter()) then
 								local lang = ix.option.Get(v, "language", "english")
 								playersByLang[lang] = playersByLang[lang] or {}
 								table.insert(playersByLang[lang], v)
+
+								if (soundFile) then
+									v:SendLua(string.format("surface.PlaySound('%s')", soundFile))
+								end
 							end
 						end
 
@@ -146,7 +168,9 @@ ix.lang.AddTable("english", {
 	invalidTime = "Invalid time format! Use HHMM (e.g., 2330).",
 	dayNotify = "The sun begins to rise, signaling the start of a new day.",
 	nightNotify = "The sun sets, and darkness begins to fall over the land.",
+	curfewWarningNotify = "Attention citizens. 1 hour remaining until night curfew. Complete your assigned duties and move to your residential block immediately.",
 	curfewStartNotify = "Attention citizens. A night curfew is now in effect. Move to your residential block immediately.",
+	curfewReminderNotify = "Attention citizens. Night curfew is currently in effect. Avoid unnecessary travel outside of residential blocks.",
 	curfewEndNotify = "Attention citizens. The night curfew has been lifted. Return to your assigned duties.",
 })
 
@@ -159,7 +183,9 @@ ix.lang.AddTable("korean", {
 	invalidTime = "잘못된 시간 형식입니다! HHMM 형식을 사용하세요 (예: 2330).",
 	dayNotify = "지평선 위로 해가 뜨기 시작하며 새로운 아침이 밝아옵니다.",
 	nightNotify = "해가 지고, 어둠이 서서히 내려앉기 시작합니다.",
+	curfewWarningNotify = "시민에게 알린다. 야간 통행 금지령 발효까지 1시간 남았다. 지정된 업무를 마무리하고 시민 거주구로 즉시 이동하라.",
 	curfewStartNotify = "시민에게 알린다. 야간 통행 금지령이 발효되었다. 시민 거주구로 즉시 이동하라.",
+	curfewReminderNotify = "시민에게 알린다. 야간 통행 금지령이 발효 중이다. 시민 거주구 외로 불필요한 통행을 자제하라.",
 	curfewEndNotify = "시민에게 알린다. 야간 통행 금지령이 해제되었다. 지정된 업무에 종사하라.",
 })
 
