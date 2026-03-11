@@ -5,7 +5,7 @@ RECIPE.model = "models/shibcuppy.mdl"
 RECIPE.requirements = {
 	["coffee_beans"] = 1,
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1}},
-	["misc_tool_coffeeopot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}}
+	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}}
 }
 RECIPE.results = {
 	["coffee"] = 1

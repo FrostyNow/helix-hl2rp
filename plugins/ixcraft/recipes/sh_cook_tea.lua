@@ -5,7 +5,7 @@ RECIPE.model = "models/synapse/misc_props/synapse_misc_tall_metal_box.mdl"
 RECIPE.requirements = {
 	["misc_dried_tea"] = 1,
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1}},
-	["misc_tool_coffeeopot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}},
+	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}},
 	["misc_coffeecup"] = 1
 }
 RECIPE.results = {
