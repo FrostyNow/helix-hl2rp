@@ -3,7 +3,7 @@ ITEM.description = "itemGasmaskFilterDesc"
 ITEM.model = "models/willardnetworks/props/blackfilter.mdl"
 ITEM.width = 1
 ITEM.height = 1
-ITEM.category = "Consumables"
+ITEM.category = "Utility"
 
 ITEM.functions.Use = {
 	name = "replaceFilter",

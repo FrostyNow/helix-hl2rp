@@ -1,6 +1,7 @@
 ITEM.name = "Antlion Grub"
 ITEM.model = "models/ccr/props/grub_vial_full.mdl"
 ITEM.description = "itemAntlionGrubDesc"
+ITEM.category = "Utility"
 ITEM.hunger = -10
 ITEM.thirst = -5
 ITEM.price = 60
