@@ -9,3 +9,4 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["bobbypin"] = 1
 }
+RECIPE.station = "craftingtable"
