@@ -153,7 +153,7 @@ function RECIPE:HasStationAccess(client)
 	local currentStation = client.ixCurrentStation
 	local currentStationEnt = client.ixCurrentStationEnt
 
-	if (IsValid(currentStationEnt) and table.HasValue(stations, currentStationEnt:GetStationID())) then
+	if (IsValid(currentStationEnt) and isfunction(currentStationEnt.GetStationID) and table.HasValue(stations, currentStationEnt:GetStationID())) then
 		if (client:GetPos():DistToSqr(currentStationEnt:GetPos()) < maxDist) then
 			return true
 		end

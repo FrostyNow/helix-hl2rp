@@ -11,7 +11,7 @@ ix.lang.AddTable("korean", {
 	badairExit1 = "숨 쉬기가 한결 편안해졌습니다.",
 	badairExit2 = "불쾌한 냄새가 사라지는 것 같습니다.",
 	badairExit3 = "뭔가 상쾌해진 것 같습니다.",
-	badairMaskDepleted = "가스마스크의 정화통이 다 되어 숨이 막혀옵니다."
+	badairMaskDepleted = "방독면의 정화통이 다 되어 숨이 막혀옵니다."
 })
 
 ix.lang.AddTable("english", {
