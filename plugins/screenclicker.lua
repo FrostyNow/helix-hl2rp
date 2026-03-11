@@ -1,7 +1,7 @@
 PLUGIN.name         = 'Screen clicker'
 PLUGIN.author       = 'Bilwin'
 PLUGIN.description  = 'Allows using screen clicker'
-PLUGIN.button       = KEY_F2
+PLUGIN.button       = KEY_F1
 
 if CLIENT then
 	local Enabled = false
