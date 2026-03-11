@@ -76,7 +76,7 @@ function Schema:SaveForceFields()
 	local data = {}
 
 	for _, v in ipairs(ents.FindByClass("ix_forcefield")) do
-		data[#data + 1] = {v:GetPos(), v:GetAngles(), v:GetMode()}
+		data[#data + 1] = {v:GetPos(), v:GetAngles(), v:GetMode(), v:GetSkin()}
 	end
 
 	ix.data.Set("forceFields", data)
@@ -87,6 +87,7 @@ function Schema:SaveMachines()
 	local machineClasses = {
 		["ix_recycler"] = true,
 		["ix_health_charger"] = true,
+		["ix_suit_charger"] = true,
 		["ix_broadcast_console"] = true,
 	}
 
@@ -154,6 +155,7 @@ function Schema:LoadForceFields()
 
 		field:SetPos(v[1])
 		field:SetAngles(v[2])
+		field:SetSkin(v[4])
 		field:Spawn()
 		field:SetMode(v[3])
 	end
