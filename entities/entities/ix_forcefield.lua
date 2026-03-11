@@ -120,13 +120,46 @@ end
 
 if (SERVER) then
 	function ENT:SpawnFunction(client, trace)
-		local angles = (client:GetPos() - trace.HitPos):Angle()
+		local pos = trace.HitPos
+		local normal = trace.HitNormal
+
+		-- 1. If hitting floor/ceiling, find the wall first
+		if (math.abs(normal.z) > 0.7) then
+			local aimDir = client:GetAimVector()
+			aimDir.z = 0
+			aimDir:Normalize()
+
+			local wallTrace = util.TraceLine({
+				start = trace.HitPos + Vector(0, 0, 16),
+				endpos = trace.HitPos + aimDir * 512,
+				filter = client
+			})
+
+			if (wallTrace.Hit and !wallTrace.HitSky) then
+				pos = wallTrace.HitPos
+				normal = wallTrace.HitNormal
+			end
+		end
+
+		-- 2. From the wall point, trace down to find the floor
+		local floorTrace = util.TraceLine({
+			start = pos + normal * 10 + Vector(0, 0, 16),
+			endpos = pos + normal * 10 - Vector(0, 0, 256),
+			filter = client
+		})
+
+		local spawnZ = pos.z
+		if (floorTrace.Hit) then
+			spawnZ = floorTrace.HitPos.z
+		end
+
+		local angles = (client:GetPos() - pos):Angle()
 		angles.p = 0
 		angles.r = 0
 		angles:RotateAroundAxis(angles:Up(), 270)
 
 		local entity = ents.Create("ix_forcefield")
-		entity:SetPos(trace.HitPos + trace.HitNormal * 8 + Vector(0, 0, 40))
+		entity:SetPos(pos + normal * 15 + Vector(0, 0, (spawnZ - pos.z) + 40))
 		entity:SetAngles(angles:SnapTo("y", 90))
 		entity:Spawn()
 		entity:Activate()
@@ -336,7 +369,7 @@ hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 	end
 
 	if (IsValid(entity) and entity:GetClass() == "ix_forcefield") then
-		local mode = entity:GetMode() or 1
+		local mode = (entity.GetMode and entity:GetMode()) or 1
 		
 		-- If forcefield is OFF (Mode 1), everyone and everything passes
 		if (mode == 1) then
