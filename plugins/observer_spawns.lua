@@ -119,7 +119,7 @@ else
 
 					for _, pos in pairs(points) do
 						local distance = clientPos:Distance(pos)
-						if (distance > dimDistance * 2) then continue end
+						if (distance > dimDistance * 4) then continue end
 
 						local screenPosition = pos:ToScreen()
 						if (!screenPosition.visible) then continue end

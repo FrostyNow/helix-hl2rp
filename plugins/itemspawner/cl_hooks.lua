@@ -32,8 +32,10 @@ function PLUGIN:HUDPaint()
 	if (!PLUGIN.spawner.positions) then return end
 	
 	for _, v in ipairs(PLUGIN.spawner.positions) do
+		if (v.position:DistToSqr(client:GetPos()) > 8388608) then continue end
+
 		local pos = v.position:ToScreen()
-		
+
 		if (pos.visible) then
 			draw.SimpleText(L("spawnerESPTitle", v.title), "BudgetLabel", pos.x, pos.y, Color(207, 142, 56), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 

@@ -26,8 +26,11 @@ function PLUGIN:HUDPaint()
     if (client:GetMoveType() ~= MOVETYPE_NOCLIP) then return end
 
     for id, spawner in pairs(self.spawners or {}) do
-        local pos = spawner.pos:ToScreen()
         local dist = client:GetPos():Distance(spawner.pos)
+
+        if (dist > 2048) then continue end
+
+        local pos = spawner.pos:ToScreen()
         
         if (pos.visible) then
             if (dist < 500) then

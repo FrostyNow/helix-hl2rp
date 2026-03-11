@@ -42,13 +42,15 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 			if ix.option.Get("itemESP") then
 				for k, v in pairs(ents.GetAll()) do
 					if v:GetClass() == "ix_item" then
+						local distance = client:GetPos():Distance(v:GetPos())
+						if (distance > 2048) then continue end
+
 						local screenPosition = v:GetPos():ToScreen()
 						
 						if not screenPosition.visible then continue end
 
 						local espcol = Color(255,255,255,255)
 						local x2, y2 = screenPosition.x, screenPosition.y
-						local distance = client:GetPos():Distance(v:GetPos())
 						local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
 						local size2 = math.max(10, 32 * factor)
 						local alpha2 = math.max(255 * factor, 80)
