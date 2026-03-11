@@ -124,7 +124,7 @@ else
 						local screenPosition = pos:ToScreen()
 						if (!screenPosition.visible) then continue end
 
-						local x, y = math.Clamp(screenPosition.x, marginX, scrW - marginX), math.Clamp(screenPosition.y, marginY, scrH - marginY)
+						local x, y = screenPosition.x, screenPosition.y
 						
 						local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
 						local size = math.max(10, 32 * factor)

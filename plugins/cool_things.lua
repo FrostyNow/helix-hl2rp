@@ -42,10 +42,12 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 			if ix.option.Get("itemESP") then
 				for k, v in pairs(ents.GetAll()) do
 					if v:GetClass() == "ix_item" then
-						local espcol = Color(255,255,255,255)
 						local screenPosition = v:GetPos():ToScreen()
-						local marginX, marginY = scrH * .1, scrH * .1
-						local x2, y2 = math.Clamp(screenPosition.x, marginX, scrW - marginX), math.Clamp(screenPosition.y, marginY, scrH - marginY)
+						
+						if not screenPosition.visible then continue end
+
+						local espcol = Color(255,255,255,255)
+						local x2, y2 = screenPosition.x, screenPosition.y
 						local distance = client:GetPos():Distance(v:GetPos())
 						local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
 						local size2 = math.max(10, 32 * factor)
@@ -76,8 +78,8 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 								espcol = v2
 							end
 						end
-						ix.util.DrawText(L(itemTable.name) or itemTable.name, x2, y2 - size2, espcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha2)
-						--ix.util.DrawText(itemTable.category, x2, y2 - size2 + 15, espcol, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha2)
+						
+						draw.SimpleText(L(itemTable.name) or itemTable.name, "BudgetLabel", x2, y2 - size2, ColorAlpha(espcol, alpha2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 					end
 				end
 			end

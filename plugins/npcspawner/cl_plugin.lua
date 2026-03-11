@@ -31,10 +31,10 @@ function PLUGIN:HUDPaint()
         
         if (pos.visible) then
             if (dist < 500) then
-                draw.SimpleTextOutlined(L("npcSpawnerESPPrefix", id), "BudgetLabel", pos.x, pos.y, Color(255, 100, 100, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, Color(0, 0, 0, 150))
+                draw.SimpleText(L("npcSpawnerESPPrefix", id), "BudgetLabel", pos.x, pos.y, Color(255, 100, 100, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM)
                 
                 local delayText = L("npcSpawnerESPInfo", spawner.spawnDelay or 0, spawner.maxSpawned or 0, spawner.maxNearby or 0)
-                draw.SimpleTextOutlined(delayText, "BudgetLabel", pos.x, pos.y + 15, Color(255, 255, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color(0, 0, 0, 150))
+                draw.SimpleText(delayText, "BudgetLabel", pos.x, pos.y + 15, Color(255, 255, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
                 
                 local classLines = {L("npcSpawnerESPClasses") .. ":"}
                 local count = 0
@@ -48,10 +48,10 @@ function PLUGIN:HUDPaint()
                 end
                 
                 for i, line in ipairs(classLines) do
-                    draw.SimpleTextOutlined(line, "BudgetLabel", pos.x, pos.y + 15 + (i * 15), Color(255, 255, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, Color(0, 0, 0, 150))
+                    draw.SimpleText(line, "BudgetLabel", pos.x, pos.y + 15 + (i * 15), Color(255, 255, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
                 end
             else
-                draw.SimpleTextOutlined(L("npcSpawnerESPPrefix", id), "BudgetLabel", pos.x, pos.y, Color(255, 100, 100, 150), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, 1, Color(0, 0, 0, 100))
+                draw.SimpleText(L("npcSpawnerESPPrefix", id), "BudgetLabel", pos.x, pos.y, Color(255, 100, 100, 150), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
             end
         end
     end
