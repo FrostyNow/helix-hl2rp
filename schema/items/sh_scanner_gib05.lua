@@ -1,7 +1,7 @@
 ITEM.name = "Scanner Parts"
 ITEM.model = "models/gibs/scanner_gib05.mdl"
 ITEM.description = "itemScannerPartsDesc"
-ITEM.price = 70
+ITEM.price = 3
 ITEM.width = 2
 ITEM.height = 2
 ITEM.isjunk = true

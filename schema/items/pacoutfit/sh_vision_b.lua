@@ -1,7 +1,7 @@
 ITEM.name = "IR Night Vision"
 ITEM.description = "irnvGogDesc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
-ITEM.price = 500000
+ITEM.price = 250000
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "goggles"

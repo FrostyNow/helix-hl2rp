@@ -1,7 +1,7 @@
 ITEM.name = "Flak Jacket"
 ITEM.description = "flak_jacket_desc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
-ITEM.price = 500
+ITEM.price = 60
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"

@@ -1,7 +1,7 @@
 ITEM.name = "Gasmask"
 ITEM.description = "gasmask_desc"
 ITEM.model = "models/tnb/items/aphelion/gasmask.mdl"
-ITEM.price = 200
+ITEM.price = 50
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "headstrap"

@@ -1,7 +1,7 @@
 ITEM.name = "Radio Base"
 ITEM.model = Model("models/deadbodies/dead_male_civilian_radio.mdl")
 ITEM.description = "A shiny handheld radio%s.\nIt is currently turned %s%s."
-ITEM.price = 50
+ITEM.price = 120
 ITEM.flag = "v"
 ITEM.category = "Utility"
 

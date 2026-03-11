@@ -1,7 +1,7 @@
 ITEM.name = "Combat Vest"
 ITEM.description = "combat_vest_desc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
-ITEM.price = 500
+ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"

@@ -9,7 +9,7 @@ ITEM.description = "panzerfaustammoDesc"
 -- 	fov	= 12.085652091515,
 -- 	pos	= Vector(7, 200, -2)
 -- }
-ITEM.price = 500
+ITEM.price = 150
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

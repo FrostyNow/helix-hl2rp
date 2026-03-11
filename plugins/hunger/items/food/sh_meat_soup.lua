@@ -3,6 +3,6 @@ ITEM.model = "models/mosi/fallout4/props/food/squirrelsoup.mdl"
 ITEM.description = "itemMeatSoupDesc"
 ITEM.hunger = 35
 ITEM.thirst = 10
-ITEM.price = 7
+ITEM.price = 10
 ITEM.heal = 5
 ITEM.cookable = true

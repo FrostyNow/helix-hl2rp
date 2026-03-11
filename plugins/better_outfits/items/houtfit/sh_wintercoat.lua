@@ -4,7 +4,7 @@ ITEM.model = "models/tnb/items/aphelion/wintercoat.mdl"
 ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
-ITEM.price = 300
+ITEM.price = 150
 ITEM.outfitCategory = "torso"
 
 ITEM.eqBodyGroups = {

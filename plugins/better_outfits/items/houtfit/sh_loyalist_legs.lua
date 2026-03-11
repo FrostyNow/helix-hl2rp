@@ -4,7 +4,7 @@ ITEM.model = "models/tnb/items/aphelion/pants_citizen.mdl"
 ITEM.skin = 3
 ITEM.width = 1
 ITEM.height = 1
-ITEM.price = 100
+ITEM.price = 30
 ITEM.outfitCategory = "legs"
 
 ITEM.eqBodyGroups = {

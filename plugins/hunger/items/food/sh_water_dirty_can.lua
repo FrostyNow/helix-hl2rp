@@ -5,5 +5,5 @@ ITEM.description = "itemDirtyWaterDesc"
 ITEM.thirst = 25
 ITEM.hunger = -100
 ITEM.empty = "empty_can"
-ITEM.price = 1
+ITEM.price = 12
 ITEM.sound = "interface/inv_drink_can2.ogg"

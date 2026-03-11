@@ -1,7 +1,7 @@
 ITEM.name = "Molle Vest"
 ITEM.description = "molle_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebel_molle.mdl"
-ITEM.price = 500
+ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"

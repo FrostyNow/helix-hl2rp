@@ -34,6 +34,6 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	optSpawnerESP = "아이템 생성 지점 ESP",
 	optSpawnerESPDesc = "옵저버 상태일 때 아이템 생성 지점 ESP를 표시할지 여부입니다.",
-	spawnerESPTitle = "생성 지점: %s",
+	spawnerESPTitle = "아이템 생성 지점: %s",
 	spawnerESPInfo = "대기 시간: %s분 | 희귀 확률: %s%%",
 })

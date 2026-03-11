@@ -4,7 +4,7 @@ ITEM.model = "models/tnb/items/aphelion/facewrap.mdl"
 ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
-ITEM.price = 50
+ITEM.price = 25
 ITEM.outfitCategory = "head"
 
 ITEM.eqBodyGroups = {

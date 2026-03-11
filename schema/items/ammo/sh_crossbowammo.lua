@@ -3,7 +3,7 @@ ITEM.model = "models/Items/CrossbowRounds.mdl"
 ITEM.ammo = "XBowBolt" -- type of the ammo
 ITEM.ammoAmount = 5 -- amount of the ammo
 ITEM.description = "crossbowammoDesc"
-ITEM.price = 100
+ITEM.price = 30
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

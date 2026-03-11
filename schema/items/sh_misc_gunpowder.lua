@@ -1,7 +1,7 @@
 
 ITEM.name = "Gunpowder"
 ITEM.description = "itemGunpowderDesc"
-ITEM.price = 4
+ITEM.price = 3
 ITEM.model = "models/mosi/fallout4/props/junk/components/asbestos.mdl"
 ITEM.isjunk = true
 ITEM.isStackable = true

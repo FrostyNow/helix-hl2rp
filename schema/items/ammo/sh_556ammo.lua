@@ -4,4 +4,4 @@ ITEM.ammo = "5.56x45mm" -- type of the ammo
 ITEM.ammoAmount = 100 -- amount of the ammo
 ITEM.ammoClip = 30
 ITEM.description = "item556AmmoDesc"
-ITEM.price = 100
+ITEM.price = 30

@@ -1,7 +1,7 @@
 ITEM.name = "Overwatch Vest"
 ITEM.description = "overwatch_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebeloverwatch.mdl"
-ITEM.price = 600
+ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"

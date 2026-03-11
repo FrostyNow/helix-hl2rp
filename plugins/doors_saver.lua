@@ -25,7 +25,7 @@ if SERVER then
 			self.DOORS_TITLES_BUFFER = data.titles or {}
 
 			for k, v in next, self.DOORS_BUFFER do
-				local door = ents.GetMapCreatedEntity( k )
+				local door = ents.GetMapCreatedEntity( tonumber(k) )
 				if door and door:IsValid() and not door:GetNetVar( "disabled" ) then
 					local name = self.DOORS_TITLES_BUFFER[ k ]
 					if name then
@@ -75,7 +75,7 @@ if SERVER then
 			local prevID = prevChar:GetID()
 			for k, v in next, self.DOORS_BUFFER do
 				if v == prevID then
-					local door = ents.GetMapCreatedEntity( k )
+					local door = ents.GetMapCreatedEntity( tonumber(k) )
 					if door and door:IsValid() and not door:GetNetVar( "disabled" ) then
 						self.DOORS_ACCESS_BUFFER[ k ] = door.ixAccess
 						self.DOORS_TITLES_BUFFER[ k ] = door:GetNetVar( "title", door:GetNetVar( "name", "Purchased" ) )
@@ -95,9 +95,10 @@ if SERVER then
 		local curID = curChar:GetID()
 		for k, v in next, self.DOORS_BUFFER do
 			if v == curID then
-				local door = ents.GetMapCreatedEntity( k )
+				local door = ents.GetMapCreatedEntity( tonumber(k) )
 				if door and door:IsValid() and not door:GetNetVar( "disabled" ) then
 					door:SetNetVar( "ownable", true )
+					door:SetNetVar( "offlineOwner", nil )
 
 					door:SetDTEntity( 0, ply )
 					
@@ -121,6 +122,7 @@ if SERVER then
 
 					DOORS_PL:CallOnDoorChildren(door, function(child)
 						child:SetNetVar( "ownable", true )
+						child:SetNetVar( "offlineOwner", nil )
 
 						child:SetDTEntity( 0, ply )
 					end)
@@ -147,7 +149,7 @@ if SERVER then
 			local charID = char:GetID()
 			for k, v in next, self.DOORS_BUFFER do
 				if v == charID then
-					local door = ents.GetMapCreatedEntity( k )
+					local door = ents.GetMapCreatedEntity( tonumber(k) )
 					if door and door:IsValid() and not door:GetNetVar( "disabled" ) then
 						self.DOORS_ACCESS_BUFFER[ k ] = door.ixAccess
 						self.DOORS_TITLES_BUFFER[ k ] = door:GetNetVar( "title", door:GetNetVar( "name", "Purchased" ) )
@@ -174,7 +176,7 @@ if SERVER then
 
 		for k, v in next, self.DOORS_BUFFER do
 			if v == id then
-				local door = ents.GetMapCreatedEntity( k )
+				local door = ents.GetMapCreatedEntity( tonumber(k) )
 				if door and door:IsValid() and not door:GetNetVar( "disabled" ) then
 					self.DOORS_BUFFER[ k ] = nil
 					self.DOORS_ACCESS_BUFFER[ k ] = nil

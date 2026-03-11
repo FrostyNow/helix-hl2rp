@@ -1,7 +1,7 @@
 ITEM.name = "Duplex Walkie Talkie"
 ITEM.description = "itemDuplexWalkieDesc"
 
-ITEM.price = 120
+ITEM.price = 60
 ITEM.duplex = true
 --ITEM:SetData("duplex",true)
 

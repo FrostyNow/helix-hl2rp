@@ -1,7 +1,7 @@
 ITEM.name = "Walkie Talkie"
 ITEM.description = "itemWalkieTalkieDesc"
 ITEM.walkietalkie = true
-ITEM.price = 75
+ITEM.price = 60
 ITEM.category = "Utility"
 
 -- Inventory drawing

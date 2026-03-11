@@ -2,7 +2,7 @@ ITEM.name = "Manhack Parts"
 ITEM.model = "models/gibs/manhack_gib05.mdl"
 ITEM.description = "itemManhackPartsDesc"
 ITEM.isjunk = true
-ITEM.price = 5
+ITEM.price = 3
 ITEM.isStackable = true
 
 if (CLIENT) then

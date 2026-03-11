@@ -4,7 +4,7 @@ ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
 ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
-ITEM.price = 300
+ITEM.price = 150
 ITEM.outfitCategory = "outfit"
 ITEM.replacements = {
 	{"tnb/citizens/aphelion", "bmscientistcits"}

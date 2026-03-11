@@ -1,7 +1,7 @@
 
 ITEM.name = "Charcoal"
 ITEM.description = "itemCharcoalDesc"
-ITEM.price = 2
+ITEM.price = 3
 ITEM.model = "models/willardnetworks/props/charcoal.mdl"
 ITEM.iconCam = {
 	pos = Vector(0, 0, 200),

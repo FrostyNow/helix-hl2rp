@@ -1,7 +1,7 @@
 ITEM.name = "Night Vision"
 ITEM.description = "nvgogDesc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
-ITEM.price = 220000
+ITEM.price = 110000
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "goggles"

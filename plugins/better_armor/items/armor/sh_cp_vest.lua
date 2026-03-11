@@ -1,7 +1,7 @@
 ITEM.name = "cp_vest"
 ITEM.description = "cp_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl"
-ITEM.price = 500
+ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "kevlar"

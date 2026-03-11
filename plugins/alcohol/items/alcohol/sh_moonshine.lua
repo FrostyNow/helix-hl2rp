@@ -2,7 +2,7 @@ ITEM.name = "Moonshine"
 ITEM.description = "itemMoonshineDesc"
 ITEM.model = "models/mosi/fallout4/props/alcohol/moonshine.mdl"
 ITEM.thirst = 25
-ITEM.price = 7
+ITEM.price = 25
 ITEM.empty = "glass_bottle_generic"
 ITEM.strength = 2
 

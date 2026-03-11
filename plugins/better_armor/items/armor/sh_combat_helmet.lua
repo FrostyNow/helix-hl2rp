@@ -1,7 +1,7 @@
 ITEM.name = "Combat Helmet"
 ITEM.description = "combat_helmet_desc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
-ITEM.price = 200
+ITEM.price = 150
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "headgear"

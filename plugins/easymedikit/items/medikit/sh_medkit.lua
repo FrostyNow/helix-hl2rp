@@ -1,7 +1,7 @@
 ITEM.name = "Medkit"
 ITEM.model = "models/bloocobalt/l4d/items/w_eq_fieldkit.mdl"
 ITEM.description = "medkitDesc"
-ITEM.price = 25
+ITEM.price = 35
 ITEM.healthPoint = 40 -- Health point that the player will get
 ITEM.medAttr = 5 -- How much medical attribute the character needs
 ITEM.bleeding = true

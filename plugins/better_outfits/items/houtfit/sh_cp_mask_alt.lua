@@ -9,7 +9,7 @@ ITEM.iconCam = {
 	fov = 3.76
 }
 ITEM.exRender = true
-ITEM.price = 100
+ITEM.price = 50
 ITEM.eqBodyGroups = {
 	["mask"] = 2,
 	["mask eyes"] = 1,

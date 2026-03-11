@@ -1,7 +1,7 @@
 ITEM.name = "Water Drug"
 ITEM.model = "models/willardnetworks/skills/pills1.mdl"
 ITEM.description = "itemWaterDrugDesc"
-ITEM.price = 1
+ITEM.price = 12
 ITEM.isStackable = true
 
 ITEM.functions.Use = {

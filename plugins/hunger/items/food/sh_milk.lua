@@ -5,6 +5,6 @@ ITEM.empty = "glass_bottle_generic"
 ITEM.description = "itemMilkDesc"
 ITEM.thirst = 25
 ITEM.hunger = 5
-ITEM.price = 13
+ITEM.price = 15
 ITEM.heal = 5
 ITEM.usenum = 2

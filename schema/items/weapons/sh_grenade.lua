@@ -1,7 +1,8 @@
 ITEM.name = "HE Grenade"
 ITEM.description = "grenadeDesc"
 ITEM.model = "models/weapons/w_grenade.mdl"
-ITEM.class = "weapon_frag"
+ITEM.class = "weapon_rtbr_frag"
+ITEM.isGrenade = true
 ITEM.weaponCategory = "grenade"
 ITEM.classes = {CLASS_SGS, CLASS_OWS, CLASS_EMP, CLASS_REBEL}
 ITEM.width = 1

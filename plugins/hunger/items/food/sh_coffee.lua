@@ -2,6 +2,6 @@ ITEM.name = "Coffee"
 ITEM.model = "models/shibcuppy.mdl"
 ITEM.description = "itemCoffeeDesc"
 ITEM.thirst = 25
-ITEM.price = 4
+ITEM.price = 5
 ITEM.heal = 5
 ITEM.sound = "interface/inv_drink_tea.ogg"

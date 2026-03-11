@@ -5,7 +5,7 @@ ITEM.class = "tfa_ins2_panzerfaust3"
 ITEM.weaponCategory = "grenade"
 ITEM.width = 5
 ITEM.height = 2
-ITEM.price = 5000
+ITEM.price = 25
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
