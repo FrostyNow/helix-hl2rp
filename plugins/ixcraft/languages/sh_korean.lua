@@ -70,6 +70,10 @@ LANGUAGE = {
 	recipeDuctTapeDesc = "다른 물건을 수리하거나 만들 때 사용하는 덕트 테이프를 만듭니다.",
 	["Craft SMG"] = "기관단총 제작",
 	recipeSMG1Desc = "기관단총을 제작합니다.",
+	["Craft HE Grenade"] = "고폭 수류탄 제작",
+	recipeCraftGrenadeDesc = "고폭 수류탄을 제작합니다.",
+	["Craft Molotov Cocktail"] = "화염병 제작",
+	recipeMolotovDesc = "화염병을 제작합니다.",
 	["Craft Pistol"] = "9mm 권총 제작",
 	recipePistolDesc = "9mm 권총을 제작합니다.",
 	["Craft SMG ammo"] = "기관단총 탄약 제작",
@@ -83,9 +87,15 @@ LANGUAGE = {
 	recipeScrewdriverDesc = "길고 단단하게 성형한 알루미늄 심을 플라스틱 손잡이에 끼워 나사를 고정하거나 풀 수 있는 도구를 만듭니다.",
 	recipeHammerDesc = "무거운 강철 머리를 목재 손잡이에 끼워넣어 못을 쳐넣을 수 있는 도구를 만듭니다.",
 	recipeGasmaskDesc = "간이 방독면을 제작합니다.",
+	["Craft Gas Canister"] = "기름통 제작",
+	recipeGasCanisterDesc = "기름을 담은 알루미늄 통을 제작합니다.",
 
 	["Scrap Buttercup"] = "버터컵 분해",
 	recipeScrapButtercupDesc = "버터컵을 분해하여 부품을 추출합니다.",
+	["Scrap Pistol ammo"] = "권총 탄약 분해",
+	recipeScrapAmmoPistolDesc = "권총 탄약을 분해합니다.",
+	["Scrap HE Grenade"] = "고폭 수류탄 분해",
+	recipeScrapGrenadeDesc = "고폭 수류탄을 분해합니다.",
 	["Scrap Empty Can"] = "빈 깡통 분해",
 	recipeScrapEmptyCanDesc = "빈 깡통을 분해하여 부품을 추출합니다.",
 	["Scrap Mug"] = "머그컵 분해",
@@ -127,6 +137,7 @@ LANGUAGE = {
 	recipeScrapPanDesc = "프라이팬을 분해합니다.",
 	["Scrap Pot"] = "냄비 분해",
 	recipeScrapPotDesc = "냄비를 분해합니다.",
+	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",
 	["Tanning Hide"] = "가죽 무두질",
@@ -158,4 +169,3 @@ LANGUAGE = {
 	recipeTeaDesc = "차를 끓입니다.",
 	recipeCoffeeDesc = "커피를 끓입니다.",
 }
-

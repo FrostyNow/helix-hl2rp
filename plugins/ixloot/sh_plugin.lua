@@ -80,10 +80,7 @@ PLUGIN.randomLoot.common = {
 	["water_special"] = 2,
 	["beer"] = 3,
 	["vodka"] = 2,
-	["gin"] = 1,
-	["whiskey"] = 1,
-	["moonshine"] = 3,
-	["bourbon"] = 1,
+	["moonshine"] = 1,
 	["wine"] = 1,
 	["bandage"] = 1,
 	["canned_ham"] = 1,
@@ -108,9 +105,13 @@ PLUGIN.randomLoot.common = {
 	["coupon"] = 1,
 	["coffe_beans"] = 2,
 	["vegetable_oil"] = 2,
+	["misc_canister"] = 2,
 }
 
 PLUGIN.randomLoot.rare = {
+	["gin"] = 1,
+	["whiskey"] = 1,
+	["bourbon"] = 1,
 	["antidepressants"] = 3,
 	["comp_ballisticfiber"] = 2,
 	["comp_circuitry"] = 2,
@@ -157,6 +158,7 @@ PLUGIN.randomLoot.rare = {
 	["misc_gunparts_smg"] = 1,
 	["citizen_gasmask"] = 1,
 	["gasmask_filter"] = 1,
+	["extinguisher"] = 1,
 }
 
 ix.util.Include("sv_plugin.lua")

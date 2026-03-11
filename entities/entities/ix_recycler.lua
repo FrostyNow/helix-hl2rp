@@ -9,12 +9,45 @@ ENT.AdminOnly = true
 ENT.Category = "Helix"
 ENT.RenderGroup = RENDERGROUP_BOTH
 
+local RECYCLER_INVENTORY_FLAG = "isRecyclerInventory"
+local RECYCLE_TARGETS = {
+	water_empty = true
+}
+
+local function IsRecyclableItem(item)
+	return istable(item) and (item.isjunk or RECYCLE_TARGETS[item.uniqueID] == true)
+end
+
+hook.Add("CanTransferItem", "ixRecyclerTransferRestrictions", function(item, curInv, inventory)
+	if (!inventory or !inventory.vars or !inventory.vars[RECYCLER_INVENTORY_FLAG]) then
+		return
+	end
+
+	if (curInv and curInv.GetID and curInv:GetID() == inventory:GetID()) then
+		return
+	end
+
+	if (!IsRecyclableItem(item)) then
+		if (SERVER) then
+			local owner = item.GetOwner and item:GetOwner()
+
+			if (IsValid(owner)) then
+				owner:NotifyLocalized("recyclerJunkOnly")
+			end
+		end
+
+		return false
+	end
+end)
+
 ix.lang.AddTable("english", {
 	recyclerDesc = "Recycle junk to earn money.",
 	recyclerWeightError = "You must have more junk to recycle.",
 	recyclerProcessed = "You processed %s units of junk.",
 	recyclerBusy = "This machine is busy.",
-	recyclerPayout = "You've got %s from this machine."
+	recyclerPayout = "You've got %s from this machine.",
+	recyclerJunkOnly = "Only junk can be placed in the recycler.",
+	recyclerStorageName = "Recycler Hopper"
 })
 
 ix.lang.AddTable("korean", {
@@ -23,7 +56,9 @@ ix.lang.AddTable("korean", {
 	recyclerWeightError = "재활용하려면 더 많은 폐품이 필요합니다.",
 	recyclerProcessed = "%s 만큼의 폐품을 처리했습니다.",
 	recyclerBusy = "기계가 작동 중입니다.",
-	recyclerPayout = "기계에서 %s을 받았습니다."
+	recyclerPayout = "기계에서 %s을 받았습니다.",
+	recyclerJunkOnly = "재활용기에는 폐품만 넣을 수 있습니다.",
+	recyclerStorageName = "재활용 투입구"
 })
 
 ENT.CurrencyPerKG = 5
@@ -36,15 +71,105 @@ function ENT:SetupDataTables()
 end
 
 if (SERVER) then
-	-- These are the item unique IDs that can be recycled. 
-	-- You should update these to match your schema's item IDs.
-	local RecycleTargets = {
-		"water_empty"
-		-- Standard ixHL2RP junk examples (uncomment if needed):
-		-- "empty_can", "wood", "glass", "plastic"
-	}
+	ix.recyclerInventorySeed = ix.recyclerInventorySeed or 2000000000
 	ENT.RecycleTime = 30
 	ENT.TokenHoldTime = 60
+	ENT.RecyclerInventoryWidth = 8
+	ENT.RecyclerInventoryHeight = 8
+
+	local function GetNextRecyclerInventoryID()
+		repeat
+			ix.recyclerInventorySeed = ix.recyclerInventorySeed + 1
+		until (!ix.item.inventories[ix.recyclerInventorySeed])
+
+		return ix.recyclerInventorySeed
+	end
+
+	function ENT:CreateRecyclerInventory()
+		if (self.ixRecyclerInventoryID and ix.item.inventories[self.ixRecyclerInventoryID]) then
+			return ix.item.inventories[self.ixRecyclerInventoryID]
+		end
+
+		local inventory = ix.inventory.Create(self.RecyclerInventoryWidth, self.RecyclerInventoryHeight, GetNextRecyclerInventoryID())
+		inventory.noSave = true
+		inventory.vars[RECYCLER_INVENTORY_FLAG] = true
+		inventory.vars.recyclerEntityID = self:EntIndex()
+		self.ixRecyclerInventoryID = inventory:GetID()
+
+		return inventory
+	end
+
+	function ENT:GetInventory()
+		return self.ixRecyclerInventoryID and ix.item.inventories[self.ixRecyclerInventoryID] or nil
+	end
+
+	function ENT:DestroyRecyclerInventory()
+		local inventory = self:GetInventory()
+
+		if (!inventory) then
+			return
+		end
+
+		if (inventory.storageInfo) then
+			ix.storage.Close(inventory)
+		end
+
+		for _, item in pairs(inventory:GetItems()) do
+			item:Remove()
+		end
+
+		ix.item.inventories[inventory:GetID()] = nil
+		self.ixRecyclerInventoryID = nil
+	end
+
+	function ENT:GetRecyclePayload()
+		local inventory = self:GetInventory()
+
+		if (!inventory) then
+			return 0, {}
+		end
+
+		local totalValue = 0
+		local itemsToRecycle = {}
+
+		for _, item in pairs(inventory:GetItems()) do
+			if (!IsRecyclableItem(item)) then
+				continue
+			end
+
+			local price = item.price or 1
+			local area = (item.width or 1) * (item.height or 1)
+			local itemValue = price * 0.3 * (1 + (area * 0.25))
+
+			totalValue = totalValue + itemValue
+			itemsToRecycle[#itemsToRecycle + 1] = item
+		end
+
+		return math.floor(totalValue), itemsToRecycle
+	end
+
+	function ENT:OpenRecyclerStorage(client)
+		local inventory = self:GetInventory() or self:CreateRecyclerInventory()
+
+		if (!inventory or (client.ixNextOpen or 0) >= CurTime()) then
+			return
+		end
+
+		ix.storage.Open(client, inventory, {
+			name = "recyclerStorageName",
+			entity = self,
+			searchTime = 0,
+			OnPlayerClose = function(ply)
+				if (!IsValid(self) or !IsValid(ply) or !self:CanTurnOn(ply)) then
+					return
+				end
+
+				self:TurnOn(ply)
+			end
+		})
+
+		client.ixNextOpen = CurTime() + 0.5
+	end
 
 	function ENT:Initialize()
 		self:SetModel("models/props_wasteland/laundry_dryer002.mdl")
@@ -56,6 +181,7 @@ if (SERVER) then
 		self:SetMoneyHolding(0)
 		self:SetIsActivated(false)
 		self:SetIsHoldingTokens(false)
+		self:CreateRecyclerInventory()
 		
 		self.timeGen = CurTime()
 		self.timeHold = CurTime()
@@ -67,6 +193,8 @@ if (SERVER) then
 	end
 
 	function ENT:OnRemove()
+		self:DestroyRecyclerInventory()
+
 		if (self.loopsound) then
 			self.loopsound:Stop()
 			self.loopsound = nil
@@ -87,46 +215,22 @@ if (SERVER) then
 	end
 
 	function ENT:TurnOn(client)
-		local char = client:GetCharacter()
-		if (!char) then return end
-
-		local inv = char:GetInventory()
-		if (!inv) then return end
-
-		local totalValue = 0
-		local itemsToRecycle = {}
-
-		-- Convert RecycleTargets to a lookup table for efficiency
-		local targets = {}
-		for _, v in pairs(RecycleTargets) do
-			targets[v] = true
-		end
-
-		for _, item in pairs(inv:GetItems()) do
-			-- Process if it fits the uniqueID list OR has isjunk = true
-			if (targets[item.uniqueID] or item.isjunk) then
-				local price = item.price or 1
-				local area = (item.width or 1) * (item.height or 1)
-				-- Price based + 25% bonus per slot
-				local itemValue = price * 0.3 * (1 + (area * 0.25))
-				
-				totalValue = totalValue + itemValue
-				table.insert(itemsToRecycle, item)
-			end
-		end
-
-		if (totalValue < 5) then
-			client:NotifyLocalized("recyclerWeightError")
+		if (!IsValid(client) or !client:GetCharacter()) then
 			return
 		end
 
-		totalValue = math.floor(totalValue)
+		local totalValue, itemsToRecycle = self:GetRecyclePayload()
 
-		-- Remove the items from the inventory.
+		if (totalValue < 5) then
+			client:NotifyLocalized("recyclerWeightError")
+			return false
+		end
+
 		for _, item in pairs(itemsToRecycle) do
 			item:Remove()
 		end
 
+		self.activator = client
 		client:NotifyLocalized("recyclerProcessed", ix.currency.Get(totalValue, client))
 
 		self.loopsound = CreateSound(self, "ambient/machines/machine3.wav")
@@ -135,6 +239,7 @@ if (SERVER) then
 		self:SetIsActivated(true)
 		self:SetRecycleAmount(totalValue)
 		self.timeGen = CurTime() + self.RecycleTime
+		return true
 	end
 
 	function ENT:Think()
@@ -184,9 +289,14 @@ if (SERVER) then
 			return
 		end
 		
+		if (self:GetIsActivated()) then
+			client:NotifyLocalized("recyclerBusy")
+			self:EmitSound("common/wpn_denyselect.wav", 80, 130)
+			return
+		end
+
 		if (self:CanTurnOn(client)) then
-			self.activator = client
-			self:TurnOn(client)
+			self:OpenRecyclerStorage(client)
 		else
 			client:NotifyLocalized("recyclerBusy")
 			self:EmitSound("common/wpn_denyselect.wav", 80, 130)

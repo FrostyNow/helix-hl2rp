@@ -454,3 +454,13 @@ ix.command.Add("ServerCfg", {
 		return "@serverCfgChanged"
 	end
 })
+
+concommand.Add("ix_dev_ammo", function()
+	local ply = LocalPlayer()
+	local wep = ply:GetActiveWeapon()
+	if IsValid(wep) then
+		local ammoTypeID = wep:GetPrimaryAmmoType()
+		local ammo = game.GetAmmoName(ammoTypeID)
+		print(ammo) -- Prints the ID to console
+	end
+end)

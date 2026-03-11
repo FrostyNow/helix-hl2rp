@@ -107,6 +107,8 @@ local function TransferToGear(item, owner)
 end
 
 local function TransferToMain(item, owner)
+    if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item) then return end
+
     local character = owner:GetCharacter()
     local mainInv = character:GetInventory()
     if (!mainInv) then return end
@@ -114,7 +116,7 @@ local function TransferToMain(item, owner)
     if (item.bDropOnUnequip) then
         item.bDropOnUnequip = nil
         timer.Simple(0, function()
-            if (!item or item:GetData("equip") == true) then return end
+            if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or item:GetData("equip") == true) then return end
             
             item.bGearTransfer = true
             local oldCanTransfer = item.CanTransfer
@@ -143,7 +145,7 @@ local function TransferToMain(item, owner)
     end
 
     timer.Simple(0, function()
-        if (!item or item:GetData("equip") == true) then return end
+        if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or item:GetData("equip") == true) then return end
         
         local x, y = targetX, targetY
         local tInv = ix.item.inventories[targetInvID]
@@ -186,7 +188,7 @@ hook.Add("OnItemEquipped", "ixGearMenu", function(item, owner)
 end)
 
 hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
-    if (!item or !IsValid(owner)) then return end
+    if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or !IsValid(owner)) then return end
     item:SetData("equipTime", nil)
     TransferToMain(item, owner)
 end)

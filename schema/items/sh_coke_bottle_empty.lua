@@ -1,5 +1,5 @@
 
-ITEM.name = "Empty Bottle"
+ITEM.name = "Empty Coke Bottle"
 ITEM.description = "itemEmptyBottleDesc"
 ITEM.price = 4
 ITEM.model = "models/bloocobalt/l4d/items/w_cola_bottle.mdl"

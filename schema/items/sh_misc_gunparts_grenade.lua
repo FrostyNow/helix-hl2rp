@@ -1,10 +1,10 @@
 
-ITEM.name = "Nuclear Material"
-ITEM.description = "itemNuclearDesc"
+ITEM.name = "Grenade cylinder"
+ITEM.description = "itemGrenadeCylinderDesc"
 ITEM.price = 3
-ITEM.model = "models/mosi/fallout4/props/junk/components/nuclear.mdl"
+ITEM.model = "models/weapons/w_grenade.mdl"
 ITEM.isjunk = true
-ITEM.isStackable = true
+ITEM.isStackable = false
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

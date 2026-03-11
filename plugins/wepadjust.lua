@@ -95,5 +95,11 @@ function PLUGIN:InitializedPlugins()
 			swep.BulletDamage = 10
 			swep.Primary.DefaultClip = 0
 		end
+
+		//vFire
+		local swep = weapons.GetStored("weapon_vfire_molotov")
+		if (swep) then
+			swep.Primary.DefaultClip = 0
+		end
 	end
 end
