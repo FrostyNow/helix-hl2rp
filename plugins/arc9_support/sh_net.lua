@@ -1,4 +1,4 @@
-if (SERVER) then
+﻿if (SERVER) then
     util.AddNetworkString("ixARC9UpdatePreset")
     util.AddNetworkString("ixARC9SendPreset")
 
@@ -27,6 +27,7 @@ else
         end
 
         weapon.LoadedPreset = true
+        weapon.ixARC9BlockPresetUpdate = true
 
         if (isfunction(weapon.SetNoPresets)) then
             weapon:SetNoPresets(true)
@@ -37,6 +38,7 @@ else
                 ix.arc9.ResetWeaponAttachments(weapon, weapon.ixItem)
             end
 
+            weapon.ixARC9BlockPresetUpdate = nil
             return
         end
 
@@ -51,7 +53,7 @@ else
                 weapon:LoadPresetFromTable(presetTable, true)
             end
         end
+
+        weapon.ixARC9BlockPresetUpdate = nil
     end)
 end
-
-

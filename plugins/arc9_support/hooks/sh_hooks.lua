@@ -43,7 +43,7 @@ local function patchARC9BaseSWEP()
                 local results = {originalPostModify(self, ...)}
                 local owner = self.GetOwner and self:GetOwner()
 
-                if (IsValid(owner) and owner == LocalPlayer() and isfunction(self.UpdateItemPreset)) then
+                if (not self.ixARC9BlockPresetUpdate and IsValid(owner) and owner == LocalPlayer() and isfunction(self.UpdateItemPreset)) then
                     self:UpdateItemPreset()
                 end
 
@@ -58,7 +58,7 @@ local function patchARC9BaseSWEP()
                 local results = {originalLoadPreset(self, ...)}
                 local owner = self.GetOwner and self:GetOwner()
 
-                if (IsValid(owner) and owner == LocalPlayer() and isfunction(self.UpdateItemPreset)) then
+                if (not self.ixARC9BlockPresetUpdate and IsValid(owner) and owner == LocalPlayer() and isfunction(self.UpdateItemPreset)) then
                     self:UpdateItemPreset()
                 end
 
@@ -133,6 +133,7 @@ function PLUGIN:ARC9_PlayerGiveAtt(client, att, amount)
 
     return ix.arc9.GiveAttachmentItems(client, att, amount)
 end
+
 
 
 

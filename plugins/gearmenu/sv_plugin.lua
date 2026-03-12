@@ -66,6 +66,26 @@ local function SyncGearSlots(client)
 	net.Send(client)
 end
 
+local function IsValidTransferTarget(inventory, x, y, item)
+    if (!inventory or !x or !y or !item) then
+        return false
+    end
+
+    if (x < 1 or y < 1) then
+        return false
+    end
+
+    local invW, invH = inventory:GetSize()
+    local itemW = item.width or 1
+    local itemH = item.height or 1
+
+    if ((x + itemW - 1) > invW or (y + itemH - 1) > invH) then
+        return false
+    end
+
+    return inventory:CanItemFit(x, y, itemW, itemH, item)
+end
+
 local function DoGearTransfer(item, newInvID, x, y, client)
     item.bGearTransfer = true
     local oldCanTransfer = item.CanTransfer
@@ -151,7 +171,7 @@ local function TransferToMain(item, owner)
         local x, y = targetX, targetY
         local tInv = ix.item.inventories[targetInvID]
 
-        if (x and y and tInv and !tInv:CanItemFit(x, y, item.width, item.height, item)) then
+        if (x and y and !IsValidTransferTarget(tInv, x, y, item)) then
             x, y = nil, nil
         end
 
@@ -300,11 +320,17 @@ net.Receive("ixGearUnequipReq", function(len, client)
     local character = client:GetCharacter()
     local mainInv = character and character:GetInventory()
     local targetInv = (targetInvID > 0 and ix.item.inventories[targetInvID]) or mainInv
-    
+
+    item.targetSlot = nil
+
     if (!bDropToGround) then
         local targetX, targetY = x, y
+        local bHasExplicitTarget = false
+
         if (targetInv and targetX != -1 and targetY != -1) then
-            if (!targetInv:CanItemFit(targetX, targetY, item.width, item.height, item)) then
+            if (IsValidTransferTarget(targetInv, targetX, targetY, item)) then
+                bHasExplicitTarget = true
+            else
                 targetX, targetY = -1, -1
             end
         end
@@ -320,11 +346,10 @@ net.Receive("ixGearUnequipReq", function(len, client)
                 end
             end
         end
-    end
 
-    -- Preserve explicit unequip coordinates
-    if (targetInv and x != -1 and y != -1) then
-        item.targetSlot = {invID = targetInv:GetID(), x = x, y = y}
+        if (bHasExplicitTarget) then
+            item.targetSlot = {invID = targetInv:GetID(), x = targetX, y = targetY}
+        end
     end
 
     if (item.functions.EquipUn and item.functions.EquipUn.OnRun) then

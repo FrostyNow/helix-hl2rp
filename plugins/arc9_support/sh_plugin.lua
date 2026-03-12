@@ -1,5 +1,5 @@
 PLUGIN.name = "ARC9 Base Support"
-PLUGIN.author = "OpenAI"
+PLUGIN.author = "OpenAI, Ronald, bruck"
 PLUGIN.description = "Adds ARC9 preset persistence, icon/worldmodel attachment rendering, and item-level TPIK overrides."
 
 ix.util.Include("sh_net.lua")

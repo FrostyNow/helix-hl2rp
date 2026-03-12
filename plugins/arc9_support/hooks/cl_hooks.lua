@@ -47,6 +47,14 @@ local function applyARC9IconPanel(panel, itemTable, attempts)
     return false
 end
 
+local function resetARC9IconPanel(panel)
+    if (IsValid(panel) and ix.arc9 and ix.arc9.ResetItemIconPanel) then
+        return ix.arc9.ResetItemIconPanel(panel) == true
+    end
+
+    return false
+end
+
 local function refreshARC9Panels(itemID)
     local rendered = false
     local worldPanel = vgui.GetWorldPanel()
@@ -66,18 +74,59 @@ local function refreshARC9Panels(itemID)
             return
         end
 
-        if (ix.arc9 and ix.arc9.IsARC9Item and ix.arc9.IsARC9Item(itemTable) and applyARC9IconPanel(panel, itemTable)) then
-            rendered = true
+        if (ix.arc9 and ix.arc9.IsARC9Item and ix.arc9.IsARC9Item(itemTable)) then
+            if (applyARC9IconPanel(panel, itemTable)) then
+                rendered = true
+            end
+        else
+            resetARC9IconPanel(panel)
         end
     end)
 
     return rendered
 end
 
+local function resetItemIconPanels(itemID)
+    if (itemID == nil) then
+        return false
+    end
+
+    local reset = false
+
+    for i = 1, 100 do
+        local panel = ix.gui and ix.gui["inv" .. i]
+
+        if (IsValid(panel) and panel.panels) then
+            local icon = panel.panels[itemID]
+
+            if (icon ~= nil and not IsValid(icon)) then
+                panel.panels[itemID] = nil
+            elseif (IsValid(icon) and resetARC9IconPanel(icon)) then
+                reset = true
+            end
+        end
+    end
+
+    local worldPanel = vgui.GetWorldPanel()
+
+    if (IsValid(worldPanel)) then
+        walkPanels(worldPanel, function(panel)
+            local itemTable = getPanelItemTable(panel)
+
+            if (itemTable and itemTable.id == itemID and resetARC9IconPanel(panel)) then
+                reset = true
+            end
+        end)
+    end
+
+    return reset
+end
+
 local function refreshARC9ItemIcon(itemID)
     local itemTable = ix.item.instances[itemID]
 
     if (not itemTable or not ix.arc9 or not ix.arc9.IsARC9Item or not ix.arc9.IsARC9Item(itemTable)) then
+        resetItemIconPanels(itemID)
         return false
     end
 
@@ -119,6 +168,7 @@ local function patchIconRendering()
                 return refreshARC9ItemIcon(itemID)
             end
 
+            resetItemIconPanels(itemID)
             return originalRefreshItemIcon(itemID)
         end
     end
@@ -146,6 +196,8 @@ local function patchIconRendering()
 
                 if (itemTable and ix.arc9 and ix.arc9.IsARC9Item and ix.arc9.IsARC9Item(itemTable)) then
                     applyARC9IconPanel(panel, itemTable)
+                else
+                    resetARC9IconPanel(panel)
                 end
             end)
 

@@ -442,6 +442,63 @@ function ix.arc9.GetIconCam(itemTable, modelInfo)
     return layout and layout.camera or nil
 end
 
+local function decompressPresetTableRecursive(tbl)
+    if (not istable(tbl)) then
+        return tbl
+    end
+
+    for key, value in pairs(tbl) do
+        if (key == "i") then
+            tbl.i = nil
+            tbl.Installed = value
+        elseif (key == "s") then
+            tbl.s = nil
+            tbl.SubAttachments = value
+        elseif (key == "t") then
+            tbl.t = nil
+            tbl.ToggleNum = value
+        end
+    end
+
+    if (istable(tbl.SubAttachments)) then
+        for _, subTable in pairs(tbl.SubAttachments) do
+            decompressPresetTableRecursive(subTable)
+        end
+    end
+
+    return tbl
+end
+
+local function decodePresetTable(preset)
+    if (not isstring(preset) or preset == "") then
+        return
+    end
+
+    local decoded = util.Base64Decode(preset)
+
+    if (not decoded) then
+        return
+    end
+
+    local decompressed = util.Decompress(decoded)
+
+    if (not decompressed) then
+        return
+    end
+
+    local parsed = util.JSONToTable(decompressed)
+
+    if (not istable(parsed)) then
+        return
+    end
+
+    for _, node in pairs(parsed) do
+        decompressPresetTableRecursive(node)
+    end
+
+    return parsed
+end
+
 function ix.arc9.GetPresetTable(className, preset)
     if (not isstring(className) or not isstring(preset) or preset == "") then
         return
@@ -453,32 +510,9 @@ function ix.arc9.GetPresetTable(className, preset)
         return table.Copy(ix.arc9.presetCache[cacheKey])
     end
 
-    local swep = weapons.GetStored(className)
-    local presetSource = swep
-    local seen = {}
+    local result = decodePresetTable(preset)
 
-    while (istable(presetSource) and not isfunction(presetSource.ImportPresetCode)) do
-        local baseName = presetSource.Base
-
-        if (not isstring(baseName) or baseName == "" or seen[baseName]) then
-            break
-        end
-
-        seen[baseName] = true
-        presetSource = weapons.GetStored(baseName)
-    end
-
-    if (not istable(presetSource) or not isfunction(presetSource.ImportPresetCode)) then
-        presetSource = weapons.GetStored("arc9_base")
-    end
-
-    if (not presetSource or not isfunction(presetSource.ImportPresetCode)) then
-        return
-    end
-
-    local ok, result = pcall(presetSource.ImportPresetCode, presetSource, preset)
-
-    if (ok and istable(result)) then
+    if (istable(result)) then
         ix.arc9.presetCache[cacheKey] = table.Copy(result)
         return result
     end
@@ -573,6 +607,43 @@ function ix.arc9.ResetWeaponAttachments(weapon, itemTable)
     return true
 end
 
+function ix.arc9.ApplyItemPresetToWeapon(weapon, itemTable, dataSource)
+    if (not IsValid(weapon)) then
+        return false
+    end
+
+    itemTable = itemTable or weapon.ixItem or {class = weapon:GetClass()}
+
+    local freshTree = getFreshAttachmentTree(itemTable, weapon)
+
+    if (not istable(freshTree)) then
+        return false
+    end
+
+    local preset = ix.arc9.GetPreset(itemTable, dataSource)
+    local presetTable = ix.arc9.GetPresetTable(itemTable.class or weapon:GetClass(), preset or "")
+
+    if (presetTable) then
+        stripAttachmentTree(freshTree)
+        ix.arc9.ApplyPresetToSlots(freshTree, presetTable)
+    end
+
+    weapon.Attachments = table.Copy(freshTree)
+
+    if (isfunction(weapon.BuildSubAttachments)) then
+        weapon:BuildSubAttachments(freshTree)
+    end
+
+    if (isfunction(weapon.SetNoPresets)) then
+        weapon:SetNoPresets(true)
+    end
+
+    if (isfunction(weapon.PostModify)) then
+        weapon:PostModify()
+    end
+
+    return true
+end
 function ix.arc9.ApplyPresetToSlots(slots, presetTable)
     if (not istable(slots) or not istable(presetTable)) then
         return slots
@@ -713,10 +784,13 @@ if (SERVER) then
                 weapon:SetClip1(weapon.ixItem:GetData("ammo", 0))
             end
         end
-
         local hasPreset = isstring(preset) and preset ~= ""
 
-        ix.arc9.ResetWeaponAttachments(weapon, weapon.ixItem)
+        if (hasPreset and ix.arc9.ApplyItemPresetToWeapon) then
+            ix.arc9.ApplyItemPresetToWeapon(weapon, weapon.ixItem)
+        else
+            ix.arc9.ResetWeaponAttachments(weapon, weapon.ixItem)
+        end
 
         timer.Simple(0.01, function()
             if (not IsValid(client) or not IsValid(weapon)) then
@@ -727,10 +801,6 @@ if (SERVER) then
                 net.WriteEntity(weapon)
                 net.WriteString(hasPreset and preset or "__ix_default__")
             net.Send(client)
-
-            if (hasPreset and isfunction(weapon.PostModify)) then
-                weapon:PostModify()
-            end
 
             applyAmmo()
         end)
@@ -743,6 +813,7 @@ if (SERVER) then
             return
         end
 
+        ix.arc9.ApplyItemPresetToWeapon(weapon, itemTable)
         ix.arc9.ApplyWorldModelOffset(weapon, itemTable)
         ix.arc9.SendPreset(client, weapon, ix.arc9.GetPreset(itemTable), true)
     end
@@ -2308,6 +2379,7 @@ if (CLIENT) then
                 end
             end
 
+
             ikon:renderIcon(
                 renderKey,
                 itemTable.width or 1,
@@ -2319,7 +2391,34 @@ if (CLIENT) then
 
         return true
     end
-end
+
+    function ix.arc9.ResetItemIconPanel(panel)
+        if (not IsValid(panel) or not panel.arc9IconRenderer) then
+            return false
+        end
+
+        panel.arc9IconRenderer = nil
+        panel.arc9IconItemID = nil
+        panel.arc9IconModel = nil
+        panel.arc9IconRenderKey = nil
+        panel.ExtraPaint = nil
+
+        if (panel.arc9OriginalThink ~= nil) then
+            panel.Think = panel.arc9OriginalThink
+        end
+
+        local modelPanel = IsValid(panel.Icon) and panel.Icon or panel:GetChild(0)
+
+        if (IsValid(modelPanel)) then
+            if (modelPanel.SetPaintedManually) then
+                modelPanel:SetPaintedManually(false)
+            end
+
+            modelPanel:SetVisible(true)
+        end
+
+        return true
+    end
 
     function ix.arc9.DumpTraceData()
         local client = LocalPlayer()
@@ -2361,39 +2460,4 @@ end
 
         return true, path
     end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+end
