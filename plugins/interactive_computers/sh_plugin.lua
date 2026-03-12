@@ -4,56 +4,65 @@ PLUGIN.name = "Interactive Computers"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds interactive computer terminals with DOS-style journal storage."
 
-PLUGIN.defaultModel = "models/props/cs_office/computer.mdl"
+PLUGIN.defaultModel = "models/props_lab/monitor02.mdl"
 PLUGIN.allowedModels = {
-	["models/props/cs_office/computer.mdl"] = true,
-	["models/props_lab/monitor01a.mdl"] = true,
 	["models/props_lab/monitor02.mdl"] = true,
-	["models/props_combine/combine_smallmonitor001.mdl"] = true,
+	["models/props_lab/harddrive01.mdl"] = true,
+	["models/props_lab/harddrive02.mdl"] = true,
+	["models/props_c17/computer01_keyboard.mdl"] = true,
 	["models/props_combine/combine_interface001.mdl"] = true,
+	["models/props_combine/combine_interface001a.mdl"] = true,
 	["models/props_combine/combine_interface002.mdl"] = true,
 	["models/props_combine/combine_interface003.mdl"] = true,
 	["models/props_combine/combine_intmonitor001.mdl"] = true,
 	["models/props_combine/combine_intmonitor003.mdl"] = true,
-	["models/props_combine/combine_monitorbay.mdl"] = true,
 	["models/props_combine/breenconsole.mdl"] = true
 }
 PLUGIN.combineModels = {
-	["models/props_combine/combine_smallmonitor001.mdl"] = true,
 	["models/props_combine/combine_interface001.mdl"] = true,
+	["models/props_combine/combine_interface001a.mdl"] = true,
 	["models/props_combine/combine_interface002.mdl"] = true,
 	["models/props_combine/combine_interface003.mdl"] = true,
 	["models/props_combine/combine_intmonitor001.mdl"] = true,
 	["models/props_combine/combine_intmonitor003.mdl"] = true,
-	["models/props_combine/combine_monitorbay.mdl"] = true,
 	["models/props_combine/breenconsole.mdl"] = true
 }
 PLUGIN.spawnCategory = "HL2 RP: Computers"
 PLUGIN.assemblyMaxDistance = 140
 PLUGIN.entityDefinitions = {
 	{
-		class = "ix_computer_office",
-		name = "Office Computer",
-		langKey = "interactiveComputerOffice",
-		model = "models/props/cs_office/computer.mdl",
+		class = "ix_computer_desktop_open",
+		name = "Desktop Drive (Open)",
+		langKey = "interactiveComputerDesktopDriveOpen",
+		model = "models/props_lab/harddrive01.mdl",
 		skins = {off = 0, on = 0, error = 0},
 		family = "general",
-		role = "support",
+		role = "desktop",
 		interactive = false
 	},
 	{
-		class = "ix_computer_lab_monitor_a",
-		name = "Lab Monitor A",
-		langKey = "interactiveComputerLabMonitorA",
-		model = "models/props_lab/monitor01a.mdl",
-		skins = {off = 0, on = 1, error = 0},
+		class = "ix_computer_desktop_closed",
+		name = "Desktop Drive",
+		langKey = "interactiveComputerDesktopDrive",
+		model = "models/props_lab/harddrive02.mdl",
+		skins = {off = 0, on = 0, error = 0},
 		family = "general",
-		role = "monitor",
-		interactive = true
+		role = "desktop",
+		interactive = false
 	},
 	{
-		class = "ix_computer_lab_monitor_b",
-		name = "Lab Monitor B",
+		class = "ix_computer_keyboard",
+		name = "Computer Keyboard",
+		langKey = "interactiveComputerKeyboard",
+		model = "models/props_c17/computer01_keyboard.mdl",
+		skins = {off = 0, on = 0, error = 0},
+		family = "general",
+		role = "keyboard",
+		interactive = false
+	},
+	{
+		class = "ix_computer_lab_monitor",
+		name = "Workstation Monitor",
 		langKey = "interactiveComputerLabMonitorB",
 		model = "models/props_lab/monitor02.mdl",
 		skins = {off = 0, on = 1, error = 0},
@@ -62,51 +71,61 @@ PLUGIN.entityDefinitions = {
 		interactive = true
 	},
 	{
-		class = "ix_computer_combine_monitor",
-		name = "Combine Monitor S",
-		langKey = "interactiveComputerCombineMonitor",
-		model = "models/props_combine/combine_smallmonitor001.mdl",
-		skins = {off = 1, on = 0, error = 2},
-		family = "combine",
-		role = "support",
-		interactive = false
-	},
-	{
-		class = "ix_computer_combine_monitor",
-		name = "Combine Monitor 2",
-		langKey = "interactiveComputerCombineMonitor",
-		model = "models/props_combine/combine_monitorbay.mdl",
-		skins = {off = 1, on = 0, error = 2},
-		family = "combine",
-		role = "support",
-		interactive = false
-	},
-	{
-		class = "ix_computer_combine_monitor",
+		class = "ix_computer_combine_monitor_1",
 		name = "Combine Monitor",
 		langKey = "interactiveComputerCombineMonitor",
 		model = "models/props_combine/combine_intmonitor001.mdl",
-		skins = {off = 1, on = 0, error = 2},
+		skins = {off = 1, on = 0, error = 1},
 		family = "combine",
 		role = "support",
 		interactive = false
 	},
 	{
-		class = "ix_computer_combine_monitor",
+		class = "ix_computer_combine_monitor_3",
 		name = "Combine Monitor 3",
 		langKey = "interactiveComputerCombineMonitor",
 		model = "models/props_combine/combine_intmonitor003.mdl",
-		skins = {off = 1, on = 0, error = 2},
+		skins = {off = 1, on = 0, error = 1},
 		family = "combine",
 		role = "support",
 		interactive = false
 	},
 	{
-		class = "ix_computer_combine_interface",
+		class = "ix_computer_combine_interface_1",
 		name = "Combine Interface",
 		langKey = "interactiveComputerCombineInterface",
 		model = "models/props_combine/combine_interface001.mdl",
-		skins = {off = 1, on = 0, error = 2},
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "interface",
+		interactive = true
+	},
+	{
+		class = "ix_computer_combine_interface_1a",
+		name = "Combine Interface A",
+		langKey = "interactiveComputerCombineInterface",
+		model = "models/props_combine/combine_interface001a.mdl",
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "interface",
+		interactive = true
+	},
+	{
+		class = "ix_computer_combine_interface_2",
+		name = "Combine Interface 2",
+		langKey = "interactiveComputerCombineInterface",
+		model = "models/props_combine/combine_interface002.mdl",
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "interface",
+		interactive = true
+	},
+	{
+		class = "ix_computer_combine_interface_3",
+		name = "Combine Interface 3",
+		langKey = "interactiveComputerCombineInterface",
+		model = "models/props_combine/combine_interface003.mdl",
+		skins = {off = 1, on = 0, error = 1},
 		family = "combine",
 		role = "interface",
 		interactive = true
@@ -136,13 +155,16 @@ PLUGIN.maxAuthorLength = 64
 ix.lang.AddTable("english", {
 	interactiveComputer = "Interactive Computer",
 	interactiveComputerOffice = "Civil Public Terminal",
+	interactiveComputerDesktopDriveOpen = "Desktop Drive (Open)",
+	interactiveComputerDesktopDrive = "Desktop Drive",
+	interactiveComputerKeyboard = "Computer Keyboard",
 	interactiveComputerLabMonitorA = "Workstation Monitor A",
 	interactiveComputerLabMonitorB = "Workstation Monitor B",
 	interactiveComputerCombineMonitor = "Combine Monitor",
 	interactiveComputerCombineInterface = "Combine Interface",
 	interactiveComputerCivicInterface = "Public Information Interface",
 	interactiveComputerDesc = "A terminal that stores categorized journal entries.",
-	interactiveComputerUse = "Use to boot the terminal.",
+	interactiveComputerUse = "Use to interactive with the terminal.",
 	interactiveComputerPlaced = "Interactive computer placed.",
 	interactiveComputerRemoved = "Interactive computer removed.",
 	interactiveComputerLookAt = "Look at an interactive computer.",
@@ -153,8 +175,6 @@ ix.lang.AddTable("english", {
 	interactiveComputerBusy = "Someone else is already using this terminal.",
 	interactiveComputerCombineDenied = "You need Combine authorization or a keycard to access this terminal.",
 	interactiveComputerDisconnected = "The terminal assembly is disconnected. Move the paired hardware closer together.",
-	interactiveComputerMonitorUse = "Use the monitor to boot the terminal.",
-	interactiveComputerInterfaceUse = "Use the interface to access the terminal.",
 	interactiveComputerSupportDesc = "Supporting hardware for a nearby terminal.",
 	interactiveComputerRequiresSupport = "This monitor needs nearby computer hardware to power on.",
 	interactiveComputerCivicDenied = "You need valid identification to access this terminal.",
@@ -168,13 +188,14 @@ ix.lang.AddTable("english", {
 	interactiveComputerPublicPanel = "PUBLIC PANEL",
 	interactiveComputerNoQuestions = "NO QUESTIONS",
 	interactiveComputerCombineTitle = "<:: COMBINE MAINFRAME ACCESS COMMAND MODULE ::>",
+	interactiveComputerComLogTitle = "<:: COMBINE MAINFRAME PERSONAL LOG ::>",
 	interactiveComputerObjectives = "OBJECTIVES",
 	interactiveComputerCivilData = "CIVIL DATA",
 	interactiveComputerSaveObjectives = "COMMIT OBJECTIVES",
 	interactiveComputerSaveData = "COMMIT DATA",
 	interactiveComputerPersonalLog = "PERSONAL LOG",
 	interactiveComputerSavePersonalLog = "SAVE PERSONAL LOG",
-	interactiveComputerBack = "BACK",
+	interactiveComputerBack = "<",
 	interactiveComputerNoRoster = "NO VALID BIOSIGNALS",
 	interactiveComputerSecurityBypassed = "Terminal security has been bypassed temporarily.",
 	interactiveComputerSecurityAlreadyBypassed = "Terminal security is already bypassed.",
@@ -183,6 +204,17 @@ ix.lang.AddTable("english", {
 	interactiveComputerNoEntries = "NO ENTRIES",
 	interactiveComputerPowerOff = "SYSTEM OFFLINE",
 	interactiveComputerBooting = "BOOTING...",
+	interactiveComputerPowerPrompt = "PRESS POWER TO START THE TERMINAL.",
+	interactiveComputerSelectModule = "SELECT A MODULE FROM THE LEFT PANEL.",
+	interactiveComputerSelectUnit = "SELECT A UNIT TO VIEW CIVIL DATA.",
+	interactiveComputerSelectQuestion = "SELECT A QUESTION TO REVIEW OR ANSWER.",
+	interactiveComputerAnnouncementModule = "NOTICE MODULE",
+	interactiveComputerAgendaModule = "AGENDA MODULE",
+	interactiveComputerQuestionsModule = "Q&A MODULE",
+	interactiveComputerPostList = "POSTS",
+	interactiveComputerNewPost = "NEW POST",
+	interactiveComputerDeletePost = "DELETE",
+	interactiveComputerNewQuestion = "NEW QUESTION",
 	interactiveComputerLocked = "ACCESS LOCKED",
 	interactiveComputerGuest = "GUEST ACCESS",
 	interactiveComputerFullAccess = "FULL ACCESS",
@@ -203,18 +235,73 @@ ix.lang.AddTable("english", {
 	interactiveComputerInvalidPassword = "Invalid password.",
 	interactiveComputerPasswordUpdated = "Security settings updated.",
 	interactiveComputerLockedEntry = "[LOCKED ENTRY]",
+	interactiveComputerHelpIntro = "Type HELP to view available commands.",
+	interactiveComputerHelpLogin = "LOGIN <PASSWORD>\t: Log into the workstation",
+	interactiveComputerHelpDir = "DIR / LS\t\t: Legacy alias for LIST",
+	interactiveComputerHelpList = "LIST\t\t\t\t: List saved entries",
+	interactiveComputerHelpOpen = "OPEN <INDEX|TITLE>\t: Open an entry",
+	interactiveComputerHelpRead = "READ / TYPE\t\t: Display the selected entry",
+	interactiveComputerHelpWrite = "WRITE <TITLE>\t\t: Create a new entry",
+	interactiveComputerHelpEdit = "EDIT <INDEX|TITLE>\t: Select an entry for editing",
+	interactiveComputerHelpDelete = "DELETE <LINE>\t\t: Remove a specific line",
+	interactiveComputerHelpDeleteLine = "DELETE <LINE>\t\t: Remove a specific line",
+	interactiveComputerHelpNewEntry = "NEWENTRY <TITLE>\t\t: Create a new entry",
+	interactiveComputerHelpDelEntry = "DELENTRY\t\t: Legacy alias for REMOVE",
+	interactiveComputerHelpRemove = "REMOVE\t\t\t: Delete the current entry",
+	interactiveComputerHelpTitle = "TITLE <TEXT>\t\t: Change the entry title",
+	interactiveComputerHelpAuthor = "AUTHOR <TEXT>\t\t: Change the author field",
+	interactiveComputerHelpPrepend = "PREPEND <TEXT>\t\t: Insert a line at the top",
+	interactiveComputerHelpAppend = "APPEND <TEXT>\t\t: Append a line to the body",
+	interactiveComputerHelpPop = "POP / SLICE\t\t: Remove the last line",
+	interactiveComputerHelpRevise = "REVICE <LINE> <TEXT>\t: Replace a specific line",
+	interactiveComputerHelpClearBody = "CLEAR\t\t: Clear the entry body",
+	interactiveComputerHelpSave = "SAVE\t\t\t: Save current changes",
+	interactiveComputerHelpUnlock = "LOGIN <PASSWORD>\t\t: Log into the workstation",
+	interactiveComputerHelpLogoff = "LOGOFF\t\t\t: Close the current session",
+	interactiveComputerHelpEntryUnlock = "PUBLIC <PASSWORD>\t: Access a private entry",
+	interactiveComputerHelpPublic = "PUBLIC <PASSWORD>\t: Access a private entry",
+	interactiveComputerHelpSecurity = "SECURITY <MODE> [PASS]\t: Change workstation security",
+	interactiveComputerHelpEntrySecurity = "PRIVATE <MODE> [PASS]\t: Change entry security",
+	interactiveComputerHelpPrivate = "PRIVATE <MODE> [PASS]\t\t: Change entry security",
+	interactiveComputerHelpStatus = "STATUS / BACK / CLS\t: Status, return, clear screen",
+	interactiveComputerAccessDenied = "ACCESS DENIED.",
+	interactiveComputerCommandUnavailable = "COMMAND NOT AVAILABLE.",
+	interactiveComputerNoEntriesAvailable = "NO ENTRIES AVAILABLE.",
+	interactiveComputerEntryNotFound = "ENTRY NOT FOUND.",
+	interactiveComputerNoEntrySelected = "NO ENTRY SELECTED.",
+	interactiveComputerEntryLimitReached = "ENTRY LIMIT REACHED.",
+	interactiveComputerLastEntryProtected = "LAST ENTRY CANNOT BE REMOVED.",
+	interactiveComputerAuthorUnavailable = "AUTHOR FIELD NOT AVAILABLE IN PERSONAL LOG.",
+	interactiveComputerNoLines = "NO LINES TO REMOVE.",
+	interactiveComputerPasswordRequired = "PASSWORD REQUIRED FOR THIS MODE.",
+	interactiveComputerAlreadyUnlocked = "WORKSTATION ALREADY AVAILABLE.",
+	interactiveComputerUsageLogin = "USAGE: LOGIN <PASSWORD>",
+	interactiveComputerUsageTitle = "USAGE: TITLE <TEXT>",
+	interactiveComputerUsageAppend = "USAGE: APPEND <TEXT>",
+	interactiveComputerUsagePrepend = "USAGE: PREPEND <TEXT>",
+	interactiveComputerUsageRemove = "USAGE: REMOVE <LINE>",
+	interactiveComputerUsageDeleteLine = "USAGE: DELETE <LINE>",
+	interactiveComputerUsageRevise = "USAGE: REVICE <LINE> <TEXT>",
+	interactiveComputerUsagePublic = "USAGE: PUBLIC <PASSWORD>",
+	interactiveComputerUsageSecurity = "USAGE: SECURITY <NONE|LOCKED> [PASSWORD]",
+	interactiveComputerUsagePrivate = "USAGE: PRIVATE <PRIVATE|READONLY|NONE> [PASSWORD]",
+	interactiveComputerUnknownCommand = "'%s' is not recognized as an internal or external command.",
+	interactiveComputerUnknownCommandHint = "Type HELP for a list of available commands.",
 })
 
 ix.lang.AddTable("korean", {
 	interactiveComputer = "인터랙티브 컴퓨터",
 	interactiveComputerOffice = "시민 공용 단말기",
-	interactiveComputerLabMonitorA = "작업용 모니터 A",
-	interactiveComputerLabMonitorB = "작업용 모니터 B",
+	interactiveComputerDesktopDriveOpen = "데스크탑",
+	interactiveComputerDesktopDrive = "데스크탑",
+	interactiveComputerKeyboard = "컴퓨터 키보드",
+	interactiveComputerLabMonitorA = "작업용 모니터",
+	interactiveComputerLabMonitorB = "작업용 모니터",
 	interactiveComputerCombineMonitor = "콤바인 모니터",
 	interactiveComputerCombineInterface = "콤바인 인터페이스",
 	interactiveComputerCivicInterface = "공공 정보 인터페이스",
-	interactiveComputerDesc = "항목별 기록을 저장할 수 있는 터미널입니다.",
-	interactiveComputerUse = "상호작용 키를 눌러 터미널을 켭니다.",
+	interactiveComputerDesc = "항목별 기록을 작성하거나 열람할 수 있는 터미널입니다.",
+	interactiveComputerUse = "상호작용하여 사용할 수 있습니다.",
 	interactiveComputerPlaced = "인터랙티브 컴퓨터를 배치했습니다.",
 	interactiveComputerRemoved = "인터랙티브 컴퓨터를 제거했습니다.",
 	interactiveComputerLookAt = "인터랙티브 컴퓨터를 조준하세요.",
@@ -225,9 +312,7 @@ ix.lang.AddTable("korean", {
 	interactiveComputerBusy = "다른 사람이 이미 이 터미널을 사용 중입니다.",
 	interactiveComputerCombineDenied = "콤바인 권한 또는 보안 카드가 있어야 이 터미널에 접근할 수 있습니다.",
 	interactiveComputerDisconnected = "터미널 장비 세트가 분리되어 있습니다. 짝이 되는 장비를 더 가깝게 옮기세요.",
-	interactiveComputerMonitorUse = "모니터를 상호작용 키를 눌러 터미널을 켭니다.",
-	interactiveComputerInterfaceUse = "인터페이스를 상호작용 키를 눌러 터미널에 접근합니다.",
-	interactiveComputerSupportDesc = "주변 단말기를 작동시키는 보조 장비입니다.",
+	interactiveComputerSupportDesc = "주변 단말기를 작동시키는 장비입니다.",
 	interactiveComputerRequiresSupport = "이 모니터는 근처에 컴퓨터 장비가 있어야 켜집니다.",
 	interactiveComputerCivicDenied = "이 터미널에 접근하려면 유효한 신분증이 필요합니다.",
 	interactiveComputerCivicTitle = "<:: 공공 정보 터미널 ::>",
@@ -240,13 +325,14 @@ ix.lang.AddTable("korean", {
 	interactiveComputerPublicPanel = "공공 패널",
 	interactiveComputerNoQuestions = "질문 없음",
 	interactiveComputerCombineTitle = "<:: 콤바인 메인프레임 접근 지시 모듈 ::>",
+	interactiveComputerComLogTitle = "<:: 콤바인 메인프레임 개인 기록 ::>",
 	interactiveComputerObjectives = "작전 목표",
 	interactiveComputerCivilData = "시민 데이터",
 	interactiveComputerSaveObjectives = "목표 저장",
 	interactiveComputerSaveData = "데이터 저장",
 	interactiveComputerPersonalLog = "개인 기록",
 	interactiveComputerSavePersonalLog = "개인 기록 저장",
-	interactiveComputerBack = "뒤로",
+	interactiveComputerBack = "<",
 	interactiveComputerNoRoster = "유효한 생체 신호 없음",
 	interactiveComputerSecurityBypassed = "터미널 보안이 잠시 무력화되었습니다.",
 	interactiveComputerSecurityAlreadyBypassed = "터미널 보안이 이미 무력화된 상태입니다.",
@@ -255,6 +341,17 @@ ix.lang.AddTable("korean", {
 	interactiveComputerNoEntries = "기록 없음",
 	interactiveComputerPowerOff = "시스템 오프라인",
 	interactiveComputerBooting = "부팅 중...",
+	interactiveComputerPowerPrompt = "전원 버튼을 눌러 터미널을 시작하십시오.",
+	interactiveComputerSelectModule = "좌측 모듈을 선택하십시오.",
+	interactiveComputerSelectUnit = "유닛을 선택해 시민 데이터를 확인하십시오.",
+	interactiveComputerSelectQuestion = "질문을 선택해 내용을 확인하거나 답변하십시오.",
+	interactiveComputerAnnouncementModule = "공지 모듈",
+	interactiveComputerAgendaModule = "아젠다 모듈",
+	interactiveComputerQuestionsModule = "질의응답 모듈",
+	interactiveComputerPostList = "게시물",
+	interactiveComputerNewPost = "새 게시물",
+	interactiveComputerDeletePost = "삭제",
+	interactiveComputerNewQuestion = "새 질문",
 	interactiveComputerLocked = "접근 잠김",
 	interactiveComputerGuest = "게스트 접근",
 	interactiveComputerFullAccess = "전체 권한",
@@ -275,6 +372,58 @@ ix.lang.AddTable("korean", {
 	interactiveComputerInvalidPassword = "암호가 올바르지 않습니다.",
 	interactiveComputerPasswordUpdated = "보안 설정을 변경했습니다.",
 	interactiveComputerLockedEntry = "[잠긴 항목]",
+	interactiveComputerHelpIntro = "사용 가능한 명령어를 보려면 HELP를 입력하십시오.",
+	interactiveComputerHelpLogin = "LOGIN <암호>\t\t: 워크스테이션에 로그인",
+	interactiveComputerHelpDir = "DIR / LS\t\t: LIST의 예전 별칭",
+	interactiveComputerHelpList = "LIST\t\t\t: 저장된 기록 목록 표시",
+	interactiveComputerHelpOpen = "OPEN <번호|제목>\t\t: 기록 열기",
+	interactiveComputerHelpRead = "READ / TYPE\t\t: 선택한 기록 내용 표시",
+	interactiveComputerHelpWrite = "WRITE <제목>\t\t: 새 기록 생성",
+	interactiveComputerHelpEdit = "EDIT <번호|제목>\t\t: 편집할 기록 선택",
+	interactiveComputerHelpDelete = "DELETE <줄번호>\t\t: 지정한 줄 제거",
+	interactiveComputerHelpDeleteLine = "DELETE <줄번호>\t\t: 지정한 줄 제거",
+	interactiveComputerHelpNewEntry = "NEWENTRY <제목>\t\t: 새 기록 생성",
+	interactiveComputerHelpDelEntry = "DELENTRY\t\t: REMOVE의 예전 별칭",
+	interactiveComputerHelpRemove = "REMOVE\t\t\t: 현재 기록 삭제",
+	interactiveComputerHelpTitle = "TITLE <텍스트>\t\t: 기록 제목 변경",
+	interactiveComputerHelpAuthor = "AUTHOR <텍스트>\t\t: 작성자 필드 변경",
+	interactiveComputerHelpPrepend = "PREPEND <텍스트>\t\t: 본문 맨 앞에 한 줄 추가",
+	interactiveComputerHelpAppend = "APPEND <텍스트>\t\t: 본문에 한 줄 추가",
+	interactiveComputerHelpPop = "POP / SLICE\t\t: 마지막 줄 제거",
+	interactiveComputerHelpRevise = "REVICE <줄번호> <텍스트>\t: 지정한 줄 수정",
+	interactiveComputerHelpClearBody = "CLEAR\t\t\t: 기록 본문 비우기",
+	interactiveComputerHelpSave = "SAVE\t\t\t: 현재 변경사항 저장",
+	interactiveComputerHelpUnlock = "LOGIN <암호>\t\t: 워크스테이션에 로그인",
+	interactiveComputerHelpLogoff = "LOGOFF\t\t\t: 현재 세션 종료",
+	interactiveComputerHelpEntryUnlock = "PUBLIC <암호>\t\t: 비공개 기록 열람",
+	interactiveComputerHelpPublic = "PUBLIC <암호>\t\t: 비공개 기록 열람",
+	interactiveComputerHelpSecurity = "SECURITY <모드> [암호]\t: 워크스테이션 보안 변경",
+	interactiveComputerHelpEntrySecurity = "PRIVATE <모드> [암호]\t: 기록 보안 변경",
+	interactiveComputerHelpPrivate = "PRIVATE <모드> [암호]\t: 기록 보안 변경",
+	interactiveComputerHelpStatus = "STATUS / BACK / CLS\t: 상태, 복귀, 화면 비우기",
+	interactiveComputerAccessDenied = "접근이 거부되었습니다.",
+	interactiveComputerCommandUnavailable = "이 명령은 사용할 수 없습니다.",
+	interactiveComputerNoEntriesAvailable = "표시할 기록이 없습니다.",
+	interactiveComputerEntryNotFound = "기록을 찾을 수 없습니다.",
+	interactiveComputerNoEntrySelected = "선택된 기록이 없습니다.",
+	interactiveComputerEntryLimitReached = "기록 한도에 도달했습니다.",
+	interactiveComputerLastEntryProtected = "마지막 기록은 삭제할 수 없습니다.",
+	interactiveComputerAuthorUnavailable = "개인 기록에서는 작성자 필드를 사용할 수 없습니다.",
+	interactiveComputerNoLines = "제거할 줄이 없습니다.",
+	interactiveComputerPasswordRequired = "이 모드에는 암호가 필요합니다.",
+	interactiveComputerAlreadyUnlocked = "워크스테이션은 이미 사용할 수 있습니다.",
+	interactiveComputerUsageLogin = "사용법: LOGIN <암호>",
+	interactiveComputerUsageTitle = "사용법: TITLE <텍스트>",
+	interactiveComputerUsageAppend = "사용법: APPEND <텍스트>",
+	interactiveComputerUsagePrepend = "사용법: PREPEND <텍스트>",
+	interactiveComputerUsageRemove = "사용법: REMOVE <줄번호>",
+	interactiveComputerUsageDeleteLine = "사용법: DELETE <줄번호>",
+	interactiveComputerUsageRevise = "사용법: REVICE <줄번호> <텍스트>",
+	interactiveComputerUsagePublic = "사용법: PUBLIC <암호>",
+	interactiveComputerUsageSecurity = "사용법: SECURITY <NONE|LOCKED> [암호]",
+	interactiveComputerUsagePrivate = "사용법: PRIVATE <PRIVATE|READONLY|NONE> [암호]",
+	interactiveComputerUnknownCommand = "'%s' 명령을 인식할 수 없습니다.",
+	interactiveComputerUnknownCommandHint = "사용 가능한 명령어 목록은 HELP를 입력하십시오.",
 })
 
 function PLUGIN:IsValidComputerModel(model)
@@ -346,7 +495,7 @@ function PLUGIN:ResolveComputerEntity(entity)
 	end
 end
 
-function PLUGIN:FindNearestSupportComputer(entity)
+function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 	if (!self:IsPrimaryComputerEntity(entity)) then
 		return
 	end
@@ -370,6 +519,10 @@ function PLUGIN:FindNearestSupportComputer(entity)
 			continue
 		end
 
+		if (requestedRole and candidateDefinition.role != requestedRole) then
+			continue
+		end
+
 		local distance = entity:GetPos():DistToSqr(candidate:GetPos())
 		if (distance > maxDistanceSqr) then
 			continue
@@ -384,6 +537,15 @@ function PLUGIN:FindNearestSupportComputer(entity)
 	return bestCandidate
 end
 
+function PLUGIN:GetRequiredSupportRoles(entity)
+	local definition = IsValid(entity) and self:GetComputerDefinition(entity:GetClass())
+	if (!definition or definition.interactive != true) then
+		return {}
+	end
+
+	return {}
+end
+
 function PLUGIN:ResolveStorageEntity(entity)
 	if (!self:IsPrimaryComputerEntity(entity)) then
 		return
@@ -395,7 +557,7 @@ function PLUGIN:ResolveStorageEntity(entity)
 	end
 
 	if (definition.family == "general" and definition.interactive == true) then
-		return self:FindNearestSupportComputer(entity) or entity
+		return self:FindNearestSupportComputer(entity, "desktop") or entity
 	end
 
 	return entity

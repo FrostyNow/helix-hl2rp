@@ -6,6 +6,78 @@ PLUGIN.nextComputerID = PLUGIN.nextComputerID or 1
 local MAX_USE_DISTANCE_SQR = 160 * 160
 local SECURITY_BYPASS_DURATION = 300
 
+local function NormalizeCivicPostList(plugin, entries, legacyText, fallbackTitle)
+	local normalized = {}
+
+	if (istable(entries)) then
+		for _, entry in ipairs(entries) do
+			local title = string.Trim(plugin:SanitizeText(entry.title or "", 80))
+			local body = string.Trim(plugin:SanitizeText(entry.body or entry.text or "", 4000))
+			local author = string.Trim(plugin:SanitizeText(entry.author or "", plugin.maxAuthorLength))
+
+			if (title != "" or body != "") then
+				normalized[#normalized + 1] = {
+					title = title != "" and title or fallbackTitle,
+					body = body,
+					author = author,
+					updatedAt = tonumber(entry.updatedAt) or os.time()
+				}
+			end
+		end
+	end
+
+	local fallbackBody = string.Trim(plugin:SanitizeText(legacyText or "", 4000))
+	if (#normalized == 0 and fallbackBody != "") then
+		normalized[1] = {
+			title = fallbackTitle,
+			body = fallbackBody,
+			author = "",
+			updatedAt = os.time()
+		}
+	end
+
+	return normalized
+end
+
+local function NormalizeCivicQuestionList(plugin, questions)
+	local normalized = {}
+
+	if (!istable(questions)) then
+		return normalized
+	end
+
+	for _, entry in ipairs(questions) do
+		local title = string.Trim(plugin:SanitizeText(entry.title or entry.question or "", 96))
+		local body = string.Trim(plugin:SanitizeText(entry.body or "", 1500))
+		local answer = string.Trim(plugin:SanitizeText(entry.answer or "", 1500))
+
+		if (title != "" or body != "") then
+			normalized[#normalized + 1] = {
+				title = title != "" and title or "QUESTION",
+				body = body,
+				asker = string.Trim(plugin:SanitizeText(entry.asker or "", plugin.maxAuthorLength)),
+				answer = answer,
+				answeredBy = string.Trim(plugin:SanitizeText(entry.answeredBy or "", plugin.maxAuthorLength)),
+				createdAt = tonumber(entry.createdAt) or tonumber(entry.updatedAt) or os.time(),
+				updatedAt = tonumber(entry.updatedAt) or tonumber(entry.createdAt) or os.time()
+			}
+		end
+	end
+
+	return normalized
+end
+
+local function NormalizeCivicPanelData(plugin, data)
+	data = istable(data) and table.Copy(data) or {}
+	data.announcements = NormalizeCivicPostList(plugin, data.announcements, data.announcement, "NOTICE")
+	data.agendas = NormalizeCivicPostList(plugin, data.agendas, data.propaganda, "AGENDA")
+	data.questions = NormalizeCivicQuestionList(plugin, data.questions)
+	data.announcement = nil
+	data.propaganda = nil
+
+	return data
+end
+
 local function GetSessionID(client)
 	local character = IsValid(client) and client:GetCharacter()
 
@@ -65,22 +137,11 @@ function PLUGIN:BuildCombinePayload(client)
 end
 
 function PLUGIN:GetCivicPanelData()
-	local data = ix.data.Get("interactiveComputerCivicPanel", {}, false, true)
-
-	data.announcement = tostring(data.announcement or "")
-	data.propaganda = tostring(data.propaganda or "")
-	data.questions = istable(data.questions) and data.questions or {}
-
-	return data
+	return NormalizeCivicPanelData(self, ix.data.Get("interactiveComputerCivicPanel", {}, false, true))
 end
 
 function PLUGIN:SetCivicPanelData(data)
-	data = data or {}
-	data.announcement = string.sub(tostring(data.announcement or ""), 1, 1500)
-	data.propaganda = string.sub(tostring(data.propaganda or ""), 1, 1500)
-	data.questions = istable(data.questions) and data.questions or {}
-
-	ix.data.Set("interactiveComputerCivicPanel", data, false, true)
+	ix.data.Set("interactiveComputerCivicPanel", NormalizeCivicPanelData(self, data), false, true)
 end
 
 function PLUGIN:BuildCivicPayload(client, returnContext)
@@ -138,22 +199,28 @@ function PLUGIN:IsComputerAssemblyValid(entity)
 		return true
 	end
 
-	for _, candidate in ipairs(ents.GetAll()) do
-		if (!self:IsSupportComputer(candidate)) then
-			continue
-		end
+	local requiredRoles = self:GetRequiredSupportRoles(entity)
+	if (#requiredRoles == 0) then
+		return true
+	end
 
-		local candidateDefinition = self:GetComputerDefinition(candidate:GetClass())
-		if (!candidateDefinition or candidateDefinition.family ~= definition.family) then
-			continue
-		end
-
-		if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (self.assemblyMaxDistance * self.assemblyMaxDistance)) then
-			return true
+	for _, role in ipairs(requiredRoles) do
+		if (!IsValid(self:FindNearestSupportComputer(entity, role))) then
+			return false
 		end
 	end
 
-	return false
+	return true
+end
+
+local function EmitCombineLockedSound(entity)
+	entity = PLUGIN:ResolveComputerEntity(entity)
+	local definition = IsValid(entity) and PLUGIN:GetComputerDefinition(entity:GetClass())
+	if (!IsValid(entity) or !definition or definition.family != "combine") then
+		return
+	end
+
+	entity:EmitSound("buttons/combine_button_locked.wav", 60, 100, 0.7)
 end
 
 function PLUGIN:GetCombineJournalData(client)
@@ -274,10 +341,7 @@ function PLUGIN:ClearAccessSession(entity, client)
 end
 
 function PLUGIN:IsGeneralComputerLocked(data, session)
-	local security = istable(data) and data.security or {}
-	local mode = security.mode or "none"
-
-	return security.password ~= "" and mode == "locked" and !(session and session.full)
+	return false
 end
 
 function PLUGIN:GetEntryKey(categoryIndex, entryIndex)
@@ -297,7 +361,7 @@ function PLUGIN:BuildGeneralPayload(client, entity)
 		categories = {}
 	}
 	local isLocked = self:IsGeneralComputerLocked(data, session)
-	local isGuest = !isLocked and data.security.password ~= "" and data.security.mode == "guest" and !session.full
+	local isGuest = data.security.password ~= "" and !session.full
 
 	if (isLocked) then
 		filtered.categories[1] = {
@@ -348,7 +412,7 @@ function PLUGIN:BuildGeneralPayload(client, entity)
 	end
 
 	return filtered, {
-		canEdit = !isLocked and !isGuest and session.full != false or (data.security.password == ""),
+		canEdit = !isGuest and session.full != false or (data.security.password == ""),
 		locked = isLocked,
 		guest = isGuest,
 		computerMode = data.security.mode,
@@ -384,6 +448,7 @@ function PLUGIN:CreateComputer(position, angles, model, data, powered, forcedID)
 	entity:SetAngles(angles)
 	entity:Spawn()
 	entity:Activate()
+	entity:DropToFloor()
 
 	local computerID = tonumber(forcedID) or self:GenerateComputerID()
 
@@ -409,10 +474,12 @@ function PLUGIN:OpenComputer(client, entity)
 	if (entity:IsCombineTerminal() and !self:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed()) then
 		if (self:IsCivicComputer(entity)) then
 			if (!self:HasCivicTerminalAccess(client)) then
+				EmitCombineLockedSound(entity)
 				client:NotifyLocalized("interactiveComputerCivicDenied")
 				return
 			end
 		else
+			EmitCombineLockedSound(entity)
 			client:NotifyLocalized("interactiveComputerCombineDenied")
 			return
 		end
@@ -422,21 +489,19 @@ function PLUGIN:OpenComputer(client, entity)
 	local storageEntity = self:ResolveStorageEntity(entity) or entity
 
 	if (IsValid(storageEntity.ixActiveUser) and storageEntity.ixActiveUser != client) then
+		EmitCombineLockedSound(entity)
 		client:NotifyLocalized("interactiveComputerBusy")
 		return
 	end
 
 	if (!self:IsComputerAssemblyValid(entity)) then
+		EmitCombineLockedSound(entity)
 		entity:SetPowered(false, true)
 		client:NotifyLocalized("interactiveComputerRequiresSupport")
 		return
 	end
 
 	storageEntity.ixActiveUser = client
-
-	if (!entity:GetPowered()) then
-		entity:SetPowered(true)
-	end
 
 	if (self:IsCivicComputer(entity)) then
 		netstream.Start(client, "ixInteractiveComputerOpen", entity, entity:GetComputerData(), entity:GetPowered(), self:BuildCivicPayload(client))
@@ -554,14 +619,13 @@ netstream.Hook("ixInteractiveComputerSave", function(client, entity, data)
 
 	local filtered, newContext = PLUGIN:BuildGeneralPayload(client, storageEntity)
 	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), newContext)
-	client:NotifyLocalized("interactiveComputerSaved")
 end)
 
 netstream.Hook("ixInteractiveComputerEndUse", function(client, entity)
 	PLUGIN:ReleaseComputerUser(entity, client)
 end)
 
-netstream.Hook("ixInteractiveComputerPower", function(client, entity, state)
+netstream.Hook("ixInteractiveComputerPower", function(client, entity, state, screenMode)
 	local canUse, failMessage = IsComputerAccessible(client, entity)
 	if (!canUse) then
 		client:NotifyLocalized(failMessage)
@@ -578,6 +642,22 @@ netstream.Hook("ixInteractiveComputerPower", function(client, entity, state)
 
 	entity:SetPowered(state == true)
 	PLUGIN:SaveData()
+
+	if (screenMode == "combineJournal") then
+		netstream.Start(client, "ixInteractiveComputerSyncCombineJournal", entity, PLUGIN:GetCombineJournalData(client), PLUGIN:BuildOpenContext(client, entity))
+		return
+	end
+
+	if (screenMode == "civic") then
+		local returnContext = !PLUGIN:IsCivicComputer(entity) and entity:IsCombineTerminal() and PLUGIN:BuildOpenContext(client, entity) or nil
+		netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildCivicPayload(client, returnContext))
+		return
+	end
+
+	if (PLUGIN:IsCivicComputer(entity)) then
+		netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildCivicPayload(client))
+		return
+	end
 
 	if (!entity:IsCombineTerminal()) then
 		local filtered, context = PLUGIN:BuildGeneralPayload(client, entity)
@@ -615,6 +695,20 @@ netstream.Hook("ixInteractiveComputerUnlock", function(client, entity, password)
 	if (session) then
 		session.full = true
 	end
+
+	local filtered, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerLogoff", function(client, entity)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	PLUGIN:ReleaseAccessSession(storageEntity, client)
 
 	local filtered, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
 	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
@@ -677,7 +771,7 @@ netstream.Hook("ixInteractiveComputerSetSecurity", function(client, entity, mode
 	data.security = PLUGIN:NormalizeSecurity({
 		mode = tostring(mode or "none"),
 		password = tostring(password or "")
-	}, {"none", "locked", "guest"}, "none")
+	}, {"none", "locked"}, "none")
 	storageEntity:SetComputerData(data)
 	PLUGIN.storedComputers[storageEntity:GetComputerID()] = data
 	PLUGIN:SaveData()
@@ -757,7 +851,7 @@ netstream.Hook("ixInteractiveComputerUpdateObjectives", function(client, entity,
 	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildOpenContext(client, entity))
 end)
 
-netstream.Hook("ixInteractiveComputerSaveCivicPanel", function(client, entity, announcement, propaganda)
+netstream.Hook("ixInteractiveComputerSaveCivicPanel", function(client, entity, payload, legacyPropaganda)
 	local canUse, failMessage = IsComputerAccessible(client, entity)
 	if (!canUse) then
 		client:NotifyLocalized(failMessage)
@@ -772,8 +866,15 @@ netstream.Hook("ixInteractiveComputerSaveCivicPanel", function(client, entity, a
 	end
 
 	local data = PLUGIN:GetCivicPanelData()
-	data.announcement = announcement
-	data.propaganda = propaganda
+
+	if (istable(payload)) then
+		data.announcements = payload.announcements or data.announcements
+		data.agendas = payload.agendas or data.agendas
+	else
+		data.announcements = NormalizeCivicPostList(PLUGIN, nil, payload, "NOTICE")
+		data.agendas = NormalizeCivicPostList(PLUGIN, nil, legacyPropaganda, "AGENDA")
+	end
+
 	PLUGIN:SetCivicPanelData(data)
 
 	local context
@@ -787,7 +888,7 @@ netstream.Hook("ixInteractiveComputerSaveCivicPanel", function(client, entity, a
 	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), context)
 end)
 
-netstream.Hook("ixInteractiveComputerAskQuestion", function(client, entity, text)
+netstream.Hook("ixInteractiveComputerAskQuestion", function(client, entity, title, body)
 	local canUse, failMessage = IsComputerAccessible(client, entity)
 	if (!canUse) then
 		client:NotifyLocalized(failMessage)
@@ -801,16 +902,21 @@ netstream.Hook("ixInteractiveComputerAskQuestion", function(client, entity, text
 		return
 	end
 
-	local question = string.Trim(string.sub(tostring(text or ""), 1, 300))
-	if (question == "") then
+	local questionTitle = string.Trim(PLUGIN:SanitizeText(title or "", 96))
+	local questionBody = string.Trim(PLUGIN:SanitizeText(body or "", 1500))
+	if (questionTitle == "" and questionBody == "") then
 		return
 	end
 
 	local data = PLUGIN:GetCivicPanelData()
 	data.questions[#data.questions + 1] = {
-		question = question,
+		title = questionTitle != "" and questionTitle or string.sub(questionBody, 1, 96),
+		body = questionBody,
 		asker = client:Name(),
-		answer = ""
+		answer = "",
+		answeredBy = "",
+		createdAt = os.time(),
+		updatedAt = os.time()
 	}
 
 	PLUGIN:SetCivicPanelData(data)
@@ -845,9 +951,45 @@ netstream.Hook("ixInteractiveComputerAnswerQuestion", function(client, entity, i
 		return
 	end
 
-	question.answer = string.Trim(string.sub(tostring(text or ""), 1, 500))
+	question.answer = string.Trim(string.sub(tostring(text or ""), 1, 1500))
+	question.answeredBy = client:Name()
+	question.updatedAt = os.time()
 
 	PLUGIN:SetCivicPanelData(data)
+	local context
+
+	if (PLUGIN:IsCivicComputer(entity)) then
+		context = PLUGIN:BuildCivicPayload(client)
+	else
+		context = PLUGIN:BuildCivicPayload(client, PLUGIN:BuildOpenContext(client, entity))
+	end
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerDeleteQuestion", function(client, entity, index)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (!(client:IsCombine() or client:IsAdmin())) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local data = PLUGIN:GetCivicPanelData()
+	local questionIndex = tonumber(index) or 0
+	if (!data.questions[questionIndex]) then
+		return
+	end
+
+	table.remove(data.questions, questionIndex)
+	PLUGIN:SetCivicPanelData(data)
+
 	local context
 
 	if (PLUGIN:IsCivicComputer(entity)) then
@@ -907,7 +1049,6 @@ netstream.Hook("ixInteractiveComputerSaveCombineJournal", function(client, entit
 	PLUGIN:SetCombineJournalData(client, normalized)
 
 	netstream.Start(client, "ixInteractiveComputerSyncCombineJournal", entity, normalized, PLUGIN:BuildOpenContext(client, entity))
-	client:NotifyLocalized("interactiveComputerSaved")
 end)
 
 function PLUGIN:TryBypassSecurity(client, entity)

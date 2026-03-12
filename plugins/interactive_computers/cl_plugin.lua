@@ -2,7 +2,7 @@ local PLUGIN = PLUGIN
 
 surface.CreateFont("ixComputerDOSHeader", {
 	font = "Lucida Console",
-	size = 24,
+	size = 21,
 	weight = 700,
 	extended = true,
 	antialias = true
@@ -10,7 +10,7 @@ surface.CreateFont("ixComputerDOSHeader", {
 
 surface.CreateFont("ixComputerDOSBody", {
 	font = "Lucida Console",
-	size = 18,
+	size = 16,
 	weight = 600,
 	extended = true,
 	antialias = true
@@ -18,7 +18,7 @@ surface.CreateFont("ixComputerDOSBody", {
 
 surface.CreateFont("ixComputerDOSTiny", {
 	font = "Lucida Console",
-	size = 15,
+	size = 13,
 	weight = 500,
 	extended = true,
 	antialias = true
@@ -66,17 +66,34 @@ local COLOR_SHELL_DARK = Color(118, 122, 128)
 local COLOR_SHELL_LIGHT = Color(238, 240, 244)
 local COLOR_SHELL_FACE = Color(210, 214, 218)
 local COLOR_CRT = Color(7, 18, 10, 255)
-local TYPE_SOUND = "buttons/blip1.wav"
+local COLOR_DOS_BG = Color(6, 10, 6, 252)
+local COLOR_DOS_SCAN = Color(92, 236, 124, 10)
+local COLOR_DOS_TEXT = Color(92, 236, 124)
+local COLOR_DOS_DIM = Color(58, 146, 76)
 local COMBINE_BG = Color(8, 16, 28, 246)
 local COMBINE_PANEL = Color(14, 24, 38, 240)
 local COMBINE_TEXT = Color(115, 200, 255)
 local COMBINE_DIM = Color(90, 138, 178)
 local COMBINE_ACCENT = Color(36, 104, 168)
 local COMBINE_GLOW = Color(70, 170, 255, 35)
+local COMBINE_LOGO = Material("vgui/hl2rp/terminal/cmb_logo_white.png", "smooth mips")
+local TYPE_SOUNDS = {
+	"ambient/machines/keyboard1_clicks.wav",
+	"ambient/machines/keyboard2_clicks.wav",
+	"ambient/machines/keyboard3_clicks.wav",
+	"ambient/machines/keyboard4_clicks.wav",
+	"ambient/machines/keyboard5_clicks.wav",
+	"ambient/machines/keyboard6_clicks.wav"
+}
+local TYPE_SOUND_ENTER = "ambient/machines/keyboard7_clicks_enter.wav"
+local COMBINE_BOOT_SOUND = "ambient/machines/combine_terminal_idle3.wav"
 
 local StyleLine
 local OpenComputerUI
 local PANEL = {}
+local JOURNAL = {}
+local UNIFIED_TERMINAL_WIDTH = math.min(ScrW() - 160, 1220)
+local UNIFIED_TERMINAL_HEIGHT = math.min(ScrH() - 120, 780)
 
 local function GetTerminalTime()
 	if (ix and ix.date and ix.date.GetLocalizedTime) then
@@ -108,8 +125,294 @@ local function DrawRaisedBox(x, y, width, height, dark, light, fill)
 	surface.DrawRect(x + width - 2, y, 2, height)
 end
 
+local function ClearBootState(frame)
+	frame.bootStartTime = nil
+	frame.bootSendTime = nil
+	frame.bootFinishTime = nil
+	frame.bootRequested = false
+end
+
+local function IsBootSequenceActive(frame)
+	return frame.bootFinishTime != nil
+end
+
+local function IsTerminalReady(frame)
+	return frame.powered == true and !IsBootSequenceActive(frame)
+end
+
+local function SetTerminalPowerState(frame, powered)
+	frame.powered = powered == true
+
+	if (!frame.powered) then
+		ClearBootState(frame)
+		return
+	end
+
+	if (!IsBootSequenceActive(frame) or CurTime() >= frame.bootFinishTime) then
+		ClearBootState(frame)
+	end
+end
+
+local function StartBootSequence(frame, duration)
+	if (frame.powered == true or IsBootSequenceActive(frame)) then
+		return
+	end
+
+	duration = duration or 1.9
+	frame.bootStartTime = CurTime()
+	frame.bootSendTime = frame.bootStartTime + math.min(duration * 0.45, 0.9)
+	frame.bootFinishTime = frame.bootStartTime + duration
+	frame.bootRequested = false
+
+	local screenMode = frame.GetPowerScreenMode and frame:GetPowerScreenMode() or "general"
+	if (screenMode == "combine" or screenMode == "civic") then
+		surface.PlaySound(COMBINE_BOOT_SOUND)
+	end
+end
+
+local function PlayKeyboardSound(isEnter)
+	surface.PlaySound(isEnter and TYPE_SOUND_ENTER or TYPE_SOUNDS[math.random(#TYPE_SOUNDS)])
+end
+
+local function BindEnterSound(entry, frame)
+	if (!IsValid(entry) or !frame or entry.ixEnterSoundBound) then
+		return
+	end
+
+	local oldOnKeyCodeTyped = entry.OnKeyCodeTyped
+	entry.OnKeyCodeTyped = function(self, code)
+		if (code == KEY_ENTER or code == KEY_PAD_ENTER) then
+			frame:PlayTypeSound(true)
+		end
+
+		if (oldOnKeyCodeTyped) then
+			return oldOnKeyCodeTyped(self, code)
+		end
+	end
+
+	entry.ixEnterSoundBound = true
+end
+
+local function BindButtonClickSound(button, frame)
+	if (!IsValid(button) or !frame or button.ixClickSoundBound) then
+		return
+	end
+
+	local oldDoClick = button.DoClick
+	button.DoClick = function(...)
+		local shouldPlay = true
+		if (button == frame.powerButton or button == frame.closeButton) then
+			shouldPlay = IsTerminalReady(frame)
+		elseif (!IsTerminalReady(frame)) then
+			shouldPlay = false
+		end
+
+		if (shouldPlay) then
+			frame:PlayTypeSound(true)
+		end
+
+		if (oldDoClick) then
+			return oldDoClick(...)
+		end
+	end
+
+	button.ixClickSoundBound = true
+end
+
+local function ScrollVBar(vBar, amount)
+	if (IsValid(vBar)) then
+		vBar:SetScroll(math.max(0, vBar:GetScroll() + amount))
+	end
+end
+
+local function BindScrollHoldButton(button, getVBar, amount)
+	if (!IsValid(button) or button.ixHoldScrollBound) then
+		return
+	end
+
+	button.DoClick = function()
+		ScrollVBar(getVBar(), amount)
+	end
+
+	button.OnDepressed = function(self)
+		self.ixHoldScrollNext = CurTime() + 0.35
+	end
+
+	button.OnReleased = function(self)
+		self.ixHoldScrollNext = nil
+	end
+
+	button.Think = function(self)
+		if (!self:IsDown() or (self.ixHoldScrollNext or math.huge) > CurTime()) then
+			return
+		end
+
+		ScrollVBar(getVBar(), amount)
+		self.ixHoldScrollNext = CurTime() + 0.07
+	end
+
+	button.ixHoldScrollBound = true
+end
+
+local function HasInteractiveKeyboard(frame)
+	if (!frame or !IsValid(frame.entity) or (frame.context and frame.context.combineJournal)) then
+		return true
+	end
+
+	local definition = PLUGIN:GetComputerDefinition(frame.entity:GetClass())
+	if (!definition or definition.family != "general") then
+		return true
+	end
+
+	return IsValid(PLUGIN:FindNearestSupportComputer(frame.entity, "keyboard"))
+end
+
+local function UpdateBootSequence(frame)
+	if (!IsBootSequenceActive(frame)) then
+		return
+	end
+
+	local currentTime = CurTime()
+
+	if (!frame.bootRequested and currentTime >= frame.bootSendTime and IsValid(frame.entity)) then
+		frame.bootRequested = true
+		netstream.Start("ixInteractiveComputerPower", frame.entity, true, frame.GetPowerScreenMode and frame:GetPowerScreenMode() or nil)
+	end
+
+	local powered = frame.powered == true or (IsValid(frame.entity) and frame.entity:GetNetVar("powered", false))
+	if (powered and currentTime >= frame.bootFinishTime) then
+		frame.powered = true
+		ClearBootState(frame)
+		return
+	end
+
+	if (!powered and frame.bootRequested and currentTime >= frame.bootFinishTime + 1.5) then
+		frame.powered = false
+		ClearBootState(frame)
+	end
+end
+
+local function GetBootProgress(frame)
+	if (!IsBootSequenceActive(frame) or !frame.bootStartTime or !frame.bootFinishTime) then
+		return 0
+	end
+
+	return math.Clamp(math.TimeFraction(frame.bootStartTime, frame.bootFinishTime, CurTime()), 0, 1)
+end
+
+local function DrawFilledCircle(centerX, centerY, radius, segments)
+	segments = math.max(segments or 48, 12)
+
+	local points = {}
+	points[1] = {x = centerX, y = centerY}
+
+	for index = 0, segments do
+		local angle = math.rad((index / segments) * -360)
+		points[#points + 1] = {
+			x = centerX + math.cos(angle) * radius,
+			y = centerY + math.sin(angle) * radius
+		}
+	end
+
+	surface.DrawPoly(points)
+end
+
+local function DrawCombineLogo(centerX, centerY, size, alpha)
+	alpha = alpha or 255
+	if (COMBINE_LOGO and !COMBINE_LOGO:IsError()) then
+		local drawSize = size * 2.25
+		surface.SetMaterial(COMBINE_LOGO)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, alpha)
+		surface.DrawTexturedRect(centerX - drawSize * 0.5, centerY - drawSize * 0.5, drawSize, drawSize)
+		return
+	end
+
+	draw.NoTexture()
+	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, alpha)
+
+	surface.DrawPoly({
+		{x = centerX - size * 0.20, y = centerY - size * 1.05},
+		{x = centerX + size * 0.78, y = centerY - size * 0.16},
+		{x = centerX + size * 0.78, y = centerY + size * 0.96},
+		{x = centerX - size * 0.14, y = centerY + size * 0.96},
+		{x = centerX - size * 0.42, y = centerY + size * 0.18},
+		{x = centerX - size * 0.18, y = centerY - size * 0.18}
+	})
+
+	surface.DrawPoly({
+		{x = centerX - size * 0.96, y = centerY - size * 0.28},
+		{x = centerX - size * 0.42, y = centerY + size * 0.18},
+		{x = centerX - size * 0.14, y = centerY + size * 0.96},
+		{x = centerX - size * 0.62, y = centerY + size * 0.96}
+	})
+
+	DrawFilledCircle(centerX + size * 0.02, centerY + size * 0.12, size * 0.42, 48)
+
+	surface.SetDrawColor(COMBINE_PANEL.r, COMBINE_PANEL.g, COMBINE_PANEL.b, alpha)
+	DrawFilledCircle(centerX + size * 0.02, centerY + size * 0.12, size * 0.30, 48)
+end
+
+local function DrawCombineBackdrop(width, height, title, subtitle)
+	surface.SetDrawColor(COMBINE_BG)
+	surface.DrawRect(0, 0, width, height)
+
+	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 24)
+	for y = 0, height, 10 do
+		surface.DrawRect(0, y, width, 1)
+	end
+
+	surface.SetDrawColor(COMBINE_ACCENT)
+	surface.DrawRect(0, 0, width, 4)
+	surface.DrawRect(0, 78, width, 1)
+	surface.DrawRect(0, height - 42, width, 1)
+
+	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 70)
+	surface.DrawOutlinedRect(0, 0, width, height, 2)
+
+	draw.SimpleText(title, "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	if (subtitle and subtitle != "") then
+		draw.SimpleText(subtitle .. " " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	end
+end
+
+local function PaintCombineContentBox(x, y, width, height)
+	surface.SetDrawColor(COMBINE_PANEL)
+	surface.DrawRect(x, y, width, height)
+	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 14)
+	for offsetY = y, y + height, 8 do
+		surface.DrawRect(x, offsetY, width, 1)
+	end
+	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 24)
+	surface.DrawOutlinedRect(x, y, width, height, 1)
+end
+
+local function SplitCommandInput(rawText)
+	rawText = string.Trim(tostring(rawText or ""))
+	if (rawText == "") then
+		return "", ""
+	end
+
+	local command, remainder = rawText:match("^(%S+)%s*(.-)%s*$")
+
+	return string.lower(command or ""), remainder or ""
+end
+
+local function TokenizeArguments(rawText)
+	local arguments = {}
+
+	for argument in string.gmatch(rawText or "", "%S+") do
+		arguments[#arguments + 1] = argument
+	end
+
+	return arguments
+end
+
+local function NormalizeLookupToken(rawText)
+	return string.upper(string.Trim(tostring(rawText or "")))
+end
+
 function PANEL:Init()
-	self:SetSize(math.min(ScrW() - 120, 1180), math.min(ScrH() - 120, 760))
+	self:SetSize(UNIFIED_TERMINAL_WIDTH, UNIFIED_TERMINAL_HEIGHT)
 	self:Center()
 	self:MakePopup()
 	self:SetTitle("")
@@ -120,7 +423,11 @@ function PANEL:Init()
 	self.selectedCategory = 1
 	self.selectedEntry = 1
 	self.nextTypeSound = 0
+	self.powered = false
 	self.suppressTyping = false
+	self.commandHistory = {}
+	self.historyIndex = nil
+	self.shellInitialized = false
 
 	self.closeButton = self:Add("DButton")
 	self.closeButton:SetText("X")
@@ -131,7 +438,7 @@ function PANEL:Init()
 	end
 
 	self.powerButton = self:Add("DButton")
-	self.powerButton:SetText("POWER")
+	self.powerButton:SetText("⏻")
 	self.powerButton:SetFont("ixComputerDOSBody")
 	self.powerButton:SetTextColor(Color(36, 40, 48))
 	self.powerButton.DoClick = function()
@@ -140,54 +447,20 @@ function PANEL:Init()
 			return
 		end
 
-		netstream.Start("ixInteractiveComputerPower", self.entity, false)
-		self:Close()
-	end
-
-	self.statusLabel = self:Add("DLabel")
-	self.statusLabel:SetFont("ixComputerDOSTiny")
-	self.statusLabel:SetTextColor(COLOR_DIM)
-	self.statusLabel:SetText("")
-
-	self.unlockButton = self:Add("DButton")
-	self.unlockButton:SetText(L("interactiveComputerUnlock"))
-	self.unlockButton:SetFont("ixComputerDOSBody")
-	self.unlockButton:SetTextColor(Color(36, 40, 48))
-	self.unlockButton.DoClick = function()
-		if (!IsValid(self.entity)) then
+		if (IsTerminalReady(self)) then
+			netstream.Start("ixInteractiveComputerPower", self.entity, false, self:GetPowerScreenMode())
+			self:Close()
 			return
 		end
 
-		Derma_StringRequest(
-			L("interactiveComputerUnlock"),
-			L(self.context and self.context.locked and "interactiveComputerLockedPrompt" or "interactiveComputerGuestPrompt"),
-			"",
-			function(text)
-				netstream.Start("ixInteractiveComputerUnlock", self.entity, string.sub(text or "", 1, PLUGIN.maxPasswordLength))
-			end
-		)
-	end
-
-	self.securityButton = self:Add("DButton")
-	self.securityButton:SetText(L("interactiveComputerSecurity"))
-	self.securityButton:SetFont("ixComputerDOSBody")
-	self.securityButton:SetTextColor(Color(36, 40, 48))
-	self.securityButton.DoClick = function()
-		self:OpenComputerSecurityMenu()
-	end
-
-	self.entrySecurityButton = self:Add("DButton")
-	self.entrySecurityButton:SetText(L("interactiveComputerEntrySecurity"))
-	self.entrySecurityButton:SetFont("ixComputerDOSBody")
-	self.entrySecurityButton:SetTextColor(Color(36, 40, 48))
-	self.entrySecurityButton.DoClick = function()
-		self:OpenEntrySecurityMenu()
+		StartBootSequence(self, 1.8)
+		self:UpdateEditingState()
 	end
 
 	self.backButton = self:Add("DButton")
 	self.backButton:SetText(L("interactiveComputerBack"))
 	self.backButton:SetFont("ixComputerDOSBody")
-	self.backButton:SetTextColor(Color(36, 40, 48))
+	self.backButton:SetTextColor(COLOR_DOS_TEXT)
 	self.backButton:SetVisible(false)
 	self.backButton.DoClick = function()
 		if (self.context and self.context.returnContext and OpenComputerUI) then
@@ -195,315 +468,135 @@ function PANEL:Init()
 		end
 	end
 
-	self.leftPanel = self:Add("EditablePanel")
-	self.middlePanel = self:Add("EditablePanel")
-	self.rightPanel = self:Add("EditablePanel")
+	self.statusLabel = self:Add("DLabel")
+	self.statusLabel:SetVisible(false)
 
-	self.categoryList = self.leftPanel:Add("DListView")
-	self.categoryList:SetHeaderHeight(22)
-	self.categoryList:SetDataHeight(24)
-	self.categoryList:AddColumn("CATEGORIES")
-	self.categoryList.OnRowSelected = function(_, rowID)
-		self.selectedCategory = rowID
-		self.selectedEntry = 1
-		self:RefreshEntries()
-		self:LoadSelectedEntry()
+	self.output = self:Add("RichText")
+	self.output.PerformLayout = function(panel)
+		panel:SetFontInternal("ixComputerDOSBody")
+		panel:SetFGColor(COLOR_DOS_TEXT)
+		panel:SetBGColor(Color(0, 0, 0, 0))
 	end
 
-	self.addCategoryButton = self.leftPanel:Add("DButton")
-	self.addCategoryButton:SetText("+ CATEGORY")
-	self.addCategoryButton:SetFont("ixComputerDOSBody")
-	self.addCategoryButton:SetTextColor(COLOR_TEXT)
-	self.addCategoryButton.DoClick = function()
-		if (#self.data.categories >= PLUGIN.maxCategories) then
-			return
+	self.promptLabel = self:Add("DLabel")
+	self.promptLabel:SetFont("ixComputerDOSBody")
+	self.promptLabel:SetTextColor(COLOR_DOS_TEXT)
+	self.promptLabel:SetText("C:\\DOS>")
+
+	self.commandEntry = self:Add("DTextEntry")
+	self.commandEntry:SetFont("ixComputerDOSBody")
+	self.commandEntry:SetUpdateOnType(true)
+	self.commandEntry:SetDrawLanguageID(false)
+	local oldCommandKeyCodeTyped = self.commandEntry.OnKeyCodeTyped
+	self.commandEntry.OnValueChange = function()
+		if (!self.suppressTyping) then
+			self:PlayTypeSound()
 		end
-
-		self.data.categories[#self.data.categories + 1] = {
-			name = "CATEGORY " .. (#self.data.categories + 1),
-			entries = {
-				{
-					title = "ENTRY 1",
-					body = "",
-					updatedAt = os.time(),
-					author = "",
-					security = {
-						mode = "none",
-						password = ""
-					}
-				}
-			}
-		}
-
-		self.selectedCategory = #self.data.categories
-		self.selectedEntry = 1
-		self:RefreshCategories()
-		self:RefreshEntries()
-		self:LoadSelectedEntry()
 	end
-
-	self.removeCategoryButton = self.leftPanel:Add("DButton")
-	self.removeCategoryButton:SetText("- CATEGORY")
-	self.removeCategoryButton:SetFont("ixComputerDOSBody")
-	self.removeCategoryButton:SetTextColor(COLOR_TEXT)
-	self.removeCategoryButton.DoClick = function()
-		if (#self.data.categories <= 1) then
-			return
-		end
-
-		table.remove(self.data.categories, self.selectedCategory)
-		self.selectedCategory = math.Clamp(self.selectedCategory, 1, #self.data.categories)
-		self.selectedEntry = 1
-		self:RefreshCategories()
-		self:RefreshEntries()
-		self:LoadSelectedEntry()
+	self.commandEntry.OnEnter = function(entry)
+		local value = entry:GetValue()
+		self.suppressTyping = true
+		entry:SetText("")
+		entry:SetValue("")
+		self.suppressTyping = false
+		self:RunCommand(value)
+		timer.Simple(0, function()
+			if (IsValid(entry)) then
+				self:ResetCommandEntry()
+			end
+		end)
 	end
-
-	self.entryList = self.middlePanel:Add("DListView")
-	self.entryList:SetHeaderHeight(22)
-	self.entryList:SetDataHeight(24)
-	self.entryList:AddColumn("ENTRIES")
-	self.entryList.OnRowSelected = function(_, rowID)
-		self:WriteCurrentEntry()
-		self.selectedEntry = rowID
-		self:LoadSelectedEntry()
-	end
-
-	self.addEntryButton = self.middlePanel:Add("DButton")
-	self.addEntryButton:SetText("+ ENTRY")
-	self.addEntryButton:SetFont("ixComputerDOSBody")
-	self.addEntryButton:SetTextColor(COLOR_TEXT)
-	self.addEntryButton.DoClick = function()
-		local category = self:GetSelectedCategory()
-		if (!category or #category.entries >= PLUGIN.maxEntriesPerCategory) then
+	self.commandEntry.OnKeyCodeTyped = function(_, code)
+		if (code == KEY_ENTER or code == KEY_PAD_ENTER) then
+			self:PlayTypeSound(true)
+		elseif (code == KEY_UP) then
+			self:CycleHistory(-1)
+			return
+		elseif (code == KEY_DOWN) then
+			self:CycleHistory(1)
 			return
 		end
 
-		category.entries[#category.entries + 1] = {
-			title = "ENTRY " .. (#category.entries + 1),
-			body = "",
-			updatedAt = os.time(),
-			author = "",
-			security = {
-				mode = "none",
-				password = ""
-			}
-		}
-
-		self.selectedEntry = #category.entries
-		self:RefreshEntries()
-		self:LoadSelectedEntry()
-	end
-
-	self.removeEntryButton = self.middlePanel:Add("DButton")
-	self.removeEntryButton:SetText("- ENTRY")
-	self.removeEntryButton:SetFont("ixComputerDOSBody")
-	self.removeEntryButton:SetTextColor(COLOR_TEXT)
-	self.removeEntryButton.DoClick = function()
-		local category = self:GetSelectedCategory()
-		if (!category or #category.entries <= 1) then
-			return
-		end
-
-		table.remove(category.entries, self.selectedEntry)
-		self.selectedEntry = math.Clamp(self.selectedEntry, 1, #category.entries)
-		self:RefreshEntries()
-		self:LoadSelectedEntry()
-	end
-
-	self.categoryNameEntry = self.rightPanel:Add("DTextEntry")
-	self.categoryNameEntry:SetFont("ixComputerDOSBody")
-	self.categoryNameEntry:SetUpdateOnType(true)
-	self.categoryNameEntry.OnValueChange = function(entry)
-		if (self.suppressTyping) then
-			return
-		end
-
-		local category = self:GetSelectedCategory()
-		if (!category) then
-			return
-		end
-
-		category.name = string.upper(string.sub(entry:GetValue(), 1, PLUGIN.maxCategoryNameLength))
-		self:PlayTypeSound()
-		self:RefreshCategories(true)
-	end
-
-	self.entryTitleEntry = self.rightPanel:Add("DTextEntry")
-	self.entryTitleEntry:SetFont("ixComputerDOSBody")
-	self.entryTitleEntry:SetUpdateOnType(true)
-	self.entryTitleEntry.OnValueChange = function(entry)
-		if (self.suppressTyping) then
-			return
-		end
-
-		local current = self:GetSelectedEntry()
-		if (!current) then
-			return
-		end
-
-		current.title = string.sub(entry:GetValue(), 1, PLUGIN.maxEntryTitleLength)
-		current.updatedAt = os.time()
-		self:PlayTypeSound()
-		self:RefreshEntries(true)
-	end
-
-	self.entryAuthorEntry = self.rightPanel:Add("DTextEntry")
-	self.entryAuthorEntry:SetFont("ixComputerDOSBody")
-	self.entryAuthorEntry:SetUpdateOnType(true)
-	self.entryAuthorEntry.OnValueChange = function(entry)
-		if (self.suppressTyping) then
-			return
-		end
-
-		local current = self:GetSelectedEntry()
-		if (!current or (self.context and self.context.combineJournal)) then
-			return
-		end
-
-		current.author = string.sub(entry:GetValue(), 1, PLUGIN.maxAuthorLength)
-		self:PlayTypeSound()
-	end
-
-	self.entryBodyEntry = self.rightPanel:Add("DTextEntry")
-	self.entryBodyEntry:SetMultiline(true)
-	self.entryBodyEntry:SetFont("ixComputerDOSBody")
-	self.entryBodyEntry:SetUpdateOnType(true)
-	self.entryBodyEntry.OnValueChange = function(entry)
-		if (self.suppressTyping) then
-			return
-		end
-
-		local current = self:GetSelectedEntry()
-		if (!current) then
-			return
-		end
-
-		current.body = string.sub(string.gsub(entry:GetValue(), "\r", ""), 1, PLUGIN.maxEntryBodyLength)
-		current.updatedAt = os.time()
-		self:PlayTypeSound()
-	end
-
-	self.saveButton = self.rightPanel:Add("DButton")
-	self.saveButton:SetText("SAVE LOG")
-	self.saveButton:SetFont("ixComputerDOSBody")
-	self.saveButton:SetTextColor(Color(36, 40, 48))
-	self.saveButton.DoClick = function()
-		if (!IsValid(self.entity)) then
-			self:Close()
-			return
-		end
-
-		self:WriteCurrentEntry()
-
-		if (self.context and self.context.combineJournal) then
-			netstream.Start("ixInteractiveComputerSaveCombineJournal", self.entity, self.data)
-		else
-			netstream.Start("ixInteractiveComputerSave", self.entity, self.data)
+		if (oldCommandKeyCodeTyped) then
+			return oldCommandKeyCodeTyped(self.commandEntry, code)
 		end
 	end
 end
 
 function PANEL:Paint(width, height)
-	DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_SHELL)
-	surface.SetDrawColor(COLOR_ACCENT)
-	surface.DrawRect(4, 4, width - 8, 30)
+	surface.SetDrawColor(COLOR_DOS_BG)
+	surface.DrawRect(0, 0, width, height)
 
-	for x = 12, width - 10, 8 do
-		surface.SetDrawColor(255, 255, 255, 8)
-		surface.DrawRect(x, 4, 2, 30)
+	for y = 0, height, 3 do
+		surface.SetDrawColor(COLOR_DOS_SCAN)
+		surface.DrawRect(0, y, width, 1)
 	end
 
-	draw.SimpleText("WORKSTATION JOURNAL", "ixComputerShellTitle", 14, 8, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(GetTerminalTime(), "ixComputerShellBody", width - 18, 10, Color(230, 236, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
-	draw.SimpleText("File   Entry   Security   Tools", "ixComputerShellBody", 16, 42, Color(48, 52, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-
-	surface.SetDrawColor(COLOR_SHELL_DARK)
-	surface.DrawRect(8, 64, width - 16, 2)
+	surface.SetDrawColor(255, 255, 255, 12)
+	surface.DrawOutlinedRect(0, 0, width, height, 1)
 end
 
 function PANEL:PerformLayout(width, height)
+	if (!IsValid(self.closeButton) or !IsValid(self.powerButton) or !IsValid(self.backButton) or !IsValid(self.output) or !IsValid(self.promptLabel) or !IsValid(self.commandEntry)) then
+		return
+	end
+
 	self.closeButton:SetPos(width - 58, 14)
 	self.closeButton:SetSize(40, 32)
 
-	self.powerButton:SetPos(width - 168, 14)
-	self.powerButton:SetSize(100, 32)
+	self.powerButton:SetPos(width - 112, 14)
+	self.powerButton:SetSize(44, 32)
 
-	self.backButton:SetPos(width - 278, 14)
-	self.backButton:SetSize(100, 32)
+	self.backButton:SetPos(width - 166, 14)
+	self.backButton:SetSize(44, 32)
 
-	self.unlockButton:SetPos(18, 14)
-	self.unlockButton:SetSize(120, 32)
+	local top = 56
+	local bottom = 18
+	local inputHeight = 30
 
-	self.securityButton:SetPos(148, 14)
-	self.securityButton:SetSize(170, 32)
+	self.output:SetPos(18, top)
+	self.output:SetSize(width - 36, height - top - bottom - inputHeight)
 
-	self.entrySecurityButton:SetPos(328, 14)
-	self.entrySecurityButton:SetSize(170, 32)
+	self.promptLabel:SizeToContents()
+	self.promptLabel:SetPos(18, height - bottom - inputHeight + 4)
 
-	self.statusLabel:SetPos(22, height - 28)
-	self.statusLabel:SetSize(width - 44, 20)
-
-	local top = 72
-	local bottom = 42
-	local contentHeight = height - top - bottom
-	local leftWidth = math.floor(width * 0.24)
-	local middleWidth = math.floor(width * 0.24)
-	local rightWidth = width - leftWidth - middleWidth - 56
-
-	self.leftPanel:SetPos(18, top)
-	self.leftPanel:SetSize(leftWidth, contentHeight)
-
-	self.middlePanel:SetPos(28 + leftWidth, top)
-	self.middlePanel:SetSize(middleWidth, contentHeight)
-
-	self.rightPanel:SetPos(38 + leftWidth + middleWidth, top)
-	self.rightPanel:SetSize(rightWidth, contentHeight)
-
-	self:LayoutListPanel(self.leftPanel, self.categoryList, self.addCategoryButton, self.removeCategoryButton)
-	self:LayoutListPanel(self.middlePanel, self.entryList, self.addEntryButton, self.removeEntryButton)
-
-	self.categoryNameEntry:SetPos(0, 0)
-	self.categoryNameEntry:SetSize(rightWidth, 28)
-
-	self.entryTitleEntry:SetPos(0, 38)
-	self.entryTitleEntry:SetSize(rightWidth, 28)
-
-	self.entryAuthorEntry:SetPos(0, 76)
-	self.entryAuthorEntry:SetSize(rightWidth, 28)
-
-	self.entryBodyEntry:SetPos(0, 114)
-	self.entryBodyEntry:SetSize(rightWidth, contentHeight - 162)
-
-	self.saveButton:SetPos(rightWidth - 150, contentHeight - 38)
-	self.saveButton:SetSize(150, 30)
-end
-
-function PANEL:LayoutListPanel(panel, list, addButton, removeButton)
-	local width, height = panel:GetSize()
-
-	list:SetPos(0, 0)
-	list:SetSize(width, height - 40)
-
-	addButton:SetPos(0, height - 32)
-	addButton:SetSize(width * 0.5 - 4, 32)
-
-	removeButton:SetPos(width * 0.5 + 4, height - 32)
-	removeButton:SetSize(width * 0.5 - 4, 32)
+	local promptWidth = self.promptLabel:GetWide() + 8
+	self.commandEntry:SetPos(18 + promptWidth, height - bottom - inputHeight)
+	self.commandEntry:SetSize(width - 36 - promptWidth, inputHeight)
 end
 
 function PANEL:PaintOver(width, height)
-	draw.SimpleText("CATEGORY", "ixComputerDOSTiny", self.rightPanel.x, self.rightPanel.y - 18, COLOR_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText("ENTRY TITLE", "ixComputerDOSTiny", self.rightPanel.x, self.rightPanel.y + 20, COLOR_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerAuthor"), "ixComputerDOSTiny", self.rightPanel.x, self.rightPanel.y + 58, COLOR_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText("JOURNAL BODY", "ixComputerDOSTiny", self.rightPanel.x, self.rightPanel.y + 96, COLOR_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-end
+	if (!IsTerminalReady(self)) then
+		surface.SetDrawColor(6, 10, 6, 255)
+		surface.DrawRect(18, 56, width - 36, height - 74)
+		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 24)
+		for y = 66, height - 24, 6 do
+			surface.DrawRect(28, y, width - 56, 1)
+		end
+		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 40)
+		surface.DrawOutlinedRect(18, 56, width - 36, height - 74, 1)
 
-function PANEL:PaintPanelBackground(panel, width, height)
-	DrawInsetBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_PANEL)
-	surface.SetDrawColor(0, 0, 0, 8)
-	for y = 3, height - 3, 6 do
-		surface.DrawRect(3, y, width - 6, 1)
+		local progress = GetBootProgress(self)
+		local barY = math.floor(height * 0.58)
+		local barWidth = width - 220
+
+		draw.SimpleText(self.context and self.context.combineJournal and "PERSONAL LOG DOS" or "WORKSTATION DOS", "ixComputerDOSHeader", width * 0.5, height * 0.36, COLOR_DOS_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff"), "ixComputerDOSBody", width * 0.5, height * 0.46, COLOR_DOS_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerPrompt"), "ixComputerDOSTiny", width * 0.5, height * 0.51, COLOR_DOS_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		DrawInsetBox(110, barY, barWidth, 18, Color(32, 32, 32), Color(120, 120, 120), Color(10, 10, 10, 255))
+		surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 120)
+		surface.DrawRect(112, barY + 2, math.max(0, math.floor((barWidth - 4) * progress)), 14)
+	elseif (!HasInteractiveKeyboard(self) and !(self.context and self.context.combineJournal)) then
+		surface.SetDrawColor(6, 10, 6, 255)
+		surface.DrawRect(18, 56, width - 36, height - 74)
+		surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 28)
+		for y = 66, height - 24, 6 do
+			surface.DrawRect(28, y, width - 56, 1)
+		end
+		surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 40)
+		surface.DrawOutlinedRect(18, 56, width - 36, height - 74, 1)
+		draw.SimpleText("INPUT DEVICE NOT DETECTED", "ixComputerDOSHeader", width * 0.5, height * 0.42, COLOR_DOS_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("CONNECT A KEYBOARD TO RESUME COMMAND INPUT.", "ixComputerDOSTiny", width * 0.5, height * 0.49, COLOR_DOS_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 	end
 end
 
@@ -517,118 +610,756 @@ function PANEL:GetSelectedEntry()
 	return category and category.entries[self.selectedEntry] or nil
 end
 
-function PANEL:PlayTypeSound()
+function PANEL:PlayTypeSound(isEnter)
 	if (self.nextTypeSound > CurTime()) then
 		return
 	end
 
-	surface.PlaySound(TYPE_SOUND)
-	self.nextTypeSound = CurTime() + 0.045
+	PlayKeyboardSound(isEnter == true)
+	self.nextTypeSound = CurTime() + (isEnter and 0.08 or 0.045)
 end
 
-function PANEL:WriteCurrentEntry()
-	local category = self:GetSelectedCategory()
-	local entry = self:GetSelectedEntry()
-	if (!category or !entry) then
+function PANEL:ResetCommandEntry()
+	if (!IsValid(self.commandEntry)) then
 		return
 	end
 
-	category.name = string.upper(string.Trim(self.categoryNameEntry:GetValue()))
-	entry.title = string.Trim(self.entryTitleEntry:GetValue())
-	if (!(self.context and self.context.combineJournal)) then
-		entry.author = string.Trim(self.entryAuthorEntry:GetValue())
+	self.suppressTyping = true
+	self.commandEntry:SetText("")
+	self.commandEntry:SetValue("")
+	self.commandEntry:OnTextChanged()
+	self.suppressTyping = false
+	self.commandEntry:RequestFocus()
+	self.commandEntry:SetCaretPos(0)
+end
+
+function PANEL:QueueStatusPrint()
+	timer.Simple(0.15, function()
+		if (IsValid(self) and self.PrintStatus) then
+			self:PrintStatus()
+		end
+	end)
+end
+
+function PANEL:GetPromptText()
+	local entry = self:GetSelectedEntry()
+	local base = self.context and self.context.combineJournal and "J:\\LOG" or "C:\\DOS"
+
+	if (entry) then
+		base = base .. "\\" .. string.upper(string.gsub(entry.title or "ENTRY", "%s+", "_"))
 	end
-	entry.body = string.gsub(self.entryBodyEntry:GetValue(), "\r", "")
+
+	return base .. ">"
+end
+
+function PANEL:UpdatePrompt()
+	if (IsValid(self.promptLabel)) then
+		self.promptLabel:SetText(self:GetPromptText())
+		self.promptLabel:SizeToContents()
+	end
+end
+
+function PANEL:ClearConsole()
+	if (IsValid(self.output)) then
+		self.output:SetText("")
+	end
+end
+
+function PANEL:AppendConsole(text, color)
+	if (!IsValid(self.output)) then
+		return
+	end
+
+	color = color or COLOR_DOS_TEXT
+	self.output:InsertColorChange(color.r, color.g, color.b, color.a or 255)
+	self.output:AppendText(tostring(text or ""))
+
+	if (!string.EndsWith(tostring(text or ""), "\n")) then
+		self.output:AppendText("\n")
+	end
+
+	self.output:GotoTextEnd()
+end
+
+function PANEL:AppendCommandEcho(text)
+	self:AppendConsole(self:GetPromptText() .. text, COLOR_DOS_DIM)
+	self:AppendConsole("")
+end
+
+function PANEL:AppendDivider()
+	self:AppendConsole(string.rep("-", 72), COLOR_DOS_DIM)
+end
+
+function PANEL:PrintStatus()
+	local category = self:GetSelectedCategory()
+	local entry = self:GetSelectedEntry()
+	local accessLabel = self.context and self.context.locked and L("interactiveComputerLocked")
+		or (self.context and self.context.guest and L("interactiveComputerGuest"))
+		or L("interactiveComputerFullAccess")
+	local entryState = "NORMAL"
+	local inputState = HasInteractiveKeyboard(self) and "READY" or "KEYBOARD MISSING"
+
+	if (entry and entry.locked) then
+		entryState = "LOCKED"
+	elseif (entry and entry.security and entry.security.mode == "readonly" and entry.canEdit != true) then
+		entryState = "READONLY"
+	end
+
+	self:AppendConsole("ACCESS    : " .. accessLabel, COLOR_DOS_DIM)
+	self:AppendConsole("ENTRY     : " .. (entry and entry.title or "NONE"), COLOR_DOS_DIM)
+	self:AppendConsole("INPUT     : " .. inputState, COLOR_DOS_DIM)
+	self:AppendConsole("STATE     : " .. entryState, COLOR_DOS_DIM)
+end
+
+function PANEL:PrintWelcome()
+	self:ClearConsole()
+	self:AppendConsole(self.context and self.context.combineJournal and "<:: OVERWATCH PERSONAL LOG SHELL [Version 10.0.26200.6037]" or "Microsoft(R) MS-DOS(R) Version 6.22")
+	self:AppendConsole("(C)Copyright Microsoft Corp 1981-1994.")
+	self:AppendConsole("")
+	self:AppendConsole(L("interactiveComputerHelpIntro"), COLOR_DOS_DIM)
+	self:AppendDivider()
+	self:PrintStatus()
+	self:AppendConsole("")
+end
+
+function PANEL:FindCategoryIndex(token)
+	token = NormalizeLookupToken(token)
+	if (token == "") then
+		return nil
+	end
+
+	local numericIndex = tonumber(token)
+	if (numericIndex and self.data.categories[numericIndex]) then
+		return numericIndex
+	end
+
+	for index, category in ipairs(self.data.categories) do
+		if (NormalizeLookupToken(category.name) == token) then
+			return index
+		end
+	end
+end
+
+function PANEL:FindEntryIndex(token, category)
+	category = category or self:GetSelectedCategory()
+	token = NormalizeLookupToken(token)
+	if (!category or token == "") then
+		return nil
+	end
+
+	local numericIndex = tonumber(token)
+	if (numericIndex and category.entries[numericIndex]) then
+		return numericIndex
+	end
+
+	for index, entry in ipairs(category.entries) do
+		if (NormalizeLookupToken(entry.title) == token) then
+			return index
+		end
+	end
+end
+
+function PANEL:GetEntryLines(entry)
+	entry = entry or self:GetSelectedEntry()
+	if (!entry or entry.body == "") then
+		return {}
+	end
+
+	local body = string.gsub(entry.body or "", "\r", "")
+	local lines = {}
+
+	for line in string.gmatch(body .. "\n", "(.-)\n") do
+		lines[#lines + 1] = line
+	end
+
+	return lines
+end
+
+function PANEL:SetEntryLines(lines, entry)
+	entry = entry or self:GetSelectedEntry()
+	if (!entry) then
+		return
+	end
+
+	entry.body = string.sub(table.concat(lines or {}, "\n"), 1, PLUGIN.maxEntryBodyLength)
 	entry.updatedAt = os.time()
 end
 
-function PANEL:LoadSelectedEntry()
-	local category = self:GetSelectedCategory()
+function PANEL:CanEditComputer()
+	return IsTerminalReady(self) and (!self.context or self.context.combineJournal == true or self.context.canEdit == true)
+end
+
+function PANEL:CanEditEntry()
 	local entry = self:GetSelectedEntry()
 
+	return self:CanEditComputer() and entry != nil and entry.locked != true and !(entry.security and entry.security.mode == "readonly" and entry.canEdit != true)
+end
+
+function PANEL:CycleHistory(direction)
+	local historyCount = #self.commandHistory
+	if (!IsValid(self.commandEntry) or historyCount == 0) then
+		return
+	end
+
+	if (self.historyIndex == nil) then
+		self.historyIndex = direction < 0 and historyCount or 1
+	else
+		self.historyIndex = math.Clamp(self.historyIndex + direction, 1, historyCount)
+	end
+
 	self.suppressTyping = true
-
-	if (!category or !entry) then
-		self.categoryNameEntry:SetValue("")
-		self.entryTitleEntry:SetValue("")
-		self.entryAuthorEntry:SetValue("")
-		self.entryBodyEntry:SetValue("")
-		self.suppressTyping = false
-		return
-	end
-
-	self.categoryNameEntry:SetValue(category.name or "")
-	self.entryTitleEntry:SetValue(entry.title or "")
-	self.entryAuthorEntry:SetValue(entry.author or "")
-	self.entryBodyEntry:SetValue(entry.body or "")
+	self.commandEntry:SetValue(self.commandHistory[self.historyIndex] or "")
+	self.commandEntry:SetCaretPos(#self.commandEntry:GetValue())
 	self.suppressTyping = false
-	self:UpdateEditingState()
 end
 
-function PANEL:RefreshCategories(skipSelection)
-	self.categoryList:Clear()
-
-	for _, category in ipairs(self.data.categories) do
-		StyleLine(self.categoryList:AddLine(category.name ~= "" and category.name or L("interactiveComputerNoCategories")))
-	end
-
-	if (!skipSelection and self.categoryList:GetLine(self.selectedCategory)) then
-		self.categoryList:SelectItem(self.categoryList:GetLine(self.selectedCategory))
-	end
-end
-
-function PANEL:RefreshEntries(skipSelection)
-	self.entryList:Clear()
-
-	local category = self:GetSelectedCategory()
-	if (!category) then
-		return
-	end
-
-	for _, entry in ipairs(category.entries) do
-		local text = entry.title ~= "" and entry.title or L("interactiveComputerNoEntries")
-		if (entry.locked) then
-			text = L("interactiveComputerLockedEntry")
-		elseif (entry.security and entry.security.mode == "readonly" and !(entry.canEdit == true)) then
-			text = "[RO] " .. text
-		end
-		StyleLine(self.entryList:AddLine(text))
-	end
-
-	if (!skipSelection and self.entryList:GetLine(self.selectedEntry)) then
-		self.entryList:SelectItem(self.entryList:GetLine(self.selectedEntry))
-	end
-end
-
-function PANEL:LoadComputer(entity, data, powered)
-	if (!powered) then
+function PANEL:SubmitSave()
+	if (!IsValid(self.entity)) then
 		self:Close()
 		return
 	end
 
+	if (self.context and self.context.combineJournal) then
+		netstream.Start("ixInteractiveComputerSaveCombineJournal", self.entity, self.data)
+	else
+		netstream.Start("ixInteractiveComputerSave", self.entity, self.data)
+	end
+
+	self:AppendConsole("SAVE REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+end
+
+function PANEL:SelectCategory(index)
+	index = math.Clamp(tonumber(index) or 1, 1, #self.data.categories)
+	self.selectedCategory = index
+	self.selectedEntry = 1
+	self:UpdatePrompt()
+end
+
+function PANEL:SelectEntry(index)
+	local category = self:GetSelectedCategory()
+	if (!category) then
+		return false
+	end
+
+	index = tonumber(index) or 1
+	if (!category.entries[index]) then
+		return false
+	end
+
+	self.selectedEntry = index
+	self:UpdatePrompt()
+
+	return true
+end
+
+function PANEL:RunCommand(rawText)
+	rawText = string.Trim(tostring(rawText or ""))
+	if (rawText == "") then
+		return
+	end
+
+	self.commandHistory[#self.commandHistory + 1] = rawText
+	self.historyIndex = nil
+
+	if (!IsTerminalReady(self)) then
+		self:AppendCommandEcho(rawText)
+		self:AppendConsole("SYSTEM OFFLINE. PRESS POWER TO BOOT.", COLOR_DOS_TEXT)
+		return
+	end
+
+	local command, remainder = SplitCommandInput(rawText)
+	local arguments = TokenizeArguments(remainder)
+	local category = self:GetSelectedCategory()
+	local entry = self:GetSelectedEntry()
+
+	if (command == "clear") then
+		command = "clearbody"
+	elseif (command == "login") then
+		command = "unlock"
+	elseif (command == "write") then
+		command = "newentry"
+	elseif (command == "edit") then
+		command = "open"
+	elseif (command == "delete") then
+		command = "remove"
+	elseif (command == "remove") then
+		command = "delentry"
+	elseif (command == "list") then
+		command = "dir"
+	end
+
+	if (command == "cls") then
+		self:ClearConsole()
+		return
+	end
+
+	self:AppendCommandEcho(rawText)
+
+	if (command == "help") then
+		self:AppendConsole(L("interactiveComputerHelpLogin"))
+		self:AppendConsole(L("interactiveComputerHelpList"))
+		self:AppendConsole(L("interactiveComputerHelpOpen"))
+		self:AppendConsole(L("interactiveComputerHelpRead"))
+		self:AppendConsole(L("interactiveComputerHelpWrite"))
+		self:AppendConsole(L("interactiveComputerHelpEdit"))
+		self:AppendConsole(L("interactiveComputerHelpRemove"))
+		self:AppendConsole(L("interactiveComputerHelpSave"))
+		self:AppendConsole(L("interactiveComputerHelpLogoff"))
+		self:AppendConsole(L("interactiveComputerHelpStatus"))
+		self:AppendConsole("")
+		self:AppendConsole(L("interactiveComputerHelpTitle"))
+		self:AppendConsole(L("interactiveComputerHelpAuthor"))
+		self:AppendConsole(L("interactiveComputerHelpClearBody"))
+		self:AppendConsole(L("interactiveComputerHelpSecurity"))
+		self:AppendConsole(L("interactiveComputerHelpPrivate"))
+		self:AppendConsole(L("interactiveComputerHelpPublic"))
+		self:AppendConsole("")
+		self:AppendConsole(L("interactiveComputerHelpPrepend"))
+		self:AppendConsole(L("interactiveComputerHelpAppend"))
+		self:AppendConsole(L("interactiveComputerHelpPop"))
+		self:AppendConsole(L("interactiveComputerHelpDelete"))
+		self:AppendConsole(L("interactiveComputerHelpRevise"))
+		return
+	end
+
+	if (command == "entryunlock") then
+		command = "public"
+	end
+
+	if (command == "entrysecurity") then
+		command = "private"
+	end
+
+	if (command == "status") then
+		self:PrintStatus()
+		return
+	end
+
+	if (command == "dir" or command == "ls") then
+		local activeCategory = self:GetSelectedCategory()
+		if (!activeCategory) then
+			self:AppendConsole(L("interactiveComputerNoEntriesAvailable"))
+			return
+		end
+
+		for index, listedEntry in ipairs(activeCategory.entries) do
+			local flags = ""
+			if (listedEntry.locked) then
+				flags = " [LOCKED]"
+			elseif (listedEntry.security and listedEntry.security.mode == "readonly" and listedEntry.canEdit != true) then
+				flags = " [RO]"
+			end
+
+			self:AppendConsole(string.format("%02d  %s%s", index, listedEntry.title, flags))
+		end
+		return
+	end
+
+	if (command == "cd") then
+		local targetIndex = self:FindCategoryIndex(remainder)
+		if (!targetIndex) then
+			self:AppendConsole("CATEGORY NOT FOUND.")
+			return
+		end
+
+		self:SelectCategory(targetIndex)
+		self:AppendConsole("CATEGORY SELECTED: " .. self:GetSelectedCategory().name, COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "open") then
+		local targetIndex = self:FindEntryIndex(remainder)
+		if (!targetIndex or !self:SelectEntry(targetIndex)) then
+			self:AppendConsole(L("interactiveComputerEntryNotFound"))
+			return
+		end
+
+		self:AppendConsole("ENTRY SELECTED: " .. self:GetSelectedEntry().title, COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "read" or command == "type") then
+		if (!entry) then
+			self:AppendConsole(L("interactiveComputerNoEntrySelected"))
+			return
+		end
+
+		self:AppendDivider()
+		self:AppendConsole("TITLE   : " .. (entry.title or ""))
+		if (!(self.context and self.context.combineJournal)) then
+			self:AppendConsole("AUTHOR  : " .. ((entry.author and entry.author != "") and entry.author or "UNSPECIFIED"))
+		end
+		self:AppendConsole("UPDATED : " .. os.date("%Y-%m-%d %H:%M:%S", tonumber(entry.updatedAt) or os.time()))
+		self:AppendDivider()
+		self:AppendConsole(entry.body != "" and entry.body or "[EMPTY]")
+		self:AppendDivider()
+		return
+	end
+
+	if (command == "newentry") then
+		if (!self:CanEditComputer() or !category) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		if (#category.entries >= PLUGIN.maxEntriesPerCategory) then
+			self:AppendConsole(L("interactiveComputerEntryLimitReached"))
+			return
+		end
+
+		local title = string.sub(string.Trim(remainder) != "" and remainder or ("ENTRY " .. (#category.entries + 1)), 1, PLUGIN.maxEntryTitleLength)
+		category.entries[#category.entries + 1] = {
+			title = title,
+			body = "",
+			updatedAt = os.time(),
+			author = "",
+			security = {
+				mode = "none",
+				password = ""
+			}
+		}
+		self:SelectEntry(#category.entries)
+		self:AppendConsole("ENTRY CREATED: " .. title, COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "delentry") then
+		if (!self:CanEditComputer() or !category or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		if (#category.entries <= 1) then
+			self:AppendConsole(L("interactiveComputerLastEntryProtected"))
+			return
+		end
+
+		local removedTitle = entry.title or "UNKNOWN"
+		table.remove(category.entries, self.selectedEntry)
+		self.selectedEntry = math.Clamp(self.selectedEntry, 1, #category.entries)
+		self:UpdatePrompt()
+		self:AppendConsole("ENTRY REMOVED: " .. removedTitle, COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "title") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local title = string.sub(string.Trim(remainder), 1, PLUGIN.maxEntryTitleLength)
+		if (title == "") then
+			self:AppendConsole(L("interactiveComputerUsageTitle"))
+			return
+		end
+
+		entry.title = title
+		entry.updatedAt = os.time()
+		self:UpdatePrompt()
+		self:AppendConsole("TITLE UPDATED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "author") then
+		if (self.context and self.context.combineJournal) then
+			self:AppendConsole(L("interactiveComputerAuthorUnavailable"))
+			return
+		end
+
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		entry.author = string.sub(string.Trim(remainder), 1, PLUGIN.maxAuthorLength)
+		self:AppendConsole("AUTHOR UPDATED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "append") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local appendedLine = string.Trim(remainder)
+		if (appendedLine == "") then
+			self:AppendConsole(L("interactiveComputerUsageAppend"))
+			return
+		end
+
+		local newBody = entry.body
+		if (newBody != "") then
+			newBody = newBody .. "\n"
+		end
+
+		entry.body = string.sub(newBody .. string.gsub(appendedLine, "\r", ""), 1, PLUGIN.maxEntryBodyLength)
+		entry.updatedAt = os.time()
+		self:AppendConsole("BODY APPENDED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "prepend") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local prependedLine = string.Trim(remainder)
+		if (prependedLine == "") then
+			self:AppendConsole(L("interactiveComputerUsagePrepend"))
+			return
+		end
+
+		local existingLines = self:GetEntryLines(entry)
+		local lines = {string.gsub(prependedLine, "\r", "")}
+		for _, line in ipairs(existingLines) do
+			lines[#lines + 1] = line
+		end
+		self:SetEntryLines(lines, entry)
+		self:AppendConsole("BODY PREPENDED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "pop" or command == "slice") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local lines = self:GetEntryLines(entry)
+		if (#lines == 0) then
+			self:AppendConsole(L("interactiveComputerNoLines"))
+			return
+		end
+
+		table.remove(lines, #lines)
+		self:SetEntryLines(lines, entry)
+		self:AppendConsole("LAST LINE REMOVED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "remove") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local lineNumber = tonumber(arguments[1] or "")
+		local lines = self:GetEntryLines(entry)
+		if (!lineNumber or !lines[lineNumber]) then
+			self:AppendConsole(L("interactiveComputerUsageDeleteLine"))
+			return
+		end
+
+		table.remove(lines, lineNumber)
+		self:SetEntryLines(lines, entry)
+		self:AppendConsole("LINE REMOVED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "revice" or command == "revise") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local lineNumber = tonumber(arguments[1] or "")
+		local lines = self:GetEntryLines(entry)
+		local replacement = string.Trim(string.sub(remainder, #(arguments[1] or "") + 1))
+		if (!lineNumber or !lines[lineNumber] or replacement == "") then
+			self:AppendConsole(L("interactiveComputerUsageRevise"))
+			return
+		end
+
+		lines[lineNumber] = replacement
+		self:SetEntryLines(lines, entry)
+		self:AppendConsole("LINE REVISED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "clearbody") then
+		if (!self:CanEditEntry() or !entry) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		entry.body = ""
+		entry.updatedAt = os.time()
+		self:AppendConsole("BODY CLEARED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "save") then
+		if (!self:CanEditComputer()) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		self:SubmitSave()
+		return
+	end
+
+	if (command == "unlock") then
+		if (!IsValid(self.entity) or (self.context and self.context.combineJournal)) then
+			self:AppendConsole(L("interactiveComputerCommandUnavailable"))
+			return
+		end
+
+		local password = string.sub(remainder, 1, PLUGIN.maxPasswordLength)
+		if (password == "") then
+			self:AppendConsole(L("interactiveComputerUsageLogin"))
+			return
+		end
+
+		netstream.Start("ixInteractiveComputerUnlock", self.entity, password)
+		self:AppendConsole("UNLOCK REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+		self:QueueStatusPrint()
+		return
+	end
+
+	if (command == "logoff") then
+		self:AppendConsole("SESSION CLOSED.", COLOR_DOS_DIM)
+		if (IsValid(self.entity)) then
+			netstream.Start("ixInteractiveComputerLogoff", self.entity)
+		end
+		self:QueueStatusPrint()
+		return
+	end
+
+	if (command == "public") then
+		if (!IsValid(self.entity) or !entry or (self.context and self.context.combineJournal)) then
+			self:AppendConsole(L("interactiveComputerCommandUnavailable"))
+			return
+		end
+
+		local password = string.sub(remainder, 1, PLUGIN.maxPasswordLength)
+		if (password == "") then
+			self:AppendConsole(L("interactiveComputerUsagePublic"))
+			return
+		end
+
+		netstream.Start("ixInteractiveComputerUnlockEntry", self.entity, self.selectedCategory, self.selectedEntry, password)
+		self:AppendConsole("ENTRY UNLOCK REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "security") then
+		if (!self:CanEditComputer() or !IsValid(self.entity) or (self.context and self.context.combineJournal)) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local mode = string.lower(arguments[1] or "")
+		local password = string.sub(arguments[2] or "", 1, PLUGIN.maxPasswordLength)
+		if (mode != "none" and mode != "locked") then
+			self:AppendConsole(L("interactiveComputerUsageSecurity"))
+			return
+		end
+
+		if (mode != "none" and password == "") then
+			self:AppendConsole(L("interactiveComputerPasswordRequired"))
+			return
+		end
+
+		netstream.Start("ixInteractiveComputerSetSecurity", self.entity, mode, password)
+		self:AppendConsole("COMPUTER SECURITY REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "private") then
+		if (!self:CanEditComputer() or !entry or !IsValid(self.entity) or (self.context and self.context.combineJournal)) then
+			self:AppendConsole(L("interactiveComputerAccessDenied"))
+			return
+		end
+
+		local mode = string.lower(arguments[1] or "")
+		local password = string.sub(arguments[2] or "", 1, PLUGIN.maxPasswordLength)
+		if (mode == "") then
+			mode = "private"
+		end
+		if (mode != "none" and mode != "private" and mode != "readonly") then
+			self:AppendConsole(L("interactiveComputerUsagePrivate"))
+			return
+		end
+
+		if (mode != "none" and password == "") then
+			self:AppendConsole(L("interactiveComputerPasswordRequired"))
+			return
+		end
+
+		netstream.Start("ixInteractiveComputerSetEntrySecurity", self.entity, self.selectedCategory, self.selectedEntry, mode, password)
+		self:AppendConsole("ENTRY SECURITY REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+		return
+	end
+
+	if (command == "back") then
+		if (self.context and self.context.returnContext and OpenComputerUI) then
+			OpenComputerUI(self.entity, nil, IsValid(self.entity) and self.entity:GetNetVar("powered", true), self.context.returnContext)
+		else
+			self:AppendConsole("NO RETURN TARGET.")
+		end
+		return
+	end
+
+	self:AppendConsole(L("interactiveComputerUnknownCommand", tostring(command or "")), COLOR_DOS_TEXT)
+	self:AppendConsole(L("interactiveComputerUnknownCommandHint"), COLOR_DOS_DIM)
+end
+
+function PANEL:LoadComputer(entity, data, powered, context)
+	local previousContext = self.context
+	local shouldResetShell = self.shellInitialized != true
+		or self.entity != entity
+		or ((previousContext and previousContext.combineJournal) != (context and context.combineJournal))
+
 	self.entity = entity
+	self.context = context or previousContext or {}
+	SetTerminalPowerState(self, powered)
 	self.data = PLUGIN:NormalizeData(table.Copy(data or {}))
 	self.selectedCategory = math.Clamp(self.selectedCategory or 1, 1, #self.data.categories)
-	self.selectedEntry = 1
-	self:RefreshCategories()
-	self:RefreshEntries()
-	self:LoadSelectedEntry()
+
+	local category = self:GetSelectedCategory()
+	local entryCount = category and #category.entries or 1
+	self.selectedEntry = math.Clamp(self.selectedEntry or 1, 1, entryCount)
+	self:UpdatePrompt()
+
+	if (shouldResetShell) then
+		self.shellInitialized = true
+		self:PrintWelcome()
+	end
+
+	self:UpdateEditingState()
+	timer.Simple(0, function()
+		if (IsValid(self.commandEntry) and self.commandEntry:IsEnabled()) then
+			self.commandEntry:RequestFocus()
+		end
+	end)
+end
+
+function PANEL:GetPowerScreenMode()
+	return self.context and self.context.combineJournal and "combineJournal" or "general"
 end
 
 function PANEL:LoadComputerContext(entity, data, powered, context)
-	self:LoadComputer(entity, data, powered)
-	self.context = context or {}
-	self.saveButton:SetText(self.context.combineJournal and L("interactiveComputerSavePersonalLog") or "SAVE LOG")
+	self:LoadComputer(entity, data, powered, context)
 	self.backButton:SetVisible(self.context.fromCombine == true)
-	self.unlockButton:SetVisible(self.context.combineJournal != true and self.context.hasComputerPassword == true and self.context.fullAccess != true)
-	self.securityButton:SetVisible(self.context.combineJournal != true)
-	self.entrySecurityButton:SetVisible(self.context.combineJournal != true)
 	self:UpdateEditingState()
 end
 
 function PANEL:Think()
 	if (IsValid(self.entity) and LocalPlayer():GetPos():DistToSqr(self.entity:GetPos()) > 190 * 190) then
 		self:Close()
+		return
+	end
+
+	local wasBooting = IsBootSequenceActive(self)
+	UpdateBootSequence(self)
+
+	local keyboardPresent = HasInteractiveKeyboard(self)
+	if (self.lastKeyboardPresent == nil or self.lastKeyboardPresent != keyboardPresent or wasBooting != IsBootSequenceActive(self)) then
+		self.lastKeyboardPresent = keyboardPresent
+		self:UpdateEditingState()
 	end
 end
 
@@ -646,32 +1377,21 @@ function PANEL:UpdateEditingState()
 	local category = self:GetSelectedCategory()
 	local entry = self:GetSelectedEntry()
 	local combineJournal = self.context and self.context.combineJournal == true
-	local canEditComputer = !self.context or combineJournal or self.context.canEdit == true
-	local canEditEntry = canEditComputer and (!entry or entry.canEdit != false) and (!entry or entry.locked != true)
+	local isReady = IsTerminalReady(self)
 	local accessLabel = self.context and self.context.locked and L("interactiveComputerLocked")
 		or (self.context and self.context.guest and L("interactiveComputerGuest"))
 		or L("interactiveComputerFullAccess")
+	local hasKeyboard = HasInteractiveKeyboard(self)
 
-	self.categoryNameEntry:SetEnabled(canEditComputer and category != nil)
-	self.entryTitleEntry:SetEnabled(canEditEntry and entry != nil)
-	self.entryAuthorEntry:SetEnabled(canEditEntry and entry != nil and !combineJournal)
-	self.entryBodyEntry:SetEnabled(canEditEntry and entry != nil)
-	self.addCategoryButton:SetEnabled(canEditComputer)
-	self.removeCategoryButton:SetEnabled(canEditComputer and #self.data.categories > 1)
-	self.addEntryButton:SetEnabled(canEditComputer and category != nil)
-	self.removeEntryButton:SetEnabled(canEditComputer and category != nil and #category.entries > 1)
-	self.saveButton:SetEnabled(canEditComputer)
-	self.securityButton:SetEnabled(canEditComputer and !combineJournal)
-	self.entrySecurityButton:SetEnabled(canEditComputer and !combineJournal and entry != nil)
-	self.unlockButton:SetEnabled(self.context and self.context.hasComputerPassword == true and self.context.fullAccess != true)
-
-	if (entry and (entry.locked or (entry.security and entry.security.mode == "readonly" and entry.canEdit != true))) then
-		self.entrySecurityButton:SetText(L("interactiveComputerEntryUnlock"))
-	else
-		self.entrySecurityButton:SetText(L("interactiveComputerEntrySecurity"))
+	if (!isReady) then
+		self.statusLabel:SetText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff"))
 	end
 
-	if (category and entry) then
+	self.commandEntry:SetEnabled(isReady and hasKeyboard)
+	self.commandEntry:SetEditable(isReady and hasKeyboard)
+	self:UpdatePrompt()
+
+	if (isReady and category and entry) then
 		local suffix = ""
 		if (entry.locked) then
 			suffix = " | " .. L("interactiveComputerLocked")
@@ -679,77 +1399,16 @@ function PANEL:UpdateEditingState()
 			suffix = " | " .. L("interactiveComputerSecurityReadOnly")
 		end
 
-		self.statusLabel:SetText(string.format("%s | CATEGORY %d/%d | ENTRY %d/%d%s", accessLabel, self.selectedCategory, #self.data.categories, self.selectedEntry, #category.entries, suffix))
+		if (!hasKeyboard and !combineJournal) then
+			suffix = suffix .. " | INPUT DEVICE NOT DETECTED"
+		end
+
+		self.statusLabel:SetText(string.format("%s | ENTRY %d/%d%s", accessLabel, self.selectedEntry, #category.entries, suffix))
 	end
-end
-
-function PANEL:OpenPasswordModeMenu(options, onSelected)
-	local menu = DermaMenu()
-
-	for _, option in ipairs(options) do
-		menu:AddOption(L(option.label), function()
-			if (option.mode == "none") then
-				onSelected(option.mode, "")
-				return
-			end
-
-			Derma_StringRequest(
-				L(option.label),
-				L("interactiveComputerUnlock"),
-				"",
-				function(text)
-					onSelected(option.mode, string.sub(text or "", 1, PLUGIN.maxPasswordLength))
-				end
-			)
-		end)
-	end
-
-	menu:Open()
-end
-
-function PANEL:OpenComputerSecurityMenu()
-	if (!IsValid(self.entity) or (self.context and self.context.combineJournal)) then
-		return
-	end
-
-	self:OpenPasswordModeMenu({
-		{label = "interactiveComputerSecurityNone", mode = "none"},
-		{label = "interactiveComputerSecurityLocked", mode = "locked"},
-		{label = "interactiveComputerSecurityGuest", mode = "guest"}
-	}, function(mode, password)
-		netstream.Start("ixInteractiveComputerSetSecurity", self.entity, mode, password)
-	end)
-end
-
-function PANEL:OpenEntrySecurityMenu()
-	local category = self:GetSelectedCategory()
-	local entry = self:GetSelectedEntry()
-	if (!IsValid(self.entity) or !category or !entry or (self.context and self.context.combineJournal)) then
-		return
-	end
-
-	if (entry.locked or (entry.security and entry.security.mode == "readonly" and entry.canEdit != true)) then
-		Derma_StringRequest(
-			L("interactiveComputerEntryUnlock"),
-			L(entry.security and entry.security.mode == "readonly" and "interactiveComputerEntryReadPrompt" or "interactiveComputerEntryLockedPrompt"),
-			"",
-			function(text)
-				netstream.Start("ixInteractiveComputerUnlockEntry", self.entity, self.selectedCategory, self.selectedEntry, string.sub(text or "", 1, PLUGIN.maxPasswordLength))
-			end
-		)
-		return
-	end
-
-	self:OpenPasswordModeMenu({
-		{label = "interactiveComputerSecurityNone", mode = "none"},
-		{label = "interactiveComputerSecurityPrivate", mode = "private"},
-		{label = "interactiveComputerSecurityReadOnly", mode = "readonly"}
-	}, function(mode, password)
-		netstream.Start("ixInteractiveComputerSetEntrySecurity", self.entity, self.selectedCategory, self.selectedEntry, mode, password)
-	end)
 end
 
 vgui.Register("ixInteractiveComputerTerminal", PANEL, "DFrame")
+vgui.Register("ixInteractiveCombineJournalTerminal", JOURNAL, "ixInteractiveComputerTerminal")
 
 StyleLine = function(line)
 	if (!line) then
@@ -779,15 +1438,25 @@ local function StyleListView(list)
 		DrawInsetBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_CRT)
 	end
 
-	local header = list:GetHeader()
-	header:SetTall(22)
-	header.Paint = function(_, width, height)
-		DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, Color(202, 206, 211))
+	local header = nil
+
+	if (list.GetHeader) then
+		header = list:GetHeader()
 	end
 
-	for _, column in ipairs(header.Columns or {}) do
-		column:SetTextColor(Color(42, 48, 54))
-		column:SetFont("ixComputerDOSTiny")
+	header = IsValid(header) and header or list.Header
+	header = IsValid(header) and header or list.pnlHeader
+
+	if (IsValid(header)) then
+		header:SetTall(22)
+		header.Paint = function(_, width, height)
+			DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, Color(202, 206, 211))
+		end
+
+		for _, column in ipairs(header.Columns or {}) do
+			column:SetTextColor(Color(42, 48, 54))
+			column:SetFont("ixComputerDOSTiny")
+		end
 	end
 
 	list.OnRowRightClick = function() end
@@ -821,13 +1490,20 @@ end
 local function StyleCombineButton(button)
 	button.Paint = function(_, width, height)
 		local hovered = button:IsHovered()
-		surface.SetDrawColor(hovered and Color(18, 46, 74, 255) or Color(12, 28, 46, 255))
+		local active = button.ixActive == true
+		local enabled = button:IsEnabled()
+		local fillColor = active and Color(18, 52, 84, 255) or (hovered and Color(18, 46, 74, 255) or Color(12, 28, 46, 255))
+		if (!enabled) then
+			fillColor = Color(10, 18, 30, 220)
+		end
+
+		surface.SetDrawColor(fillColor)
 		surface.DrawRect(0, 0, width, height)
 		surface.SetDrawColor(COMBINE_ACCENT)
 		surface.DrawRect(0, 0, 4, height)
-		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, hovered and 130 or 70)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, active and 120 or (hovered and 130 or 70))
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
-		if (hovered) then
+		if (hovered or active) then
 			surface.SetDrawColor(COMBINE_GLOW)
 			surface.DrawRect(0, 0, width, height)
 		end
@@ -863,71 +1539,203 @@ local function StyleCombineListView(list)
 	end
 
 	local header = list.GetHeader and list:GetHeader() or nil
-	if (!IsValid(header)) then
-		return
+	header = IsValid(header) and header or list.Header
+	header = IsValid(header) and header or list.pnlHeader
+	if (IsValid(header)) then
+		header:SetTall(22)
+		header.Paint = function(_, width, height)
+			surface.SetDrawColor(8, 18, 12, 240)
+			surface.DrawRect(0, 0, width, height)
+		end
+
+		for _, column in ipairs(header.Columns or {}) do
+			column:SetTextColor(COLOR_DOS_TEXT)
+			column:SetFont("ixComputerDOSTiny")
+		end
 	end
 
-	header:SetTall(22)
-	header.Paint = function(_, width, height)
-		surface.SetDrawColor(12, 42, 72, 240)
-		surface.DrawRect(0, 0, width, height)
-	end
-
-	for _, column in ipairs(header.Columns or {}) do
-		column:SetTextColor(COMBINE_TEXT)
-		column:SetFont("ixComputerDOSTiny")
+	local vBar = list.VBar
+	if (IsValid(vBar)) then
+		vBar:SetWide(8)
+		vBar.Paint = function(_, width, height)
+			surface.SetDrawColor(Color(6, 12, 6, 220))
+			surface.DrawRect(0, 0, width, height)
+		end
+		vBar.btnUp:SetText("")
+		vBar.btnDown:SetText("")
+		vBar.btnGrip:SetText("")
+		vBar.btnUp.Paint = function(_, width, height)
+			surface.SetDrawColor(12, 36, 16, 220)
+			surface.DrawRect(0, 0, width, height)
+		end
+		vBar.btnDown.Paint = vBar.btnUp.Paint
+		vBar.btnGrip.Paint = function(_, width, height)
+			surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 110)
+			surface.DrawRect(0, 0, width, height)
+		end
 	end
 end
 
 local function ApplyTerminalStyling(frame)
-	frame.leftPanel.Paint = function(panel, width, height)
-		frame:PaintPanelBackground(panel, width, height)
+	frame.closeButton:SetTextColor(COLOR_DOS_TEXT)
+	frame.powerButton:SetTextColor(COLOR_DOS_TEXT)
+	frame.backButton:SetTextColor(COLOR_DOS_TEXT)
+	frame.closeButton.Paint = function(_, width, height)
+		surface.SetDrawColor(0, 0, 0, 0)
+		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 140)
+		surface.DrawOutlinedRect(0, 0, width, height, 1)
+	end
+	frame.powerButton.Paint = frame.closeButton.Paint
+	frame.backButton.Paint = frame.closeButton.Paint
+	BindButtonClickSound(frame.closeButton, frame)
+	BindButtonClickSound(frame.powerButton, frame)
+	BindButtonClickSound(frame.backButton, frame)
+	frame.output.Paint = function(_, width, height)
+		surface.SetDrawColor(COLOR_DOS_BG)
+		surface.DrawRect(0, 0, width, height)
+		for y = 0, height, 3 do
+			surface.SetDrawColor(COLOR_DOS_SCAN)
+			surface.DrawRect(0, y, width, 1)
+		end
+	end
+	frame.commandEntry:SetTextColor(COLOR_DOS_TEXT)
+	frame.commandEntry:SetHighlightColor(Color(210, 210, 210, 90))
+	frame.commandEntry:SetCursorColor(COLOR_DOS_TEXT)
+	frame.commandEntry.Paint = function(self, width, height)
+		self:DrawTextEntryText(COLOR_DOS_TEXT, Color(230, 230, 230, 90), COLOR_DOS_TEXT)
+	end
+end
+
+function JOURNAL:Paint(width, height)
+	DrawCombineBackdrop(width, height, L("interactiveComputerComLogTitle"), "<:: COMBINE PERSONAL LOG ::>")
+	PaintCombineContentBox(18, 72, width - 36, height - 126)
+end
+
+function JOURNAL:AppendConsole(text, color)
+	return PANEL.AppendConsole(self, text, color or COMBINE_TEXT)
+end
+
+function JOURNAL:AppendDivider()
+	return PANEL.AppendConsole(self, string.rep("-", 72), COMBINE_DIM)
+end
+
+function JOURNAL:PrintStatus()
+	local entry = self:GetSelectedEntry()
+	local accessLabel = self.context and self.context.locked and L("interactiveComputerLocked")
+		or (self.context and self.context.guest and L("interactiveComputerGuest"))
+		or L("interactiveComputerFullAccess")
+	local entryState = "NORMAL"
+
+	if (entry and entry.locked) then
+		entryState = "LOCKED"
+	elseif (entry and entry.security and entry.security.mode == "readonly" and entry.canEdit != true) then
+		entryState = "READONLY"
 	end
 
-	frame.middlePanel.Paint = function(panel, width, height)
-		frame:PaintPanelBackground(panel, width, height)
+	self:AppendConsole("ACCESS    : " .. accessLabel, COMBINE_DIM)
+	self:AppendConsole("ENTRY     : " .. (entry and entry.title or "NONE"), COMBINE_DIM)
+	self:AppendConsole("STATE     : " .. entryState, COMBINE_DIM)
+end
+
+function JOURNAL:PrintWelcome()
+	self:ClearConsole()
+	self:AppendConsole("COMBINE PERSONAL LOG DOS INTERFACE v2.1")
+	self:AppendConsole(GetTerminalTime(), COMBINE_DIM)
+	self:AppendConsole(L("interactiveComputerHelpIntro"), COMBINE_DIM)
+	self:AppendDivider()
+	self:PrintStatus()
+	self:AppendConsole("")
+end
+
+function JOURNAL:PaintOver(width, height)
+	if (!IsTerminalReady(self)) then
+		PaintCombineContentBox(18, 72, width - 36, height - 126)
+		local progress = GetBootProgress(self)
+		local barY = math.floor(height * 0.58)
+		local barWidth = width - 220
+
+		DrawCombineLogo(width * 0.5, height * 0.34, 78, 180)
+		draw.SimpleText("PERSONAL LOG DOS", "ixComputerCombineHeader", width * 0.5, height * 0.44, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff"), "ixComputerDOSBody", width * 0.5, height * 0.51, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		DrawInsetBox(110, barY, barWidth, 18, Color(10, 24, 40), Color(38, 98, 146), Color(8, 18, 32, 255))
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 120)
+		surface.DrawRect(112, barY + 2, math.max(0, math.floor((barWidth - 4) * progress)), 14)
 	end
+end
 
-	frame.rightPanel.Paint = function(panel, width, height)
-		frame:PaintPanelBackground(panel, width, height)
+local function ApplyCombineJournalStyling(frame)
+	frame.closeButton:SetTextColor(COMBINE_TEXT)
+	frame.powerButton:SetTextColor(COMBINE_TEXT)
+	frame.backButton:SetTextColor(COMBINE_TEXT)
+	frame.closeButton.Paint = function(_, width, height)
+		surface.SetDrawColor(0, 0, 0, 0)
+		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 130)
+		surface.DrawOutlinedRect(0, 0, width, height, 1)
 	end
-
-	StyleListView(frame.categoryList)
-	StyleListView(frame.entryList)
-
-	StyleButton(frame.closeButton)
-	StyleButton(frame.powerButton)
-	StyleButton(frame.backButton)
-	StyleButton(frame.addCategoryButton)
-	StyleButton(frame.removeCategoryButton)
-	StyleButton(frame.addEntryButton)
-	StyleButton(frame.removeEntryButton)
-	StyleButton(frame.saveButton)
-
-	StyleTextEntry(frame.categoryNameEntry)
-	StyleTextEntry(frame.entryTitleEntry)
-	StyleTextEntry(frame.entryAuthorEntry)
-	StyleTextEntry(frame.entryBodyEntry)
+	frame.powerButton.Paint = frame.closeButton.Paint
+	frame.backButton.Paint = frame.closeButton.Paint
+	frame.promptLabel:SetTextColor(COMBINE_TEXT)
+	frame.statusLabel:SetTextColor(COMBINE_DIM)
+	frame.output.PerformLayout = function(panel)
+		panel:SetFontInternal("ixComputerDOSBody")
+		panel:SetFGColor(COMBINE_TEXT)
+		panel:SetBGColor(Color(0, 0, 0, 0))
+	end
+	frame.output.Paint = function(_, width, height)
+		surface.SetDrawColor(Color(8, 18, 32, 255))
+		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 18)
+		for y = 0, height, 8 do
+			surface.DrawRect(0, y, width, 1)
+		end
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 25)
+		surface.DrawOutlinedRect(0, 0, width, height, 1)
+	end
+	StyleCombineTextEntry(frame.commandEntry)
+	BindButtonClickSound(frame.closeButton, frame)
+	BindButtonClickSound(frame.powerButton, frame)
+	BindButtonClickSound(frame.backButton, frame)
 end
 
 local function ApplyCombineStyling(frame)
 	StyleCombineListView(frame.rosterList)
-	StyleCombineButton(frame.closeButton)
-	StyleCombineButton(frame.powerButton)
+	StyleCombineButton(frame.objectivesTabButton)
+	StyleCombineButton(frame.civilDataTabButton)
 	StyleCombineButton(frame.objectiveSaveButton)
 	StyleCombineButton(frame.dataSaveButton)
 	StyleCombineButton(frame.personalLogButton)
 	StyleCombineButton(frame.publicPanelButton)
+	StyleCombineButton(frame.rosterScrollUpButton)
+	StyleCombineButton(frame.rosterScrollDownButton)
+	frame.closeButton.Paint = function(_, width, height)
+		surface.SetDrawColor(0, 0, 0, 0)
+		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 130)
+		surface.DrawOutlinedRect(0, 0, width, height, 1)
+	end
+	frame.powerButton.Paint = frame.closeButton.Paint
 	StyleCombineTextEntry(frame.objectivesEntry)
 	StyleCombineTextEntry(frame.dataEntry)
+	BindButtonClickSound(frame.closeButton, frame)
+	BindButtonClickSound(frame.powerButton, frame)
+	BindButtonClickSound(frame.objectivesTabButton, frame)
+	BindButtonClickSound(frame.civilDataTabButton, frame)
+	BindButtonClickSound(frame.objectiveSaveButton, frame)
+	BindButtonClickSound(frame.dataSaveButton, frame)
+	BindButtonClickSound(frame.personalLogButton, frame)
+	BindButtonClickSound(frame.publicPanelButton, frame)
+	BindButtonClickSound(frame.rosterScrollUpButton, frame)
+	BindButtonClickSound(frame.rosterScrollDownButton, frame)
+	BindEnterSound(frame.objectivesEntry, frame)
+	BindEnterSound(frame.dataEntry, frame)
 end
 
 local COMBINE = {}
 
 function COMBINE:Init()
-	self:SetSize(math.min(ScrW() - 160, 1220), math.min(ScrH() - 120, 780))
-	self:Center()
-	self:MakePopup()
+	self:SetSize(UNIFIED_TERMINAL_WIDTH, UNIFIED_TERMINAL_HEIGHT)
 	self:SetTitle("")
 	self:ShowCloseButton(false)
 	self:SetDraggable(false)
@@ -935,6 +1743,8 @@ function COMBINE:Init()
 	self.nextTypeSound = 0
 	self.selectedTarget = nil
 	self.context = {}
+	self.activeTab = nil
+	self.powered = false
 
 	self.closeButton = self:Add("DButton")
 	self.closeButton:SetText("X")
@@ -945,15 +1755,23 @@ function COMBINE:Init()
 	end
 
 	self.powerButton = self:Add("DButton")
-	self.powerButton:SetText("POWER")
+	self.powerButton:SetText("⏻")
 	self.powerButton:SetFont("ixComputerDOSBody")
 	self.powerButton:SetTextColor(COMBINE_TEXT)
 	self.powerButton.DoClick = function()
-		if (IsValid(self.entity)) then
-			netstream.Start("ixInteractiveComputerPower", self.entity, false)
+		if (!IsValid(self.entity)) then
+			self:Close()
+			return
 		end
 
-		self:Close()
+		if (IsTerminalReady(self)) then
+			netstream.Start("ixInteractiveComputerPower", self.entity, false, self:GetPowerScreenMode())
+			self:Close()
+			return
+		end
+
+		StartBootSequence(self, 1.9)
+		self:UpdateStatus()
 	end
 
 	self.statusLabel = self:Add("DLabel")
@@ -961,14 +1779,42 @@ function COMBINE:Init()
 	self.statusLabel:SetTextColor(COMBINE_DIM)
 	self.statusLabel:SetText("")
 
+	self.objectivesTabButton = self:Add("DButton")
+	self.objectivesTabButton:SetText(L("interactiveComputerObjectives"))
+	self.objectivesTabButton:SetFont("ixComputerDOSBody")
+	self.objectivesTabButton:SetTextColor(COMBINE_TEXT)
+	self.objectivesTabButton.DoClick = function()
+		self:SetActiveTab("objectives")
+	end
+
+	self.civilDataTabButton = self:Add("DButton")
+	self.civilDataTabButton:SetText(L("interactiveComputerCivilData"))
+	self.civilDataTabButton:SetFont("ixComputerDOSBody")
+	self.civilDataTabButton:SetTextColor(COMBINE_TEXT)
+	self.civilDataTabButton.DoClick = function()
+		self:SetActiveTab("civil")
+	end
+
 	self.rosterList = self:Add("DListView")
-	self.rosterList:SetHeaderHeight(22)
+	self.rosterList:SetHeaderHeight(0)
 	self.rosterList:SetDataHeight(24)
 	self.rosterList:AddColumn("UNIT")
 	self.rosterList.OnRowSelected = function(_, rowID, row)
 		self.selectedTarget = row.ixTarget
 		self:PopulateSelectedData()
 	end
+
+	self.rosterScrollUpButton = self:Add("DButton")
+	self.rosterScrollUpButton:SetText("∧")
+	self.rosterScrollUpButton:SetFont("ixComputerDOSBody")
+	self.rosterScrollUpButton:SetTextColor(COMBINE_TEXT)
+
+	self.rosterScrollDownButton = self:Add("DButton")
+	self.rosterScrollDownButton:SetText("∨")
+	self.rosterScrollDownButton:SetFont("ixComputerDOSBody")
+	self.rosterScrollDownButton:SetTextColor(COMBINE_TEXT)
+	BindScrollHoldButton(self.rosterScrollUpButton, function() return IsValid(self.rosterList) and self.rosterList.VBar or nil end, -72)
+	BindScrollHoldButton(self.rosterScrollDownButton, function() return IsValid(self.rosterList) and self.rosterList.VBar or nil end, 72)
 
 	self.objectivesEntry = self:Add("DTextEntry")
 	self.objectivesEntry:SetMultiline(true)
@@ -1035,7 +1881,7 @@ function COMBINE:Init()
 			return
 		end
 
-		OpenComputerUI(self.entity, self.entity:GetComputerData(), self.entity:GetNetVar("powered", true), {
+		OpenComputerUI(self.entity, {}, self.entity:GetNetVar("powered", true), {
 			civicPanel = true,
 			canEdit = LocalPlayer():IsCombine() or LocalPlayer():IsAdmin(),
 			canAsk = true,
@@ -1044,77 +1890,188 @@ function COMBINE:Init()
 			returnContext = self.context
 		})
 	end
+
+	self:Center()
+	self:MakePopup()
 end
 
-function COMBINE:PlayTypeSound()
+function COMBINE:PlayTypeSound(isEnter)
 	if (self.nextTypeSound > CurTime()) then
 		return
 	end
 
-	surface.PlaySound(TYPE_SOUND)
-	self.nextTypeSound = CurTime() + 0.05
+	PlayKeyboardSound(isEnter == true)
+	self.nextTypeSound = CurTime() + (isEnter and 0.08 or 0.05)
+end
+
+function COMBINE:SetActiveTab(tabID)
+	self.activeTab = self.activeTab == tabID and nil or tabID
+	self:UpdateVisibleState()
+	self:UpdateStatus()
+end
+
+function COMBINE:GetPowerScreenMode()
+	return "combine"
+end
+
+function COMBINE:UpdateVisibleState()
+	local isReady = IsTerminalReady(self)
+	local showObjectives = isReady and self.activeTab == "objectives"
+	local showCivil = isReady and self.activeTab == "civil"
+
+	self.objectivesTabButton.ixActive = self.activeTab == "objectives"
+	self.civilDataTabButton.ixActive = self.activeTab == "civil"
+
+	self.objectivesTabButton:SetEnabled(isReady)
+	self.civilDataTabButton:SetEnabled(isReady)
+	self.personalLogButton:SetEnabled(isReady)
+	self.publicPanelButton:SetEnabled(isReady)
+
+	self.objectivesEntry:SetVisible(showObjectives)
+	self.objectiveSaveButton:SetVisible(showObjectives and self.context.canEditObjectives == true)
+	self.objectivesEntry:SetEnabled(showObjectives and self.context.canEditObjectives == true)
+
+	self.rosterList:SetVisible(showCivil)
+	self.rosterScrollUpButton:SetVisible(showCivil)
+	self.rosterScrollDownButton:SetVisible(showCivil)
+	self.dataEntry:SetVisible(showCivil)
+	self.dataSaveButton:SetVisible(showCivil and self.context.canEditData == true)
+	self.dataEntry:SetEnabled(showCivil and self.context.canEditData == true and self.selectedTarget != nil)
+end
+
+function COMBINE:UpdateStatus()
+	if (!IsTerminalReady(self)) then
+		self.statusLabel:SetText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff"))
+		return
+	end
+
+	if (self.activeTab == "objectives") then
+		self.statusLabel:SetText(L("interactiveComputerObjectives"))
+		return
+	end
+
+	if (self.activeTab == "civil") then
+		if (self.selectedTarget) then
+			for _, entry in ipairs(self.context.roster or {}) do
+				if (entry.target == self.selectedTarget) then
+					self.statusLabel:SetText(string.format("UNIT: %s | CID: %s", entry.name or "UNKNOWN", entry.cid or "00000"))
+					return
+				end
+			end
+		end
+
+		self.statusLabel:SetText(L("interactiveComputerSelectUnit"))
+		return
+	end
+
+	self.statusLabel:SetText(L("interactiveComputerSelectModule"))
 end
 
 function COMBINE:Paint(width, height)
-	surface.SetDrawColor(COMBINE_BG)
-	surface.DrawRect(0, 0, width, height)
+	DrawCombineBackdrop(width, height, L("interactiveComputerCombineTitle"), "OVERWATCH GRID - ")
 
-	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 30)
-	for y = 0, height, 10 do
-		surface.DrawRect(0, y, width, 1)
+	local navX = 22
+	local top = 92
+	local navWidth = 214
+	local contentX = navX + navWidth + 18
+	local contentWidth = width - contentX - 22
+	local contentHeight = height - top - 54
+
+	PaintCombineContentBox(navX, top, navWidth, contentHeight)
+	PaintCombineContentBox(contentX, top, contentWidth, contentHeight)
+	draw.SimpleText("MODULES", "ixComputerCombineBody", navX + 14, top + 12, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+
+	if (IsTerminalReady(self) and self.activeTab == "objectives") then
+		draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	elseif (IsTerminalReady(self) and self.activeTab == "civil") then
+		draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	end
 
-	surface.SetDrawColor(COMBINE_ACCENT)
-	surface.DrawRect(0, 0, width, 4)
-	surface.DrawRect(0, 78, width, 1)
-	surface.DrawRect(0, height - 42, width, 1)
+	if (!IsTerminalReady(self) or !self.activeTab) then
+		local centerX = contentX + contentWidth * 0.5
+		local centerY = top + contentHeight * 0.42
+		local progress = GetBootProgress(self)
 
-	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 70)
-	surface.DrawOutlinedRect(0, 0, width, height, 2)
+		DrawCombineLogo(centerX, centerY - 30, math.min(contentWidth, contentHeight) * 0.15, 220)
+		draw.SimpleText("OVERWATCH GRID", "ixComputerCombineHeader", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L(IsTerminalReady(self) and "interactiveComputerSelectModule" or (IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff")), "ixComputerCombineBody", centerX, centerY + 116, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(IsTerminalReady(self) and "OBJECTIVES / CIVIL DATA / PERSONAL LOG / PUBLIC PANEL" or L("interactiveComputerPowerPrompt"), "ixComputerDOSTiny", centerX, centerY + 144, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-	draw.SimpleText(L("interactiveComputerCombineTitle"), "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText("OVERWATCH GRID " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerCombineBody", width * 0.33, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerCombineBody", width * 0.33, height * 0.53, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		if (!IsTerminalReady(self)) then
+			DrawInsetBox(contentX + 80, top + contentHeight - 86, contentWidth - 160, 18, Color(8, 24, 40), Color(26, 58, 88), Color(8, 18, 32))
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 110)
+			surface.DrawRect(contentX + 82, top + contentHeight - 84, math.max(0, math.floor((contentWidth - 164) * progress)), 14)
+		end
+	end
 end
 
 function COMBINE:PerformLayout(width, height)
+	if (!IsValid(self.closeButton) or !IsValid(self.powerButton) or !IsValid(self.statusLabel)
+	or !IsValid(self.rosterList) or !IsValid(self.objectivesEntry) or !IsValid(self.dataEntry)
+	or !IsValid(self.objectiveSaveButton) or !IsValid(self.dataSaveButton)
+	or !IsValid(self.personalLogButton) or !IsValid(self.publicPanelButton)
+	or !IsValid(self.rosterScrollUpButton) or !IsValid(self.rosterScrollDownButton)
+	or !IsValid(self.objectivesTabButton) or !IsValid(self.civilDataTabButton)) then
+		return
+	end
+
 	self.closeButton:SetPos(width - 58, 14)
 	self.closeButton:SetSize(40, 32)
 
-	self.powerButton:SetPos(width - 168, 14)
-	self.powerButton:SetSize(100, 32)
+	self.powerButton:SetPos(width - 112, 14)
+	self.powerButton:SetSize(44, 32)
 
 	self.statusLabel:SetPos(22, height - 28)
 	self.statusLabel:SetSize(width - 44, 20)
 
 	local left = 22
 	local top = 92
-	local rosterWidth = math.floor(width * 0.28)
-	local rightX = left + rosterWidth + 18
-	local rightWidth = width - rightX - 22
-	local lowerY = math.floor(height * 0.56)
+	local navWidth = 214
+	local contentX = left + navWidth + 18
+	local contentY = top
+	local contentWidth = width - contentX - 22
+	local contentHeight = height - top - 54
+	local navButtonWidth = navWidth - 24
+	local navButtonX = left + 12
+	local navButtonY = top + 40
+	local rosterWidth = math.floor(contentWidth * 0.36)
+	local editorX = contentX + rosterWidth + 16
+	local editorWidth = contentWidth - rosterWidth - 32
 
-	self.rosterList:SetPos(left, top)
-	self.rosterList:SetSize(rosterWidth, height - top - 54)
+	self.objectivesTabButton:SetPos(navButtonX, navButtonY)
+	self.objectivesTabButton:SetSize(navButtonWidth, 34)
 
-	self.objectivesEntry:SetPos(rightX, top)
-	self.objectivesEntry:SetSize(rightWidth, math.floor(height * 0.34))
+	self.civilDataTabButton:SetPos(navButtonX, navButtonY + 42)
+	self.civilDataTabButton:SetSize(navButtonWidth, 34)
 
-	self.objectiveSaveButton:SetPos(rightX + rightWidth - 200, top + math.floor(height * 0.34) + 8)
-	self.objectiveSaveButton:SetSize(200, 30)
+	self.personalLogButton:SetPos(navButtonX, navButtonY + 104)
+	self.personalLogButton:SetSize(navButtonWidth, 34)
 
-	self.dataEntry:SetPos(rightX, lowerY)
-	self.dataEntry:SetSize(rightWidth, height - lowerY - 86)
+	self.publicPanelButton:SetPos(navButtonX, navButtonY + 146)
+	self.publicPanelButton:SetSize(navButtonWidth, 34)
 
-	self.dataSaveButton:SetPos(rightX + rightWidth - 170, height - 68)
+	self.objectivesEntry:SetPos(contentX + 18, contentY + 44)
+	self.objectivesEntry:SetSize(contentWidth - 36, contentHeight - 104)
+
+	self.objectiveSaveButton:SetPos(contentX + contentWidth - 198, contentY + contentHeight - 46)
+	self.objectiveSaveButton:SetSize(180, 30)
+
+	self.rosterList:SetPos(contentX + 18, contentY + 44)
+	self.rosterList:SetSize(rosterWidth - 34, contentHeight - 62)
+
+	self.rosterScrollUpButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 44)
+	self.rosterScrollUpButton:SetSize(24, 24)
+
+	self.rosterScrollDownButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 74)
+	self.rosterScrollDownButton:SetSize(24, 24)
+
+	self.dataEntry:SetPos(editorX, contentY + 44)
+	self.dataEntry:SetSize(editorWidth, contentHeight - 104)
+
+	self.dataSaveButton:SetPos(contentX + contentWidth - 188, contentY + contentHeight - 46)
 	self.dataSaveButton:SetSize(170, 30)
 
-	self.personalLogButton:SetPos(left, 44)
-	self.personalLogButton:SetSize(170, 30)
-
-	self.publicPanelButton:SetPos(left + 180, 44)
-	self.publicPanelButton:SetSize(170, 30)
+	self:UpdateVisibleState()
 end
 
 function COMBINE:PopulateSelectedData()
@@ -1129,16 +2086,14 @@ function COMBINE:PopulateSelectedData()
 	end
 
 	self.dataEntry:SetText(selectedData)
+	self.dataEntry:SetEnabled(IsTerminalReady(self) and self.activeTab == "civil" and self.context.canEditData == true and self.selectedTarget != nil)
+	self:UpdateStatus()
 end
 
 function COMBINE:LoadComputer(entity, _, powered, context)
-	if (!powered) then
-		self:Close()
-		return
-	end
-
 	self.entity = entity
 	self.context = context or {}
+	SetTerminalPowerState(self, powered)
 	self.rosterList:Clear()
 	self.selectedTarget = nil
 
@@ -1164,24 +2119,24 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 	end
 
 	self.objectivesEntry:SetText((self.context.objectives and self.context.objectives.text) or "")
-	self.objectivesEntry:SetEnabled(self.context.canEditObjectives == true)
-	self.dataEntry:SetEnabled(self.context.canEditData == true)
-	self.objectiveSaveButton:SetVisible(self.context.canEditObjectives == true)
-	self.dataSaveButton:SetVisible(self.context.canEditData == true)
-
-	if (self.rosterList:GetLine(1)) then
-		self.rosterList:SelectItem(self.rosterList:GetLine(1))
-	end
-
-	if (!self.selectedTarget) then
-		self.dataEntry:SetText("")
-		self.statusLabel:SetText(L("interactiveComputerNoRoster"))
-	end
+	self.dataEntry:SetText("")
+	self.objectivesEntry:SetEnabled(self.context.canEditObjectives == true and IsTerminalReady(self))
+	self:UpdateVisibleState()
+	self:UpdateStatus()
 end
 
 function COMBINE:Think()
 	if (IsValid(self.entity) and LocalPlayer():GetPos():DistToSqr(self.entity:GetPos()) > 190 * 190) then
 		self:Close()
+		return
+	end
+
+	local wasBooting = IsBootSequenceActive(self)
+	UpdateBootSequence(self)
+
+	if (wasBooting != IsBootSequenceActive(self)) then
+		self:UpdateVisibleState()
+		self:UpdateStatus()
 	end
 end
 
@@ -1200,13 +2155,15 @@ vgui.Register("ixInteractiveCombineTerminal", COMBINE, "DFrame")
 local CIVIC = {}
 
 function CIVIC:Init()
-	self:SetSize(math.min(ScrW() - 180, 1120), math.min(ScrH() - 140, 760))
+	self:SetSize(UNIFIED_TERMINAL_WIDTH, UNIFIED_TERMINAL_HEIGHT)
 	self:SetTitle("")
 	self:ShowCloseButton(false)
 	self:SetDraggable(false)
 
 	self.nextTypeSound = 0
 	self.context = {}
+	self.activeTab = nil
+	self.powered = false
 
 	self.closeButton = self:Add("DButton")
 	self.closeButton:SetText("X")
@@ -1217,15 +2174,23 @@ function CIVIC:Init()
 	end
 
 	self.powerButton = self:Add("DButton")
-	self.powerButton:SetText("POWER")
+	self.powerButton:SetText("⏻")
 	self.powerButton:SetFont("ixComputerDOSBody")
 	self.powerButton:SetTextColor(COMBINE_TEXT)
 	self.powerButton.DoClick = function()
-		if (IsValid(self.entity)) then
-			netstream.Start("ixInteractiveComputerPower", self.entity, false)
+		if (!IsValid(self.entity)) then
+			self:Close()
+			return
 		end
 
-		self:Close()
+		if (IsTerminalReady(self)) then
+			netstream.Start("ixInteractiveComputerPower", self.entity, false, self:GetPowerScreenMode())
+			self:Close()
+			return
+		end
+
+		StartBootSequence(self, 1.9)
+		self:UpdateStatus()
 	end
 
 	self.backButton = self:Add("DButton")
@@ -1235,7 +2200,7 @@ function CIVIC:Init()
 	self.backButton:SetVisible(false)
 	self.backButton.DoClick = function()
 		if (self.context and self.context.returnContext and OpenComputerUI) then
-			OpenComputerUI(self.entity, self.entity and self.entity:GetComputerData() or {}, IsValid(self.entity) and self.entity:GetNetVar("powered", true), self.context.returnContext)
+			OpenComputerUI(self.entity, {}, IsValid(self.entity) and self.entity:GetNetVar("powered", true), self.context.returnContext)
 		end
 	end
 
@@ -1244,8 +2209,41 @@ function CIVIC:Init()
 	self.statusLabel:SetTextColor(COMBINE_DIM)
 	self.statusLabel:SetText("")
 
+	self.announcementTabButton = self:Add("DButton")
+	self.announcementTabButton:SetText(L("interactiveComputerAnnouncement"))
+	self.announcementTabButton:SetFont("ixComputerDOSBody")
+	self.announcementTabButton:SetTextColor(COMBINE_TEXT)
+	self.announcementTabButton.DoClick = function()
+		self:SetActiveTab("announcement")
+	end
+
+	self.propagandaTabButton = self:Add("DButton")
+	self.propagandaTabButton:SetText(L("interactiveComputerPropaganda"))
+	self.propagandaTabButton:SetFont("ixComputerDOSBody")
+	self.propagandaTabButton:SetTextColor(COMBINE_TEXT)
+	self.propagandaTabButton.DoClick = function()
+		self:SetActiveTab("propaganda")
+	end
+
+	self.questionsTabButton = self:Add("DButton")
+	self.questionsTabButton:SetText(L("interactiveComputerQuestions"))
+	self.questionsTabButton:SetFont("ixComputerDOSBody")
+	self.questionsTabButton:SetTextColor(COMBINE_TEXT)
+	self.questionsTabButton.DoClick = function()
+		self:SetActiveTab("questions")
+	end
+
+	self.postList = self:Add("DListView")
+	self.postList:SetHeaderHeight(0)
+	self.postList:SetDataHeight(36)
+	self.postList:AddColumn(L("interactiveComputerPostList"))
+	self.postList.OnRowSelected = function(_, _, row)
+		self.selectedPostIndex = row.ixPostIndex
+		self:LoadSelectedPost()
+	end
+
 	self.announcementEntry = self:Add("DTextEntry")
-	self.announcementEntry:SetMultiline(true)
+	self.announcementEntry:SetMultiline(false)
 	self.announcementEntry:SetFont("ixComputerDOSBody")
 	self.announcementEntry:SetUpdateOnType(true)
 	self.announcementEntry.OnValueChange = function()
@@ -1260,6 +2258,22 @@ function CIVIC:Init()
 		self:PlayTypeSound()
 	end
 
+	self.postNewButton = self:Add("DButton")
+	self.postNewButton:SetText(L("interactiveComputerNewPost"))
+	self.postNewButton:SetFont("ixComputerDOSBody")
+	self.postNewButton:SetTextColor(COMBINE_TEXT)
+	self.postNewButton.DoClick = function()
+		self:CreatePost()
+	end
+
+	self.postDeleteButton = self:Add("DButton")
+	self.postDeleteButton:SetText(L("interactiveComputerDeletePost"))
+	self.postDeleteButton:SetFont("ixComputerDOSBody")
+	self.postDeleteButton:SetTextColor(COMBINE_TEXT)
+	self.postDeleteButton.DoClick = function()
+		self:DeleteSelectedPost()
+	end
+
 	self.saveButton = self:Add("DButton")
 	self.saveButton:SetText(L("interactiveComputerSaveCivic"))
 	self.saveButton:SetFont("ixComputerDOSBody")
@@ -1269,19 +2283,58 @@ function CIVIC:Init()
 			return
 		end
 
+		self:WriteSelectedPost()
 		netstream.Start(
 			"ixInteractiveComputerSaveCivicPanel",
 			self.entity,
-			string.sub(self.announcementEntry:GetValue(), 1, 1500),
-			string.sub(self.propagandaEntry:GetValue(), 1, 1500)
+			{
+				announcements = self.context.data and self.context.data.announcements or {},
+				agendas = self.context.data and self.context.data.agendas or {}
+			}
 		)
 	end
+
+	self.postScrollUpButton = self:Add("DButton")
+	self.postScrollUpButton:SetText("∧")
+	self.postScrollUpButton:SetFont("ixComputerDOSBody")
+	self.postScrollUpButton:SetTextColor(COMBINE_TEXT)
+
+	self.postScrollDownButton = self:Add("DButton")
+	self.postScrollDownButton:SetText("∨")
+	self.postScrollDownButton:SetFont("ixComputerDOSBody")
+	self.postScrollDownButton:SetTextColor(COMBINE_TEXT)
+	BindScrollHoldButton(self.postScrollUpButton, function() return IsValid(self.postList) and self.postList.VBar or nil end, -72)
+	BindScrollHoldButton(self.postScrollDownButton, function() return IsValid(self.postList) and self.postList.VBar or nil end, 72)
 
 	self.questionEntry = self:Add("DTextEntry")
 	self.questionEntry:SetFont("ixComputerDOSBody")
 	self.questionEntry:SetUpdateOnType(true)
 	self.questionEntry.OnValueChange = function()
 		self:PlayTypeSound()
+	end
+
+	self.questionBodyEntry = self:Add("DTextEntry")
+	self.questionBodyEntry:SetMultiline(true)
+	self.questionBodyEntry:SetFont("ixComputerDOSBody")
+	self.questionBodyEntry:SetUpdateOnType(true)
+	self.questionBodyEntry.OnValueChange = function()
+		self:PlayTypeSound()
+	end
+
+	self.questionNewButton = self:Add("DButton")
+	self.questionNewButton:SetText(L("interactiveComputerNewQuestion"))
+	self.questionNewButton:SetFont("ixComputerDOSBody")
+	self.questionNewButton:SetTextColor(COMBINE_TEXT)
+	self.questionNewButton.DoClick = function()
+		self.selectedQuestionIndex = nil
+		if (self.questionList.ClearSelection) then
+			self.questionList:ClearSelection()
+		end
+		self.questionEntry:SetText("")
+		self.questionBodyEntry:SetText("")
+		self.answerEntry:SetText("")
+		self:UpdateVisibleState()
+		self:UpdateStatus()
 	end
 
 	self.askButton = self:Add("DButton")
@@ -1293,22 +2346,30 @@ function CIVIC:Init()
 			return
 		end
 
-		local text = string.Trim(self.questionEntry:GetValue())
-		if (text == "") then
+		local title = string.Trim(self.questionEntry:GetValue())
+		local body = string.Trim(self.questionBodyEntry:GetValue())
+		if (title == "" and body == "") then
 			return
 		end
 
-		netstream.Start("ixInteractiveComputerAskQuestion", self.entity, text)
+		netstream.Start("ixInteractiveComputerAskQuestion", self.entity, title, body)
+		self.selectedQuestionIndex = nil
 		self.questionEntry:SetText("")
+		self.questionBodyEntry:SetText("")
+		self.answerEntry:SetText("")
+		self:UpdateVisibleState()
 	end
 
 	self.questionList = self:Add("DListView")
-	self.questionList:SetHeaderHeight(22)
+	self.questionList:SetHeaderHeight(0)
 	self.questionList:SetDataHeight(48)
 	self.questionList:AddColumn(L("interactiveComputerQuestions"))
 	self.questionList.OnRowSelected = function(_, _, row)
 		self.selectedQuestionIndex = row.ixQuestionIndex
+		self.questionEntry:SetText(row.ixQuestionTitle or "")
+		self.questionBodyEntry:SetText(row.ixQuestionBody or "")
 		self.answerEntry:SetText(row.ixAnswer or "")
+		self:UpdateVisibleState()
 		self:UpdateStatus()
 	end
 
@@ -1333,106 +2394,383 @@ function CIVIC:Init()
 			"ixInteractiveComputerAnswerQuestion",
 			self.entity,
 			self.selectedQuestionIndex,
-			string.sub(self.answerEntry:GetValue(), 1, 500)
+			string.sub(self.answerEntry:GetValue(), 1, 1500)
 		)
 	end
+
+	self.questionDeleteButton = self:Add("DButton")
+	self.questionDeleteButton:SetText(L("interactiveComputerDeletePost"))
+	self.questionDeleteButton:SetFont("ixComputerDOSBody")
+	self.questionDeleteButton:SetTextColor(COMBINE_TEXT)
+	self.questionDeleteButton.DoClick = function()
+		if (!IsValid(self.entity) or !self.context.canEdit or !self.selectedQuestionIndex) then
+			return
+		end
+
+		netstream.Start("ixInteractiveComputerDeleteQuestion", self.entity, self.selectedQuestionIndex)
+	end
+
+	self.questionScrollUpButton = self:Add("DButton")
+	self.questionScrollUpButton:SetText("∧")
+	self.questionScrollUpButton:SetFont("ixComputerDOSBody")
+	self.questionScrollUpButton:SetTextColor(COMBINE_TEXT)
+
+	self.questionScrollDownButton = self:Add("DButton")
+	self.questionScrollDownButton:SetText("∨")
+	self.questionScrollDownButton:SetFont("ixComputerDOSBody")
+	self.questionScrollDownButton:SetTextColor(COMBINE_TEXT)
+	BindScrollHoldButton(self.questionScrollUpButton, function() return IsValid(self.questionList) and self.questionList.VBar or nil end, -72)
+	BindScrollHoldButton(self.questionScrollDownButton, function() return IsValid(self.questionList) and self.questionList.VBar or nil end, 72)
 
 	self:Center()
 	self:MakePopup()
 end
 
-function CIVIC:PlayTypeSound()
+function CIVIC:PlayTypeSound(isEnter)
 	if (self.nextTypeSound > CurTime()) then
 		return
 	end
 
-	surface.PlaySound(TYPE_SOUND)
-	self.nextTypeSound = CurTime() + 0.05
+	PlayKeyboardSound(isEnter == true)
+	self.nextTypeSound = CurTime() + (isEnter and 0.08 or 0.05)
+end
+
+function CIVIC:GetActivePostList()
+	self.context.data = self.context.data or {}
+
+	if (self.activeTab == "announcement") then
+		self.context.data.announcements = self.context.data.announcements or {}
+		return self.context.data.announcements
+	elseif (self.activeTab == "propaganda") then
+		self.context.data.agendas = self.context.data.agendas or {}
+		return self.context.data.agendas
+	end
+end
+
+function CIVIC:PopulateActivePostList()
+	if (!IsValid(self.postList)) then
+		return
+	end
+
+	local posts = self:GetActivePostList() or {}
+	local previousSelection = self.selectedPostIndex
+	self.postList:Clear()
+	self.selectedPostIndex = nil
+
+	for index, entry in ipairs(posts) do
+		local title = string.Trim(entry.title or "")
+		local author = string.Trim(entry.author or "")
+		local row = self.postList:AddLine(string.format("%02d  %s", index, title != "" and title or "UNTITLED"))
+		row.ixPostIndex = index
+		row.Paint = function(line, rowWidth, rowHeight)
+			local selected = line:IsSelected()
+
+			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
+			surface.DrawRect(0, 0, rowWidth, rowHeight)
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
+			surface.DrawOutlinedRect(0, 0, rowWidth, rowHeight, 1)
+		end
+
+		if (row.Columns and row.Columns[1]) then
+			row.Columns[1]:SetTextColor(COMBINE_TEXT)
+			row.Columns[1]:SetFont("ixComputerDOSTiny")
+			if (author != "") then
+				row.Columns[1]:SetText(string.format("%02d  %s  [%s]", index, title != "" and title or "UNTITLED", author))
+			end
+		end
+	end
+
+	if (previousSelection and self.postList:GetLine(previousSelection)) then
+		self.selectedPostIndex = previousSelection
+		self.postList:SelectItem(self.postList:GetLine(previousSelection))
+	elseif (self.postList:GetLine(1)) then
+		self.selectedPostIndex = 1
+		self.postList:SelectItem(self.postList:GetLine(1))
+	else
+		self.announcementEntry:SetText("")
+		self.propagandaEntry:SetText("")
+	end
+end
+
+function CIVIC:LoadSelectedPost()
+	local posts = self:GetActivePostList() or {}
+	local entry = posts[self.selectedPostIndex]
+
+	self.announcementEntry:SetText(entry and (entry.title or "") or "")
+	self.propagandaEntry:SetText(entry and (entry.body or "") or "")
+	self:UpdateVisibleState()
+	self:UpdateStatus()
+end
+
+function CIVIC:WriteSelectedPost()
+	local posts = self:GetActivePostList() or {}
+	local entry = posts[self.selectedPostIndex]
+	if (!entry) then
+		return
+	end
+
+	entry.title = string.Trim(string.sub(self.announcementEntry:GetValue(), 1, 80))
+	entry.body = string.Trim(string.sub(self.propagandaEntry:GetValue(), 1, 4000))
+	entry.author = LocalPlayer():Name()
+	entry.updatedAt = os.time()
+end
+
+function CIVIC:CreatePost()
+	if (!self.context.canEdit or (self.activeTab != "announcement" and self.activeTab != "propaganda")) then
+		return
+	end
+
+	local posts = self:GetActivePostList()
+	posts[#posts + 1] = {
+		title = "",
+		body = "",
+		author = LocalPlayer():Name(),
+		updatedAt = os.time()
+	}
+
+	self.selectedPostIndex = #posts
+	self:PopulateActivePostList()
+end
+
+function CIVIC:DeleteSelectedPost()
+	if (!self.context.canEdit or !self.selectedPostIndex) then
+		return
+	end
+
+	local posts = self:GetActivePostList()
+	if (!posts or !posts[self.selectedPostIndex]) then
+		return
+	end
+
+	table.remove(posts, self.selectedPostIndex)
+	self.selectedPostIndex = math.Clamp(self.selectedPostIndex, 1, #posts)
+	self:PopulateActivePostList()
+	self:UpdateVisibleState()
+	self:UpdateStatus()
+
+	if (IsValid(self.entity)) then
+		netstream.Start(
+			"ixInteractiveComputerSaveCivicPanel",
+			self.entity,
+			{
+				announcements = self.context.data and self.context.data.announcements or {},
+				agendas = self.context.data and self.context.data.agendas or {}
+			}
+		)
+	end
+end
+
+function CIVIC:SetActiveTab(tabID)
+	self.activeTab = self.activeTab == tabID and nil or tabID
+
+	if (self.activeTab == "announcement" or self.activeTab == "propaganda") then
+		self:PopulateActivePostList()
+	end
+
+	self:UpdateVisibleState()
+	self:UpdateStatus()
+end
+
+function CIVIC:GetPowerScreenMode()
+	return "civic"
+end
+
+function CIVIC:UpdateVisibleState()
+	local isReady = IsTerminalReady(self)
+	local showAnnouncement = isReady and self.activeTab == "announcement"
+	local showPropaganda = isReady and self.activeTab == "propaganda"
+	local showQuestions = isReady and self.activeTab == "questions"
+	local showPosts = showAnnouncement or showPropaganda
+
+	self.announcementTabButton.ixActive = self.activeTab == "announcement"
+	self.propagandaTabButton.ixActive = self.activeTab == "propaganda"
+	self.questionsTabButton.ixActive = self.activeTab == "questions"
+
+	self.announcementTabButton:SetEnabled(isReady)
+	self.propagandaTabButton:SetEnabled(isReady)
+	self.questionsTabButton:SetEnabled(isReady)
+
+	self.postList:SetVisible(showPosts)
+	self.postScrollUpButton:SetVisible(showPosts)
+	self.postScrollDownButton:SetVisible(showPosts)
+	self.postNewButton:SetVisible(showPosts and self.context.canEdit == true)
+	self.postDeleteButton:SetVisible(showPosts and self.context.canEdit == true and self.selectedPostIndex != nil)
+	self.announcementEntry:SetVisible(showPosts)
+	self.propagandaEntry:SetVisible(showPosts)
+	self.saveButton:SetVisible(showPosts and self.context.canEdit == true)
+	self.announcementEntry:SetEnabled(showPosts and self.context.canEdit == true and self.selectedPostIndex != nil)
+	self.propagandaEntry:SetEnabled(showPosts and self.context.canEdit == true and self.selectedPostIndex != nil)
+
+	self.questionEntry:SetVisible(showQuestions)
+	self.questionBodyEntry:SetVisible(showQuestions)
+	self.questionNewButton:SetVisible(showQuestions and self.context.canAsk == true)
+	self.askButton:SetVisible(showQuestions and self.context.canAsk == true)
+	self.questionList:SetVisible(showQuestions)
+	self.questionScrollUpButton:SetVisible(showQuestions)
+	self.questionScrollDownButton:SetVisible(showQuestions)
+	self.answerEntry:SetVisible(showQuestions)
+	self.questionDeleteButton:SetVisible(showQuestions and self.context.canEdit == true and self.selectedQuestionIndex != nil)
+	self.answerButton:SetVisible(showQuestions and self.context.canEdit == true and self.selectedQuestionIndex != nil)
+	self.questionEntry:SetEnabled(showQuestions and self.context.canAsk == true and self.selectedQuestionIndex == nil)
+	self.questionBodyEntry:SetEnabled(showQuestions and self.context.canAsk == true and self.selectedQuestionIndex == nil)
+	self.answerEntry:SetEnabled(showQuestions and self.context.canEdit == true and self.selectedQuestionIndex != nil)
 end
 
 function CIVIC:Paint(width, height)
-	surface.SetDrawColor(COMBINE_BG)
-	surface.DrawRect(0, 0, width, height)
+	DrawCombineBackdrop(width, height, L("interactiveComputerCivicTitle"), "CIVIC UPLINK - ")
 
-	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 26)
-	for y = 0, height, 10 do
-		surface.DrawRect(0, y, width, 1)
+	local navX = 22
+	local top = 92
+	local navWidth = 214
+	local contentX = navX + navWidth + 18
+	local contentWidth = width - contentX - 22
+	local contentHeight = height - top - 54
+
+	PaintCombineContentBox(navX, top, navWidth, contentHeight)
+	PaintCombineContentBox(contentX, top, contentWidth, contentHeight)
+	draw.SimpleText("MODULES", "ixComputerCombineBody", navX + 14, top + 12, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+
+	if (IsTerminalReady(self) and self.activeTab == "announcement") then
+		draw.SimpleText(L("interactiveComputerAnnouncementModule"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	elseif (IsTerminalReady(self) and self.activeTab == "propaganda") then
+		draw.SimpleText(L("interactiveComputerAgendaModule"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	elseif (IsTerminalReady(self) and self.activeTab == "questions") then
+		draw.SimpleText(L("interactiveComputerQuestionsModule"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	end
 
-	surface.SetDrawColor(COMBINE_ACCENT)
-	surface.DrawRect(0, 0, width, 4)
-	surface.DrawRect(0, 78, width, 1)
-	surface.DrawRect(0, height - 42, width, 1)
+	if (!IsTerminalReady(self) or !self.activeTab) then
+		local centerX = contentX + contentWidth * 0.5
+		local centerY = top + contentHeight * 0.42
+		local progress = GetBootProgress(self)
 
-	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 70)
-	surface.DrawOutlinedRect(0, 0, width, height, 2)
+		DrawCombineLogo(centerX, centerY - 30, math.min(contentWidth, contentHeight) * 0.15, 220)
+		draw.SimpleText("CIVIC UPLINK", "ixComputerCombineHeader", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(L(IsTerminalReady(self) and "interactiveComputerSelectModule" or (IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff")), "ixComputerCombineBody", centerX, centerY + 116, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText(IsTerminalReady(self) and "NOTICE / AGENDA / Q&A" or L("interactiveComputerPowerPrompt"), "ixComputerDOSTiny", centerX, centerY + 144, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-	draw.SimpleText(L("interactiveComputerCivicTitle"), "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText("CIVIC UPLINK " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerAnnouncement"), "ixComputerCombineBody", 22, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerPropaganda"), "ixComputerCombineBody", width * 0.5 + 12, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerQuestions"), "ixComputerCombineBody", 22, height * 0.47, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		if (!IsTerminalReady(self)) then
+			DrawInsetBox(contentX + 80, top + contentHeight - 86, contentWidth - 160, 18, Color(8, 24, 40), Color(26, 58, 88), Color(8, 18, 32))
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 110)
+			surface.DrawRect(contentX + 82, top + contentHeight - 84, math.max(0, math.floor((contentWidth - 164) * progress)), 14)
+		end
+	end
 end
 
 function CIVIC:PerformLayout(width, height)
-	if (!self.closeButton or !self.powerButton or !self.backButton or !self.statusLabel) then
+	if (!IsValid(self.closeButton) or !IsValid(self.powerButton) or !IsValid(self.backButton) or !IsValid(self.statusLabel)
+	or !IsValid(self.announcementTabButton) or !IsValid(self.propagandaTabButton) or !IsValid(self.questionsTabButton)
+	or !IsValid(self.questionDeleteButton)
+	or !IsValid(self.postScrollUpButton) or !IsValid(self.postScrollDownButton)
+	or !IsValid(self.questionScrollUpButton) or !IsValid(self.questionScrollDownButton)) then
 		return
 	end
 
 	self.closeButton:SetPos(width - 58, 14)
 	self.closeButton:SetSize(40, 32)
 
-	self.powerButton:SetPos(width - 168, 14)
-	self.powerButton:SetSize(100, 32)
+	self.powerButton:SetPos(width - 112, 14)
+	self.powerButton:SetSize(44, 32)
 
-	self.backButton:SetPos(width - 278, 14)
-	self.backButton:SetSize(100, 32)
+	self.backButton:SetPos(width - 166, 14)
+	self.backButton:SetSize(44, 32)
 
 	self.statusLabel:SetPos(22, height - 28)
 	self.statusLabel:SetSize(width - 44, 20)
 
-	local panelWidth = math.floor((width - 54) * 0.5)
 	local top = 92
-	local upperHeight = math.floor(height * 0.26)
-	local questionY = math.floor(height * 0.5)
-	local questionHeight = height - questionY - 108
+	local navWidth = 214
+	local contentX = 22 + navWidth + 18
+	local contentY = top
+	local contentWidth = width - contentX - 22
+	local contentHeight = height - top - 54
+	local navButtonWidth = navWidth - 24
+	local navButtonX = 34
+	local navButtonY = top + 40
+	local listWidth = math.floor(contentWidth * 0.34)
+	local editorX = contentX + listWidth + 16
+	local editorWidth = contentWidth - listWidth - 34
 
-	self.announcementEntry:SetPos(22, top)
-	self.announcementEntry:SetSize(panelWidth, upperHeight)
+	self.announcementTabButton:SetPos(navButtonX, navButtonY)
+	self.announcementTabButton:SetSize(navButtonWidth, 34)
 
-	self.propagandaEntry:SetPos(32 + panelWidth, top)
-	self.propagandaEntry:SetSize(panelWidth, upperHeight)
+	self.propagandaTabButton:SetPos(navButtonX, navButtonY + 42)
+	self.propagandaTabButton:SetSize(navButtonWidth, 34)
 
-	self.saveButton:SetPos(width - 202, top + upperHeight + 8)
+	self.questionsTabButton:SetPos(navButtonX, navButtonY + 84)
+	self.questionsTabButton:SetSize(navButtonWidth, 34)
+
+	self.postList:SetPos(contentX + 18, contentY + 44)
+	self.postList:SetSize(listWidth - 34, contentHeight - 62)
+
+	self.postScrollUpButton:SetPos(contentX + 18 + listWidth - 26, contentY + 44)
+	self.postScrollUpButton:SetSize(24, 24)
+
+	self.postScrollDownButton:SetPos(contentX + 18 + listWidth - 26, contentY + 74)
+	self.postScrollDownButton:SetSize(24, 24)
+
+	self.announcementEntry:SetPos(editorX, contentY + 44)
+	self.announcementEntry:SetSize(editorWidth, 28)
+
+	self.propagandaEntry:SetPos(editorX, contentY + 84)
+	self.propagandaEntry:SetSize(editorWidth, contentHeight - 146)
+
+	self.postNewButton:SetPos(contentX + 18, contentY + contentHeight - 46)
+	self.postNewButton:SetSize(120, 30)
+
+	self.postDeleteButton:SetPos(contentX + 146, contentY + contentHeight - 46)
+	self.postDeleteButton:SetSize(120, 30)
+
+	self.saveButton:SetPos(contentX + contentWidth - 198, contentY + contentHeight - 46)
 	self.saveButton:SetSize(180, 30)
 
-	self.questionEntry:SetPos(22, questionY)
-	self.questionEntry:SetSize(width * 0.55, 28)
+	self.questionEntry:SetPos(contentX + 18, contentY + 44)
+	self.questionEntry:SetSize(contentWidth - 344, 28)
 
-	self.askButton:SetPos(30 + width * 0.55, questionY)
-	self.askButton:SetSize(170, 28)
+	self.questionNewButton:SetPos(contentX + contentWidth - 318, contentY + 44)
+	self.questionNewButton:SetSize(136, 28)
 
-	self.questionList:SetPos(22, questionY + 38)
-	self.questionList:SetSize(width * 0.55, questionHeight)
+	self.askButton:SetPos(contentX + contentWidth - 170, contentY + 44)
+	self.askButton:SetSize(152, 28)
 
-	self.answerEntry:SetPos(32 + width * 0.55, questionY + 38)
-	self.answerEntry:SetSize(width - (54 + width * 0.55), questionHeight - 40)
+	self.questionList:SetPos(contentX + 18, contentY + 84)
+	self.questionList:SetSize(listWidth - 34, contentHeight - 102)
 
-	self.answerButton:SetPos(width - 212, height - 68)
-	self.answerButton:SetSize(190, 30)
+	self.questionScrollUpButton:SetPos(contentX + 18 + listWidth - 26, contentY + 84)
+	self.questionScrollUpButton:SetSize(24, 24)
+
+	self.questionScrollDownButton:SetPos(contentX + 18 + listWidth - 26, contentY + 114)
+	self.questionScrollDownButton:SetSize(24, 24)
+
+	self.questionBodyEntry:SetPos(editorX, contentY + 84)
+	self.questionBodyEntry:SetSize(editorWidth, math.floor(contentHeight * 0.36))
+
+	self.answerEntry:SetPos(editorX, contentY + 96 + math.floor(contentHeight * 0.36))
+	self.answerEntry:SetSize(editorWidth, contentHeight - (154 + math.floor(contentHeight * 0.36)))
+
+	self.questionDeleteButton:SetPos(contentX + contentWidth - 370, contentY + contentHeight - 46)
+	self.questionDeleteButton:SetSize(172, 30)
+
+	self.answerButton:SetPos(contentX + contentWidth - 190, contentY + contentHeight - 46)
+	self.answerButton:SetSize(172, 30)
+
+	self:UpdateVisibleState()
 end
 
 function CIVIC:PopulateQuestions()
 	self.questionList:Clear()
 	self.selectedQuestionIndex = nil
+	self.questionEntry:SetText("")
+	self.questionBodyEntry:SetText("")
 	self.answerEntry:SetText("")
 
 	local questions = (self.context.data and self.context.data.questions) or {}
 	for index, entry in ipairs(questions) do
 		local asker = entry.asker or "UNKNOWN"
-		local prompt = string.format("[%s] %s", asker, entry.question or "")
+		local prompt = string.format("[%s] %s", asker, entry.title or entry.question or "")
 		local line = self.questionList:AddLine(prompt)
 		line.ixQuestionIndex = index
+		line.ixQuestionTitle = entry.title or entry.question or ""
+		line.ixQuestionBody = entry.body or ""
 		line.ixAnswer = entry.answer or ""
 		line.Paint = function(row, rowWidth, rowHeight)
 			local selected = row:IsSelected()
@@ -1451,16 +2789,35 @@ function CIVIC:PopulateQuestions()
 		end
 	end
 
-	if (self.questionList:GetLine(1)) then
-		self.questionList:SelectItem(self.questionList:GetLine(1))
-	else
-		self.statusLabel:SetText(L("interactiveComputerNoQuestions"))
-	end
+	self:UpdateVisibleState()
+	self:UpdateStatus()
 end
 
 function CIVIC:UpdateStatus()
+	if (!IsTerminalReady(self)) then
+		self.statusLabel:SetText(L(IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff"))
+		return
+	end
+
+	if (self.activeTab == "announcement") then
+		local posts = self.context.data and self.context.data.announcements or {}
+		self.statusLabel:SetText(string.format("%s | %d POSTS", L("interactiveComputerAnnouncementModule"), #posts))
+		return
+	end
+
+	if (self.activeTab == "propaganda") then
+		local posts = self.context.data and self.context.data.agendas or {}
+		self.statusLabel:SetText(string.format("%s | %d POSTS", L("interactiveComputerAgendaModule"), #posts))
+		return
+	end
+
+	if (self.activeTab != "questions") then
+		self.statusLabel:SetText(L("interactiveComputerSelectModule"))
+		return
+	end
+
 	if (!self.selectedQuestionIndex) then
-		self.statusLabel:SetText(L("interactiveComputerNoQuestions"))
+		self.statusLabel:SetText(L("interactiveComputerSelectQuestion"))
 		return
 	end
 
@@ -1470,33 +2827,36 @@ function CIVIC:UpdateStatus()
 		return
 	end
 
-	self.statusLabel:SetText(string.format("ASKER: %s", question.asker or "UNKNOWN"))
+	self.statusLabel:SetText(string.format("ASKER: %s | %s", question.asker or "UNKNOWN", question.title or "QUESTION"))
 end
 
 function CIVIC:LoadComputer(entity, _, powered, context)
-	if (!powered) then
-		self:Close()
-		return
-	end
-
 	self.entity = entity
 	self.context = context or {}
-	self.announcementEntry:SetText((self.context.data and self.context.data.announcement) or "")
-	self.propagandaEntry:SetText((self.context.data and self.context.data.propaganda) or "")
-	self.announcementEntry:SetEnabled(self.context.canEdit == true)
-	self.propagandaEntry:SetEnabled(self.context.canEdit == true)
-	self.saveButton:SetVisible(self.context.canEdit == true)
-	self.questionEntry:SetEnabled(self.context.canAsk == true)
-	self.askButton:SetVisible(self.context.canAsk == true)
-	self.answerEntry:SetEnabled(self.context.canEdit == true)
-	self.answerButton:SetVisible(self.context.canEdit == true)
+	SetTerminalPowerState(self, powered)
+	self.context.data = self.context.data or {}
+	self.context.data.announcements = self.context.data.announcements or {}
+	self.context.data.agendas = self.context.data.agendas or {}
+	self.context.data.questions = self.context.data.questions or {}
 	self.backButton:SetVisible(self.context.fromCombine == true)
+	self:PopulateActivePostList()
 	self:PopulateQuestions()
+	self:UpdateVisibleState()
+	self:UpdateStatus()
 end
 
 function CIVIC:Think()
 	if (IsValid(self.entity) and LocalPlayer():GetPos():DistToSqr(self.entity:GetPos()) > 190 * 190) then
 		self:Close()
+		return
+	end
+
+	local wasBooting = IsBootSequenceActive(self)
+	UpdateBootSequence(self)
+
+	if (wasBooting != IsBootSequenceActive(self)) then
+		self:UpdateVisibleState()
+		self:UpdateStatus()
 	end
 end
 
@@ -1513,17 +2873,57 @@ end
 vgui.Register("ixInteractiveCivicTerminal", CIVIC, "DFrame")
 
 local function ApplyCivicStyling(frame)
-	StyleCombineButton(frame.closeButton)
-	StyleCombineButton(frame.powerButton)
-	StyleCombineButton(frame.backButton)
+	StyleCombineButton(frame.announcementTabButton)
+	StyleCombineButton(frame.propagandaTabButton)
+	StyleCombineButton(frame.questionsTabButton)
+	StyleCombineButton(frame.postNewButton)
+	StyleCombineButton(frame.postDeleteButton)
 	StyleCombineButton(frame.saveButton)
+	StyleCombineButton(frame.questionNewButton)
 	StyleCombineButton(frame.askButton)
 	StyleCombineButton(frame.answerButton)
+	StyleCombineButton(frame.questionDeleteButton)
+	StyleCombineButton(frame.postScrollUpButton)
+	StyleCombineButton(frame.postScrollDownButton)
+	StyleCombineButton(frame.questionScrollUpButton)
+	StyleCombineButton(frame.questionScrollDownButton)
+	frame.closeButton.Paint = function(_, width, height)
+		surface.SetDrawColor(0, 0, 0, 0)
+		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 130)
+		surface.DrawOutlinedRect(0, 0, width, height, 1)
+	end
+	frame.powerButton.Paint = frame.closeButton.Paint
+	frame.backButton.Paint = frame.closeButton.Paint
+	StyleCombineListView(frame.postList)
 	StyleCombineTextEntry(frame.announcementEntry)
 	StyleCombineTextEntry(frame.propagandaEntry)
 	StyleCombineTextEntry(frame.questionEntry)
+	StyleCombineTextEntry(frame.questionBodyEntry)
 	StyleCombineTextEntry(frame.answerEntry)
 	StyleCombineListView(frame.questionList)
+	BindButtonClickSound(frame.closeButton, frame)
+	BindButtonClickSound(frame.powerButton, frame)
+	BindButtonClickSound(frame.backButton, frame)
+	BindButtonClickSound(frame.announcementTabButton, frame)
+	BindButtonClickSound(frame.propagandaTabButton, frame)
+	BindButtonClickSound(frame.questionsTabButton, frame)
+	BindButtonClickSound(frame.postNewButton, frame)
+	BindButtonClickSound(frame.postDeleteButton, frame)
+	BindButtonClickSound(frame.saveButton, frame)
+	BindButtonClickSound(frame.questionNewButton, frame)
+	BindButtonClickSound(frame.askButton, frame)
+	BindButtonClickSound(frame.answerButton, frame)
+	BindButtonClickSound(frame.questionDeleteButton, frame)
+	BindButtonClickSound(frame.postScrollUpButton, frame)
+	BindButtonClickSound(frame.postScrollDownButton, frame)
+	BindButtonClickSound(frame.questionScrollUpButton, frame)
+	BindButtonClickSound(frame.questionScrollDownButton, frame)
+	BindEnterSound(frame.announcementEntry, frame)
+	BindEnterSound(frame.propagandaEntry, frame)
+	BindEnterSound(frame.questionEntry, frame)
+	BindEnterSound(frame.questionBodyEntry, frame)
+	BindEnterSound(frame.answerEntry, frame)
 end
 
 OpenComputerUI = function(entity, data, powered, context)
@@ -1533,7 +2933,9 @@ OpenComputerUI = function(entity, data, powered, context)
 
 	local frameClass = "ixInteractiveComputerTerminal"
 
-	if (context and context.civicPanel) then
+	if (context and context.combineJournal) then
+		frameClass = "ixInteractiveCombineJournalTerminal"
+	elseif (context and context.civicPanel) then
 		frameClass = "ixInteractiveCivicTerminal"
 	elseif (context and context.combineTerminal) then
 		frameClass = "ixInteractiveCombineTerminal"
@@ -1541,7 +2943,10 @@ OpenComputerUI = function(entity, data, powered, context)
 
 	local frame = vgui.Create(frameClass)
 
-	if (frameClass == "ixInteractiveCombineTerminal") then
+	if (frameClass == "ixInteractiveCombineJournalTerminal") then
+		ApplyCombineJournalStyling(frame)
+		frame:LoadComputerContext(entity, data, powered, context)
+	elseif (frameClass == "ixInteractiveCombineTerminal") then
 		ApplyCombineStyling(frame)
 		frame:LoadComputer(entity, data, powered, context)
 	elseif (frameClass == "ixInteractiveCivicTerminal") then

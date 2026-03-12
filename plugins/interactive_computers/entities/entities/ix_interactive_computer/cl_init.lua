@@ -64,9 +64,8 @@ function ENT:OnPopulateEntityInfo(container)
 
 	if (isInteractive) then
 		local action = container:AddRow("action")
-		local useInterface = definition and (definition.role == "interface" or definition.role == "civic")
-		action:SetText(L(useInterface and "interactiveComputerInterfaceUse" or "interactiveComputerMonitorUse"))
-		action:SetBackgroundColor(Color(45, 255, 45, 35))
+		action:SetText(L("interactiveComputerUse"))
+		action:SetBackgroundColor(Color(85, 127, 242, 50))
 		action:SizeToContents()
 	end
 end
