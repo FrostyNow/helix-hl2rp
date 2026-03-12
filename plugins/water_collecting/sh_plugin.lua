@@ -1,6 +1,6 @@
 local PLUGIN = PLUGIN
 PLUGIN.name = "Water Collecting"
-PLUGIN.author = "Antigravity"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Allows players to collect dirty water from water sources and sinks."
 
 ix.lang.AddTable("english", {

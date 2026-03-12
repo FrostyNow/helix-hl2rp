@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Observer Spawns"
-PLUGIN.author = "Frosty with Antigravity"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays spawn points while in observer mode."
 
 ix.lang.AddTable("english", {

@@ -2,7 +2,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Admin PlayerInfo"
-PLUGIN.author = "Frosty with Antigravity"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Allows admins to view player inventories and information."
 
 ix.lang.AddTable("english", {

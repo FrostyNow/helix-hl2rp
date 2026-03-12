@@ -1,5 +1,5 @@
 PLUGIN.name = "NPC Spawner"
-PLUGIN.author = "Antigravity"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Advanced NPC Spawner system."
 
 ix.lang.AddTable("english", {
