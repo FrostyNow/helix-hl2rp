@@ -4,7 +4,7 @@ AddCSLuaFile()
 
 ENT.Base 			= "base_gmodentity"
 ENT.Type 			= "anim"
-ENT.PrintName		= "Industrial Laundry Cart"
+ENT.PrintName		= "Laundry Cart L"
 ENT.Author			= "Riggs Mackay"
 ENT.Purpose			= "Clean it dude."
 ENT.Instructions	= "Press E"

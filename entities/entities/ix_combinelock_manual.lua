@@ -1,7 +1,7 @@
 AddCSLuaFile()
 
 ENT.Type = "anim"
-ENT.PrintName = "Combine Lock (Manual Position)"
+ENT.PrintName = "Combine Lock Manual"
 ENT.Category = "HL2 RP"
 ENT.Spawnable = true
 ENT.AdminOnly = true
