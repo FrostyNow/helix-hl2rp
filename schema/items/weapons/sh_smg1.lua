@@ -24,3 +24,4 @@ if (CLIENT) then
 		data:SizeToContents()
 	end
 end
+

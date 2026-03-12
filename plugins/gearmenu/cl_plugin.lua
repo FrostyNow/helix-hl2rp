@@ -27,6 +27,15 @@ local function RequestUnequip(itemID, targetInvID, x, y, bDropToGround)
 	net.SendToServer()
 end
 
+local function RequestGearReorder(itemID, direction)
+	net.Start("ixGearReorderReq")
+		net.WriteUInt(itemID, 32)
+		net.WriteInt(direction or 0, 4)
+	net.SendToServer()
+end
+
+local WEAPON_ORDER_BADGE = Color(196, 160, 74, 245)
+local WEAPON_ORDER_TEXT = Color(20, 16, 8)
 local function SetupGearIcon(panel, item)
 	if (item.exRender) then
 		panel.Icon:SetVisible(false)
@@ -428,6 +437,21 @@ function PANEL:RefreshGearInv()
 
 	-- Sophisticated sorting
 	table.sort(equippedItems, function(a, b)
+		if (a.isWeapon != b.isWeapon) then
+			return a.isWeapon == false
+		end
+
+		if (a.isWeapon and b.isWeapon) then
+			local aTime = tonumber(a:GetData("equipTime", 0)) or 0
+			local bTime = tonumber(b:GetData("equipTime", 0)) or 0
+
+			if (aTime != bTime) then
+				return aTime < bTime
+			end
+
+			return a:GetName() < b:GetName()
+		end
+
 		local aBase = a.base or ""
 		local bBase = b.base or ""
 		local aPrio = BASE_PRIO[aBase] or 99
@@ -458,6 +482,7 @@ function PANEL:RefreshGearInv()
 
 	-- Build a hash to avoid needless redraws
 	local hash = ""
+	local weaponDisplayIndex = 0
 	for _, item in ipairs(equippedItems) do
 		hash = hash .. item.id .. ","
 	end
@@ -475,6 +500,13 @@ function PANEL:RefreshGearInv()
 	local iconSize = 80
 
 	for _, item in ipairs(equippedItems) do
+		local weaponOrder
+
+		if (item.isWeapon) then
+			weaponDisplayIndex = weaponDisplayIndex + 1
+			weaponOrder = weaponDisplayIndex
+		end
+
 		local icon = self.gearCanvas:Add("ixItemIcon")
 		icon:SetSize(item.width * iconSize, item.height * iconSize)
 		icon:SetZPos(999)
@@ -579,6 +611,19 @@ function PANEL:RefreshGearInv()
 
 		SetupGearIcon(icon, item)
 
+		if (weaponOrder) then
+			local oldPaintOver = icon.PaintOver
+
+			icon.PaintOver = function(this, w, h)
+				if (oldPaintOver) then
+					oldPaintOver(this, w, h)
+				end
+
+				draw.RoundedBox(4, 6, 6, 24, 20, WEAPON_ORDER_BADGE)
+				draw.SimpleText(tostring(weaponOrder), "ixSmallFont", 18, 8, WEAPON_ORDER_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+			end
+		end
+
 		icon:SetHelixTooltip(function(tooltip)
 			ix.hud.PopulateItemTooltip(tooltip, item)
 		end)
@@ -588,6 +633,15 @@ function PANEL:RefreshGearInv()
 			menu:AddOption(L("Unequip"), function()
 				RequestUnequip(item.id)
 			end):SetIcon("icon16/cross.png")
+			if (item.isWeapon and (tonumber(item:GetData("equipTime", 0)) or 0) > 0 and item.class != "weapon_physgun" and item.class != "gmod_tool") then
+				menu:AddOption("Move Up", function()
+					RequestGearReorder(item.id, -1)
+				end):SetIcon("icon16/arrow_up.png")
+
+				menu:AddOption("Move Down", function()
+					RequestGearReorder(item.id, 1)
+				end):SetIcon("icon16/arrow_down.png")
+			end
 
 			if (item.functions) then
 				for k, v in SortedPairs(item.functions) do

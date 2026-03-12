@@ -2,6 +2,7 @@ local PLUGIN = PLUGIN
 
 util.AddNetworkString("ixGearEquipReq")
 util.AddNetworkString("ixGearUnequipReq")
+util.AddNetworkString("ixGearReorderReq")
 util.AddNetworkString("ixGearSync")
 
 -- ============================================================
@@ -177,6 +178,38 @@ local function TransferToMain(item, owner)
     end)
 end
 
+local function GetOrderedEquippedWeapons(character)
+    local inventory = character and character.GetInventory and character:GetInventory() or nil
+    local items = inventory and inventory.GetItems and inventory:GetItems() or {}
+    local equippedWeapons = {}
+
+    for _, item in pairs(items) do
+        local equipTime = tonumber(item:GetData("equipTime", 0)) or 0
+
+        if (item.isWeapon and item:GetData("equip") == true and equipTime > 0 and item.class != "weapon_physgun" and item.class != "gmod_tool") then
+            equippedWeapons[#equippedWeapons + 1] = item
+        end
+    end
+
+    table.sort(equippedWeapons, function(a, b)
+        local aTime = tonumber(a:GetData("equipTime", 0)) or 0
+        local bTime = tonumber(b:GetData("equipTime", 0)) or 0
+
+        if (aTime != bTime) then
+            return aTime < bTime
+        end
+
+        return a.id < b.id
+    end)
+
+    return equippedWeapons
+end
+
+local function NormalizeEquipTimes(items)
+    for index, item in ipairs(items) do
+        item:SetData("equipTime", index)
+    end
+end
 -- ============================================================
 -- Hooks
 -- ============================================================
@@ -197,6 +230,35 @@ end)
 -- Network Receivers
 -- ============================================================
 
+net.Receive("ixGearReorderReq", function(len, client)
+    local itemID = net.ReadUInt(32)
+    local direction = math.Clamp(net.ReadInt(4), -1, 1)
+
+    if (direction == 0) then return end
+
+    local item = ix.item.instances[itemID]
+    if (!item or !item.isWeapon or item:GetData("equip") != true) then return end
+    if ((item.player != client and item:GetOwner() != client) or item.class == "weapon_physgun" or item.class == "gmod_tool") then return end
+
+    local character = client:GetCharacter()
+    local equippedWeapons = GetOrderedEquippedWeapons(character)
+    local currentIndex
+
+    for index, equippedItem in ipairs(equippedWeapons) do
+        if (equippedItem == item) then
+            currentIndex = index
+            break
+        end
+    end
+
+    if (!currentIndex) then return end
+
+    local targetIndex = currentIndex + direction
+    if (!equippedWeapons[targetIndex]) then return end
+
+    equippedWeapons[currentIndex], equippedWeapons[targetIndex] = equippedWeapons[targetIndex], equippedWeapons[currentIndex]
+    NormalizeEquipTimes(equippedWeapons)
+end)
 net.Receive("ixGearEquipReq", function(len, client)
     local itemID = net.ReadUInt(32)
     local item = ix.item.instances[itemID]
@@ -383,7 +445,7 @@ function PLUGIN:CanTransferItem(item, curInv, newInv)
 	end
 end
 
--- Character loaded → setup gear inventory.
+-- Character loaded ??setup gear inventory.
 function PLUGIN:CharacterLoaded(character)
 	local client = character:GetPlayer()
 
