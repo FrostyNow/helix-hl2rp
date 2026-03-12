@@ -1,0 +1,938 @@
+local PLUGIN = PLUGIN
+
+PLUGIN.storedComputers = PLUGIN.storedComputers or {}
+PLUGIN.nextComputerID = PLUGIN.nextComputerID or 1
+
+local MAX_USE_DISTANCE_SQR = 160 * 160
+local SECURITY_BYPASS_DURATION = 300
+
+local function GetSessionID(client)
+	local character = IsValid(client) and client:GetCharacter()
+
+	return character and character:GetID() or client:SteamID64()
+end
+
+local function IsComputerAccessible(client, entity)
+	if (!IsValid(client) or !client:GetCharacter()) then
+		return false, "@noPerm"
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (!IsValid(entity)) then
+		return false, "interactiveComputerInvalid"
+	end
+
+	if (client:GetPos():DistToSqr(entity:GetPos()) > MAX_USE_DISTANCE_SQR) then
+		return false, "interactiveComputerTooFar"
+	end
+
+	return true
+end
+
+function PLUGIN:BuildCombinePayload(client)
+	local payload = {
+		combineTerminal = true,
+		civicData = self:GetCivicPanelData(),
+		canAccessCombine = true,
+		canEditObjectives = hook.Run("CanPlayerEditObjectives", client) == true,
+		canEditData = client:IsCombine(),
+		objectives = Schema and Schema.CombineObjectives or {},
+		journalData = self:GetCombineJournalData(client),
+		roster = {}
+	}
+
+	for _, target in ipairs(player.GetAll()) do
+		local character = target:GetCharacter()
+
+		if (!IsValid(target) or !character or target:IsCombine() or target:Team() == FACTION_ADMIN) then
+			continue
+		end
+
+		payload.roster[#payload.roster + 1] = {
+			target = target,
+			name = character:GetName(),
+			cid = character:GetData("cid", "00000"),
+			data = character:GetData("combineData") or {}
+		}
+	end
+
+	table.sort(payload.roster, function(a, b)
+		return (a.name or "") < (b.name or "")
+	end)
+
+	return payload
+end
+
+function PLUGIN:GetCivicPanelData()
+	local data = ix.data.Get("interactiveComputerCivicPanel", {}, false, true)
+
+	data.announcement = tostring(data.announcement or "")
+	data.propaganda = tostring(data.propaganda or "")
+	data.questions = istable(data.questions) and data.questions or {}
+
+	return data
+end
+
+function PLUGIN:SetCivicPanelData(data)
+	data = data or {}
+	data.announcement = string.sub(tostring(data.announcement or ""), 1, 1500)
+	data.propaganda = string.sub(tostring(data.propaganda or ""), 1, 1500)
+	data.questions = istable(data.questions) and data.questions or {}
+
+	ix.data.Set("interactiveComputerCivicPanel", data, false, true)
+end
+
+function PLUGIN:BuildCivicPayload(client, returnContext)
+	local payload = {
+		civicPanel = true,
+		canEdit = client:IsCombine() or client:IsAdmin(),
+		canAsk = self:HasCivicTerminalAccess(client),
+		data = self:GetCivicPanelData()
+	}
+
+	if (returnContext) then
+		payload.fromCombine = true
+		payload.returnContext = returnContext
+	end
+
+	return payload
+end
+
+function PLUGIN:UpdateComputerVisualState(entity, state)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity)) then
+		return
+	end
+
+	local definition = self:GetAssemblyDefinition(entity)
+
+	self:SetEntitySkinForState(entity, definition and definition.skins, state)
+	
+	for _, candidate in ipairs(ents.GetAll()) do
+		if (!self:IsSupportComputer(candidate)) then
+			continue
+		end
+
+		local candidateDefinition = self:GetComputerDefinition(candidate:GetClass())
+		if (candidateDefinition and definition and candidateDefinition.family == definition.family) then
+			if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (self.assemblyMaxDistance * self.assemblyMaxDistance)) then
+				self:SetEntitySkinForState(candidate, candidateDefinition.skins, state)
+			end
+		end
+	end
+end
+
+function PLUGIN:IsComputerAssemblyValid(entity)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity)) then
+		return false
+	end
+
+	local definition = self:GetComputerDefinition(entity:GetClass())
+	if (!definition or definition.interactive ~= true) then
+		return true
+	end
+
+	if (definition.standalone == true) then
+		return true
+	end
+
+	for _, candidate in ipairs(ents.GetAll()) do
+		if (!self:IsSupportComputer(candidate)) then
+			continue
+		end
+
+		local candidateDefinition = self:GetComputerDefinition(candidate:GetClass())
+		if (!candidateDefinition or candidateDefinition.family ~= definition.family) then
+			continue
+		end
+
+		if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (self.assemblyMaxDistance * self.assemblyMaxDistance)) then
+			return true
+		end
+	end
+
+	return false
+end
+
+function PLUGIN:GetCombineJournalData(client)
+	local character = IsValid(client) and client:GetCharacter()
+	local stored = character and character:GetData("interactiveCombineJournal")
+
+	return self:NormalizeData(stored)
+end
+
+function PLUGIN:SetCombineJournalData(client, data)
+	local character = IsValid(client) and client:GetCharacter()
+	if (!character) then
+		return
+	end
+
+	character:SetData("interactiveCombineJournal", self:NormalizeData(data))
+end
+
+function PLUGIN:GetResolvedJournalAuthor(client)
+	local character = IsValid(client) and client:GetCharacter()
+	local inventory = character and character:GetInventory()
+	local cidItem = inventory and inventory:HasItem("cid")
+
+	if (!character) then
+		return ""
+	end
+
+	if (client:IsCombine()) then
+		return character:GetName()
+	end
+
+	if (client:IsAdmin()) then
+		if (cidItem) then
+			local cidName = string.Trim(tostring(cidItem:GetData("name", "")))
+			local cidID = string.Trim(tostring(cidItem:GetData("id", "")))
+
+			if (cidName != "") then
+				return cidID != "" and string.format("%s #%s", cidName, cidID) or cidName
+			end
+		end
+
+		return ""
+	end
+
+	if (cidItem) then
+		return string.Trim(tostring(cidItem:GetData("name", "")))
+	end
+
+	return ""
+end
+
+function PLUGIN:ApplyEntryAuthors(previousData, newData, client, automatic)
+	for categoryIndex, category in ipairs(newData.categories or {}) do
+		local previousCategory = previousData and previousData.categories and previousData.categories[categoryIndex]
+
+		for entryIndex, entry in ipairs(category.entries or {}) do
+			local previousEntry = previousCategory and previousCategory.entries and previousCategory.entries[entryIndex]
+			local changed = !previousEntry or previousEntry.title != entry.title or previousEntry.body != entry.body
+
+			if (automatic) then
+				if (changed or string.Trim(tostring(entry.author or "")) == "") then
+					entry.author = self:GetResolvedJournalAuthor(client)
+				else
+					entry.author = previousEntry.author or ""
+				end
+			else
+				entry.author = string.Trim(self:SanitizeText(entry.author, self.maxAuthorLength))
+			end
+		end
+	end
+
+	return newData
+end
+
+function PLUGIN:BuildOpenContext(client, entity)
+	local context = {
+		combineTerminal = entity:IsCombineTerminal()
+	}
+
+	if (context.combineTerminal) then
+		context = self:BuildCombinePayload(client)
+	end
+
+	return context
+end
+
+function PLUGIN:GetAccessSession(entity, client)
+	entity.ixAccessSessions = entity.ixAccessSessions or {}
+
+	local sessionID = GetSessionID(client)
+	if (!sessionID) then
+		return nil
+	end
+
+	entity.ixAccessSessions[sessionID] = entity.ixAccessSessions[sessionID] or {
+		full = false,
+		entries = {}
+	}
+
+	return entity.ixAccessSessions[sessionID]
+end
+
+function PLUGIN:ClearAccessSession(entity, client)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or !entity.ixAccessSessions) then
+		return
+	end
+
+	if (!client) then
+		entity.ixAccessSessions = {}
+		return
+	end
+
+	local sessionID = GetSessionID(client)
+	if (sessionID) then
+		entity.ixAccessSessions[sessionID] = nil
+	end
+end
+
+function PLUGIN:IsGeneralComputerLocked(data, session)
+	local security = istable(data) and data.security or {}
+	local mode = security.mode or "none"
+
+	return security.password ~= "" and mode == "locked" and !(session and session.full)
+end
+
+function PLUGIN:GetEntryKey(categoryIndex, entryIndex)
+	return string.format("%d:%d", tonumber(categoryIndex) or 0, tonumber(entryIndex) or 0)
+end
+
+function PLUGIN:BuildGeneralPayload(client, entity)
+	entity = self:ResolveStorageEntity(entity) or entity
+
+	local data = entity:GetComputerData()
+	local session = self:GetAccessSession(entity, client) or {full = false, entries = {}}
+	local filtered = {
+		security = {
+			mode = data.security.mode,
+			password = session.full and data.security.password or ""
+		},
+		categories = {}
+	}
+	local isLocked = self:IsGeneralComputerLocked(data, session)
+	local isGuest = !isLocked and data.security.password ~= "" and data.security.mode == "guest" and !session.full
+
+	if (isLocked) then
+		filtered.categories[1] = {
+			name = L("interactiveComputerLocked"),
+			entries = {
+				{
+					title = L("interactiveComputerLocked"),
+					body = L("interactiveComputerLockedPrompt"),
+					updatedAt = os.time(),
+					security = {
+						mode = "none",
+						password = ""
+					},
+					locked = true
+				}
+			}
+		}
+	else
+		for categoryIndex, category in ipairs(data.categories or {}) do
+			local newCategory = {
+				name = category.name,
+				entries = {}
+			}
+
+			for entryIndex, entry in ipairs(category.entries or {}) do
+				local entrySecurity = self:NormalizeSecurity(entry.security, {"none", "private", "readonly"}, "none")
+				local unlocked = session.full or session.entries[self:GetEntryKey(categoryIndex, entryIndex)] == true
+				local canSee = entrySecurity.mode != "private" or entrySecurity.password == "" or unlocked
+				local canEdit = session.full or unlocked
+
+				newCategory.entries[#newCategory.entries + 1] = {
+					title = canSee and entry.title or L("interactiveComputerLockedEntry"),
+					body = canSee and entry.body or L("interactiveComputerEntryLockedPrompt"),
+					updatedAt = entry.updatedAt,
+					author = canSee and (entry.author or "") or "",
+					security = {
+						mode = entrySecurity.mode,
+						password = session.full and entrySecurity.password or ""
+					},
+					locked = !canSee,
+					unlocked = unlocked,
+					canEdit = canEdit
+				}
+			end
+
+			filtered.categories[#filtered.categories + 1] = newCategory
+		end
+	end
+
+	return filtered, {
+		canEdit = !isLocked and !isGuest and session.full != false or (data.security.password == ""),
+		locked = isLocked,
+		guest = isGuest,
+		computerMode = data.security.mode,
+		hasComputerPassword = data.security.password ~= "",
+		fullAccess = session.full == true or data.security.password == "",
+		entryLocks = true
+	}
+end
+
+function PLUGIN:GenerateComputerID()
+	local computerID = self.nextComputerID
+	self.nextComputerID = self.nextComputerID + 1
+
+	return computerID
+end
+
+function PLUGIN:CreateComputer(position, angles, model, data, powered, forcedID)
+	local definition = self:GetComputerDefinition(model or "")
+	local className = definition and definition.class or "ix_interactive_computer"
+	model = string.lower((definition and definition.model) or model or self.defaultModel)
+
+	if (!self:IsValidComputerModel(model)) then
+		model = self.defaultModel
+	end
+
+	local entity = ents.Create(className)
+	if (!IsValid(entity)) then
+		return
+	end
+
+	entity.ixModelOverride = model
+	entity:SetPos(position)
+	entity:SetAngles(angles)
+	entity:Spawn()
+	entity:Activate()
+
+	local computerID = tonumber(forcedID) or self:GenerateComputerID()
+
+	entity:SetComputerID(computerID)
+	entity:SetComputerData(data or self:CreateDefaultData())
+	entity:SetPowered(powered == true, true)
+
+	self:UpdateComputerVisualState(entity, powered == true and "on" or "off")
+
+	self.storedComputers[computerID] = entity:GetComputerData()
+	self.nextComputerID = math.max(self.nextComputerID, computerID + 1)
+
+	return entity
+end
+
+function PLUGIN:OpenComputer(client, entity)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	if (entity:IsCombineTerminal() and !self:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed()) then
+		if (self:IsCivicComputer(entity)) then
+			if (!self:HasCivicTerminalAccess(client)) then
+				client:NotifyLocalized("interactiveComputerCivicDenied")
+				return
+			end
+		else
+			client:NotifyLocalized("interactiveComputerCombineDenied")
+			return
+		end
+	end
+
+	entity = self:ResolveComputerEntity(entity)
+	local storageEntity = self:ResolveStorageEntity(entity) or entity
+
+	if (IsValid(storageEntity.ixActiveUser) and storageEntity.ixActiveUser != client) then
+		client:NotifyLocalized("interactiveComputerBusy")
+		return
+	end
+
+	if (!self:IsComputerAssemblyValid(entity)) then
+		entity:SetPowered(false, true)
+		client:NotifyLocalized("interactiveComputerRequiresSupport")
+		return
+	end
+
+	storageEntity.ixActiveUser = client
+
+	if (!entity:GetPowered()) then
+		entity:SetPowered(true)
+	end
+
+	if (self:IsCivicComputer(entity)) then
+		netstream.Start(client, "ixInteractiveComputerOpen", entity, entity:GetComputerData(), entity:GetPowered(), self:BuildCivicPayload(client))
+		return
+	end
+
+	if (!entity:IsCombineTerminal()) then
+		local filtered, context = self:BuildGeneralPayload(client, entity)
+		netstream.Start(client, "ixInteractiveComputerOpen", entity, filtered, entity:GetPowered(), context)
+		return
+	end
+
+	netstream.Start(client, "ixInteractiveComputerOpen", entity, entity:GetComputerData(), entity:GetPowered(), self:BuildOpenContext(client, entity))
+end
+
+function PLUGIN:ReleaseComputerUser(entity, client)
+	entity = self:ResolveStorageEntity(entity) or self:ResolveComputerEntity(entity)
+	if (!IsValid(entity)) then
+		return
+	end
+
+	if (!client or entity.ixActiveUser == client) then
+		entity.ixActiveUser = nil
+		self:ClearAccessSession(entity, client)
+	end
+end
+
+function PLUGIN:SaveData()
+	local data = {}
+
+	for _, entity in ipairs(ents.GetAll()) do
+		if (!PLUGIN:IsPrimaryComputerEntity(entity)) then
+			continue
+		end
+
+		local computerID = entity:GetComputerID()
+
+		data[#data + 1] = {
+			class = entity:GetClass(),
+			computerID = computerID,
+			pos = entity:GetPos(),
+			angles = entity:GetAngles(),
+			model = entity:GetModel(),
+			powered = entity:GetPowered(),
+			data = entity:GetComputerData()
+		}
+
+		self.storedComputers[computerID] = entity:GetComputerData()
+	end
+
+	self:SetData(data)
+end
+
+function PLUGIN:LoadData()
+	local savedData = self:GetData() or {}
+	local maxID = 0
+
+	self.storedComputers = {}
+
+	for _, computerData in ipairs(savedData) do
+		local entity = self:CreateComputer(
+			computerData.pos,
+			computerData.angles,
+			computerData.class or computerData.model,
+			self:NormalizeData(computerData.data),
+			computerData.powered,
+			computerData.computerID
+		)
+
+		if (IsValid(entity)) then
+			maxID = math.max(maxID, entity:GetComputerID())
+		end
+	end
+
+	self.nextComputerID = maxID + 1
+end
+
+function PLUGIN:EntityRemoved(entity)
+	if (!ix.shuttingDown and PLUGIN:IsPrimaryComputerEntity(entity)) then
+		self:SaveData()
+	elseif (!ix.shuttingDown and PLUGIN:IsSupportComputer(entity)) then
+		self:SaveData()
+	end
+end
+
+function PLUGIN:PlayerDisconnected(client)
+	for _, entity in ipairs(ents.GetAll()) do
+		if (self:IsPrimaryComputerEntity(entity) and entity.ixActiveUser == client) then
+			entity.ixActiveUser = nil
+			self:ClearAccessSession(entity, client)
+		end
+	end
+end
+
+netstream.Hook("ixInteractiveComputerSave", function(client, entity, data)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	local normalized = PLUGIN:NormalizeData(data)
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	local currentData = storageEntity:GetComputerData()
+	local _, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	if (context.locked or !context.canEdit) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	normalized = PLUGIN:ApplyEntryAuthors(currentData, normalized, client, false)
+	storageEntity:SetComputerData(normalized)
+	PLUGIN.storedComputers[storageEntity:GetComputerID()] = normalized
+	PLUGIN:SaveData()
+
+	local filtered, newContext = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), newContext)
+	client:NotifyLocalized("interactiveComputerSaved")
+end)
+
+netstream.Hook("ixInteractiveComputerEndUse", function(client, entity)
+	PLUGIN:ReleaseComputerUser(entity, client)
+end)
+
+netstream.Hook("ixInteractiveComputerPower", function(client, entity, state)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (state == true and !PLUGIN:IsComputerAssemblyValid(entity)) then
+		entity:SetPowered(false, true)
+		client:NotifyLocalized("interactiveComputerRequiresSupport")
+		return
+	end
+
+	entity:SetPowered(state == true)
+	PLUGIN:SaveData()
+
+	if (!entity:IsCombineTerminal()) then
+		local filtered, context = PLUGIN:BuildGeneralPayload(client, entity)
+		netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
+		return
+	end
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildOpenContext(client, entity))
+end)
+
+netstream.Hook("ixInteractiveComputerUnlock", function(client, entity, password)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or entity:IsCombineTerminal() or PLUGIN:IsCivicComputer(entity)) then
+		return
+	end
+
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	local data = storageEntity:GetComputerData()
+	if (data.security.password == "") then
+		return
+	end
+
+	if (data.security.password != tostring(password or "")) then
+		client:NotifyLocalized("interactiveComputerInvalidPassword")
+		return
+	end
+
+	local session = PLUGIN:GetAccessSession(storageEntity, client)
+	if (session) then
+		session.full = true
+	end
+
+	local filtered, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerUnlockEntry", function(client, entity, categoryIndex, entryIndex, password)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or entity:IsCombineTerminal() or PLUGIN:IsCivicComputer(entity)) then
+		return
+	end
+
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	local data = storageEntity:GetComputerData()
+	local category = data.categories[tonumber(categoryIndex) or 0]
+	local entry = category and category.entries[tonumber(entryIndex) or 0]
+	if (!entry or !entry.security or entry.security.password == "") then
+		return
+	end
+
+	if (entry.security.password != tostring(password or "")) then
+		client:NotifyLocalized("interactiveComputerInvalidPassword")
+		return
+	end
+
+	local session = PLUGIN:GetAccessSession(storageEntity, client)
+	if (session) then
+		session.entries[PLUGIN:GetEntryKey(categoryIndex, entryIndex)] = true
+	end
+
+	local filtered, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerSetSecurity", function(client, entity, mode, password)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or entity:IsCombineTerminal() or PLUGIN:IsCivicComputer(entity)) then
+		return
+	end
+
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	local _, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	if (!context.canEdit) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local data = storageEntity:GetComputerData()
+	data.security = PLUGIN:NormalizeSecurity({
+		mode = tostring(mode or "none"),
+		password = tostring(password or "")
+	}, {"none", "locked", "guest"}, "none")
+	storageEntity:SetComputerData(data)
+	PLUGIN.storedComputers[storageEntity:GetComputerID()] = data
+	PLUGIN:SaveData()
+	client:NotifyLocalized("interactiveComputerPasswordUpdated")
+
+	local filtered, newContext = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), newContext)
+end)
+
+netstream.Hook("ixInteractiveComputerSetEntrySecurity", function(client, entity, categoryIndex, entryIndex, mode, password)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or entity:IsCombineTerminal() or PLUGIN:IsCivicComputer(entity)) then
+		return
+	end
+
+	local storageEntity = PLUGIN:ResolveStorageEntity(entity) or entity
+	local _, context = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	if (!context.canEdit) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local data = storageEntity:GetComputerData()
+	local category = data.categories[tonumber(categoryIndex) or 0]
+	local entry = category and category.entries[tonumber(entryIndex) or 0]
+	if (!entry) then
+		return
+	end
+
+	entry.security = PLUGIN:NormalizeSecurity({
+		mode = tostring(mode or "none"),
+		password = tostring(password or "")
+	}, {"none", "private", "readonly"}, "none")
+	storageEntity:SetComputerData(data)
+	PLUGIN.storedComputers[storageEntity:GetComputerID()] = data
+	PLUGIN:SaveData()
+	client:NotifyLocalized("interactiveComputerPasswordUpdated")
+
+	local filtered, newContext = PLUGIN:BuildGeneralPayload(client, storageEntity)
+	netstream.Start(client, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), newContext)
+end)
+
+netstream.Hook("ixInteractiveComputerUpdateObjectives", function(client, entity, text)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
+		client:NotifyLocalized("interactiveComputerCombineDenied")
+		return
+	end
+
+	if (!hook.Run("CanPlayerEditObjectives", client)) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local date = ix.date.Get()
+	local data = {
+		text = string.sub(tostring(text or ""), 1, 2000),
+		lastEditPlayer = client:GetCharacter() and client:GetCharacter():GetName() or client:Name(),
+		lastEditDate = ix.date.GetSerialized(date)
+	}
+
+	ix.data.Set("combineObjectives", data, false, true)
+	Schema.CombineObjectives = data
+	Schema:AddCombineDisplayMessage("@cViewObjectivesFiller", nil, client, date:spanseconds())
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildOpenContext(client, entity))
+end)
+
+netstream.Hook("ixInteractiveComputerSaveCivicPanel", function(client, entity, announcement, propaganda)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (!(client:IsCombine() or client:IsAdmin())) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local data = PLUGIN:GetCivicPanelData()
+	data.announcement = announcement
+	data.propaganda = propaganda
+	PLUGIN:SetCivicPanelData(data)
+
+	local context
+
+	if (PLUGIN:IsCivicComputer(entity)) then
+		context = PLUGIN:BuildCivicPayload(client)
+	else
+		context = PLUGIN:BuildCivicPayload(client, PLUGIN:BuildOpenContext(client, entity))
+	end
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerAskQuestion", function(client, entity, text)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (!PLUGIN:HasCivicTerminalAccess(client)) then
+		client:NotifyLocalized("interactiveComputerCivicDenied")
+		return
+	end
+
+	local question = string.Trim(string.sub(tostring(text or ""), 1, 300))
+	if (question == "") then
+		return
+	end
+
+	local data = PLUGIN:GetCivicPanelData()
+	data.questions[#data.questions + 1] = {
+		question = question,
+		asker = client:Name(),
+		answer = ""
+	}
+
+	PLUGIN:SetCivicPanelData(data)
+	local context
+
+	if (PLUGIN:IsCivicComputer(entity)) then
+		context = PLUGIN:BuildCivicPayload(client)
+	else
+		context = PLUGIN:BuildCivicPayload(client, PLUGIN:BuildOpenContext(client, entity))
+	end
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerAnswerQuestion", function(client, entity, index, text)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	entity = PLUGIN:ResolveComputerEntity(entity)
+
+	if (!(client:IsCombine() or client:IsAdmin())) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	local data = PLUGIN:GetCivicPanelData()
+	local question = data.questions[tonumber(index) or 0]
+	if (!question) then
+		return
+	end
+
+	question.answer = string.Trim(string.sub(tostring(text or ""), 1, 500))
+
+	PLUGIN:SetCivicPanelData(data)
+	local context
+
+	if (PLUGIN:IsCivicComputer(entity)) then
+		context = PLUGIN:BuildCivicPayload(client)
+	else
+		context = PLUGIN:BuildCivicPayload(client, PLUGIN:BuildOpenContext(client, entity))
+	end
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), context)
+end)
+
+netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, target, text)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
+		client:NotifyLocalized("interactiveComputerCombineDenied")
+		return
+	end
+
+	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
+		return
+	end
+
+	if (!hook.Run("CanPlayerEditData", client, target)) then
+		client:NotifyLocalized("noPerm")
+		return
+	end
+
+	target:GetCharacter():SetData("combineData", {
+		text = string.Trim(string.sub(tostring(text or ""), 1, 1000)),
+		editor = client:GetCharacter() and client:GetCharacter():GetName() or client:Name()
+	})
+	Schema:AddCombineDisplayMessage("@cViewDataFiller", nil, client)
+
+	netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), PLUGIN:BuildOpenContext(client, entity))
+end)
+
+netstream.Hook("ixInteractiveComputerSaveCombineJournal", function(client, entity, data)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return
+	end
+
+	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
+		client:NotifyLocalized("interactiveComputerCombineDenied")
+		return
+	end
+
+	local normalized = PLUGIN:NormalizeData(data)
+	local previousData = PLUGIN:GetCombineJournalData(client)
+	normalized = PLUGIN:ApplyEntryAuthors(previousData, normalized, client, true)
+	PLUGIN:SetCombineJournalData(client, normalized)
+
+	netstream.Start(client, "ixInteractiveComputerSyncCombineJournal", entity, normalized, PLUGIN:BuildOpenContext(client, entity))
+	client:NotifyLocalized("interactiveComputerSaved")
+end)
+
+function PLUGIN:TryBypassSecurity(client, entity)
+	local canUse, failMessage = IsComputerAccessible(client, entity)
+	if (!canUse) then
+		client:NotifyLocalized(failMessage)
+		return false
+	end
+
+	entity = self:ResolveComputerEntity(entity)
+
+	if (!entity:IsCombineTerminal()) then
+		client:NotifyLocalized("interactiveComputerInvalidEmpTarget")
+		return false
+	end
+
+	if (entity:IsSecurityBypassed()) then
+		client:NotifyLocalized("interactiveComputerSecurityAlreadyBypassed")
+		return false
+	end
+
+	entity:SetSecurityBypass(SECURITY_BYPASS_DURATION)
+	entity:EmitSound("ambient/machines/combine_terminal_idle2.wav", 65, 110, 0.7)
+	entity:EmitSound("buttons/combine_button1.wav", 60, 100, 0.7)
+	client:NotifyLocalized("interactiveComputerSecurityBypassed")
+
+	return true
+end

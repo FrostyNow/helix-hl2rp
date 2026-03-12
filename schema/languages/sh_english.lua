@@ -14,6 +14,7 @@ LANGUAGE = {
 	vendingPurchased = "You purchased a drink for %s.",
 	vendingRestocked = "You have restocked some drinks.",
 	cantViewData = "You cannot view this person's data.",
+	useComputerTerminal = "This action is handled through computer terminals.",
 	cid = "CID",
 	citizenid = "Citizen ID",
 	lastEdit = "Last revision by",
@@ -170,6 +171,9 @@ LANGUAGE = {
 	empFailed = "The EMP attempt failed.",
 	empBroken = "The EMP Tool has broken!",
 	empOverloading = "Overloading...",
+	empUseAction = "Use",
+	empInvalidTarget = "You must aim at either a door lock or a Combine terminal.",
+	empInstabilityLevel = "Instability Level",
 
 	bookDesc = "A readable book.",
 

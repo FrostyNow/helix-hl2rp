@@ -156,6 +156,10 @@ do
 	COMMAND.arguments = ix.type.character
 
 	function COMMAND:OnRun(client, target)
+		if (ix.plugin.Get("interactive_computers")) then
+			return "@useComputerTerminal"
+		end
+
 		local targetClient = target:GetPlayer()
 
 		if (!hook.Run("CanPlayerViewData", client, targetClient)) then
@@ -172,6 +176,10 @@ do
 	local COMMAND = {}
 
 	function COMMAND:OnRun(client, arguments)
+		if (ix.plugin.Get("interactive_computers")) then
+			return "@useComputerTerminal"
+		end
+
 		if (!hook.Run("CanPlayerViewObjectives", client)) then
 			return "@noPerm"
 		end

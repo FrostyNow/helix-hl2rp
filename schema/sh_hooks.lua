@@ -9,6 +9,10 @@ end
 
 -- called when the client wants to view the combine data for the given target
 function Schema:CanPlayerViewData(client, target)
+	if (ix.plugin.Get("interactive_computers")) then
+		return false
+	end
+
 	return client:IsCombine() and (!target:IsCombine() and target:Team() != FACTION_ADMIN)
 end
 
@@ -18,6 +22,10 @@ function Schema:CanPlayerEditData(client, target)
 end
 
 function Schema:CanPlayerViewObjectives(client)
+	if (ix.plugin.Get("interactive_computers")) then
+		return false
+	end
+
 	return client:IsCombine()
 end
 

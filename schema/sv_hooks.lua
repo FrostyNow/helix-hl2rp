@@ -456,6 +456,10 @@ end
 -- end)
 
 netstream.Hook("ViewDataUpdate", function(client, target, text)
+	if (ix.plugin.Get("interactive_computers")) then
+		return
+	end
+
 	if (IsValid(target) and hook.Run("CanPlayerEditData", client, target) and client:GetCharacter() and target:GetCharacter()) then
 		local data = {
 			text = string.Trim(text:sub(1, 1000)),
@@ -468,6 +472,10 @@ netstream.Hook("ViewDataUpdate", function(client, target, text)
 end)
 
 netstream.Hook("ViewObjectivesUpdate", function(client, text)
+	if (ix.plugin.Get("interactive_computers")) then
+		return
+	end
+
 	if (client:GetCharacter() and hook.Run("CanPlayerEditObjectives", client)) then
 		local date = ix.date.Get()
 		local data = {
