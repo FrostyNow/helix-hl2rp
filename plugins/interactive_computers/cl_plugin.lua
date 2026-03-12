@@ -1,7 +1,7 @@
 local PLUGIN = PLUGIN
 
 surface.CreateFont("ixComputerDOSHeader", {
-	font = "Courier New",
+	font = "Lucida Console",
 	size = 24,
 	weight = 700,
 	extended = true,
@@ -9,7 +9,7 @@ surface.CreateFont("ixComputerDOSHeader", {
 })
 
 surface.CreateFont("ixComputerDOSBody", {
-	font = "Courier New",
+	font = "Lucida Console",
 	size = 18,
 	weight = 600,
 	extended = true,
@@ -17,23 +17,62 @@ surface.CreateFont("ixComputerDOSBody", {
 })
 
 surface.CreateFont("ixComputerDOSTiny", {
-	font = "Courier New",
+	font = "Lucida Console",
 	size = 15,
 	weight = 500,
 	extended = true,
 	antialias = true
 })
 
-local COLOR_BG = Color(5, 10, 5, 245)
-local COLOR_PANEL = Color(10, 18, 10, 240)
-local COLOR_TEXT = Color(110, 255, 110)
-local COLOR_DIM = Color(65, 150, 65)
-local COLOR_ACCENT = Color(45, 255, 45, 35)
+surface.CreateFont("ixComputerShellTitle", {
+	font = "Verdana",
+	size = 18,
+	weight = 800,
+	extended = true,
+	antialias = true
+})
+
+surface.CreateFont("ixComputerShellBody", {
+	font = "Verdana",
+	size = 15,
+	weight = 600,
+	extended = true,
+	antialias = true
+})
+
+surface.CreateFont("ixComputerCombineHeader", {
+	font = "Trebuchet MS",
+	size = 28,
+	weight = 900,
+	extended = true,
+	antialias = true
+})
+
+surface.CreateFont("ixComputerCombineBody", {
+	font = "Trebuchet MS",
+	size = 16,
+	weight = 700,
+	extended = true,
+	antialias = true
+})
+
+local COLOR_BG = Color(190, 194, 198, 252)
+local COLOR_PANEL = Color(170, 174, 178, 245)
+local COLOR_TEXT = Color(80, 255, 118)
+local COLOR_DIM = Color(45, 120, 62)
+local COLOR_ACCENT = Color(46, 82, 164, 255)
+local COLOR_SHELL = Color(196, 198, 202)
+local COLOR_SHELL_DARK = Color(118, 122, 128)
+local COLOR_SHELL_LIGHT = Color(238, 240, 244)
+local COLOR_SHELL_FACE = Color(210, 214, 218)
+local COLOR_CRT = Color(7, 18, 10, 255)
 local TYPE_SOUND = "buttons/blip1.wav"
 local COMBINE_BG = Color(8, 16, 28, 246)
 local COMBINE_PANEL = Color(14, 24, 38, 240)
 local COMBINE_TEXT = Color(115, 200, 255)
 local COMBINE_DIM = Color(90, 138, 178)
+local COMBINE_ACCENT = Color(36, 104, 168)
+local COMBINE_GLOW = Color(70, 170, 255, 35)
 
 local StyleLine
 local OpenComputerUI
@@ -45,6 +84,28 @@ local function GetTerminalTime()
 	end
 
 	return os.date("%Y-%m-%d %H:%M:%S")
+end
+
+local function DrawInsetBox(x, y, width, height, dark, light, fill)
+	surface.SetDrawColor(fill)
+	surface.DrawRect(x, y, width, height)
+	surface.SetDrawColor(dark)
+	surface.DrawRect(x, y + height - 2, width, 2)
+	surface.DrawRect(x + width - 2, y, 2, height)
+	surface.SetDrawColor(light)
+	surface.DrawRect(x, y, width, 2)
+	surface.DrawRect(x, y, 2, height)
+end
+
+local function DrawRaisedBox(x, y, width, height, dark, light, fill)
+	surface.SetDrawColor(fill)
+	surface.DrawRect(x, y, width, height)
+	surface.SetDrawColor(light)
+	surface.DrawRect(x, y, width, 2)
+	surface.DrawRect(x, y, 2, height)
+	surface.SetDrawColor(dark)
+	surface.DrawRect(x, y + height - 2, width, 2)
+	surface.DrawRect(x + width - 2, y, 2, height)
 end
 
 function PANEL:Init()
@@ -64,7 +125,7 @@ function PANEL:Init()
 	self.closeButton = self:Add("DButton")
 	self.closeButton:SetText("X")
 	self.closeButton:SetFont("ixComputerDOSBody")
-	self.closeButton:SetTextColor(COLOR_TEXT)
+	self.closeButton:SetTextColor(Color(36, 40, 48))
 	self.closeButton.DoClick = function()
 		self:Close()
 	end
@@ -72,7 +133,7 @@ function PANEL:Init()
 	self.powerButton = self:Add("DButton")
 	self.powerButton:SetText("POWER")
 	self.powerButton:SetFont("ixComputerDOSBody")
-	self.powerButton:SetTextColor(COLOR_TEXT)
+	self.powerButton:SetTextColor(Color(36, 40, 48))
 	self.powerButton.DoClick = function()
 		if (!IsValid(self.entity)) then
 			self:Close()
@@ -91,7 +152,7 @@ function PANEL:Init()
 	self.unlockButton = self:Add("DButton")
 	self.unlockButton:SetText(L("interactiveComputerUnlock"))
 	self.unlockButton:SetFont("ixComputerDOSBody")
-	self.unlockButton:SetTextColor(COLOR_TEXT)
+	self.unlockButton:SetTextColor(Color(36, 40, 48))
 	self.unlockButton.DoClick = function()
 		if (!IsValid(self.entity)) then
 			return
@@ -110,7 +171,7 @@ function PANEL:Init()
 	self.securityButton = self:Add("DButton")
 	self.securityButton:SetText(L("interactiveComputerSecurity"))
 	self.securityButton:SetFont("ixComputerDOSBody")
-	self.securityButton:SetTextColor(COLOR_TEXT)
+	self.securityButton:SetTextColor(Color(36, 40, 48))
 	self.securityButton.DoClick = function()
 		self:OpenComputerSecurityMenu()
 	end
@@ -118,7 +179,7 @@ function PANEL:Init()
 	self.entrySecurityButton = self:Add("DButton")
 	self.entrySecurityButton:SetText(L("interactiveComputerEntrySecurity"))
 	self.entrySecurityButton:SetFont("ixComputerDOSBody")
-	self.entrySecurityButton:SetTextColor(COLOR_TEXT)
+	self.entrySecurityButton:SetTextColor(Color(36, 40, 48))
 	self.entrySecurityButton.DoClick = function()
 		self:OpenEntrySecurityMenu()
 	end
@@ -126,7 +187,7 @@ function PANEL:Init()
 	self.backButton = self:Add("DButton")
 	self.backButton:SetText(L("interactiveComputerBack"))
 	self.backButton:SetFont("ixComputerDOSBody")
-	self.backButton:SetTextColor(COLOR_TEXT)
+	self.backButton:SetTextColor(Color(36, 40, 48))
 	self.backButton:SetVisible(false)
 	self.backButton.DoClick = function()
 		if (self.context and self.context.returnContext and OpenComputerUI) then
@@ -326,7 +387,7 @@ function PANEL:Init()
 	self.saveButton = self.rightPanel:Add("DButton")
 	self.saveButton:SetText("SAVE LOG")
 	self.saveButton:SetFont("ixComputerDOSBody")
-	self.saveButton:SetTextColor(COLOR_TEXT)
+	self.saveButton:SetTextColor(Color(36, 40, 48))
 	self.saveButton.DoClick = function()
 		if (!IsValid(self.entity)) then
 			self:Close()
@@ -344,22 +405,21 @@ function PANEL:Init()
 end
 
 function PANEL:Paint(width, height)
-	surface.SetDrawColor(COLOR_BG)
-	surface.DrawRect(0, 0, width, height)
-
+	DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_SHELL)
 	surface.SetDrawColor(COLOR_ACCENT)
-		for y = 0, height, 4 do
-			surface.DrawRect(0, y, width, 1)
-		end
+	surface.DrawRect(4, 4, width - 8, 30)
 
-	surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 50)
-	surface.DrawOutlinedRect(0, 0, width, height, 2)
+	for x = 12, width - 10, 8 do
+		surface.SetDrawColor(255, 255, 255, 8)
+		surface.DrawRect(x, 4, 2, 30)
+	end
 
-	draw.SimpleText("INTERACTIVE COMPUTERS :: DOS JOURNAL", "ixComputerDOSHeader", 20, 20, COLOR_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", width - 20, 24, COLOR_DIM, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+	draw.SimpleText("WORKSTATION JOURNAL", "ixComputerShellTitle", 14, 8, color_white, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(GetTerminalTime(), "ixComputerShellBody", width - 18, 10, Color(230, 236, 255), TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+	draw.SimpleText("File   Entry   Security   Tools", "ixComputerShellBody", 16, 42, Color(48, 52, 60), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 
-	surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 20)
-	surface.DrawRect(18, 56, width - 36, 1)
+	surface.SetDrawColor(COLOR_SHELL_DARK)
+	surface.DrawRect(8, 64, width - 16, 2)
 end
 
 function PANEL:PerformLayout(width, height)
@@ -440,10 +500,11 @@ function PANEL:PaintOver(width, height)
 end
 
 function PANEL:PaintPanelBackground(panel, width, height)
-	surface.SetDrawColor(COLOR_PANEL)
-	surface.DrawRect(0, 0, width, height)
-	surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 25)
-	surface.DrawOutlinedRect(0, 0, width, height, 1)
+	DrawInsetBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_PANEL)
+	surface.SetDrawColor(0, 0, 0, 8)
+	for y = 3, height - 3, 6 do
+		surface.DrawRect(3, y, width - 6, 1)
+	end
 end
 
 function PANEL:GetSelectedCategory()
@@ -698,9 +759,9 @@ StyleLine = function(line)
 	line.Paint = function(self, width, height)
 		local selected = self:IsSelected()
 
-		surface.SetDrawColor(selected and Color(24, 70, 24, 255) or Color(0, 0, 0, 0))
+		surface.SetDrawColor(selected and Color(18, 46, 26, 255) or Color(0, 0, 0, 0))
 		surface.DrawRect(0, 0, width, height)
-		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, selected and 80 or 15)
+		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, selected and 120 or 20)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
 	end
 
@@ -715,21 +776,17 @@ end
 local function StyleListView(list)
 	list:SetMultiSelect(false)
 	list.Paint = function(_, width, height)
-		surface.SetDrawColor(COLOR_PANEL)
-		surface.DrawRect(0, 0, width, height)
-		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 20)
-		surface.DrawOutlinedRect(0, 0, width, height, 1)
+		DrawInsetBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_CRT)
 	end
 
 	local header = list:GetHeader()
 	header:SetTall(22)
 	header.Paint = function(_, width, height)
-		surface.SetDrawColor(20, 40, 20, 240)
-		surface.DrawRect(0, 0, width, height)
+		DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, Color(202, 206, 211))
 	end
 
 	for _, column in ipairs(header.Columns or {}) do
-		column:SetTextColor(COLOR_TEXT)
+		column:SetTextColor(Color(42, 48, 54))
 		column:SetFont("ixComputerDOSTiny")
 	end
 
@@ -743,10 +800,7 @@ end
 local function StyleButton(button)
 	button.Paint = function(_, width, height)
 		local hovered = button:IsHovered()
-		surface.SetDrawColor(hovered and Color(25, 60, 25, 255) or Color(14, 30, 14, 255))
-		surface.DrawRect(0, 0, width, height)
-		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, hovered and 120 or 60)
-		surface.DrawOutlinedRect(0, 0, width, height, 1)
+		DrawRaisedBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, hovered and Color(220, 224, 228) or COLOR_SHELL_FACE)
 	end
 end
 
@@ -755,10 +809,11 @@ local function StyleTextEntry(entry)
 	entry:SetHighlightColor(Color(70, 170, 70))
 	entry:SetCursorColor(COLOR_TEXT)
 	entry.Paint = function(self, width, height)
-		surface.SetDrawColor(Color(8, 20, 8, 255))
-		surface.DrawRect(0, 0, width, height)
-		surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 40)
-		surface.DrawOutlinedRect(0, 0, width, height, 1)
+		DrawInsetBox(0, 0, width, height, COLOR_SHELL_DARK, COLOR_SHELL_LIGHT, COLOR_CRT)
+		for y = 2, height - 2, 4 do
+			surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 10)
+			surface.DrawRect(2, y, width - 4, 1)
+		end
 		self:DrawTextEntryText(COLOR_TEXT, Color(70, 170, 70, 120), COLOR_TEXT)
 	end
 end
@@ -766,20 +821,28 @@ end
 local function StyleCombineButton(button)
 	button.Paint = function(_, width, height)
 		local hovered = button:IsHovered()
-		surface.SetDrawColor(hovered and Color(24, 56, 88, 255) or Color(16, 34, 54, 255))
+		surface.SetDrawColor(hovered and Color(18, 46, 74, 255) or Color(12, 28, 46, 255))
 		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_ACCENT)
+		surface.DrawRect(0, 0, 4, height)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, hovered and 130 or 70)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
+		if (hovered) then
+			surface.SetDrawColor(COMBINE_GLOW)
+			surface.DrawRect(0, 0, width, height)
+		end
 	end
 end
 
 local function StyleCombineTextEntry(entry)
 	entry:SetTextColor(COMBINE_TEXT)
-	entry:SetHighlightColor(Color(180, 120, 40))
+	entry:SetHighlightColor(Color(90, 160, 220))
 	entry:SetCursorColor(COMBINE_TEXT)
 	entry.Paint = function(self, width, height)
-		surface.SetDrawColor(Color(10, 20, 34, 255))
+		surface.SetDrawColor(Color(8, 18, 32, 255))
 		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 35)
+		surface.DrawRect(0, 0, width, 3)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 45)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
 		self:DrawTextEntryText(COMBINE_TEXT, Color(90, 160, 220, 120), COMBINE_TEXT)
@@ -791,6 +854,10 @@ local function StyleCombineListView(list)
 	list.Paint = function(_, width, height)
 		surface.SetDrawColor(COMBINE_PANEL)
 		surface.DrawRect(0, 0, width, height)
+		surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 18)
+		for y = 0, height, 8 do
+			surface.DrawRect(0, y, width, 1)
+		end
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 22)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
 	end
@@ -802,7 +869,7 @@ local function StyleCombineListView(list)
 
 	header:SetTall(22)
 	header.Paint = function(_, width, height)
-		surface.SetDrawColor(20, 38, 58, 240)
+		surface.SetDrawColor(12, 42, 72, 240)
 		surface.DrawRect(0, 0, width, height)
 	end
 
@@ -992,18 +1059,23 @@ function COMBINE:Paint(width, height)
 	surface.SetDrawColor(COMBINE_BG)
 	surface.DrawRect(0, 0, width, height)
 
-	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 28)
-	for y = 0, height, 6 do
+	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 30)
+	for y = 0, height, 10 do
 		surface.DrawRect(0, y, width, 1)
 	end
+
+	surface.SetDrawColor(COMBINE_ACCENT)
+	surface.DrawRect(0, 0, width, 4)
+	surface.DrawRect(0, 78, width, 1)
+	surface.DrawRect(0, height - 42, width, 1)
 
 	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 70)
 	surface.DrawOutlinedRect(0, 0, width, height, 2)
 
-	draw.SimpleText(L("interactiveComputerCombineTitle"), "ixComputerDOSHeader", 22, 20, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", 22, 50, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerDOSTiny", width * 0.33, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerDOSTiny", width * 0.33, height * 0.53, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerCombineTitle"), "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText("OVERWATCH GRID " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerCombineBody", width * 0.33, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerCombineBody", width * 0.33, height * 0.53, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function COMBINE:PerformLayout(width, height)
@@ -1282,19 +1354,24 @@ function CIVIC:Paint(width, height)
 	surface.SetDrawColor(COMBINE_BG)
 	surface.DrawRect(0, 0, width, height)
 
-	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 24)
-	for y = 0, height, 6 do
+	surface.SetDrawColor(COMBINE_ACCENT.r, COMBINE_ACCENT.g, COMBINE_ACCENT.b, 26)
+	for y = 0, height, 10 do
 		surface.DrawRect(0, y, width, 1)
 	end
+
+	surface.SetDrawColor(COMBINE_ACCENT)
+	surface.DrawRect(0, 0, width, 4)
+	surface.DrawRect(0, 78, width, 1)
+	surface.DrawRect(0, height - 42, width, 1)
 
 	surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 70)
 	surface.DrawOutlinedRect(0, 0, width, height, 2)
 
-	draw.SimpleText(L("interactiveComputerCivicTitle"), "ixComputerDOSHeader", 22, 20, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", 22, 50, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerAnnouncement"), "ixComputerDOSTiny", 22, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerPropaganda"), "ixComputerDOSTiny", width * 0.5 + 12, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(L("interactiveComputerQuestions"), "ixComputerDOSTiny", 22, height * 0.47, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerCivicTitle"), "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText("CIVIC UPLINK " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerAnnouncement"), "ixComputerCombineBody", 22, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerPropaganda"), "ixComputerCombineBody", width * 0.5 + 12, 84, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	draw.SimpleText(L("interactiveComputerQuestions"), "ixComputerCombineBody", 22, height * 0.47, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function CIVIC:PerformLayout(width, height)
