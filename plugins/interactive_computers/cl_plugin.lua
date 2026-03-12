@@ -30,14 +30,22 @@ local COLOR_TEXT = Color(110, 255, 110)
 local COLOR_DIM = Color(65, 150, 65)
 local COLOR_ACCENT = Color(45, 255, 45, 35)
 local TYPE_SOUND = "buttons/blip1.wav"
-local COMBINE_BG = Color(12, 14, 18, 246)
-local COMBINE_PANEL = Color(18, 22, 28, 240)
-local COMBINE_TEXT = Color(255, 190, 100)
-local COMBINE_DIM = Color(145, 118, 78)
+local COMBINE_BG = Color(8, 16, 28, 246)
+local COMBINE_PANEL = Color(14, 24, 38, 240)
+local COMBINE_TEXT = Color(115, 200, 255)
+local COMBINE_DIM = Color(90, 138, 178)
 
 local StyleLine
 local OpenComputerUI
 local PANEL = {}
+
+local function GetTerminalTime()
+	if (ix and ix.date and ix.date.GetLocalizedTime) then
+		return ix.date.GetLocalizedTime()
+	end
+
+	return os.date("%Y-%m-%d %H:%M:%S")
+end
 
 function PANEL:Init()
 	self:SetSize(math.min(ScrW() - 120, 1180), math.min(ScrH() - 120, 760))
@@ -348,7 +356,7 @@ function PANEL:Paint(width, height)
 	surface.DrawOutlinedRect(0, 0, width, height, 2)
 
 	draw.SimpleText("INTERACTIVE COMPUTERS :: DOS JOURNAL", "ixComputerDOSHeader", 20, 20, COLOR_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S"), "ixComputerDOSTiny", width - 20, 24, COLOR_DIM, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", width - 20, 24, COLOR_DIM, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
 
 	surface.SetDrawColor(COLOR_TEXT.r, COLOR_TEXT.g, COLOR_TEXT.b, 20)
 	surface.DrawRect(18, 56, width - 36, 1)
@@ -758,7 +766,7 @@ end
 local function StyleCombineButton(button)
 	button.Paint = function(_, width, height)
 		local hovered = button:IsHovered()
-		surface.SetDrawColor(hovered and Color(64, 45, 22, 255) or Color(34, 26, 18, 255))
+		surface.SetDrawColor(hovered and Color(24, 56, 88, 255) or Color(16, 34, 54, 255))
 		surface.DrawRect(0, 0, width, height)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, hovered and 130 or 70)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
@@ -770,11 +778,11 @@ local function StyleCombineTextEntry(entry)
 	entry:SetHighlightColor(Color(180, 120, 40))
 	entry:SetCursorColor(COMBINE_TEXT)
 	entry.Paint = function(self, width, height)
-		surface.SetDrawColor(Color(18, 16, 12, 255))
+		surface.SetDrawColor(Color(10, 20, 34, 255))
 		surface.DrawRect(0, 0, width, height)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 45)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
-		self:DrawTextEntryText(COMBINE_TEXT, Color(180, 120, 40, 120), COMBINE_TEXT)
+		self:DrawTextEntryText(COMBINE_TEXT, Color(90, 160, 220, 120), COMBINE_TEXT)
 	end
 end
 
@@ -787,10 +795,14 @@ local function StyleCombineListView(list)
 		surface.DrawOutlinedRect(0, 0, width, height, 1)
 	end
 
-	local header = list:GetHeader()
+	local header = list.GetHeader and list:GetHeader() or nil
+	if (!IsValid(header)) then
+		return
+	end
+
 	header:SetTall(22)
 	header.Paint = function(_, width, height)
-		surface.SetDrawColor(46, 34, 20, 240)
+		surface.SetDrawColor(20, 38, 58, 240)
 		surface.DrawRect(0, 0, width, height)
 	end
 
@@ -989,7 +1001,7 @@ function COMBINE:Paint(width, height)
 	surface.DrawOutlinedRect(0, 0, width, height, 2)
 
 	draw.SimpleText(L("interactiveComputerCombineTitle"), "ixComputerDOSHeader", 22, 20, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S"), "ixComputerDOSTiny", width - 20, 24, COMBINE_DIM, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", 22, 50, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerDOSTiny", width * 0.33, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerDOSTiny", width * 0.33, height * 0.53, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
@@ -1063,7 +1075,7 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 		line.Paint = function(self, width, height)
 			local selected = self:IsSelected()
 
-			surface.SetDrawColor(selected and Color(72, 46, 18, 255) or Color(0, 0, 0, 0))
+			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
 			surface.DrawRect(0, 0, width, height)
 			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
 			surface.DrawOutlinedRect(0, 0, width, height, 1)
@@ -1117,8 +1129,6 @@ local CIVIC = {}
 
 function CIVIC:Init()
 	self:SetSize(math.min(ScrW() - 180, 1120), math.min(ScrH() - 140, 760))
-	self:Center()
-	self:MakePopup()
 	self:SetTitle("")
 	self:ShowCloseButton(false)
 	self:SetDraggable(false)
@@ -1254,6 +1264,9 @@ function CIVIC:Init()
 			string.sub(self.answerEntry:GetValue(), 1, 500)
 		)
 	end
+
+	self:Center()
+	self:MakePopup()
 end
 
 function CIVIC:PlayTypeSound()
@@ -1278,13 +1291,17 @@ function CIVIC:Paint(width, height)
 	surface.DrawOutlinedRect(0, 0, width, height, 2)
 
 	draw.SimpleText(L("interactiveComputerCivicTitle"), "ixComputerDOSHeader", 22, 20, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-	draw.SimpleText(os.date("%Y-%m-%d %H:%M:%S"), "ixComputerDOSTiny", width - 20, 24, COMBINE_DIM, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP)
+	draw.SimpleText(GetTerminalTime(), "ixComputerDOSTiny", 22, 50, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	draw.SimpleText(L("interactiveComputerAnnouncement"), "ixComputerDOSTiny", 22, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	draw.SimpleText(L("interactiveComputerPropaganda"), "ixComputerDOSTiny", width * 0.5 + 12, 74, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	draw.SimpleText(L("interactiveComputerQuestions"), "ixComputerDOSTiny", 22, height * 0.47, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 end
 
 function CIVIC:PerformLayout(width, height)
+	if (!self.closeButton or !self.powerButton or !self.backButton or !self.statusLabel) then
+		return
+	end
+
 	self.closeButton:SetPos(width - 58, 14)
 	self.closeButton:SetSize(40, 32)
 
@@ -1343,7 +1360,7 @@ function CIVIC:PopulateQuestions()
 		line.Paint = function(row, rowWidth, rowHeight)
 			local selected = row:IsSelected()
 
-			surface.SetDrawColor(selected and Color(72, 46, 18, 255) or Color(0, 0, 0, 0))
+			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
 			surface.DrawRect(0, 0, rowWidth, rowHeight)
 			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
 			surface.DrawOutlinedRect(0, 0, rowWidth, rowHeight, 1)
