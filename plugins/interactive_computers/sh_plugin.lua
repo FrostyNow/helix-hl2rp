@@ -238,7 +238,7 @@ ix.lang.AddTable("english", {
 	interactiveComputerHelpIntro = "Type HELP to view available commands.",
 	interactiveComputerHelpLogin = "LOGIN <PASSWORD>\t: Log into the workstation",
 	interactiveComputerHelpDir = "DIR / LS\t\t: Legacy alias for LIST",
-	interactiveComputerHelpList = "LIST\t\t\t\t: List saved entries",
+	interactiveComputerHelpList = "LIST\t\t\t: List saved entries",
 	interactiveComputerHelpOpen = "OPEN <INDEX|TITLE>\t: Open an entry",
 	interactiveComputerHelpRead = "READ / TYPE\t\t: Display the selected entry",
 	interactiveComputerHelpWrite = "WRITE <TITLE>\t\t: Create a new entry",
