@@ -1,13 +1,21 @@
 local PLUGIN = PLUGIN
+local applyCooldowns = {}
 
 ix.command.Add("Apply", {
 	alias = {"CID"},
 	description = "@cmdApply",
 	OnRun = function(self, client)
+		local curTime = CurTime()
+		local nextApplyTime = applyCooldowns[client]
+
+		if (nextApplyTime and nextApplyTime > curTime) then
+			return client:NotifyLocalized("applyCooldown", math.ceil(nextApplyTime - curTime))
+		end
+
 		local character = client:GetCharacter()
-		local inv = character:GetInventory()
 
 		if character then
+			local inv = character:GetInventory()
 			local cidItem
 			for _, v in pairs(inv:GetItems()) do
 				if (v.uniqueID == "cid") then
@@ -20,6 +28,8 @@ ix.command.Add("Apply", {
 				local name = cidItem:GetData("name", character:GetName())
 				local id = cidItem:GetData("id", "00000")
 				local class = cidItem:GetData("class", "Second Class Citizen")
+
+				applyCooldowns[client] = curTime + 5
 
 				ix.chat.Send(client, "me", name .. " #" .. id)
 
