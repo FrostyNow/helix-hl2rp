@@ -193,36 +193,6 @@ function Schema:DoPlayerDeath(client, attacker, damageinfo)
 	end
 end
 
-function Schema:PlayerDeath(client, inflicter, attacker)
-	if (client:IsCombine()) then
-		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
-
-		self:AddCombineDisplayMessage("@cLostBiosignal")
-		self:AddCombineDisplayMessage("@cLostBiosignalLocation", Color(255, 0, 0, 255), location)
-
-		-- if (IsValid(client.ixScanner) and client.ixScanner:Health() > 0) then
-		-- 	client.ixScanner:TakeDamage(999)
-		-- end
-
-		local sounds = {"npc/overwatch/radiovoice/on1.wav", "npc/overwatch/radiovoice/lostbiosignalforunit.wav"}
-		local chance = math.random(1, 7)
-
-		if (chance == 2) then
-			sounds[#sounds + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
-		elseif (chance == 3) then
-			sounds[#sounds + 1] = "npc/overwatch/radiovoice/reinforcementteamscode3.wav"
-		end
-
-		sounds[#sounds + 1] = "npc/overwatch/radiovoice/off4.wav"
-
-		for k, v in ipairs(player.GetAll()) do
-			if (v:IsCombine()) then
-				ix.util.EmitQueuedSounds(v, sounds, 2, nil, v == client and 100 or 80)
-			end
-		end
-	end
-end
-
 -- function Schema:PlayerNoClip(client)
 -- 	if (IsValid(client.ixScanner)) then
 -- 		return false
@@ -245,26 +215,49 @@ function Schema:EntityTakeDamage(entity, dmgInfo)
 	end
 end
 
+local defaultPainSounds
+local drownPainSounds
+local metrocopPainSounds
+local combinePainSounds
+
 function Schema:PlayerHurt(client, attacker, health, damage)
-	if (health <= 0) then
-		return
-	end
+	if (health > 0) then
+		if (client:IsCombine() and (client.ixTraumaCooldown or 0) < CurTime()) then
+			local text = "cDamageExternal"
 
-	if (client:IsCombine() and (client.ixTraumaCooldown or 0) < CurTime()) then
-		local text = "cDamageExternal"
+			if (damage > 50) then
+				text = "cDamageSevere"
+			end
 
-		if (damage > 50) then
-			text = "cDamageSevere"
+			client:AddCombineDisplayMessage("@cTrauma", Color(255, 0, 0, 255), L(text, client))
+
+			if (health < 25) then
+				client:AddCombineDisplayMessage("@cDroppingVitals", Color(255, 0, 0, 255))
+			end
+
+			client.ixTraumaCooldown = CurTime() + 15
 		end
 
-		client:AddCombineDisplayMessage("@cTrauma", Color(255, 0, 0, 255), L(text, client))
+		if ((client.ixNextPain or 0) < CurTime()) then
+			local painSound = hook.Run("GetPlayerPainSound", client)
 
-		if (health < 25) then
-			client:AddCombineDisplayMessage("@cDroppingVitals", Color(255, 0, 0, 255))
+			if (painSound != false) then
+				painSound = painSound or defaultPainSounds[math.random(1, #defaultPainSounds)]
+
+				if (client:IsFemale() and !painSound:find("female")) then
+					painSound = painSound:gsub("male", "female")
+				end
+
+				client:EmitSound(painSound)
+			end
+
+			client.ixNextPain = CurTime() + 0.33
 		end
-
-		client.ixTraumaCooldown = CurTime() + 15
 	end
+
+	ix.log.Add(client, "playerHurt", damage, attacker:GetName() ~= "" and attacker:GetName() or attacker:GetClass())
+
+	return true
 end
 
 function Schema:PlayerStaminaLost(client)
@@ -275,34 +268,113 @@ function Schema:PlayerStaminaGained(client)
 	client:AddCombineDisplayMessage("@cStaminaGained", Color(0, 255, 0, 255))
 end
 
+defaultPainSounds = {
+	Sound("vo/npc/male01/pain01.wav"),
+	Sound("vo/npc/male01/pain02.wav"),
+	Sound("vo/npc/male01/pain03.wav"),
+	Sound("vo/npc/male01/pain04.wav"),
+	Sound("vo/npc/male01/pain05.wav"),
+	Sound("vo/npc/male01/pain06.wav")
+}
+
+drownPainSounds = {
+	Sound("player/pl_drown1.wav"),
+	Sound("player/pl_drown2.wav"),
+	Sound("player/pl_drown3.wav")
+}
+
+metrocopPainSounds = {
+	Sound("npc/metropolice/knockout2.wav"),
+	Sound("npc/metropolice/pain1.wav"),
+	Sound("npc/metropolice/pain2.wav"),
+	Sound("npc/metropolice/pain3.wav"),
+	Sound("npc/metropolice/pain1.wav")
+}
+
+combinePainSounds = {
+	Sound("npc/combine_soldier/pain1.wav"),
+	Sound("npc/combine_soldier/pain2.wav"),
+	Sound("npc/combine_soldier/pain3.wav")
+}
+
+local function GetCombinePainSound(client)
+	if (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD")) then
+		return false
+	end
+
+	if (client:Team() == FACTION_OTA) then
+		return combinePainSounds[math.random(1, #combinePainSounds)]
+	end
+
+	return metrocopPainSounds[math.random(1, #metrocopPainSounds)]
+end
+
+local function GetCombineDeathSound(client)
+	if (client:Team() == FACTION_OTA) then
+		return "npc/combine_soldier/die" .. math.random(1, 3) .. ".wav"
+	end
+
+	return "npc/metropolice/die" .. math.random(1, 4) .. ".wav"
+end
+
 function Schema:GetPlayerPainSound(client)
+	if (client:IsAdmin() and client:GetMoveType() == MOVETYPE_NOCLIP) then
+		return false
+	end
+
 	if (client:IsCombine()) then
-		local sound = "NPC_MetroPolice.Pain"
+		return GetCombinePainSound(client)
+	end
 
-		-- if (Schema:IsCombineRank(client:Name(), "SCN")) then
-		-- 	sound = "NPC_CScanner.Pain"
-		-- elseif (Schema:IsCombineRank(client:Name(), "SHIELD")) then
-		-- 	sound = "NPC_SScanner.Pain"
-		-- end
+	if (client:WaterLevel() >= 3) then
+		return drownPainSounds[math.random(1, #drownPainSounds)]
+	end
+end
 
-		return sound
+function Schema:PlayerDeath(client, inflicter, attacker)
+	if (client:IsCombine()) then
+		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+
+		self:AddCombineDisplayMessage("@cLostBiosignal")
+		self:AddCombineDisplayMessage("@cLostBiosignalLocation", Color(255, 0, 0, 255), location)
+
+		local sounds = {"npc/overwatch/radiovoice/on1.wav", "npc/overwatch/radiovoice/lostbiosignalforunit.wav"}
+		local chance = math.random(1, 7)
+
+		if (chance == 2) then
+			sounds[#sounds + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
+		elseif (chance == 3) then
+			sounds[#sounds + 1] = "npc/overwatch/radiovoice/reinforcementteamscode3.wav"
+		end
+
+		sounds[#sounds + 1] = "npc/overwatch/radiovoice/off4.wav"
+
+		for _, player in ipairs(player.GetAll()) do
+			if (player:IsCombine()) then
+				ix.util.EmitQueuedSounds(player, sounds, 2, nil, player == client and 100 or 80)
+			end
+		end
 	end
 end
 
 function Schema:GetPlayerDeathSound(client)
 	if (client:IsCombine()) then
-		local sound = "NPC_MetroPolice.Die"
+		local sound = GetCombineDeathSound(client)
+		local receivers = {}
+		local maxDistance = 10 * 39.37
 
-		-- if (Schema:IsCombineRank(client:Name(), "SCN")) then
-		-- 	sound = "NPC_CScanner.Die"
-		-- elseif (Schema:IsCombineRank(client:Name(), "SHIELD")) then
-		-- 	sound = "NPC_SScanner.Die"
-		-- end
-
-		for k, v in ipairs(player.GetAll()) do
-			if (v:IsCombine()) then
-				v:EmitSound(sound)
+		for _, player in ipairs(player.GetAll()) do
+			if (
+				player:IsCombine()
+				and player != client
+				and player:GetPos():DistToSqr(client:GetPos()) > (maxDistance * maxDistance)
+			) then
+				receivers[#receivers + 1] = player
 			end
+		end
+
+		if (#receivers > 0) then
+			netstream.Start(receivers, "PlayPrivateSound", sound, 75, 100, 0.5)
 		end
 
 		return sound

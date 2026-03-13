@@ -6,8 +6,8 @@ if (SERVER) then
 	function PLUGIN:PlayerHurt(client, attacker, health, damage)
 		if (client:IsAdmin() and client:GetMoveType() == MOVETYPE_NOCLIP) then return false end
 
-		if ((client.ixNextPain or 0) < CurTime()) then
-			client.ixNextPain = CurTime() + 0.33
+		if ((client.ixNextHurtEffect or 0) < CurTime()) then
+			client.ixNextHurtEffect = CurTime() + 0.33
 			if (damage > 10 and client:Armor() == 0) then
 				local endurance = client:GetCharacter():GetAttribute("end", 0)
 			local maxAttr = ix.config.Get("maxAttributes", 100)

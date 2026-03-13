@@ -130,10 +130,8 @@ function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
 	end
 end
 
-function Schema:PlayerDeath(client, inflictor, attacker)
+function PLUGIN:PlayerDeath(client, inflictor, attacker)
 	if (client:IsCombine()) then
-		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
-
 		if (!client:GetNetVar("IsBiosignalGone")) then
 			PLUGIN:DoPostBiosignalLoss(client)
 		end
@@ -141,22 +139,6 @@ function Schema:PlayerDeath(client, inflictor, attacker)
 		if (IsValid(client.ixScanner) and client.ixScanner:Health() > 0) then
 			client.ixScanner:TakeDamage(999)
 		end
-	end
-end
-
-function Schema:GetPlayerDeathSound(client)
-	if (client:IsCombine()) then
-		local sound = "npc/metropolice/die" .. math.random(1, 4) .. ".wav"
-
-		if (!client:GetNetVar("IsBiosignalGone")) then
-			for _, player in ipairs(player.GetAll()) do
-				if (player:IsCombine() and !player:GetNetVar("IsBiosignalGone")) then
-					player:EmitSound(sound)
-				end
-			end
-		end
-
-		return sound
 	end
 end
 

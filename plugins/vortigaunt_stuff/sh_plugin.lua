@@ -167,23 +167,24 @@ function CHAR:IsVortigaunt()
 end
 
 function PLUGIN:GetPlayerPainSound(client)
-	if (client:GetCharacter():IsVortigaunt()) then
-		local PainVort = {
+	local character = client:GetCharacter()
+
+	if (character and character:IsVortigaunt()) then
+		return table.Random({
 			"vo/npc/vortigaunt/vortigese11.wav",
 			"vo/npc/vortigaunt/vortigese07.wav",
-			"vo/npc/vortigaunt/vortigese03.wav",
-		}
-		local vort_pain = table.Random(PainVort)
-		return vort_pain
+			"vo/npc/vortigaunt/vortigese03.wav"
+		})
 	end
 end
 
 function PLUGIN:GetPlayerDeathSound(client)
-	if (client:GetCharacter():IsVortigaunt()) then
+	local character = client:GetCharacter()
+
+	if (character and character:IsVortigaunt()) then
 		return false
 	end
 end
-
 
 if CLIENT then
 	randomVortSounds = {
