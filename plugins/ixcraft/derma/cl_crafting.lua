@@ -97,7 +97,8 @@ function PANEL:PaintBackground(width, height)
 
 	local alpha = self.currentBackgroundAlpha
 
-	if (self.recipeTable and (self.canCraft or self.environmentBlocked)) then
+	-- Always show recipe availability state, not only the green or environment-blocked case.
+	if (self.recipeTable) then
 		alpha = math.max(alpha, 100)
 	end
 
@@ -303,8 +304,22 @@ function PANEL:SetCategoryFilter(allowedCategories, defaultCategory)
 	self:BuildCategoryList()
 end
 
+function PANEL:RefreshRecipes()
+	local category = self.currentCategory
+	local search = self.currentSearch
+
+	if (!category and self.selected) then
+		category = self.selected.category
+	end
+
+	self:LoadRecipes(category, search)
+	self.scroll:InvalidateLayout()
+end
+
 function PANEL:LoadRecipes(category, search)
 	category = category or self.defaultCategory or ALL_CATEGORY
+	self.currentCategory = category
+	self.currentSearch = search
 
 	self.scroll:Clear()
 	self.scroll:InvalidateLayout(true)
@@ -375,14 +390,14 @@ net.Receive("ixCraftRefresh", function()
 	local craftPanel = ix.gui.crafting
 
 	if (IsValid(craftPanel)) then
-		craftPanel.search:OnChange()
+		craftPanel:RefreshRecipes()
 	end
 
 	-- Also refresh station crafting panel
 	if (IsValid(ix.gui.stationCrafting)) then
 		for _, child in ipairs(ix.gui.stationCrafting:GetChildren()) do
-			if (child.search and child.search.OnChange) then
-				child.search:OnChange()
+			if (child.RefreshRecipes) then
+				child:RefreshRecipes()
 				break
 			end
 		end
