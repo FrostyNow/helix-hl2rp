@@ -12,7 +12,7 @@ PLUGIN.classPatternPhrasePools = PLUGIN.classPatternPhrasePools or {}
 local unpackArgs = table.unpack or unpack
 local DEFAULT_RANGE_MULTIPLIER = 2
 local DEFAULT_USE_COOLDOWN = 1.25
-local DEFAULT_IT_COOLDOWN = 2.5
+local DEFAULT_IT_COOLDOWN = 10
 
 ix.lang.AddTable("english", {
 	optNovelizerAutoActions = "Enable novelizer auto actions",
@@ -601,6 +601,10 @@ ix.lang.AddTable("korean", {
 ix.option.Add("novelizerAutoActions", ix.type.bool, true, {
 	category = "chat",
 	bNetworked = true
+})
+
+ix.config.Add("novelizerEnableIt", true, "Whether novelizer should emit ambient /it lines for nearby machinery and systems.", nil, {
+	category = "chat"
 })
 
 local function GetChatRange()
@@ -1252,6 +1256,10 @@ function PLUGIN:SendNovelMe(client, phraseKey, arguments, data)
 end
 
 function PLUGIN:EmitConditionalIt(entity, key, data)
+	if (ix.config.Get("novelizerEnableIt", true) ~= true) then
+		return false
+	end
+
 	local phrasePool = self:ResolveItPhrasePool(entity, key)
 
 	if (not istable(phrasePool) or #phrasePool == 0) then
