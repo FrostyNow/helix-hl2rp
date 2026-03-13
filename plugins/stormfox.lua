@@ -218,7 +218,7 @@ ix.command.Add("TimeSync", {
 ix.command.Add("TimeSet", {
 	description = "@cmdTimeSet",
 	superAdminOnly = true,
-	arguments = {ix.type.string, ix.type.optional},
+	arguments = bit.bor(ix.type.string, ix.type.optional),
 	OnRun = function(self, client, time)
 		local hours, minutes
 
