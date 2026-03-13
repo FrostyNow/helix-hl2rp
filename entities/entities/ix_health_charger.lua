@@ -12,13 +12,18 @@ ENT.PopulateEntityInfo = true
 ENT.denySound = Sound("items/medshotno1.wav")
 ENT.useSound = Sound("items/medshot4.wav")
 ENT.chargeSound = "items/medcharge4.wav"
+ENT.grubConsumeSound = ""
 ENT.restoreRate = 0.1
 ENT.restoreAmount = 1
 ENT.restoreCost = 0.03
 ENT.restoreCool = 5
+ENT.freeChargeAmount = 100
+ENT.grubConsumeRadius = 24
 
 ix.lang.AddTable("english", {
 	healthChargerDesc = "A medical device that automatically injects green solution to heal the user.",
+	healthChargerFreeCharge = "Free charge remaining: %s HP",
+	healthChargerPaidCharge = "Paid charge cost: %s per %s HP",
 	healthChargerPay = "You paid %s for medical care.",
 	healthChargerNoMoney = "You don't have enough money for medical care."
 })
@@ -26,6 +31,8 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	["Health Charger"] = "자동화 의료 장치",
 	healthChargerDesc = "녹색 용액을 자동 주입하여 사용자를 치료하는 기계장치입니다.",
+	healthChargerFreeCharge = "남은 무료 충전량: %s HP",
+	healthChargerPaidCharge = "유료 충전 비용: %s / %s HP",
 	healthChargerPay = "의료 서비스 비용으로 %s을(를) 지불했습니다.",
 	healthChargerNoMoney = "의료 서비스를 이용하기 위한 돈이 부족합니다."
 })
@@ -34,8 +41,16 @@ function ENT:GetUsed()
 	return self:GetNetVar("used", 0)
 end
 
+function ENT:GetFreeCharge()
+	return self:GetNetVar("freeCharge", 0)
+end
+
 function ENT:IsActive()
 	return self:GetNetVar("active", false)
+end
+
+function ENT:GetCostPerHealth()
+	return self.restoreAmount > 0 and (self.restoreCost / self.restoreAmount) or 0
 end
 
 if (SERVER) then
@@ -65,8 +80,10 @@ if (SERVER) then
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
 		self:SetNetVar("used", 0)
+		self:SetNetVar("freeCharge", 0)
 		self.rechargeTime = CurTime()
-		self.sessionUsed = 0
+		self.sessionPaidUsed = 0
+		self.nextGrubScan = 0
 		
 		local phys = self:GetPhysicsObject()
 		if (IsValid(phys)) then
@@ -91,6 +108,68 @@ if (SERVER) then
 		end
 	end
 
+	function ENT:SetFreeCharge(amount)
+		self:SetNetVar("freeCharge", math.max(amount, 0))
+	end
+
+	function ENT:IsFreeUseAvailable(amount)
+		return self:GetFreeCharge() >= (amount or self.restoreAmount)
+	end
+
+	function ENT:CanConsumeGrubEntity(entity)
+		if (!IsValid(entity) or entity:GetClass() != "ix_item" or entity.ixHealthChargerConsumed) then
+			return false
+		end
+
+		local itemTable = entity.GetItemTable and entity:GetItemTable()
+
+		if (!itemTable) then
+			return false
+		end
+
+		return itemTable.uniqueID == "antlion_grub" or itemTable.name == "Antlion Grub"
+	end
+
+	function ENT:ConsumeGrubEntity(entity)
+		if (!self:CanConsumeGrubEntity(entity)) then
+			return false
+		end
+
+		entity.ixHealthChargerConsumed = true
+
+		local itemTable = entity:GetItemTable()
+
+		self:SetFreeCharge(self:GetFreeCharge() + self.freeChargeAmount)
+
+		if (self.grubConsumeSound != "") then
+			self:EmitSound(self.grubConsumeSound)
+		end
+
+		itemTable:Remove()
+
+		if (IsValid(entity)) then
+			entity:Remove()
+		end
+
+		return true
+	end
+
+	function ENT:ConsumeNearbyGrub()
+		if (self.nextGrubScan > CurTime()) then
+			return false
+		end
+
+		self.nextGrubScan = CurTime() + 0.2
+
+		for _, entity in ipairs(ents.FindInSphere(self:GetPos(), self.grubConsumeRadius)) do
+			if (self:ConsumeGrubEntity(entity)) then
+				return true
+			end
+		end
+
+		return false
+	end
+
 	function ENT:finishUse()
 		self:SetNetVar("active", false)
 		
@@ -102,8 +181,8 @@ if (SERVER) then
 		if (IsValid(self.user)) then
 			local character = self.user:GetCharacter()
 			
-			if (character and self.sessionUsed > 0) then
-				local cost = math.min(math.Round(self.sessionUsed * 100), character:GetMoney())
+			if (character and self.sessionPaidUsed > 0) then
+				local cost = math.min(math.Round(self.sessionPaidUsed * 100), character:GetMoney())
 				
 				if (cost > 0) then
 					character:TakeMoney(cost)
@@ -115,14 +194,17 @@ if (SERVER) then
 		end
 		
 		self.user = nil
-		self.sessionUsed = 0
+		self.sessionPaidUsed = 0
 	end
 	
 	function ENT:Think()
+		self:ConsumeNearbyGrub()
+
 		if (self:IsActive() and IsValid(self.user)) then
 			local dist = self.user:GetPos():Distance(self:GetPos())
 			local character = self.user:GetCharacter()
-			local nextCost = math.Round((self.sessionUsed + self.restoreCost) * 100)
+			local nextPaidUse = math.max(self.restoreAmount - self:GetFreeCharge(), 0) * self:GetCostPerHealth()
+			local nextCost = math.Round((self.sessionPaidUsed + nextPaidUse) * 100)
 
 			if (dist > 96 or !self.user:KeyDown(IN_USE) or self:GetUsed() >= 1 or
 				self.user:Health() >= self.user:GetMaxHealth() or !character or character:GetMoney() < nextCost) then
@@ -130,10 +212,24 @@ if (SERVER) then
 				return
 			end
 
-			self.user:SetHealth(math.min(self.user:Health() + self.restoreAmount, self.user:GetMaxHealth()))
+			local previousHealth = self.user:Health()
+			local nextHealth = math.min(previousHealth + self.restoreAmount, self.user:GetMaxHealth())
+			local restored = math.max(nextHealth - previousHealth, 0)
+
+			self.user:SetHealth(nextHealth)
 			
 			local nextUsed = math.Clamp(self:GetUsed() + self.restoreCost, 0, 1)
-			self.sessionUsed = self.sessionUsed + (nextUsed - self:GetUsed())
+			local freeCharge = self:GetFreeCharge()
+			local freeConsumed = math.min(restored, freeCharge)
+			local paidRestored = restored - freeConsumed
+
+			if (freeConsumed > 0) then
+				self:SetFreeCharge(freeCharge - freeConsumed)
+			end
+
+			if (paidRestored > 0) then
+				self.sessionPaidUsed = self.sessionPaidUsed + paidRestored * self:GetCostPerHealth()
+			end
 			
 			self:SetNetVar("used", nextUsed)
 			self.rechargeTime = CurTime() + self.restoreCool
@@ -152,7 +248,7 @@ if (SERVER) then
 		local minCost = math.Round(self.restoreCost * 100)
 
 		if (!client.ixHealthCharging and !IsValid(self.user) and self:GetUsed() < 1 and client:Health() < client:GetMaxHealth()) then
-			if (character and character:GetMoney() < minCost) then
+			if (character and !self:IsFreeUseAvailable() and character:GetMoney() < minCost) then
 				client:Notify(L("healthChargerNoMoney", client))
 				self:EmitSound(self.denySound)
 
@@ -161,7 +257,7 @@ if (SERVER) then
 
 			client.ixHealthCharging = self
 			self.user = client
-			self.sessionUsed = 0
+			self.sessionPaidUsed = 0
 			self:SetNetVar("active", true)
 
 			if (self.loopSound) then
@@ -173,6 +269,7 @@ if (SERVER) then
 			self:EmitSound(self.denySound)
 		end
 	end
+
 else
 	function ENT:Draw()
 		self:DrawModel()
@@ -180,6 +277,22 @@ else
 
 	function ENT:Initialize()
 		self.smoothUsed = 0
+		self.lastDisplayedFreeCharge = nil
+	end
+
+	function ENT:RefreshEntityInfo()
+		local panel = ix.gui.entityInfo
+
+		if (!IsValid(panel) or panel:GetEntity() != self) then
+			return
+		end
+
+		panel:Remove()
+
+		local infoPanel = vgui.Create(ix.option.Get("minimalTooltips", false) and "ixTooltipMinimal" or "ixTooltip")
+		infoPanel:SetEntity(self)
+		infoPanel:SetDrawArrow(true)
+		ix.gui.entityInfo = infoPanel
 	end
 
 	local light = 0
@@ -191,6 +304,12 @@ else
 		local ft = FrameTime()
 		local idxHealth = self:LookupBone("healthbar")
 		local idxSpinner = self:LookupBone("roundcap")
+		local displayedFreeCharge = math.floor(self:GetFreeCharge())
+
+		if (self.lastDisplayedFreeCharge != displayedFreeCharge) then
+			self.lastDisplayedFreeCharge = displayedFreeCharge
+			self:RefreshEntityInfo()
+		end
 
 		self.smoothUsed = math.Approach(self.smoothUsed, self:GetUsed(), ft * (self.restoreRate + self.restoreCost) * 2)
 		
@@ -219,5 +338,19 @@ else
 		local desc = charger:AddRow("desc")
 		desc:SetText(L("healthChargerDesc"))
 		desc:SizeToContents()
+
+		local freeCharge = math.floor(self:GetFreeCharge())
+
+		if (freeCharge > 0) then
+			local bonus = charger:AddRow("freeCharge")
+			bonus:SetText(L("healthChargerFreeCharge", freeCharge))
+			bonus:SetBackgroundColor(Color(85, 127, 242, 50))
+			bonus:SizeToContents()
+		else
+			local paidCharge = charger:AddRow("paidCharge")
+			paidCharge:SetText(L("healthChargerPaidCharge", ix.currency.Get(math.Round(self:GetCostPerHealth() * 100)), self.restoreAmount))
+			paidCharge:SetBackgroundColor(Color(85, 127, 242, 50))
+			paidCharge:SizeToContents()
+		end
 	end
 end
