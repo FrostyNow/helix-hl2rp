@@ -12,7 +12,7 @@ ENT.PopulateEntityInfo = true
 ENT.denySound = Sound("items/medshotno1.wav")
 ENT.useSound = Sound("items/medshot4.wav")
 ENT.chargeSound = "items/medcharge4.wav"
-ENT.grubConsumeSound = ""
+ENT.grubConsumeSound = {"npc/antlion_grub/agrub_die1.wav", "npc/antlion_grub/agrub_die2.wav"}
 ENT.restoreRate = 0.1
 ENT.restoreAmount = 1
 ENT.restoreCost = 0.03
@@ -141,8 +141,16 @@ if (SERVER) then
 
 		self:SetFreeCharge(self:GetFreeCharge() + self.freeChargeAmount)
 
-		if (self.grubConsumeSound != "") then
-			self:EmitSound(self.grubConsumeSound)
+		if (self.grubConsumeSound) then
+			local sound = self.grubConsumeSound
+
+			if (istable(sound)) then
+				sound = table.Random(sound)
+			end
+
+			if (sound != "") then
+				self:EmitSound(sound)
+			end
 		end
 
 		itemTable:Remove()
