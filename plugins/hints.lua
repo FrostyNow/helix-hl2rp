@@ -50,6 +50,7 @@ ix.lang.AddTable("english", {
 	hintCID = "Your Citizen ID is very important. Never lose it.",
 	hintVortessense = "Vortigaunts can communicate with each other using the /ve command.",
 	hintCurfew = "Every day from 12 AM to 6 AM, a curfew is in effect.",
+	hintApply = "If CP demands to see your Citizen ID, you must use the /apply command.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -91,6 +92,7 @@ ix.lang.AddTable("korean", {
 	hintCID = "신분증은 굉장히 중요합니다. 절대 잃어버리지 마십시오.",
 	hintVortessense = "보르티곤트는 /ve 명령어로 서로 정신 연결이 가능하다고 합니다.",
 	hintCurfew = "매일 오전 12시부터 오전 6시까지는 통행 금지령이 내려집니다.",
+	hintApply = "보호 기동대원이 시민증 제시를 요구하면 /apply 해야 합니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -169,6 +171,10 @@ end
 
 if (ix.plugin.Get("stormfox")) then
 	ix.hints.Register("hintCurfew")
+end
+
+if (ix.plugin.Get("apply")) then
+	ix.hints.Register("hintApply")
 end
 
 ix.command.Add("Hint", {
