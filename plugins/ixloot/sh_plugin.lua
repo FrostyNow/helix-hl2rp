@@ -103,7 +103,7 @@ PLUGIN.randomLoot.common = {
 	["coke_bottle_empty"] = 5,
 	["ration_token"] = 1,
 	["coupon"] = 1,
-	["coffe_beans"] = 2,
+	["coffee_beans"] = 2,
 	["vegetable_oil"] = 2,
 	["misc_canister"] = 2,
 }
