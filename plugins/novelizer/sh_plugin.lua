@@ -2066,7 +2066,8 @@ function PLUGIN:InitializedConfig()
 			local name, nameColor = PLUGIN:GetCharacterDisplayName(speaker, anonymous, data)
 			local phrase = PLUGIN:TranslatePhrase(text, data)
 			local placeholder = "@@NAME@@"
-			local formatted = string.format(L("novelizerMeFormat"), placeholder, phrase)
+			local format = GetPhraseTemplate("novelizerMeFormat") or "** %s %s"
+			local formatted = string.format(format, placeholder, phrase)
 			local nameStart, nameEnd = formatted:find(placeholder, 1, true)
 
 			if (nameStart and nameEnd) then
@@ -2074,7 +2075,7 @@ function PLUGIN:InitializedConfig()
 				return
 			end
 
-			chat.AddText(color, string.format(L("novelizerMeFormat"), name, phrase))
+			chat.AddText(color, L("novelizerMeFormat", name, phrase))
 		end,
 		font = "ixChatFontItalics",
 		indicator = "chatPerforming",
