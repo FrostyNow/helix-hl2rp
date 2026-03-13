@@ -633,18 +633,52 @@ local function GetLanguage()
 	return "english"
 end
 
+local function GetPhraseTemplate(phraseKey, language)
+	if (not IsFilledString(phraseKey)) then
+		return nil
+	end
+
+	local languages = ix.lang and ix.lang.stored
+
+	if (not istable(languages)) then
+		return nil
+	end
+
+	language = language or GetLanguage()
+
+	local info = languages[language] or languages.english
+
+	return (info and info[phraseKey]) or (languages.english and languages.english[phraseKey]) or nil
+end
+
 local function GetLastUTF8Codepoint(text)
 	if (not utf8 or not utf8.offset or not utf8.codepoint or not isstring(text) or text == "") then
 		return nil
 	end
 
-	local offset = utf8.offset(text, -1)
+	local success, offset = pcall(utf8.offset, text, -1)
 
-	if (not offset) then
+	if (not success or not offset) then
+		offset = #text
+
+		while (offset > 1) do
+			local byte = text:byte(offset)
+
+			if (not byte or byte < 128 or byte > 191) then
+				break
+			end
+
+			offset = offset - 1
+		end
+	end
+
+	local codepointSuccess, codepoint = pcall(utf8.codepoint, text, offset)
+
+	if (not codepointSuccess) then
 		return nil
 	end
 
-	return utf8.codepoint(text, offset)
+	return codepoint
 end
 
 local function AppendKoreanParticle(text, particleType)
@@ -700,7 +734,7 @@ function PLUGIN:GetLocalizedArgumentValue(value, language)
 		local localized
 
 		if (IsFilledString(value.phrase)) then
-			localized = L2(value.phrase)
+			localized = GetPhraseTemplate(value.phrase, language)
 		end
 
 		if (not IsFilledString(localized) and IsFilledString(value.text)) then
@@ -719,7 +753,7 @@ function PLUGIN:GetLocalizedArgumentValue(value, language)
 	end
 
 	if (isstring(value)) then
-		return L2(value) or value
+		return GetPhraseTemplate(value, language) or value
 	end
 
 	return value
@@ -738,8 +772,9 @@ function PLUGIN:GetLocalizedArguments(data)
 end
 
 function PLUGIN:TranslatePhrase(phraseKey, data)
+	local language = GetLanguage()
 	local arguments = self:GetLocalizedArguments(data)
-	local format = L2(phraseKey) or phraseKey
+	local format = GetPhraseTemplate(phraseKey, language) or phraseKey
 
 	return string.format(format, unpackArgs(arguments))
 end
