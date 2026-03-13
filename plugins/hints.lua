@@ -35,7 +35,7 @@ ix.lang.AddTable("english", {
 	hintOOC = "Type .// before your message to talk out of character locally.",
 	hintObey = "Obey the Combine, you'll be glad that you did.",
 	hintCP = "Civil Protection is protecting civilized society, not you.",
-	hintCook = "Why don't you try cooking something every now and then? All you need is a stove and the right ingredients.",
+	hintCook = "Why don't you try cooking something every now and then? All you need is a heat source and the right ingredients.",
 	hintPiss = "Don't piss off Civil Protection, or you'll find yourself being re-educated, or worse..",
 	hintCommand = "You can check a random hint immediately by typing /hint.",
 	hintJunks = "You can find useful items in the junks.",
@@ -43,6 +43,13 @@ ix.lang.AddTable("english", {
 	hintLaundry = "You can wash clothes to get some money.",
 	hintJunksWarn = "Rummaging through junks may get you classified as a suspicious person.",
 	hintItemClass = "You may be punished for possessing unauthorized or sociocidal items.",
+	hinCrafting = "Even junk can be turned into something valuable if you collect enough of it.",
+	hintStackable = "Some items can be stacked together. You can split them by holding CTRL.",
+	hintGetWater = "You can get water from sink or stream using the /water command.",
+	hintDirtyWater = "Drinking dirty water is not a good idea.",
+	hintCID = "Your Citizen ID is very important. Never lose it.",
+	hintVortessense = "Vortigaunts can communicate with each other using the /ve command.",
+	hintCurfew = "Every day from 12 AM to 6 AM, a curfew is in effect.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -69,7 +76,7 @@ ix.lang.AddTable("korean", {
 	hintOOC = "캐릭터가 아닌 플레이어로서 대화하려면 할 말 앞에 //를 입력하십시오.",
 	hintObey = "좋지 않은 결말을 피하려면 콤바인에 복종하십시오.",
 	hintCP = "시민 보호 기동대는 문명사회를 보호합니다. 당신이 아니라.",
-	hintCook = "요리를 해보는 건 어떻습니까? 가스레인지와 적절한 재료만 있으면 됩니다.",
+	hintCook = "요리를 해보는 건 어떻습니까? 열원과 적절한 재료만 있으면 됩니다.",
 	hintPiss = "시민 보호 기동대의 눈밖에 나지 마십시오. 재교육을 받거나 더 나쁜 일에 처할 수 있습니다..",
 	hintCommand = "/hint를 입력하여 무작위 도움말 중 하나를 즉시 확인할 수 있습니다.",
 	hintJunks = "쓰레기 더미에서 유용한 아이템을 찾을 수 있습니다.",
@@ -77,6 +84,13 @@ ix.lang.AddTable("korean", {
 	hintLaundry = "옷을 세탁하여 돈을 벌 수 있습니다.",
 	hintJunksWarn = "쓰레기를 뒤지고 다니면 거동 수상자로 분류될 것입니다.",
 	hintItemClass = "인가되지 않은 물품과 반사회 물품을 소지한 경우 처벌받을 것입니다.",
+	hinCrafting = "폐품도 모으면 귀중한 무언가를 만들어낼 수 있을지 모릅니다.",
+	hintStackable = "어떤 아이템은 겹칠 수 있고, 컨트롤 키로 분리할 수 있습니다.",
+	hintGetWater = "/water 명령어로 싱크대나 물가에서 물을 뜰 수 있습니다.",
+	hintDirtyWater = "더러운 물을 마시는 것은 좋은 생각이 아닙니다.",
+	hintCID = "신분증은 굉장히 중요합니다. 절대 잃어버리지 마십시오.",
+	hintVortessense = "보르티곤트는 /ve 명령어로 서로 정신 연결이 가능하다고 합니다.",
+	hintCurfew = "매일 오전 12시부터 오전 6시까지는 통행 금지령이 내려집니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -120,14 +134,42 @@ ix.hints.Register("hintLoyalty")
 ix.hints.Register("hintOOC")
 ix.hints.Register("hintObey")
 ix.hints.Register("hintCP")
-ix.hints.Register("hintCook")
 ix.hints.Register("hintPiss")
 ix.hints.Register("hintCommand")
-ix.hints.Register("hintJunks")
 ix.hints.Register("hintRecycle")
 ix.hints.Register("hintLaundry")
-ix.hints.Register("hintJunksWarn")
 ix.hints.Register("hintItemClass")
+ix.hints.Register("hintDirtyWater")
+ix.hints.Register("hintCID")
+
+if (ix.plugin.Get("hunger")) then
+	ix.hints.Register("hintCook")
+end
+
+if (ix.plugin.Get("ixloot")) then
+	ix.hints.Register("hintJunks")
+	ix.hints.Register("hintJunksWarn")
+end
+
+if (ix.plugin.Get("ixcraft")) then
+	ix.hints.Register("hinCrafting")
+end
+
+if (ix.plugin.Get("itemstack")) then
+	ix.hints.Register("hintStackable")
+end
+
+if (ix.plugin.Get("water_collecting")) then
+	ix.hints.Register("hintGetWater")
+end
+
+if (ix.plugin.Get("vortigaunt_stuff")) then
+	ix.hints.Register("hintVortessence")
+end
+
+if (ix.plugin.Get("stormfox")) then
+	ix.hints.Register("hintCurfew")
+end
 
 ix.command.Add("Hint", {
 	description = "@cmdHintDesc",
