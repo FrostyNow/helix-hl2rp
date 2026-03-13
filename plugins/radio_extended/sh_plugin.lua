@@ -163,7 +163,7 @@ ix.lang.AddTable("korean", {
 	itemRadioWeakSignal = "채널 1의 약한 신호에 고정되었습니다.",
 	itemRadioStrongSignal = "채널 %s의 강한 신호에 고정되었습니다.",
 
-	["Radio Repeater"] = "무전기 중계기",
+	["Radio Repeater"] = "무전 중계기",
 	itemRadioRepeaterMenuTitle = "무전 중계기 제어",
 	itemRadioRepeaterMenuDesc = "수행할 작업을 선택하세요.",
 	itemRadioRepeaterChangeInput = "입력 주파수 변경 (%s MHz)",

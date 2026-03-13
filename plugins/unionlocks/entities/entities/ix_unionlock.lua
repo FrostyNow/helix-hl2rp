@@ -221,7 +221,7 @@ if (SERVER) then
 		end
 
 		self.detonatePreparing = client
-		client:SetAction("Preparing detonation...", DETONATE_ARM_TIME)
+		client:SetAction("@prepareDetonation", DETONATE_ARM_TIME)
 		client:DoStaredAction(self, function()
 			if (!IsValid(self) or !IsValid(client) or self.detonatePreparing != client) then
 				return
@@ -332,15 +332,22 @@ else
 	function ENT:Draw()
 		self:DrawModel()
 
-		if (self:IsLockDisabled()) then
+		-- allow the light to draw while detonating so we can see the red flash
+		if (self:IsLockDisabled() and !self:GetDetonating()) then
 			return
 		end
 
 		local color = color_yellow
+		local bDisplayError = self:GetDisplayError()
+		local bLocked = self:GetLocked()
+		local bDetonating = self:GetDetonating()
 
-		if (self:GetDisplayError()) then
+		if (bDisplayError) then
 			color = color_red
-		elseif (self:GetLocked()) then
+		elseif (bDetonating) then
+			-- don't draw anything unless we're flashing red (which is handled by DisplayError)
+			return
+		elseif (bLocked) then
 			color = color_orange
 		end
 
@@ -348,5 +355,18 @@ else
 
 		render.SetMaterial(glowMaterial)
 		render.DrawSprite(position, 10, 10, color)
+
+		local dlight = DynamicLight(self:EntIndex())
+
+		if (dlight) then
+			dlight.pos = position
+			dlight.r = color.r
+			dlight.g = color.g
+			dlight.b = color.b
+			dlight.brightness = 2
+			dlight.Decay = 1000
+			dlight.Size = bDisplayError and 128 or 64
+			dlight.DieTime = CurTime() + 0.1
+		end
 	end
 end

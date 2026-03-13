@@ -454,7 +454,7 @@ function ITEM:OnInstanced(invID, x, y)
 	if (self.isBag) then
 		local inventory = ix.item.inventories[invID]
 
-		ix.item.NewInv(inventory and inventory.owner or 0, self.uniqueID, function(inv)
+		ix.inventory.New(inventory and inventory.owner or 0, self.uniqueID, function(inv)
 			local client = inv:GetOwner()
 
 			inv.vars.isBag = self.uniqueID
@@ -509,7 +509,7 @@ function ITEM:OnSendData()
 				end)
 			end
 		else
-			ix.item.NewInv(self.player:GetCharacter():GetID(), self.uniqueID, function(inv)
+			ix.inventory.New(self.player:GetCharacter():GetID(), self.uniqueID, function(inv)
 				self:SetData("id", inv:GetID())
 			end)
 		end

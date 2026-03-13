@@ -300,6 +300,7 @@ LANGUAGE = {
 	["Citizen ID"] = "시민 신분증",
 	["Combine Lock"] = "콤바인 잠금장치",
 	combineLockDesc = "문에 설치하는 금속제 잠금장치입니다.",
+	prepareDetonation = "폭파 준비 중...",
 	["Ration"] = "배급 포대",
 	rationDesc = "약간의 배급식과 토큰이 진공 포장된 포대에 들어 있습니다.",
 	metropoliceRationDesc = "영양소가 적절하게 함유된 배급식이 진공 포장된 포대에 들어 있습니다.",

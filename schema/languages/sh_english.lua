@@ -143,6 +143,7 @@ LANGUAGE = {
 	suitcaseDesc = "A small suitcase.",
 	bagDesc = "A small bag.",
 	combineLockDesc = "A metal apparatus applied to doors.",
+	prepareDetonation = "Preparing detonation...",
 	metropoliceSupplementsDesc = "A tinned can containing a good portion of your daily nutrients.",
 	rationDesc = "A shrink-wrapped packet containing some food and money.",
 	metropoliceRationDesc = "A ration that contains some nutrient food.",

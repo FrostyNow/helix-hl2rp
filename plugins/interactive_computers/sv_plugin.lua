@@ -539,6 +539,13 @@ function PLUGIN:SaveData()
 
 		local computerID = entity:GetComputerID()
 
+		local physicsObject = entity:GetPhysicsObject()
+		local bMovable = nil
+
+		if (IsValid(physicsObject)) then
+			bMovable = physicsObject:IsMoveable()
+		end
+
 		data[#data + 1] = {
 			class = entity:GetClass(),
 			computerID = computerID,
@@ -546,7 +553,8 @@ function PLUGIN:SaveData()
 			angles = entity:GetAngles(),
 			model = entity:GetModel(),
 			powered = entity:GetPowered(),
-			data = entity:GetComputerData()
+			data = entity:GetComputerData(),
+			movable = bMovable
 		}
 
 		self.storedComputers[computerID] = entity:GetComputerData()
@@ -568,11 +576,18 @@ function PLUGIN:LoadData()
 			computerData.class or computerData.model,
 			self:NormalizeData(computerData.data),
 			computerData.powered,
-			computerData.computerID
+			computerData.computerID,
+			computerData.movable
 		)
 
 		if (IsValid(entity)) then
 			maxID = math.max(maxID, entity:GetComputerID())
+
+			local phys = entity:GetPhysicsObject()
+			if (IsValid(phys)) then
+				phys:EnableMotion(computerData.movable or false)
+				phys:Sleep()
+			end
 		end
 	end
 

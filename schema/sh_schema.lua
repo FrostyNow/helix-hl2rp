@@ -8,6 +8,7 @@ ix.util.Include("libs/thirdparty/sh_netstream2.lua")
 
 ix.util.Include("sh_configs.lua")
 ix.util.Include("sh_commands.lua")
+ix.util.Include("sh_npcs.lua")
 
 ix.util.Include("cl_schema.lua")
 ix.util.Include("cl_hooks.lua")

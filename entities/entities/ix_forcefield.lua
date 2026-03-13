@@ -450,12 +450,29 @@ local function ShouldCollideWithUnauthorizedPlayer(entity, mode, client)
 	return true
 end
 
+local function ShouldCollideWithNPC(mode, npc)
+	if (!IsValid(npc) or !npc:IsNPC()) then
+		return false
+	end
+
+	if (Schema:IsCombineNPC(npc)) then
+		return false
+	end
+
+	if (mode == MODE_ALLOW_CID) then
+		return Schema:IsAntiCitizenNPC(npc) or Schema:IsHostileNPC(npc)
+	end
+
+	return true
+end
+
 -- Shared hook to allow client-side prediction and smooth passing
 hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 	local client
 	local entity
 	local ragdoll
 	local vehicle
+	local npc
 
 	if (a:IsPlayer()) then
 		client = a
@@ -474,6 +491,12 @@ hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 		entity = b
 	elseif (b:IsVehicle()) then
 		vehicle = b
+		entity = a
+	elseif (a:IsNPC()) then
+		npc = a
+		entity = b
+	elseif (b:IsNPC()) then
+		npc = b
 		entity = a
 	end
 
@@ -507,6 +530,10 @@ hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 
 		if (IsValid(client)) then
 			return ShouldCollideWithUnauthorizedPlayer(entity, mode, client)
+		end
+
+		if (IsValid(npc)) then
+			return ShouldCollideWithNPC(mode, npc)
 		else
 			return false
 		end

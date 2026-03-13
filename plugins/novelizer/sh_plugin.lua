@@ -10,17 +10,55 @@ PLUGIN.itPhrasePools = PLUGIN.itPhrasePools or {}
 PLUGIN.classPatternPhrasePools = PLUGIN.classPatternPhrasePools or {}
 
 local unpackArgs = table.unpack or unpack
+local bitBand = bit.band or bit32.band
 local DEFAULT_RANGE_MULTIPLIER = 2
 local DEFAULT_USE_COOLDOWN = 1.25
-local DEFAULT_IT_COOLDOWN = 10
+local DEFAULT_IT_COOLDOWN = 60
+local DEFAULT_ACTION_COOLDOWN = 10
+local GLOBAL_ACTION_COOLDOWN = 2
+local IDLE_WARMUP_MIN = 3
+local IDLE_WARMUP_MAX = 7
 
 ix.lang.AddTable("english", {
 	optNovelizerAutoActions = "Enable novelizer auto actions",
 	optdNovelizerAutoActions = "Automatically narrates your interactions, item use, and nearby machine sounds.",
 
 	novelizerSomething = "something",
+	novelizerObject = "object",
+	novelizerFlashlight = "flashlight",
+	novelizerDoor = "door",
+	novelizerForcefield = "forcefield",
 	novelizerWorkbench = "workbench",
-	novelizerStove = "stove",
+	novelizerStove = "gas stove",
+	novelizerHealthKit = "health kit",
+	novelizerHealthVial = "health vial",
+	novelizerDeskProp = "table",
+	novelizerChairProp = "chair",
+	novelizerCrateProp = "crate",
+	novelizerDrumProp = "drum",
+	novelizerPopcanProp = "pop can",
+	novelizerCanProp = "can",
+	novelizerBottleProp = "bottle",
+	novelizerGascanProp = "gas can",
+	novelizerVehicleProp = "vehicle",
+	novelizerVendingMachine = "vending machine",
+	novelizerCoffeeMachine = "coffee machine",
+	novelizerPepsiMachine = "soda vending machine",
+	novelizerRationDispenser = "ration dispenser",
+	novelizerLock = "lock",
+	novelizerNewspaperProp = "newspaper",
+	novelizerRadioProp = "radio",
+	novelizerTVProp = "television",
+	novelizerBucketFire = "bucket fire",
+	novelizerBonfire = "bonfire",
+	novelizerBreachCharge = "breaching charge",
+	novelizerDigitalClock = "digital clock",
+	novelizerMachineGun = "machine gun",
+	novelizerSniperRifle = "sniper rifle",
+	novelizerKeys = "keyring",
+	novelizerHands = "fists",
+	novelizerSuitcase = "suitcase",
+	novelizerRationPack = "ration pack",
 	novelizerCID = "CID card",
 	novelizerMeFormat = "** %s %s",
 
@@ -69,6 +107,18 @@ ix.lang.AddTable("english", {
 	novelizerSwitch1 = "switches to %s.",
 	novelizerSwitch2 = "draws %s.",
 	novelizerSwitch3 = "brings %s into hand.",
+	novelizerTake1 = "picks up %s.",
+	novelizerTake2 = "takes hold of %s.",
+	novelizerTake3 = "collects %s.",
+	novelizerDrop1 = "sets down %s.",
+	novelizerDrop2 = "drops %s to the ground.",
+	novelizerDrop3 = "puts %s down.",
+	novelizerHandsPickup1 = "picks up %s with both hands.",
+	novelizerHandsPickup2 = "gets a grip on %s and lifts it.",
+	novelizerHandsPickup3 = "hauls %s up into their hands.",
+	novelizerHandsDrop1 = "sets %s back down.",
+	novelizerHandsDrop2 = "lowers %s out of their hands.",
+	novelizerHandsDrop3 = "lets %s drop from their grip.",
 
 	novelizerRequest1 = "keys a request into the device.",
 	novelizerRequest2 = "speaks a brief request into the unit.",
@@ -186,6 +236,12 @@ ix.lang.AddTable("english", {
 	novelizerMolotovPrime1 = "strikes a light and sets %s burning.",
 	novelizerMolotovPrime2 = "touches flame to %s.",
 	novelizerMolotovPrime3 = "sets %s alight and cocks their arm back.",
+	novelizerGrenadeThrow1 = "throws %s.",
+	novelizerGrenadeThrow2 = "hurls %s away.",
+	novelizerGrenadeThrow3 = "whips %s out in a quick throw.",
+	novelizerMolotovThrow1 = "throws %s with a burning arc.",
+	novelizerMolotovThrow2 = "flings %s out while it burns.",
+	novelizerMolotovThrow3 = "sends %s sailing in a sheet of fire.",
 
 	novelizerFlashlightOn1 = "clicks %s on.",
 	novelizerFlashlightOn2 = "thumbs %s to life.",
@@ -193,6 +249,18 @@ ix.lang.AddTable("english", {
 	novelizerFlashlightOff1 = "switches %s off.",
 	novelizerFlashlightOff2 = "kills the beam from %s.",
 	novelizerFlashlightOff3 = "clicks %s dark.",
+	novelizerStoveOn1 = "turns on %s.",
+	novelizerStoveOn2 = "lights the burner on %s.",
+	novelizerStoveOn3 = "clicks %s on and brings the gas to life.",
+	novelizerStoveOff1 = "turns off %s.",
+	novelizerStoveOff2 = "cuts the gas to %s.",
+	novelizerStoveOff3 = "shuts %s back down.",
+	novelizerFireOn1 = "lights %s.",
+	novelizerFireOn2 = "sets %s burning.",
+	novelizerFireOn3 = "coaxes a flame to life in %s.",
+	novelizerFireOff1 = "puts out %s.",
+	novelizerFireOff2 = "smothers the fire in %s.",
+	novelizerFireOff3 = "snuffs %s out.",
 
 	novelizerMachineVending1 = "leans over %s and works its selector buttons.",
 	novelizerMachineVending2 = "jabs at the controls on %s.",
@@ -202,13 +270,37 @@ ix.lang.AddTable("english", {
 	novelizerMachineCoffee2 = "works through the options on %s.",
 	novelizerMachineCoffee3 = "taps a selection into %s and waits.",
 
-	novelizerMachineHealth1 = "presses into %s and steadies themselves for the injection.",
-	novelizerMachineHealth2 = "leans against %s and activates its medical cycle.",
-	novelizerMachineHealth3 = "triggers %s and braces for the dose.",
+	novelizerMachineHealth1 = "starts the automated medical station.",
+	novelizerMachineHealth2 = "leans into the automated medical station.",
+	novelizerMachineHealth3 = "activates the automated medical station's treatment cycle.",
+	novelizerMachineHealthGrub1 = "feeds %s into %s's intake slot.",
+	novelizerMachineHealthGrub2 = "slides %s into %s for processing.",
+	novelizerMachineHealthGrub3 = "pushes %s into %s's feeder port.",
+	novelizerMachineSuit1 = "starts drawing charge from the suit charger.",
+	novelizerMachineSuit2 = "leans into the charging unit as it comes alive.",
+	novelizerMachineSuit3 = "activates the charger and starts taking power from it.",
 
 	novelizerMachineRation1 = "presents themselves to %s and works its controls.",
 	novelizerMachineRation2 = "keys an authorization sequence into %s.",
 	novelizerMachineRation3 = "operates %s with practiced motions.",
+	novelizerMachineDigitalClock1 = "changes the mode on %s.",
+	novelizerMachineDigitalClock2 = "waves a hand through %s's holographic controls.",
+	novelizerMachineDigitalClock3 = "taps through the display modes on %s.",
+	novelizerMachineMannable1 = "takes hold of %s and settles behind it.",
+	novelizerMachineMannable2 = "grips %s into a firing posture.",
+	novelizerMachineMannable3 = "plants themselves behind %s and takes control.",
+	novelizerMachineSniper1 = "takes hold of %s and settles in behind the sights.",
+	novelizerMachineSniper2 = "shoulders into %s and peers through its scope.",
+	novelizerMachineSniper3 = "leans onto %s and lines up behind it.",
+	novelizerDoorBreachPlace1 = "plants a breaching charge onto the door.",
+	novelizerDoorBreachPlace2 = "presses a breaching charge against the door and locks it in place.",
+	novelizerDoorBreachPlace3 = "attaches a breaching charge to the door.",
+	novelizerDoorBreachUse1 = "arms %s.",
+	novelizerDoorBreachUse2 = "starts the timer on %s.",
+	novelizerDoorBreachUse3 = "thumbs the trigger on %s.",
+	novelizerLockDetonate1 = "starts the detonation sequence on %s.",
+	novelizerLockDetonate2 = "sets %s to blow.",
+	novelizerLockDetonate3 = "arms %s for detonation.",
 
 	novelizerMachineComputer1 = "types across %s.",
 	novelizerMachineComputer2 = "works through a sequence on %s.",
@@ -227,9 +319,9 @@ ix.lang.AddTable("english", {
 	novelizerMachineRecycler2 = "feeds material through %s.",
 	novelizerMachineRecycler3 = "works %s into motion with a clatter of junk.",
 
-	novelizerMachineForcefield1 = "reaches for the controls on %s.",
-	novelizerMachineForcefield2 = "adjusts something on %s.",
-	novelizerMachineForcefield3 = "works the field controls on %s.",
+	novelizerMachineForcefield1 = "reaches for the forcefield controls.",
+	novelizerMachineForcefield2 = "adjusts the forcefield settings.",
+	novelizerMachineForcefield3 = "works the forcefield controls.",
 
 	novelizerMachineRadio1 = "adjusts the controls on %s.",
 	novelizerMachineRadio2 = "tunes %s by hand.",
@@ -238,24 +330,39 @@ ix.lang.AddTable("english", {
 	novelizerMachinePanel1 = "runs a hand over %s and presses at its controls.",
 	novelizerMachinePanel2 = "works a sequence into %s.",
 	novelizerMachinePanel3 = "uses %s with quick, practiced inputs.",
+	novelizerMachineContainer1 = "opens %s and checks inside.",
+	novelizerMachineContainer2 = "works %s open and looks through it.",
+	novelizerMachineContainer3 = "lifts open %s to search its contents.",
+	novelizerMachineLaundryPipe1 = "works at %s and pulls down a load of laundry.",
+	novelizerMachineLaundryPipe2 = "uses %s to draw out another bundle of cloth.",
+	novelizerMachineLaundryPipe3 = "triggers %s and waits for laundry to drop.",
 	novelizerMachineWasher1 = "loads %s and starts a wash cycle.",
 	novelizerMachineWasher2 = "works the controls on %s and sets it turning.",
 	novelizerMachineWasher3 = "shuts %s and sends it into a wash cycle.",
-	novelizerMachineDoorOpen1 = "reaches for %s and pushes it open.",
-	novelizerMachineDoorOpen2 = "works the handle on %s and opens it.",
-	novelizerMachineDoorOpen3 = "pulls %s wide.",
-	novelizerMachineDoorClose1 = "pulls %s shut.",
-	novelizerMachineDoorClose2 = "swings %s closed.",
-	novelizerMachineDoorClose3 = "guides %s back into place.",
-	novelizerMachineDoorUse1 = "tries the handle on %s.",
-	novelizerMachineDoorUse2 = "works %s open with a hand on the handle.",
-	novelizerMachineDoorUse3 = "uses %s with a quick push and pull.",
+	novelizerMachineDoorOpen1 = "opens %s.",
+	novelizerMachineDoorOpen2 = "works %s open.",
+	novelizerMachineDoorOpen3 = "gets %s open.",
+	novelizerMachineDoorClose1 = "closes %s.",
+	novelizerMachineDoorClose2 = "shuts %s.",
+	novelizerMachineDoorClose3 = "sets %s closed again.",
+	novelizerMachineDoorUse1 = "checks %s.",
+	novelizerMachineDoorUse2 = "works %s for a moment.",
+	novelizerMachineDoorUse3 = "uses %s with a quick motion.",
 	novelizerLoot1 = "starts rummaging through %s for anything useful.",
 	novelizerLoot2 = "leans into %s and digs through the junk inside.",
 	novelizerLoot3 = "starts pawing through %s in search of salvage.",
+	novelizerLootGeneric1 = "starts rummaging for anything useful.",
+	novelizerLootGeneric2 = "leans in and digs through the junk inside.",
+	novelizerLootGeneric3 = "starts pawing through the contents in search of salvage.",
 	novelizerApply1 = "takes out %s and holds it up for inspection.",
 	novelizerApply2 = "produces %s and presents it.",
 	novelizerApply3 = "pulls out %s to show their identification.",
+	novelizerRead1 = "reads %s.",
+	novelizerRead2 = "unfolds %s and reads through it.",
+	novelizerRead3 = "looks over %s for a moment.",
+	novelizerVendorTrade1 = "finishes a trade with %s.",
+	novelizerVendorTrade2 = "wraps up business with %s.",
+	novelizerVendorTrade3 = "concludes a transaction with %s.",
 	novelizerCraft1 = "sets to work assembling something at %s.",
 	novelizerCraft2 = "starts piecing materials together at %s.",
 	novelizerCraft3 = "leans over %s and begins a bit of fabrication.",
@@ -271,6 +378,83 @@ ix.lang.AddTable("english", {
 	novelizerCookFood1 = "turns %s over the heat and starts cooking it.",
 	novelizerCookFood2 = "sets %s to cook with patient care.",
 	novelizerCookFood3 = "starts cooking %s.",
+	novelizerRationOpen1 = "tears open %s.",
+	novelizerRationOpen2 = "breaks the seal on %s.",
+	novelizerRationOpen3 = "opens up %s and starts sorting through it.",
+	novelizerEquipSuitcase1 = "takes %s into hand.",
+	novelizerEquipSuitcase2 = "picks up %s by the handle.",
+	novelizerEquipSuitcase3 = "lifts %s into a hand-carry grip.",
+	novelizerUnequipSuitcase1 = "sets %s back down.",
+	novelizerUnequipSuitcase2 = "lowers %s from their hand.",
+	novelizerUnequipSuitcase3 = "puts %s aside.",
+	novelizerSwitchSuitcase1 = "takes %s in hand.",
+	novelizerSwitchSuitcase2 = "brings %s up by the handle.",
+	novelizerSwitchSuitcase3 = "shifts %s into their grip.",
+	novelizerSwitchKeys1 = "takes out %s.",
+	novelizerSwitchKeys2 = "pulls out %s and lets it hang from their hand.",
+	novelizerSwitchKeys3 = "brings %s out into hand.",
+	novelizerHandsRaise1 = "clenches their fists.",
+	novelizerHandsRaise2 = "brings both hands up into a guarded stance.",
+	novelizerHandsRaise3 = "balls their hands into fists.",
+	novelizerHandsLower1 = "loosens their fists.",
+	novelizerHandsLower2 = "lets their hands ease back down.",
+	novelizerHandsLower3 = "relaxes out of a fighting stance.",
+	novelizerLadder1 = "grabs hold of a ladder and starts climbing.",
+	novelizerLadder2 = "steps onto a ladder and begins to climb.",
+	novelizerLadder3 = "hooks onto a ladder and starts moving along it.",
+	novelizerVehicleSeatEnter1 = "sits down.",
+	novelizerVehicleSeatEnter2 = "drops into a seat.",
+	novelizerVehicleSeatEnter3 = "settles down into a sitting position.",
+	novelizerVehicleSeatExit1 = "gets back to their feet.",
+	novelizerVehicleSeatExit2 = "stands up from the seat.",
+	novelizerVehicleSeatExit3 = "pushes themself upright again.",
+	novelizerVehicleEnter1 = "gets into %s.",
+	novelizerVehicleEnter2 = "climbs into %s.",
+	novelizerVehicleEnter3 = "slides into %s.",
+	novelizerVehicleExit1 = "gets out of %s.",
+	novelizerVehicleExit2 = "climbs out of %s.",
+	novelizerVehicleExit3 = "steps out of %s.",
+	novelizerEquipSidearm1 = "gets %s ready at hand.",
+	novelizerEquipSidearm2 = "settles %s into an easy draw.",
+	novelizerEquipSidearm3 = "positions %s for quick use.",
+	novelizerUnequipSidearm1 = "puts %s away.",
+	novelizerUnequipSidearm2 = "settles %s back out of immediate reach.",
+	novelizerUnequipSidearm3 = "stows %s.",
+	novelizerGrenadeRaise1 = "brings %s up into a throwing stance.",
+	novelizerGrenadeRaise2 = "sets %s into a ready throwing grip.",
+	novelizerGrenadeRaise3 = "cocks their arm with %s ready.",
+	novelizerGrenadeLower1 = "lowers %s from a throwing stance.",
+	novelizerGrenadeLower2 = "lets %s dip back down.",
+	novelizerGrenadeLower3 = "relaxes their grip on %s.",
+	novelizerStaminaEmpty1 = "slows sharply, breathing hard as their stamina gives out.",
+	novelizerStaminaEmpty2 = "sags for a moment as exhaustion catches up with them.",
+	novelizerStaminaEmpty3 = "comes up short, spent and breathing heavily.",
+	novelizerInjuredGun = "reels from a gunshot impact.",
+	novelizerDeathGun = "is dropped by gunfire.",
+	novelizerInjuredBurn = "flinches hard as the burn catches.",
+	novelizerDeathBurn = "goes down in the grip of the flames.",
+	novelizerInjuredBlunt = "staggers from a heavy blunt hit.",
+	novelizerDeathBlunt = "collapses under the force of the impact.",
+	novelizerInjuredFall = "buckles from the impact of the fall.",
+	novelizerDeathFall = "crumples after the fall.",
+	novelizerInjuredRadiation = "shudders under a wave of radiation sickness.",
+	novelizerDeathRadiation = "gives out under severe radiation exposure.",
+	novelizerInjuredShock = "jerks violently as the shock runs through them.",
+	novelizerDeathShock = "locks up under the current and drops.",
+	novelizerInjuredBlast = "is thrown off balance by the blast.",
+	novelizerDeathBlast = "is taken down in the explosion.",
+	novelizerInjuredSlash = "recoils from a cutting wound.",
+	novelizerDeathSlash = "falls after a deep cutting strike.",
+	novelizerInjuredAcid = "lashes back from the corrosive burn.",
+	novelizerDeathAcid = "fails under the corrosive damage.",
+	novelizerInjuredPoison = "wavers under a sudden toxic reaction.",
+	novelizerDeathPoison = "succumbs to the poison.",
+	novelizerItRadioMusic1 = "%s plays a faint stream of music.",
+	novelizerItRadioMusic2 = "%s carries a thin wash of distant music.",
+	novelizerItRadioMusic3 = "%s murmurs with a steady broadcast.",
+	novelizerItRadioOffFreq1 = "%s crackles off-station through bursts of static.",
+	novelizerItRadioOffFreq2 = "%s hisses between channels without finding a clean signal.",
+	novelizerItRadioOffFreq3 = "%s sputters with unstable radio noise.",
 
 	novelizerUse1 = "interacts with %s.",
 	novelizerUse2 = "fiddles with %s.",
@@ -298,6 +482,12 @@ ix.lang.AddTable("english", {
 	novelizerItRadio1 = "%s hisses with a wash of static.",
 	novelizerItRadio2 = "%s spits a brief burst of radio noise.",
 	novelizerItRadio3 = "%s crackles through an unstable channel.",
+	novelizerItDoorLocked1 = "%s stays locked shut.",
+	novelizerItDoorLocked2 = "%s gives a stubborn rattle but refuses to open.",
+	novelizerItDoorLocked3 = "%s holds fast behind its lock.",
+	novelizerItGasStove1 = "%s hisses with the steady burn of a gas flame.",
+	novelizerItGasStove2 = "%s gives off a low, even heat from its lit burners.",
+	novelizerItGasStove3 = "%s whispers with a controlled line of blue fire.",
 	novelizerItStove1 = "%s hisses with steady heat.",
 	novelizerItStove2 = "%s crackles and throws off a wash of heat.",
 	novelizerItStove3 = "%s pops softly as it burns.",
@@ -311,8 +501,41 @@ ix.lang.AddTable("korean", {
 	optdNovelizerAutoActions = "상호작용, 물건 사용, 주변 기계음 묘사를 자동으로 현지화해 출력합니다.",
 
 	novelizerSomething = "무언가",
+	novelizerObject = "물건",
+	novelizerFlashlight = "손전등",
+	novelizerDoor = "문",
+	novelizerForcefield = "역장",
 	novelizerWorkbench = "작업대",
-	novelizerStove = "조리대",
+	novelizerStove = "가스레인지",
+	novelizerHealthKit = "구급 상자",
+	novelizerHealthVial = "체력 주사",
+	novelizerDeskProp = "탁자",
+	novelizerChairProp = "의자",
+	novelizerCrateProp = "상자",
+	novelizerDrumProp = "드럼통",
+	novelizerPopcanProp = "캔",
+	novelizerCanProp = "캔",
+	novelizerBottleProp = "병",
+	novelizerGascanProp = "기름통",
+	novelizerVehicleProp = "탈것",
+	novelizerVendingMachine = "자판기",
+	novelizerCoffeeMachine = "커피 자판기",
+	novelizerPepsiMachine = "음료 자판기",
+	novelizerRationDispenser = "배급기",
+	novelizerLock = "잠금장치",
+	novelizerNewspaperProp = "신문",
+	novelizerRadioProp = "라디오",
+	novelizerTVProp = "TV",
+	novelizerBucketFire = "양동이 화로",
+	novelizerBonfire = "모닥불",
+	novelizerBreachCharge = "문폭파 장치",
+	novelizerDigitalClock = "디지털 시계",
+	novelizerMachineGun = "기관총",
+	novelizerSniperRifle = "저격총",
+	novelizerKeys = "열쇠고리",
+	novelizerHands = "주먹",
+	novelizerSuitcase = "여행 가방",
+	novelizerRationPack = "배급 포대",
 	novelizerCID = "신분증",
 	novelizerMeFormat = "** %s %s",
 
@@ -355,12 +578,24 @@ ix.lang.AddTable("korean", {
 	novelizerLower1 = "%s 내립니다.",
 	novelizerLower2 = "%s 긴장한 자세에서 내립니다.",
 	novelizerLower3 = "%s 준비 자세에서 풀어 둡니다.",
-	novelizerReload1 = "%s 장전합니다.",
-	novelizerReload2 = "%s 새 탄창을 밀어 넣습니다.",
-	novelizerReload3 = "%s 장전 동작을 마칩니다.",
+	novelizerReload1 = "%s 다시 장전합니다.",
+	novelizerReload2 = "새 탄창을 갈아 끼웁니다.",
+	novelizerReload3 = "장전을 마칩니다.",
 	novelizerSwitch1 = "%s 바꿔 듭니다.",
 	novelizerSwitch2 = "%s 꺼내 듭니다.",
 	novelizerSwitch3 = "%s 손에 쥡니다.",
+	novelizerTake1 = "%s 집어 듭니다.",
+	novelizerTake2 = "%s 챙겨 듭니다.",
+	novelizerTake3 = "%s 손에 넣습니다.",
+	novelizerDrop1 = "%s 내려놓습니다.",
+	novelizerDrop2 = "%s 바닥에 내려둡니다.",
+	novelizerDrop3 = "%s 손에서 놓습니다.",
+	novelizerHandsPickup1 = "%s 두 손으로 집어 듭니다.",
+	novelizerHandsPickup2 = "%s 붙잡아 들어 올립니다.",
+	novelizerHandsPickup3 = "%s 들어 올립니다.",
+	novelizerHandsDrop1 = "%s 다시 내려놓습니다.",
+	novelizerHandsDrop2 = "%s 조심스럽게 바닥에 내려둡니다.",
+	novelizerHandsDrop3 = "%s 손에서 내려놓습니다.",
 
 	novelizerRequest1 = "단말기에 짧은 요청을 넣습니다.",
 	novelizerRequest2 = "기기에 대고 짧게 요청합니다.",
@@ -466,25 +701,49 @@ ix.lang.AddTable("korean", {
 	novelizerMolotovPrime1 = "%s 불을 붙입니다.",
 	novelizerMolotovPrime2 = "%s 심지에 불을 옮깁니다.",
 	novelizerMolotovPrime3 = "%s 점화한 채 팔을 뒤로 젖힙니다.",
+	novelizerGrenadeThrow1 = "%s 던집니다.",
+	novelizerGrenadeThrow2 = "%s 힘껏 내던집니다.",
+	novelizerGrenadeThrow3 = "%s 빠르게 투척합니다.",
+	novelizerMolotovThrow1 = "%s 불붙은 궤적과 함께 던집니다.",
+	novelizerMolotovThrow2 = "%s 화염병을 내던집니다.",
+	novelizerMolotovThrow3 = "%s 불길을 그리며 투척합니다.",
 	novelizerAmmo1 = "%s 탄약을 꺼내 장전합니다.",
 	novelizerAmmo2 = "%s 탄환을 꺼내 보충합니다.",
 	novelizerAmmo3 = "%s 탄약으로 잔탄을 채웁니다.",
 	novelizerBattery1 = "%s 전력을 보충합니다.",
 	novelizerBattery2 = "%s 장비 전원계에 연결합니다.",
 	novelizerBattery3 = "%s 동력으로 장비를 충전합니다.",
-	novelizerMedSelf1 = "%s 자기 상처에 사용합니다.",
-	novelizerMedSelf2 = "%s 스스로 응급 처치에 씁니다.",
-	novelizerMedSelf3 = "%s 자기 몸의 상처에 대어 처치합니다.",
-	novelizerMedOther1 = "%s 다른 사람 상처를 치료합니다.",
-	novelizerMedOther2 = "%s 타인의 부상 부위에 사용합니다.",
-	novelizerMedOther3 = "%s 치료하려 몸을 숙입니다.",
+	novelizerMedSelf1 = "%s 열어 자기 상처를 살핍니다.",
+	novelizerMedSelf2 = "%s 펼쳐 스스로 응급 처치를 시작합니다.",
+	novelizerMedSelf3 = "%s 꺼내 상처를 처치합니다.",
+	novelizerMedOther1 = "%s 열어 다른 사람 상처를 살핍니다.",
+	novelizerMedOther2 = "%s 펼쳐 타인의 부상을 처치합니다.",
+	novelizerMedOther3 = "%s 꺼내 치료하려 몸을 숙입니다.",
+	novelizerInjectionSelf1 = "%s 자기 몸에 찔러 넣습니다.",
+	novelizerInjectionSelf2 = "%s 스스로 주사합니다.",
+	novelizerInjectionSelf3 = "%s 자기 몸에 주입합니다.",
+	novelizerInjectionOther1 = "%s 다른 사람 몸에 찔러 넣습니다.",
+	novelizerInjectionOther2 = "%s 타인에게 주사합니다.",
+	novelizerInjectionOther3 = "%s 몸을 숙여 약물을 주입합니다.",
 
-	novelizerFlashlightOn1 = "%s 켭니다.",
-	novelizerFlashlightOn2 = "%s 스위치를 올려 불을 밝힙니다.",
-	novelizerFlashlightOn3 = "%s 켜 광선을 만듭니다.",
-	novelizerFlashlightOff1 = "%s 끕니다.",
-	novelizerFlashlightOff2 = "%s 불빛을 죽입니다.",
-	novelizerFlashlightOff3 = "%s 스위치를 내려 광선을 끕니다.",
+	novelizerFlashlightOn1 = "손전등의 스위치를 올립니다.",
+	novelizerFlashlightOn2 = "손전등 불빛을 켭니다.",
+	novelizerFlashlightOn3 = "손전등을 켜 앞을 비춥니다.",
+	novelizerFlashlightOff1 = "손전등의 스위치를 내립니다.",
+	novelizerFlashlightOff2 = "손전등 불빛을 끕니다.",
+	novelizerFlashlightOff3 = "손전등을 꺼 빛을 거둡니다.",
+	novelizerStoveOn1 = "%s 불을 켭니다.",
+	novelizerStoveOn2 = "%s 화구에 불을 붙입니다.",
+	novelizerStoveOn3 = "%s 가스를 틀어 점화합니다.",
+	novelizerStoveOff1 = "%s 불을 끕니다.",
+	novelizerStoveOff2 = "%s 가스를 잠급니다.",
+	novelizerStoveOff3 = "%s 화구를 꺼 둡니다.",
+	novelizerFireOn1 = "%s 불을 붙입니다.",
+	novelizerFireOn2 = "%s 점화합니다.",
+	novelizerFireOn3 = "%s 안의 불씨를 살립니다.",
+	novelizerFireOff1 = "%s 불을 끕니다.",
+	novelizerFireOff2 = "%s 안의 불을 눌러 끕니다.",
+	novelizerFireOff3 = "%s 불씨를 꺼뜨립니다.",
 
 	novelizerMachineVending1 = "%s 선택 버튼을 눌러 봅니다.",
 	novelizerMachineVending2 = "%s 조작부를 두드립니다.",
@@ -494,34 +753,58 @@ ix.lang.AddTable("korean", {
 	novelizerMachineCoffee2 = "%s 메뉴를 훑으며 버튼을 누릅니다.",
 	novelizerMachineCoffee3 = "%s 조작부에 짧게 입력합니다.",
 
-	novelizerMachineHealth1 = "%s 몸을 붙이고 의료 주기를 작동시킵니다.",
-	novelizerMachineHealth2 = "%s 기대선 채 주입을 받으려 합니다.",
-	novelizerMachineHealth3 = "%s 활성화하고 투여를 기다립니다.",
+	novelizerMachineHealth1 = "자동화 의료 장치를 작동시킵니다.",
+	novelizerMachineHealth2 = "자동화 의료 장치에 몸을 붙입니다.",
+	novelizerMachineHealth3 = "자동화 의료 장치의 치료 주기를 시작합니다.",
+	novelizerMachineHealthGrub1 = "%s %s의 투입구에 밀어 넣습니다.",
+	novelizerMachineHealthGrub2 = "%s %s 안쪽으로 집어넣습니다.",
+	novelizerMachineHealthGrub3 = "%s %s의 공급구에 밀어 넣습니다.",
+	novelizerMachineSuit1 = "충전 장치에서 전력을 받기 시작합니다.",
+	novelizerMachineSuit2 = "충전 장치에 몸을 붙여 충전을 시작합니다.",
+	novelizerMachineSuit3 = "충전 장치를 작동시켜 전력을 끌어옵니다.",
 
 	novelizerMachineRation1 = "%s 앞에서 인증 절차를 밟습니다.",
-	novelizerMachineRation2 = "%s 조작부에 익숙한 손놀림으로 입력합니다.",
+	novelizerMachineRation2 = "%s 투입구에 CID를 밀어넣습니다.",
 	novelizerMachineRation3 = "%s 사용해 배급 절차를 진행합니다.",
+	novelizerMachineDigitalClock1 = "%s 모드를 바꿉니다.",
+	novelizerMachineDigitalClock2 = "%s 홀로그램 표시를 손짓으로 넘깁니다.",
+	novelizerMachineDigitalClock3 = "%s 표시 방식을 바꿉니다.",
+	novelizerMachineMannable1 = "%s 손잡이를 붙잡고 자세를 잡습니다.",
+	novelizerMachineMannable2 = "%s 붙잡고 사격 자세로 들어갑니다.",
+	novelizerMachineMannable3 = "%s 뒤에 붙어 조작을 시작합니다.",
+	novelizerMachineSniper1 = "%s 붙잡고 조준 자세를 잡습니다.",
+	novelizerMachineSniper2 = "%s 스코프 뒤에 눈을 맞춥니다.",
+	novelizerMachineSniper3 = "%s 몸을 붙여 사격 준비를 합니다.",
+	novelizerDoorBreachPlace1 = "문에 문폭파 장치를 부착합니다.",
+	novelizerDoorBreachPlace2 = "문에 문폭파 장치를 눌러 붙입니다.",
+	novelizerDoorBreachPlace3 = "문 표면에 문폭파 장치를 고정합니다.",
+	novelizerDoorBreachUse1 = "%s 기폭 장치를 작동시킵니다.",
+	novelizerDoorBreachUse2 = "%s 타이머를 누릅니다.",
+	novelizerDoorBreachUse3 = "%s 폭파 절차를 시작합니다.",
+	novelizerLockDetonate1 = "%s 기폭 절차를 시작합니다.",
+	novelizerLockDetonate2 = "%s 폭파 상태로 전환합니다.",
+	novelizerLockDetonate3 = "%s 폭파되도록 설정합니다.",
 
 	novelizerMachineComputer1 = "%s 자판을 두드립니다.",
 	novelizerMachineComputer2 = "%s 명령을 입력합니다.",
-	novelizerMachineComputer3 = "%s 몸을 기울여 조작합니다.",
+	novelizerMachineComputer3 = "%s 조작합니다.",
 	novelizerMachineComputer4 = "%s 메뉴를 빠르게 넘깁니다.",
 
-	novelizerMachineTerminal1 = "%s 짧은 요청을 입력합니다.",
-	novelizerMachineTerminal2 = "%s 인터페이스를 조작합니다.",
-	novelizerMachineTerminal3 = "%s 입력부에 손을 댑니다.",
+	novelizerMachineTerminal1 = "%s 사용해 짧은 요청을 입력합니다.",
+	novelizerMachineTerminal2 = "%s 조작합니다.",
+	novelizerMachineTerminal3 = "%s 입력부를 조작합니다.",
 
-	novelizerMachineLock1 = "%s 잠금 장치를 만져 봅니다.",
-	novelizerMachineLock2 = "%s 제어부에 입력합니다.",
-	novelizerMachineLock3 = "%s 메커니즘을 조작합니다.",
+	novelizerMachineLock1 = "%s 상태를 점검합니다.",
+	novelizerMachineLock2 = "%s 입력부에 값을 넣습니다.",
+	novelizerMachineLock3 = "%s 제어부를 조작합니다.",
 
 	novelizerMachineRecycler1 = "%s 폐품을 밀어 넣고 작동시킵니다.",
 	novelizerMachineRecycler2 = "%s 투입구에 재료를 넣습니다.",
 	novelizerMachineRecycler3 = "%s 덜컹거리게 만들며 주기를 시작합니다.",
 
-	novelizerMachineForcefield1 = "%s 제어부에 손을 뻗습니다.",
-	novelizerMachineForcefield2 = "%s 설정을 조정합니다.",
-	novelizerMachineForcefield3 = "%s 필드 제어기를 조작합니다.",
+	novelizerMachineForcefield1 = "역장의 제어부에 손을 뻗습니다.",
+	novelizerMachineForcefield2 = "역장 설정을 조정합니다.",
+	novelizerMachineForcefield3 = "역장 제어기를 조작합니다.",
 
 	novelizerMachineRadio1 = "%s 다이얼을 만지작거립니다.",
 	novelizerMachineRadio2 = "%s 주파수를 맞춥니다.",
@@ -530,24 +813,39 @@ ix.lang.AddTable("korean", {
 	novelizerMachinePanel1 = "%s 표면을 훑고 조작부를 누릅니다.",
 	novelizerMachinePanel2 = "%s 짧은 입력 절차를 밟습니다.",
 	novelizerMachinePanel3 = "%s 익숙한 손놀림으로 다룹니다.",
+	novelizerMachineContainer1 = "%s 열어 안쪽을 살핍니다.",
+	novelizerMachineContainer2 = "%s 열고 안을 뒤적입니다.",
+	novelizerMachineContainer3 = "%s 열어 내용물을 확인합니다.",
+	novelizerMachineLaundryPipe1 = "%s 조작해 세탁물을 받아 냅니다.",
+	novelizerMachineLaundryPipe2 = "%s 사용해 천 뭉치를 끌어냅니다.",
+	novelizerMachineLaundryPipe3 = "%s 건드려 세탁물이 떨어지길 기다립니다.",
 	novelizerMachineWasher1 = "%s 세탁물을 넣고 세탁을 시작합니다.",
 	novelizerMachineWasher2 = "%s 조작부를 눌러 세탁을 돌리기 시작합니다.",
 	novelizerMachineWasher3 = "%s 닫고 세탁을 돌립니다.",
-	novelizerMachineDoorOpen1 = "%s 손잡이를 잡고 엽니다.",
-	novelizerMachineDoorOpen2 = "%s 밀어 엽니다.",
-	novelizerMachineDoorOpen3 = "%s 당겨 엽니다.",
+	novelizerMachineDoorOpen1 = "%s 엽니다.",
+	novelizerMachineDoorOpen2 = "%s 열어 둡니다.",
+	novelizerMachineDoorOpen3 = "%s 열어 둡니다.",
 	novelizerMachineDoorClose1 = "%s 닫습니다.",
-	novelizerMachineDoorClose2 = "%s 밀어 닫습니다.",
-	novelizerMachineDoorClose3 = "%s 원래 자리로 닫아 둡니다.",
-	novelizerMachineDoorUse1 = "%s 손잡이를 시험하듯 잡아 봅니다.",
-	novelizerMachineDoorUse2 = "%s 손으로 밀고 당겨 다룹니다.",
-	novelizerMachineDoorUse3 = "%s 손잡이에 손을 얹고 움직입니다.",
+	novelizerMachineDoorClose2 = "%s 닫아 둡니다.",
+	novelizerMachineDoorClose3 = "%s 다시 닫습니다.",
+	novelizerMachineDoorUse1 = "%s 만져 봅니다.",
+	novelizerMachineDoorUse2 = "%s 건드려 봅니다.",
+	novelizerMachineDoorUse3 = "%s 반응을 살펴봅니다.",
 	novelizerLoot1 = "%s 안을 뒤져 쓸 만한 것을 찾기 시작합니다.",
 	novelizerLoot2 = "%s 안쪽을 뒤적이며 폐품을 찾습니다.",
 	novelizerLoot3 = "%s 안을 파헤치듯 뒤집니다.",
+	novelizerLootGeneric1 = "안을 뒤져 쓸 만한 것을 찾기 시작합니다.",
+	novelizerLootGeneric2 = "안쪽을 뒤적이며 폐품을 찾습니다.",
+	novelizerLootGeneric3 = "안을 파헤치듯 뒤집니다.",
 	novelizerApply1 = "%s 꺼내 보입니다.",
 	novelizerApply2 = "%s 손에 들어 제시합니다.",
 	novelizerApply3 = "%s 신분을 확인시키듯 내밉니다.",
+	novelizerRead1 = "%s 읽습니다.",
+	novelizerRead2 = "%s 펼쳐 읽어 봅니다.",
+	novelizerRead3 = "%s 잠시 훑어 읽습니다.",
+	novelizerVendorTrade1 = "%s 거래를 마칩니다.",
+	novelizerVendorTrade2 = "%s 물건값을 치르고 거래를 끝냅니다.",
+	novelizerVendorTrade3 = "%s 매매를 마무리합니다.",
 	novelizerCraft1 = "%s 앞에서 재료를 조립하기 시작합니다.",
 	novelizerCraft2 = "%s 위에 재료를 늘어놓고 제작을 시작합니다.",
 	novelizerCraft3 = "%s 몸을 숙여 제작 작업에 들어갑니다.",
@@ -563,6 +861,83 @@ ix.lang.AddTable("korean", {
 	novelizerCookFood1 = "%s 불에 올려 조리하기 시작합니다.",
 	novelizerCookFood2 = "%s 열 위에서 천천히 익히기 시작합니다.",
 	novelizerCookFood3 = "%s 조리합니다.",
+	novelizerRationOpen1 = "%s 뜯어 엽니다.",
+	novelizerRationOpen2 = "%s 봉인을 뜯습니다.",
+	novelizerRationOpen3 = "%s 열어 안의 물건을 꺼내기 시작합니다.",
+	novelizerEquipSuitcase1 = "%s 손에 듭니다.",
+	novelizerEquipSuitcase2 = "%s 손잡이째 들어 올립니다.",
+	novelizerEquipSuitcase3 = "%s 손에 들고 자리를 잡습니다.",
+	novelizerUnequipSuitcase1 = "%s 내려놓습니다.",
+	novelizerUnequipSuitcase2 = "%s 손에서 내립니다.",
+	novelizerUnequipSuitcase3 = "%s 곁에 내려 둡니다.",
+	novelizerSwitchSuitcase1 = "%s 손에 듭니다.",
+	novelizerSwitchSuitcase2 = "%s 손잡이째 들어 쥡니다.",
+	novelizerSwitchSuitcase3 = "%s 손으로 고쳐 잡습니다.",
+	novelizerSwitchKeys1 = "%s 꺼내 듭니다.",
+	novelizerSwitchKeys2 = "%s 손에 걸어 듭니다.",
+	novelizerSwitchKeys3 = "%s 손안에 꺼내 쥡니다.",
+	novelizerHandsRaise1 = "주먹을 쥡니다.",
+	novelizerHandsRaise2 = "두 주먹을 올려 경계 자세를 취합니다.",
+	novelizerHandsRaise3 = "손을 말아쥐고 싸울 자세를 잡습니다.",
+	novelizerHandsLower1 = "주먹을 풉니다.",
+	novelizerHandsLower2 = "두 손을 천천히 내립니다.",
+	novelizerHandsLower3 = "경계 자세를 풀어 손을 느슨하게 둡니다.",
+	novelizerLadder1 = "사다리를 붙잡고 오르기 시작합니다.",
+	novelizerLadder2 = "사다리에 발을 올리고 움직이기 시작합니다.",
+	novelizerLadder3 = "사다리를 타기 시작합니다.",
+	novelizerVehicleSeatEnter1 = "앉습니다.",
+	novelizerVehicleSeatEnter2 = "자리에 털썩 앉습니다.",
+	novelizerVehicleSeatEnter3 = "몸을 낮춰 앉습니다.",
+	novelizerVehicleSeatExit1 = "일어섭니다.",
+	novelizerVehicleSeatExit2 = "자리에서 몸을 일으킵니다.",
+	novelizerVehicleSeatExit3 = "몸을 세워 다시 일어납니다.",
+	novelizerVehicleEnter1 = "%s 올라탑니다.",
+	novelizerVehicleEnter2 = "%s 탑니다.",
+	novelizerVehicleEnter3 = "%s 몸을 싣습니다.",
+	novelizerVehicleExit1 = "%s 내립니다.",
+	novelizerVehicleExit2 = "%s 빠져나옵니다.",
+	novelizerVehicleExit3 = "%s 내려섭니다.",
+	novelizerEquipSidearm1 = "%s 손닿기 좋게 준비합니다.",
+	novelizerEquipSidearm2 = "%s 바로 꺼낼 수 있게 정리합니다.",
+	novelizerEquipSidearm3 = "%s 곧바로 쓸 수 있게 갖춥니다.",
+	novelizerUnequipSidearm1 = "%s 다시 정리해 둡니다.",
+	novelizerUnequipSidearm2 = "%s 손닿는 자리에서 치웁니다.",
+	novelizerUnequipSidearm3 = "%s 휴대 위치에 정돈합니다.",
+	novelizerGrenadeRaise1 = "%s 투척 자세로 들어 올립니다.",
+	novelizerGrenadeRaise2 = "%s 던질 준비 자세로 쥡니다.",
+	novelizerGrenadeRaise3 = "%s 투척할 태세를 잡습니다.",
+	novelizerGrenadeLower1 = "%s 투척 자세에서 내립니다.",
+	novelizerGrenadeLower2 = "%s 아래로 내려 잡습니다.",
+	novelizerGrenadeLower3 = "%s 쥔 손의 힘을 풉니다.",
+	novelizerStaminaEmpty1 = "행동력이 바닥나 거칠게 숨을 몰아쉽니다.",
+	novelizerStaminaEmpty2 = "기진한 듯 잠시 몸을 늘어뜨립니다.",
+	novelizerStaminaEmpty3 = "행동력이 다해 숨을 고릅니다.",
+	novelizerInjuredGun = "총격을 받고 몸을 크게 움찔합니다.",
+	novelizerDeathGun = "총격에 쓰러집니다.",
+	novelizerInjuredBurn = "화상에 몸을 홱 움츠립니다.",
+	novelizerDeathBurn = "불길에 휩싸여 쓰러집니다.",
+	novelizerInjuredBlunt = "강한 타격에 휘청입니다.",
+	novelizerDeathBlunt = "둔중한 충격을 버티지 못하고 쓰러집니다.",
+	novelizerInjuredFall = "추락 충격에 비틀거립니다.",
+	novelizerDeathFall = "추락 충격 끝에 쓰러집니다.",
+	novelizerInjuredRadiation = "방사선에 몸을 떨며 고통스러워합니다.",
+	novelizerDeathRadiation = "심한 방사선 피폭 끝에 쓰러집니다.",
+	novelizerInjuredShock = "전류에 몸이 튀듯 경련합니다.",
+	novelizerDeathShock = "강한 전격에 몸이 굳으며 쓰러집니다.",
+	novelizerInjuredBlast = "폭발 충격에 크게 휘청입니다.",
+	novelizerDeathBlast = "폭발에 휩쓸려 쓰러집니다.",
+	novelizerInjuredSlash = "베인 상처에 몸을 움찔합니다.",
+	novelizerDeathSlash = "깊게 베여 쓰러집니다.",
+	novelizerInjuredAcid = "부식성 손상에 급히 몸을 뺍니다.",
+	novelizerDeathAcid = "산성 손상에 버티지 못하고 쓰러집니다.",
+	novelizerInjuredPoison = "독성 반응에 비틀거립니다.",
+	novelizerDeathPoison = "독성 쇼크 끝에 쓰러집니다.",
+	novelizerItRadioMusic1 = "%s 희미한 음악을 흘립니다.",
+	novelizerItRadioMusic2 = "%s 멀리서 들려오는 듯한 음악 소리를 내보냅니다.",
+	novelizerItRadioMusic3 = "%s 안정된 채널로 음악을 틀어 둡니다.",
+	novelizerItRadioOffFreq1 = "%s 채널이 어긋난 채 지직거립니다.",
+	novelizerItRadioOffFreq2 = "%s 주파수를 못 잡고 잡음만 흘립니다.",
+	novelizerItRadioOffFreq3 = "%s 불안정한 주파수 사이를 헤매며 지직거립니다.",
 
 	novelizerUse1 = "%s 상호작용합니다.",
 	novelizerUse2 = "%s 이것저것 만져 봅니다.",
@@ -584,14 +959,20 @@ ix.lang.AddTable("korean", {
 	novelizerItVending1 = "%s 안쪽 코일 뒤에서 윙윙거리며 덜컹댑니다.",
 	novelizerItVending2 = "%s 오래된 냉각 장치가 웅웅거립니다.",
 	novelizerItVending3 = "%s 내부 어딘가에서 금속성 덜컥임이 납니다.",
-	novelizerItForcefield1 = "%s 딱딱한 전기음과 함께 지직거립니다.",
-	novelizerItForcefield2 = "%s 팽팽한 장막음처럼 웅웅거립니다.",
+	novelizerItForcefield1 = "%s 딱딱 튀는 전기음과 함께 지직거립니다.",
+	novelizerItForcefield2 = "%s 팽팽한 막처럼 웅웅거립니다.",
 	novelizerItForcefield3 = "%s 갇힌 에너지가 튀듯 희미하게 딱딱거립니다.",
 	novelizerItRadio1 = "%s 희미한 잡음을 흘립니다.",
 	novelizerItRadio2 = "%s 짧은 무전 잡음을 튀깁니다.",
 	novelizerItRadio3 = "%s 불안정한 채널에서 지직거립니다.",
-	novelizerItStove1 = "%s 일정한 열기와 함께 치익거립니다.",
-	novelizerItStove2 = "%s 타오르며 약하게 딱딱거립니다.",
+	novelizerItDoorLocked1 = "%s 잠겨 있어 열리지 않습니다.",
+	novelizerItDoorLocked2 = "%s 덜컹이기만 할 뿐 열리지 않습니다.",
+	novelizerItDoorLocked3 = "%s 잠금장치가 버티며 열리지 않습니다.",
+	novelizerItGasStove1 = "%s 일정한 가스 불꽃 소리와 함께 치익거립니다.",
+	novelizerItGasStove2 = "%s 점화된 화구에서 고른 열기를 뿜습니다.",
+	novelizerItGasStove3 = "%s 푸른 불꽃을 유지한 채 낮게 속삭이듯 타오릅니다.",
+	novelizerItStove1 = "%s 일정하게 타오르며 치익거립니다.",
+	novelizerItStove2 = "%s 타오르며 약하게 타닥거립니다.",
 	novelizerItStove3 = "%s 열기를 뿜으며 잔불 소리를 냅니다.",
 	novelizerItWorkbench1 = "%s 위에서 공구와 부품이 가볍게 달그락거립니다.",
 	novelizerItWorkbench2 = "%s 금속 공구 부딪히는 마른 소리를 냅니다.",
@@ -651,8 +1032,35 @@ local function GetPhraseTemplate(phraseKey, language)
 	return (info and info[phraseKey]) or (languages.english and languages.english[phraseKey]) or nil
 end
 
+local function StripTrailingParticleNoise(text)
+	if (not isstring(text) or text == "") then
+		return text
+	end
+
+	local normalized = text:gsub("[%s%p%c]+$", "")
+
+	while (normalized ~= "") do
+		local lastChar = utf8 and utf8.sub and utf8.sub(normalized, -1) or normalized:sub(-1)
+
+		if (lastChar == ")" or lastChar == "]" or lastChar == "}" or lastChar == "\"" or lastChar == "'") then
+			normalized = utf8 and utf8.sub and utf8.sub(normalized, 1, -2) or normalized:sub(1, -2)
+			normalized = normalized:gsub("[%s%p%c]+$", "")
+		else
+			break
+		end
+	end
+
+	return normalized
+end
+
 local function GetLastUTF8Codepoint(text)
 	if (not utf8 or not utf8.offset or not utf8.codepoint or not isstring(text) or text == "") then
+		return nil
+	end
+
+	text = StripTrailingParticleNoise(text)
+
+	if (not isstring(text) or text == "") then
 		return nil
 	end
 
@@ -681,6 +1089,40 @@ local function GetLastUTF8Codepoint(text)
 	return codepoint
 end
 
+local function HasFinalConsonantForNonHangul(text)
+	text = StripTrailingParticleNoise(text)
+
+	if (not IsFilledString(text)) then
+		return false
+	end
+
+	local lastChar = text:sub(-1)
+	local lowerLastChar = string.lower(lastChar)
+
+	if (lowerLastChar:match("%d")) then
+		local digitHasFinal = {
+			["0"] = true,
+			["1"] = true,
+			["2"] = false,
+			["3"] = true,
+			["4"] = false,
+			["5"] = false,
+			["6"] = true,
+			["7"] = true,
+			["8"] = true,
+			["9"] = false
+		}
+
+		return digitHasFinal[lastChar] == true
+	end
+
+	if (lowerLastChar:match("[%a]")) then
+		return not lowerLastChar:match("[aeiouy]")
+	end
+
+	return false
+end
+
 local function AppendKoreanParticle(text, particleType)
 	if (not IsFilledString(text) or not IsFilledString(particleType)) then
 		return text
@@ -689,16 +1131,24 @@ local function AppendKoreanParticle(text, particleType)
 	local codepoint = GetLastUTF8Codepoint(text)
 
 	if (not codepoint or codepoint < 0xAC00 or codepoint > 0xD7A3) then
+		local hasFinal = HasFinalConsonantForNonHangul(text)
+
 		if (particleType == "object") then
-			return text .. "를"
+			return text .. (hasFinal and "을" or "를")
 		elseif (particleType == "subject") then
-			return text .. "가"
+			return text .. (hasFinal and "이" or "가")
 		elseif (particleType == "topic") then
-			return text .. "는"
+			return text .. (hasFinal and "은" or "는")
 		elseif (particleType == "with") then
-			return text .. "와"
+			return text .. (hasFinal and "과" or "와")
+		elseif (particleType == "possessive") then
+			return text .. "의"
 		elseif (particleType == "direction") then
-			return text .. "로"
+			return text .. (hasFinal and "으로" or "로")
+		elseif (particleType == "location") then
+			return text .. "에"
+		elseif (particleType == "source") then
+			return text .. "에서"
 		end
 
 		return text
@@ -714,8 +1164,14 @@ local function AppendKoreanParticle(text, particleType)
 		return text .. (finalConsonant == 0 and "는" or "은")
 	elseif (particleType == "with") then
 		return text .. (finalConsonant == 0 and "와" or "과")
+	elseif (particleType == "possessive") then
+		return text .. "의"
 	elseif (particleType == "direction") then
 		return text .. ((finalConsonant == 0 or finalConsonant == 8) and "로" or "으로")
+	elseif (particleType == "location") then
+		return text .. "에"
+	elseif (particleType == "source") then
+		return text .. "에서"
 	end
 
 	return text
@@ -728,6 +1184,39 @@ local function BuildArgument(text, particle, phrase)
 		phrase = phrase
 	}
 end
+
+local classSubjectPhrases = {
+	item_healthkit = "novelizerHealthKit",
+	item_healthvial = "novelizerHealthVial",
+	ix_assistance_terminal = "assistanceTerminal",
+	ix_vendingmachine = "novelizerVendingMachine",
+	ix_pepsimachine = "novelizerPepsiMachine",
+	ix_coffeemachine = "novelizerCoffeeMachine",
+	ix_stove = "novelizerStove",
+	ix_bucket = "novelizerBucketFire",
+	ix_bonfire = "novelizerBonfire",
+	ix_rationdispenser = "novelizerRationDispenser",
+	ix_combinelock = "novelizerLock",
+	ix_unionlock = "novelizerLock",
+	ix_doorbreach = "novelizerBreachCharge",
+	stormfox_digitalclock = "novelizerDigitalClock",
+	ent_mannable = "novelizerMachineGun",
+	ent_mannable_combinesniper = "novelizerSniperRifle"
+}
+
+local modelSubjectPhrases = {
+	{patterns = {"chair"}, phrase = "novelizerChairProp"},
+	{patterns = {"table", "desk"}, phrase = "novelizerDeskProp"},
+	{patterns = {"crate", "box"}, phrase = "novelizerCrateProp"},
+	{patterns = {"drum"}, phrase = "novelizerDrumProp"},
+	{patterns = {"popcan"}, phrase = "novelizerPopcanProp"},
+	{patterns = {"bottle"}, phrase = "novelizerBottleProp"},
+	{patterns = {"gascan"}, phrase = "novelizerGascanProp"},
+	{patterns = {"vehicle"}, phrase = "novelizerVehicleProp"},
+	{patterns = {"newspaper"}, phrase = "novelizerNewspaperProp"},
+	{patterns = {"radio"}, phrase = "novelizerRadioProp"},
+	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"}
+}
 
 function PLUGIN:GetLocalizedArgumentValue(value, language)
 	if (istable(value)) then
@@ -794,110 +1283,215 @@ function PLUGIN:GetCharacterDisplayName(client, anonymous, info)
 	return name, color
 end
 
-function PLUGIN:GetRawItemSubject(item)
+function PLUGIN:ResolveItemSubjectData(item)
 	if (item and IsFilledString(item.novelizerSubject)) then
-		return item.novelizerSubject
+		return item.novelizerSubject, nil
+	end
+
+	if (item) then
+		local uniqueID = string.lower(tostring(item.uniqueID or ""))
+		local className = string.lower(tostring(item.class or ""))
+
+		if (uniqueID == "ration" or uniqueID == "metropolice_ration") then
+			return "ration pack", "novelizerRationPack"
+		end
+
+		if (uniqueID:find("suitcase", 1, true) or className == "ix_suitcase") then
+			return "suitcase", "novelizerSuitcase"
+		end
 	end
 
 	if (item and IsFilledString(item.name)) then
-		return L2(item.name) or item.name
+		return item.name, item.name
 	end
 
-	return L("novelizerSomething")
+	return L("novelizerSomething"), "novelizerSomething"
+end
+
+function PLUGIN:GetRawItemSubject(item)
+	local text, phrase = self:ResolveItemSubjectData(item)
+	local localized = phrase and (L2(phrase) or phrase) or text
+
+	return localized or L("novelizerSomething")
+end
+
+function PLUGIN:ResolveEntitySubjectData(entity)
+	if (not IsValid(entity)) then
+		return L("novelizerSomething"), "novelizerSomething"
+	end
+
+	local className = entity:GetClass()
+	local subjectPhrase = classSubjectPhrases[className]
+
+	if (IsFilledString(subjectPhrase)) then
+		return subjectPhrase, subjectPhrase
+	end
+
+	if (entity:IsDoor()) then
+		return "door", "novelizerDoor"
+	end
+
+	if (entity:GetClass() == "ix_forcefield") then
+		return "forcefield", "novelizerForcefield"
+	end
+
+	if (IsFilledString(entity.novelizerSubject)) then
+		return entity.novelizerSubject, nil
+	end
+
+	if (isfunction(entity.GetItemTable)) then
+		local itemTable = entity:GetItemTable()
+
+		if (istable(itemTable)) then
+			if (IsFilledString(itemTable.novelizerSubject)) then
+				return itemTable.novelizerSubject, nil
+			end
+
+			if (IsFilledString(itemTable.name)) then
+				return itemTable.name, itemTable.name
+			end
+		end
+	end
+
+	local interactivePlugin = ix.plugin.list["interactive_computers"]
+
+	if (interactivePlugin and interactivePlugin.IsComputerEntity and interactivePlugin:IsComputerEntity(entity)) then
+		local definition = interactivePlugin.GetComputerDefinition and interactivePlugin:GetComputerDefinition(entity:GetClass()) or nil
+
+		if (definition) then
+			if (IsFilledString(definition.langKey)) then
+				return definition.langKey, definition.langKey
+			end
+
+			if (IsFilledString(definition.name)) then
+				return definition.name, definition.name
+			end
+		end
+	end
+
+	if (isfunction(entity.GetDisplayName)) then
+		local name = entity:GetDisplayName()
+
+		if (IsFilledString(name)) then
+			return name, name
+		end
+	end
+
+	if (IsFilledString(entity.PrintName) and entity.PrintName ~= "Entity") then
+		return entity.PrintName, entity.PrintName
+	end
+
+	local stored = scripted_ents.GetStored(entity:GetClass())
+	local storedTable = stored and stored.t
+
+	if (istable(storedTable) and IsFilledString(storedTable.PrintName) and storedTable.PrintName ~= "Entity") then
+		return storedTable.PrintName, storedTable.PrintName
+	end
+
+	for _, data in ipairs(modelSubjectPhrases) do
+		local model = string.lower(tostring(entity:GetModel() or ""))
+
+		if (model ~= "") then
+			for _, pattern in ipairs(data.patterns or {}) do
+				if (model:find(pattern, 1, true)) then
+					return data.phrase, data.phrase
+				end
+			end
+		end
+	end
+
+	if (IsFilledString(className) and className:find("^ix_", 1)) then
+		return className, className
+	end
+
+	return "object", "novelizerObject"
 end
 
 function PLUGIN:GetRawEntitySubject(entity)
-	if (not IsValid(entity)) then
-		return L("novelizerSomething")
-	end
+	local text, phrase = self:ResolveEntitySubjectData(entity)
+	local localized = phrase and (L2(phrase) or phrase) or text
 
-	if (IsFilledString(entity.novelizerSubject)) then
-		return entity.novelizerSubject
-	end
-
-	if (isfunction(entity.GetDisplayName)) then
-		local name = entity:GetDisplayName()
-
-		if (IsFilledString(name)) then
-			return L2(name) or name
-		end
-	end
-
-	if (IsFilledString(entity.PrintName) and entity.PrintName ~= "Entity") then
-		return L2(entity.PrintName) or entity.PrintName
-	end
-
-	local className = entity:GetClass()
-
-	if (IsFilledString(className)) then
-		return className
-	end
-
-	return L("novelizerSomething")
+	return localized or L("novelizerSomething")
 end
 
 function PLUGIN:GetItemSubject(item)
-	if (item and IsFilledString(item.novelizerSubject)) then
-		return BuildArgument(item.novelizerSubject, "object")
+	local text, phrase = self:ResolveItemSubjectData(item)
+	return BuildArgument(text, "object", phrase)
+end
+
+function PLUGIN:GetEntitySubjectWithParticle(entity, particle)
+	if (not IsValid(entity)) then
+		return BuildArgument(L("novelizerSomething"), particle or "object")
 	end
 
-	if (item and IsFilledString(item.name)) then
-		return BuildArgument(item.name, "object", item.name)
-	end
-
-	return BuildArgument(L("novelizerSomething"), "object")
+	local text, phrase = self:ResolveEntitySubjectData(entity)
+	return BuildArgument(text, particle or "object", phrase)
 end
 
 function PLUGIN:GetEntitySubject(entity)
-	if (not IsValid(entity)) then
-		return BuildArgument(L("novelizerSomething"), "object")
-	end
-
-	if (IsFilledString(entity.novelizerSubject)) then
-		return BuildArgument(entity.novelizerSubject, "object")
-	end
-
-	if (isfunction(entity.GetDisplayName)) then
-		local name = entity:GetDisplayName()
-
-		if (IsFilledString(name)) then
-			return BuildArgument(name, "object", name)
-		end
-	end
-
-	if (IsFilledString(entity.PrintName) and entity.PrintName ~= "Entity") then
-		return BuildArgument(entity.PrintName, "object", entity.PrintName)
-	end
-
-	local className = entity:GetClass()
-
-	if (IsFilledString(className)) then
-		return BuildArgument(className, "object")
-	end
-
-	return BuildArgument(L("novelizerSomething"), "object")
+	return self:GetEntitySubjectWithParticle(entity, "object")
 end
 
-function PLUGIN:GetWeaponSubject(weapon)
+function PLUGIN:GetBareEntitySubject(entity)
+	if (not IsValid(entity)) then
+		return BuildArgument(L("novelizerSomething"), false)
+	end
+
+	local text, phrase = self:ResolveEntitySubjectData(entity)
+	return BuildArgument(text, false, phrase)
+end
+
+function PLUGIN:GetItEntitySubject(entity)
+	return self:GetEntitySubjectWithParticle(entity, "subject")
+end
+
+function PLUGIN:GetPossessiveEntitySubject(entity)
+	return self:GetEntitySubjectWithParticle(entity, "possessive")
+end
+
+function PLUGIN:GetWithEntitySubject(entity)
+	return self:GetEntitySubjectWithParticle(entity, "with")
+end
+
+function PLUGIN:GetWeaponSubjectWithParticle(weapon, particle)
 	if (not IsValid(weapon)) then
-		return BuildArgument(L("novelizerSomething"), "object")
+		return BuildArgument(L("novelizerSomething"), particle or "object")
+	end
+
+	local className = string.lower(tostring(weapon:GetClass() or ""))
+
+	if (className == "ix_keys") then
+		return BuildArgument("keyring", particle or "object", "novelizerKeys")
+	end
+
+	if (className == "ix_hands") then
+		return BuildArgument("fists", particle or "object", "novelizerHands")
 	end
 
 	if (istable(weapon.ixItem)) then
-		return self:GetItemSubject(weapon.ixItem)
+		local text, phrase = self:ResolveItemSubjectData(weapon.ixItem)
+		return BuildArgument(text, particle or "object", phrase)
 	end
 
 	local printName = weapon:GetPrintName()
 
 	if (IsFilledString(printName) and printName ~= weapon:GetClass()) then
-		return BuildArgument(printName, "object", printName)
+		return BuildArgument(printName, particle or "object", printName)
 	end
 
 	if (IsFilledString(weapon.PrintName) and weapon.PrintName ~= "Scripted Weapon") then
-		return BuildArgument(weapon.PrintName, "object", weapon.PrintName)
+		return BuildArgument(weapon.PrintName, particle or "object", weapon.PrintName)
 	end
 
-	return BuildArgument(weapon:GetClass(), "object")
+	return BuildArgument(weapon:GetClass(), particle or "object")
+end
+
+function PLUGIN:GetWeaponSubject(weapon)
+	return self:GetWeaponSubjectWithParticle(weapon, "object")
+end
+
+function PLUGIN:IsGrenadeWeapon(weapon)
+	return IsValid(weapon) and istable(weapon.ixItem) and weapon.ixItem.isGrenade == true
 end
 
 function PLUGIN:GetEquipCategory(item)
@@ -905,13 +1499,25 @@ function PLUGIN:GetEquipCategory(item)
 		return "generic"
 	end
 
+	local uniqueID = string.lower(tostring(item.uniqueID or ""))
+	local name = string.lower(tostring(item.name or ""))
+	local className = string.lower(tostring(item.class or ""))
+	local category = string.lower(tostring(item.outfitCategory or ""))
+
+	if (uniqueID:find("suitcase", 1, true) or className == "ix_suitcase") then
+		return "suitcase"
+	end
+
+	if (item.isWeapon and (string.lower(tostring(item.weaponCategory or "")) == "sidearm"
+		or uniqueID:find("pistol", 1, true) or uniqueID:find("revolver", 1, true)
+		or uniqueID:find("handgun", 1, true) or name:find("pistol", 1, true)
+		or name:find("revolver", 1, true) or name:find("handgun", 1, true))) then
+		return "sidearm"
+	end
+
 	if (item.isWeapon) then
 		return "weapon"
 	end
-
-	local category = string.lower(tostring(item.outfitCategory or ""))
-	local uniqueID = string.lower(tostring(item.uniqueID or ""))
-	local name = string.lower(tostring(item.name or ""))
 
 	if (item.gasmask or uniqueID:find("gasmask", 1, true) or name:find("gasmask", 1, true)
 		or uniqueID:find("respirator", 1, true) or name:find("respirator", 1, true)) then
@@ -1005,6 +1611,9 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "weapon") then
 		return isEquip and {"novelizerEquipWeapon1", "novelizerEquipWeapon2", "novelizerEquipWeapon3"}
 			or {"novelizerUnequipWeapon1", "novelizerUnequipWeapon2", "novelizerUnequipWeapon3"}
+	elseif (category == "sidearm") then
+		return isEquip and {"novelizerEquipSidearm1", "novelizerEquipSidearm2", "novelizerEquipSidearm3"}
+			or {"novelizerUnequipSidearm1", "novelizerUnequipSidearm2", "novelizerUnequipSidearm3"}
 	elseif (category == "torso") then
 		return isEquip and {"novelizerEquipTorso1", "novelizerEquipTorso2", "novelizerEquipTorso3"}
 			or {"novelizerUnequipTorso1", "novelizerUnequipTorso2", "novelizerUnequipTorso3"}
@@ -1020,21 +1629,136 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "bag") then
 		return isEquip and {"novelizerEquipBag1", "novelizerEquipBag2", "novelizerEquipBag3"}
 			or {"novelizerUnequipBag1", "novelizerUnequipBag2", "novelizerUnequipBag3"}
+	elseif (category == "suitcase") then
+		return isEquip and {"novelizerEquipSuitcase1", "novelizerEquipSuitcase2", "novelizerEquipSuitcase3"}
+			or {"novelizerUnequipSuitcase1", "novelizerUnequipSuitcase2", "novelizerUnequipSuitcase3"}
 	end
 
 	return isEquip and {"novelizerEquip1", "novelizerEquip2", "novelizerEquip3"}
 		or {"novelizerUnequip1", "novelizerUnequip2", "novelizerUnequip3"}
 end
 
+function PLUGIN:IsSpecialSwitchWeapon(weapon)
+	if (not IsValid(weapon)) then
+		return false
+	end
+
+	local className = string.lower(tostring(weapon:GetClass() or ""))
+
+	return className == "ix_keys" or self:IsNarratableWeapon(weapon)
+end
+
+function PLUGIN:GetSwitchPhrasePool(weapon)
+	if (not IsValid(weapon)) then
+		return {
+			"novelizerSwitch1",
+			"novelizerSwitch2",
+			"novelizerSwitch3"
+		}
+	end
+
+	local className = string.lower(tostring(weapon:GetClass() or ""))
+
+	if (className == "ix_keys") then
+		return {
+			"novelizerSwitchKeys1",
+			"novelizerSwitchKeys2",
+			"novelizerSwitchKeys3"
+		}
+	end
+
+	if (istable(weapon.ixItem) and self:GetEquipCategory(weapon.ixItem) == "suitcase") then
+		return {
+			"novelizerSwitchSuitcase1",
+			"novelizerSwitchSuitcase2",
+			"novelizerSwitchSuitcase3"
+		}
+	end
+
+	return {
+		"novelizerSwitch1",
+		"novelizerSwitch2",
+		"novelizerSwitch3"
+	}
+end
+
+function PLUGIN:GetSwitchArguments(weapon, phraseKey)
+	if (phraseKey == "novelizerSwitch1") then
+		return {
+			self:GetWeaponSubjectWithParticle(weapon, "direction")
+		}
+	end
+
+	return {
+		self:GetWeaponSubject(weapon)
+	}
+end
+
+function PLUGIN:CanNarrateRaisedWeapon(weapon)
+	if (not IsValid(weapon)) then
+		return false
+	end
+
+	local className = string.lower(tostring(weapon:GetClass() or ""))
+
+	return className == "ix_hands" or self:IsNarratableWeapon(weapon)
+end
+
+function PLUGIN:GetRaisePhrasePool(weapon, raised)
+	if (IsValid(weapon) and string.lower(tostring(weapon:GetClass() or "")) == "ix_hands") then
+		return raised and {
+			"novelizerHandsRaise1",
+			"novelizerHandsRaise2",
+			"novelizerHandsRaise3"
+		} or {
+			"novelizerHandsLower1",
+			"novelizerHandsLower2",
+			"novelizerHandsLower3"
+		}
+	end
+
+	if (self:IsGrenadeWeapon(weapon)) then
+		return raised and {
+			"novelizerGrenadeRaise1",
+			"novelizerGrenadeRaise2",
+			"novelizerGrenadeRaise3"
+		} or {
+			"novelizerGrenadeLower1",
+			"novelizerGrenadeLower2",
+			"novelizerGrenadeLower3"
+		}
+	end
+
+	return raised and {
+		"novelizerRaise1",
+		"novelizerRaise2",
+		"novelizerRaise3"
+	} or {
+		"novelizerLower1",
+		"novelizerLower2",
+		"novelizerLower3"
+	}
+end
+
+function PLUGIN:GetRaiseArguments(weapon)
+	if (IsValid(weapon) and string.lower(tostring(weapon:GetClass() or "")) == "ix_hands") then
+		return nil
+	end
+
+	return {
+		self:GetWeaponSubject(weapon)
+	}
+end
+
 function PLUGIN:IsObserver(client)
 	return IsValid(client) and client:GetMoveType() == MOVETYPE_NOCLIP and not client:InVehicle()
 end
 
-function PLUGIN:CanAutoNarrate(client)
+function PLUGIN:CanAutoNarrate(client, allowDead)
 	return IsValid(client)
 		and client:IsPlayer()
 		and client:GetCharacter()
-		and client:Alive()
+		and (allowDead == true or client:Alive())
 		and not self:IsObserver(client)
 		and ix.option.Get(client, "novelizerAutoActions", true) ~= false
 end
@@ -1059,6 +1783,52 @@ function PLUGIN:GetConsumptionProfile(client)
 	return "default"
 end
 
+function PLUGIN:GetNarratedConsumeAction(item, action)
+	if (action ~= "Eat" or not item) then
+		return action
+	end
+
+	if (IsFilledString(item.novelizerConsumeAction)) then
+		return item.novelizerConsumeAction
+	end
+
+	local uniqueID = string.lower(tostring(item.uniqueID or ""))
+	local name = string.lower(tostring(item.name or ""))
+	local model = string.lower(tostring(item.model or ""))
+	local sound = string.lower(tostring(item.sound or ""))
+	local drinkHints = {
+		"coffee",
+		"tea",
+		"water",
+		"soda",
+		"cola",
+		"coke",
+		"pepsi",
+		"milk",
+		"beer",
+		"juice",
+		"vodka",
+		"wine",
+		"whiskey",
+		"booze",
+		"liquor",
+		"flask",
+		"canteen"
+	}
+
+	if (sound:find("drink", 1, true) or sound:find("beer", 1, true) or sound:find("tea", 1, true)) then
+		return "Drink"
+	end
+
+	for _, hint in ipairs(drinkHints) do
+		if (uniqueID:find(hint, 1, true) or name:find(hint, 1, true) or model:find(hint, 1, true)) then
+			return "Drink"
+		end
+	end
+
+	return action
+end
+
 function PLUGIN:RegisterItemActionPhrases(uniqueID, action, phrasePool)
 	self.itemActionPhrasePools[uniqueID] = self.itemActionPhrasePools[uniqueID] or {}
 	self.itemActionPhrasePools[uniqueID][action] = CopyArray(phrasePool)
@@ -1080,8 +1850,18 @@ function PLUGIN:RegisterItPhrases(key, phrasePool)
 end
 
 function PLUGIN:ResolveItemPhrasePool(item, action, client)
+	local narratedAction = self:GetNarratedConsumeAction(item, action)
+
+	if (item and istable(item.novelizerPhrases) and istable(item.novelizerPhrases[narratedAction])) then
+		return item.novelizerPhrases[narratedAction]
+	end
+
 	if (item and istable(item.novelizerPhrases) and istable(item.novelizerPhrases[action])) then
 		return item.novelizerPhrases[action]
+	end
+
+	if (item and self.itemActionPhrasePools[item.uniqueID] and self.itemActionPhrasePools[item.uniqueID][narratedAction]) then
+		return self.itemActionPhrasePools[item.uniqueID][narratedAction]
 	end
 
 	if (item and self.itemActionPhrasePools[item.uniqueID] and self.itemActionPhrasePools[item.uniqueID][action]) then
@@ -1089,6 +1869,7 @@ function PLUGIN:ResolveItemPhrasePool(item, action, client)
 	end
 
 	local profile = self:GetConsumptionProfile(client)
+	action = narratedAction
 
 	if (profile == "ota") then
 		return {
@@ -1142,18 +1923,7 @@ function PLUGIN:ResolveEntityUsePhrasePool(entity)
 		return self.entityUsePhrasePools[className]
 	end
 
-	for _, entry in ipairs(self.classPatternPhrasePools) do
-		if (className:find(entry.pattern, 1, true)) then
-			return entry.pool
-		end
-	end
-
-	return {
-		"novelizerUse1",
-		"novelizerUse2",
-		"novelizerUse3",
-		"novelizerUse4"
-	}
+	return nil
 end
 
 function PLUGIN:ResolveItPhrasePool(entity, key)
@@ -1182,6 +1952,23 @@ function PLUGIN:ShouldIgnoreEntityUse(entity)
 	end
 
 	if (entity:GetClass():find("ix_loot_", 1, true)) then
+		return true
+	end
+
+	if (entity:IsDoor()) then
+		local handleBone = entity.LookupBone and entity:LookupBone("handle") or nil
+
+		return not handleBone or handleBone < 0
+	end
+
+	local className = entity:GetClass()
+
+	if (className == "ix_health_charger" or className == "ix_suit_charger"
+		or className == "ix_washing_machine" or className == "ix_washing_machine_small"
+		or className == "ix_stove" or className == "ix_recycler"
+		or className == "ix_laundry_pipe" or className == "ix_bucket"
+		or className == "ix_bonfire" or className == "ix_station"
+		or className:find("ix_station_", 1, true)) then
 		return true
 	end
 
@@ -1235,6 +2022,14 @@ function PLUGIN:GetDoorPhrasePool(entity)
 		return nil
 	end
 
+	if (isfunction(entity.IsLocked) and entity:IsLocked()) then
+		return {
+			"novelizerMachineDoorUse1",
+			"novelizerMachineDoorUse2",
+			"novelizerMachineDoorUse3"
+		}
+	end
+
 	local saveTable = entity.GetSaveTable and entity:GetSaveTable() or nil
 	local toggleState = saveTable and (saveTable.m_toggle_state or saveTable.m_eDoorState) or nil
 
@@ -1259,6 +2054,150 @@ function PLUGIN:GetDoorPhrasePool(entity)
 	}
 end
 
+function PLUGIN:GetDoorActionKey(entity)
+	if (not IsValid(entity) or not entity:IsDoor()) then
+		return "door_use"
+	end
+
+	if (isfunction(entity.IsLocked) and entity:IsLocked()) then
+		return "door_locked"
+	end
+
+	local saveTable = entity.GetSaveTable and entity:GetSaveTable() or nil
+	local toggleState = saveTable and (saveTable.m_toggle_state or saveTable.m_eDoorState) or nil
+
+	if (toggleState == 0) then
+		return "door_open"
+	elseif (toggleState == 1 or toggleState == 2) then
+		return "door_close"
+	end
+
+	return "door_use"
+end
+
+function PLUGIN:GetEntityUseArguments(entity, phraseKey)
+	if (phraseKey == "novelizerMachineLock1" or phraseKey == "novelizerMachineLock2"
+		or phraseKey == "novelizerMachineLock3" or phraseKey == "novelizerMachineTerminal3"
+		or phraseKey == "novelizerMachineDoorUse3" or phraseKey == "novelizerMachineVending1"
+		or phraseKey == "novelizerMachineVending2" or phraseKey == "novelizerMachineCoffee1"
+		or phraseKey == "novelizerMachineCoffee3" or phraseKey == "novelizerMachineComputer4"
+		or phraseKey == "novelizerMachineRadio1" or phraseKey == "novelizerMachineRadio2"
+		or phraseKey == "novelizerMachineRadio3"
+		or phraseKey == "novelizerDoorBreachUse1" or phraseKey == "novelizerDoorBreachUse2"
+		or phraseKey == "novelizerDoorBreachUse3" or phraseKey == "novelizerMachineDigitalClock2") then
+		return {
+			self:GetPossessiveEntitySubject(entity)
+		}
+	end
+
+	if (phraseKey == "novelizerMachineCoffee2" or phraseKey == "novelizerMachineVending3"
+		or phraseKey == "novelizerMachineRation1" or phraseKey == "novelizerMachineRation2") then
+		return {
+			self:GetBareEntitySubject(entity)
+		}
+	end
+
+	if (phraseKey == "novelizerMachineComputer2") then
+		return {
+			self:GetEntitySubjectWithParticle(entity, "direction")
+		}
+	end
+
+	return {
+		self:GetEntitySubject(entity)
+	}
+end
+
+function PLUGIN:GetItArguments(entity, key, phraseKey)
+	if (phraseKey == "novelizerItVending1" or phraseKey == "novelizerItVending2") then
+		return {
+			self:GetPossessiveEntitySubject(entity)
+		}
+	end
+
+	if (phraseKey == "novelizerItDoorLocked3") then
+		return {
+			self:GetPossessiveEntitySubject(entity)
+		}
+	end
+
+	if (phraseKey == "novelizerItVending3" or key == "workbench_rattle") then
+		return {
+			self:GetBareEntitySubject(entity)
+		}
+	end
+
+	return {
+		self:GetItEntitySubject(entity)
+	}
+end
+
+function PLUGIN:SetIdleWarmup(entity, minDelay, maxDelay)
+	if (not IsValid(entity)) then
+		return
+	end
+
+	entity.ixNovelizerIdleDelayUntil = CurTime() + math.Rand(minDelay or IDLE_WARMUP_MIN, maxDelay or IDLE_WARMUP_MAX)
+end
+
+function PLUGIN:ClearIdleWarmup(entity)
+	if (IsValid(entity)) then
+		entity.ixNovelizerIdleDelayUntil = nil
+	end
+end
+
+function PLUGIN:CanEmitIdleNow(entity)
+	return not IsValid(entity) or (entity.ixNovelizerIdleDelayUntil or 0) <= CurTime()
+end
+
+function PLUGIN:IsInteractiveComputerEntity(entity, requireInteractive)
+	local interactivePlugin = ix.plugin.list["interactive_computers"]
+
+	if (not interactivePlugin or not interactivePlugin.IsComputerEntity or not interactivePlugin:IsComputerEntity(entity)) then
+		return false
+	end
+
+	if (requireInteractive ~= true) then
+		return true
+	end
+
+	local definition = interactivePlugin.GetComputerDefinition and interactivePlugin:GetComputerDefinition(entity:GetClass()) or nil
+
+	return entity:GetClass() == "ix_interactive_computer" or (definition and definition.interactive == true)
+end
+
+function PLUGIN:HasDamageFlag(damageType, flag)
+	return isnumber(flag) and isnumber(damageType) and bitBand(damageType, flag) == flag
+end
+
+function PLUGIN:ClassifyDamageType(dmgInfo)
+	if (not dmgInfo) then
+		return nil
+	end
+
+	local damageType = dmgInfo:GetDamageType()
+	local definitions = {
+		{key = "shock", hurt = "novelizerInjuredShock", death = "novelizerDeathShock", flags = {DMG_SHOCK}},
+		{key = "radiation", hurt = "novelizerInjuredRadiation", death = "novelizerDeathRadiation", flags = {DMG_RADIATION}},
+		{key = "burn", hurt = "novelizerInjuredBurn", death = "novelizerDeathBurn", flags = {DMG_BURN, DMG_SLOWBURN}},
+		{key = "blast", hurt = "novelizerInjuredBlast", death = "novelizerDeathBlast", flags = {DMG_BLAST}},
+		{key = "fall", hurt = "novelizerInjuredFall", death = "novelizerDeathFall", flags = {DMG_FALL}},
+		{key = "gun", hurt = "novelizerInjuredGun", death = "novelizerDeathGun", flags = {DMG_BULLET, DMG_BUCKSHOT}},
+		{key = "slash", hurt = "novelizerInjuredSlash", death = "novelizerDeathSlash", flags = {DMG_SLASH}},
+		{key = "acid", hurt = "novelizerInjuredAcid", death = "novelizerDeathAcid", flags = {DMG_ACID}},
+		{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
+		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}}
+	}
+
+	for _, definition in ipairs(definitions) do
+		for _, flag in ipairs(definition.flags) do
+			if (self:HasDamageFlag(damageType, flag)) then
+				return definition
+			end
+		end
+	end
+end
+
 function PLUGIN:PassItCooldown(entity, key, cooldown)
 	if (not IsValid(entity)) then
 		return true
@@ -1278,16 +2217,80 @@ function PLUGIN:PassItCooldown(entity, key, cooldown)
 end
 
 function PLUGIN:SendNovelMe(client, phraseKey, arguments, data)
-	if (not self:CanAutoNarrate(client) or not IsFilledString(phraseKey)) then
+	data = data or {}
+
+	if (not self:CanAutoNarrate(client, data.allowDead == true) or not IsFilledString(phraseKey)) then
 		return false
 	end
 
-	data = data or {}
+	if (data.bypassGlobalCooldown ~= true
+		and not self:PassNamedCooldown(client, "action_global", tonumber(data.globalCooldown) or GLOBAL_ACTION_COOLDOWN)) then
+		return false
+	end
+
+	if (IsFilledString(data.actionKey)) then
+		local cooldown = tonumber(data.cooldown) or DEFAULT_ACTION_COOLDOWN
+
+		if (not self:PassNamedCooldown(client, "action_" .. data.actionKey, cooldown)) then
+			return false
+		end
+	end
+
 	data.arguments = arguments or {}
 	data.range = data.range or GetChatRange()
 
 	ix.chat.Send(client, "novelme", phraseKey, false, nil, data)
 	return true
+end
+
+function PLUGIN:SendNovelIt(phraseKey, arguments, data)
+	if (not IsFilledString(phraseKey)) then
+		return false
+	end
+
+	data = data or {}
+
+	if (not data.position) then
+		return false
+	end
+
+	ix.chat.Send(nil, data.chatType or "novelit", phraseKey, false, nil, {
+		arguments = arguments or {},
+		position = data.position,
+		range = data.range or GetChatRange()
+	})
+
+	return true
+end
+
+function PLUGIN:GetHeatItKey(entity)
+	if (IsValid(entity) and entity:GetClass() == "ix_stove") then
+		return "stove_gas_heat"
+	end
+
+	return "stove_heat"
+end
+
+function PLUGIN:HandleFlashlightStateChange(client, enabled)
+	if (not self:CanAutoNarrate(client) or not self:PassNamedCooldown(client, "flashlight", 0.5)) then
+		return false
+	end
+
+	local phrasePool = enabled and {
+		"novelizerFlashlightOn1",
+		"novelizerFlashlightOn2",
+		"novelizerFlashlightOn3"
+	} or {
+		"novelizerFlashlightOff1",
+		"novelizerFlashlightOff2",
+		"novelizerFlashlightOff3"
+	}
+
+	return self:SendNovelMe(client, table.Random(phrasePool), {
+		BuildArgument("flashlight", "object", "novelizerFlashlight")
+	}, {
+		actionKey = enabled and "flashlight_on" or "flashlight_off"
+	})
 end
 
 function PLUGIN:EmitConditionalIt(entity, key, data)
@@ -1314,11 +2317,15 @@ function PLUGIN:EmitConditionalIt(entity, key, data)
 		return false
 	end
 
-	local arguments = data.arguments and CopyArray(data.arguments) or {
-		self:GetEntitySubject(entity)
-	}
+	local phraseKey = table.Random(phrasePool)
 
-	ix.chat.Send(nil, "novelit", table.Random(phrasePool), false, nil, {
+	if (not IsFilledString(phraseKey)) then
+		return false
+	end
+
+	local arguments = data.arguments and CopyArray(data.arguments) or self:GetItArguments(entity, key, phraseKey)
+
+	ix.chat.Send(nil, data.chatType or "novelit", phraseKey, false, nil, {
 		arguments = arguments,
 		position = position,
 		range = data.range or GetChatRange()
@@ -1342,6 +2349,7 @@ function PLUGIN:PatchItemAction(itemTable, action)
 
 	itemTable:PostHook(action, function(item)
 		local client = item.player
+		local narratedAction = self:GetNarratedConsumeAction(item, action)
 		local phrasePool = self:ResolveItemPhrasePool(item, action, client)
 
 		if (not self:CanAutoNarrate(client) or not istable(phrasePool) or #phrasePool == 0) then
@@ -1350,6 +2358,8 @@ function PLUGIN:PatchItemAction(itemTable, action)
 
 		self:SendNovelMe(client, table.Random(phrasePool), {
 			self:GetItemSubject(item)
+		}, {
+			actionKey = "item_" .. string.lower(narratedAction or action)
 		})
 	end)
 end
@@ -1375,13 +2385,27 @@ function PLUGIN:PatchEquipmentAction(itemTable, action)
 		end
 
 		if (action == "Equip" and item:GetData("equip") == true) then
-			self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
+			if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
 				self:GetItemSubject(item)
-			})
+			}, {
+				actionKey = "equip_" .. self:GetEquipCategory(item)
+			})) then
+				item.ixNovelizerLastEquipmentNarration = {
+					state = true,
+					time = CurTime()
+				}
+			end
 		elseif (action == "EquipUn" and item:GetData("equip") ~= true) then
-			self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
+			if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
 				self:GetItemSubject(item)
-			})
+			}, {
+				actionKey = "unequip_" .. self:GetEquipCategory(item)
+			})) then
+				item.ixNovelizerLastEquipmentNarration = {
+					state = false,
+					time = CurTime()
+				}
+			end
 		end
 	end)
 end
@@ -1408,12 +2432,47 @@ function PLUGIN:PatchDirectItemAction(itemTable, action, phrasePool)
 
 		self:SendNovelMe(client, table.Random(phrasePool), {
 			self:GetItemSubject(item)
+		}, {
+			actionKey = "item_" .. string.lower(action)
 		})
 	end)
 end
 
+function PLUGIN:PatchDoorBreachAction(itemTable)
+	if (not itemTable.functions or not itemTable.functions.Place or itemTable.ixNovelizerDoorBreachWrapped) then
+		return
+	end
+
+	itemTable.ixNovelizerDoorBreachWrapped = true
+
+	local action = itemTable.functions.Place
+	local originalOnRun = action.OnRun
+
+	if (not isfunction(originalOnRun)) then
+		return
+	end
+
+	action.OnRun = function(item, ...)
+		local client = item.player or item:GetOwner()
+		local result = originalOnRun(item, ...)
+
+		if (result ~= false and self:CanAutoNarrate(client)) then
+			self:SendNovelMe(client, table.Random({
+				"novelizerDoorBreachPlace1",
+				"novelizerDoorBreachPlace2",
+				"novelizerDoorBreachPlace3"
+			}), nil, {
+				actionKey = "doorbreach_place"
+			})
+		end
+
+		return result
+	end
+end
+
 function PLUGIN:GetMedicalPhrasePool(itemTable, action)
 	local uniqueID = string.lower(tostring(itemTable.uniqueID or ""))
+	local name = string.lower(tostring(itemTable.name or ""))
 
 	if (uniqueID == "bandage" or uniqueID == "bandage_dirty") then
 		return action == "selfheal"
@@ -1425,6 +2484,14 @@ function PLUGIN:GetMedicalPhrasePool(itemTable, action)
 		return action == "selfheal"
 			and {"novelizerAedSelf1", "novelizerAedSelf2", "novelizerAedSelf3"}
 			or {"novelizerAedOther1", "novelizerAedOther2", "novelizerAedOther3"}
+	end
+
+	if (uniqueID:find("vial", 1, true) or uniqueID:find("syringe", 1, true)
+		or uniqueID:find("inject", 1, true) or name:find("vial", 1, true)
+		or name:find("syringe", 1, true) or name:find("inject", 1, true)) then
+		return action == "selfheal"
+			and {"novelizerInjectionSelf1", "novelizerInjectionSelf2", "novelizerInjectionSelf3"}
+			or {"novelizerInjectionOther1", "novelizerInjectionOther2", "novelizerInjectionOther3"}
 	end
 
 	return action == "selfheal"
@@ -1439,6 +2506,16 @@ function PLUGIN:PatchItems()
 		self:PatchCookAction(itemTable)
 		self:PatchEquipmentAction(itemTable, "Equip")
 		self:PatchEquipmentAction(itemTable, "EquipUn")
+		self:PatchDirectItemAction(itemTable, "take", {
+			"novelizerTake1",
+			"novelizerTake2",
+			"novelizerTake3"
+		})
+		self:PatchDirectItemAction(itemTable, "drop", {
+			"novelizerDrop1",
+			"novelizerDrop2",
+			"novelizerDrop3"
+		})
 
 		if (itemTable.base == "ammo" or itemTable.ammo) then
 			self:PatchDirectItemAction(itemTable, "use", {
@@ -1459,6 +2536,26 @@ function PLUGIN:PatchItems()
 				"novelizerBattery2",
 				"novelizerBattery3"
 			})
+		end
+
+		if (itemTable.uniqueID == "paper") then
+			self:PatchDirectItemAction(itemTable, "use", {
+				"novelizerRead1",
+				"novelizerRead2",
+				"novelizerRead3"
+			})
+		end
+
+		if (itemTable.uniqueID == "ration" or itemTable.uniqueID == "metropolice_ration") then
+			self:PatchDirectItemAction(itemTable, "Open", {
+				"novelizerRationOpen1",
+				"novelizerRationOpen2",
+				"novelizerRationOpen3"
+			})
+		end
+
+		if (itemTable.uniqueID == "doorbreach") then
+			self:PatchDoorBreachAction(itemTable)
 		end
 
 		if (itemTable.base == "base_medikit" or itemTable.healthPoint ~= nil and itemTable.medAttr ~= nil) then
@@ -1496,10 +2593,12 @@ function PLUGIN:PatchCookAction(itemTable)
 				"novelizerCookFood3"
 			}), {
 				self:GetItemSubject(item)
+			}, {
+				actionKey = "cook_food"
 			})
 
 			if (stove) then
-				self:EmitConditionalIt(stove, "stove_heat", {
+				self:EmitConditionalIt(stove, self:GetHeatItKey(stove), {
 					cooldown = 4
 				})
 			end
@@ -1510,6 +2609,9 @@ function PLUGIN:PatchCookAction(itemTable)
 end
 
 function PLUGIN:RegisterDefaultEntityPhrases()
+	self.classPatternPhrasePools = {}
+	self.entityUsePhrasePools = {}
+
 	self:RegisterEntityUsePhrases("ix_vendingmachine", {
 		"novelizerMachineVending1",
 		"novelizerMachineVending2",
@@ -1541,6 +2643,20 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineComputer3",
 		"novelizerMachineComputer4"
 	})
+	local interactivePlugin = ix.plugin.list["interactive_computers"]
+
+	if (interactivePlugin and istable(interactivePlugin.entityDefinitions)) then
+		for _, definition in ipairs(interactivePlugin.entityDefinitions) do
+			if (IsFilledString(definition.class) and definition.interactive == true) then
+				self:RegisterEntityUsePhrases(definition.class, {
+					"novelizerMachineComputer1",
+					"novelizerMachineComputer2",
+					"novelizerMachineComputer3",
+					"novelizerMachineComputer4"
+				})
+			end
+		end
+	end
 	self:RegisterEntityUsePhrases("ix_assistance_terminal", {
 		"novelizerMachineTerminal1",
 		"novelizerMachineTerminal2",
@@ -1581,11 +2697,6 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineForcefield2",
 		"novelizerMachineForcefield3"
 	})
-	self:RegisterEntityUsePhrases("ix_scrollpanel", {
-		"novelizerMachinePanel1",
-		"novelizerMachinePanel2",
-		"novelizerMachinePanel3"
-	})
 	self:RegisterEntityUsePhrases("ix_radiorepeater", {
 		"novelizerMachineRadio1",
 		"novelizerMachineRadio2",
@@ -1595,6 +2706,51 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineRadio1",
 		"novelizerMachineRadio2",
 		"novelizerMachineRadio3"
+	})
+	self:RegisterEntityUsePhrases("ix_music_radio", {
+		"novelizerMachineRadio1",
+		"novelizerMachineRadio2",
+		"novelizerMachineRadio3"
+	})
+	self:RegisterEntityUsePhrases("ent_mannable", {
+		"novelizerMachineMannable1",
+		"novelizerMachineMannable2",
+		"novelizerMachineMannable3"
+	})
+	self:RegisterEntityUsePhrases("ent_mannable_combinesniper", {
+		"novelizerMachineSniper1",
+		"novelizerMachineSniper2",
+		"novelizerMachineSniper3"
+	})
+	self:RegisterEntityUsePhrases("stormfox_digitalclock", {
+		"novelizerMachineDigitalClock1",
+		"novelizerMachineDigitalClock2",
+		"novelizerMachineDigitalClock3"
+	})
+	self:RegisterEntityUsePhrases("ix_doorbreach", {
+		"novelizerDoorBreachUse1",
+		"novelizerDoorBreachUse2",
+		"novelizerDoorBreachUse3"
+	})
+	self:RegisterEntityUsePhrases("ix_ctocameraterminal", {
+		"novelizerMachineTerminal1",
+		"novelizerMachineTerminal2",
+		"novelizerMachineTerminal3"
+	})
+	self:RegisterEntityUsePhrases("ix_container", {
+		"novelizerMachineContainer1",
+		"novelizerMachineContainer2",
+		"novelizerMachineContainer3"
+	})
+	self:RegisterEntityUsePhrases("ix_laundry_pipe", {
+		"novelizerMachineLaundryPipe1",
+		"novelizerMachineLaundryPipe2",
+		"novelizerMachineLaundryPipe3"
+	})
+	self:RegisterEntityUsePhrases("ix_note", {
+		"novelizerRead1",
+		"novelizerRead2",
+		"novelizerRead3"
 	})
 	self:RegisterEntityUsePhrases("ix_station", {
 		"novelizerCraft1",
@@ -1627,47 +2783,6 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerCook3"
 	})
 
-	self:RegisterPatternUsePhrases("computer", {
-		"novelizerMachineComputer1",
-		"novelizerMachineComputer2",
-		"novelizerMachineComputer3",
-		"novelizerMachineComputer4"
-	})
-	self:RegisterPatternUsePhrases("terminal", {
-		"novelizerMachineTerminal1",
-		"novelizerMachineTerminal2",
-		"novelizerMachineTerminal3"
-	})
-	self:RegisterPatternUsePhrases("console", {
-		"novelizerMachineTerminal1",
-		"novelizerMachineTerminal2",
-		"novelizerMachineTerminal3"
-	})
-	self:RegisterPatternUsePhrases("lock", {
-		"novelizerMachineLock1",
-		"novelizerMachineLock2",
-		"novelizerMachineLock3"
-	})
-	self:RegisterPatternUsePhrases("panel", {
-		"novelizerMachinePanel1",
-		"novelizerMachinePanel2",
-		"novelizerMachinePanel3"
-	})
-	self:RegisterPatternUsePhrases("radio", {
-		"novelizerMachineRadio1",
-		"novelizerMachineRadio2",
-		"novelizerMachineRadio3"
-	})
-	self:RegisterPatternUsePhrases("washer", {
-		"novelizerMachineWasher1",
-		"novelizerMachineWasher2",
-		"novelizerMachineWasher3"
-	})
-	self:RegisterPatternUsePhrases("station_", {
-		"novelizerCraft1",
-		"novelizerCraft2",
-		"novelizerCraft3"
-	})
 end
 
 function PLUGIN:PatchWaterCommand()
@@ -1689,7 +2804,9 @@ function PLUGIN:PatchWaterCommand()
 				"novelizerWater1",
 				"novelizerWater2",
 				"novelizerWater3"
-			}), {})
+			}), {}, {
+				actionKey = "collectwater"
+			})
 		end
 
 		return result
@@ -1712,7 +2829,9 @@ function PLUGIN:PatchCommand(commandName, phrasePool, argumentsBuilder)
 
 		if (result == nil and self:CanAutoNarrate(client)) then
 			local arguments = argumentsBuilder and argumentsBuilder(client, ...) or {}
-			self:SendNovelMe(client, table.Random(phrasePool), arguments)
+			self:SendNovelMe(client, table.Random(phrasePool), arguments, {
+				actionKey = "command_" .. string.lower(commandName)
+			})
 		end
 
 		return result
@@ -1779,27 +2898,7 @@ function PLUGIN:PatchToggleRaiseCommand()
 	local originalOnRun = command.OnRun
 
 	command.OnRun = function(this, client, ...)
-		local weapon = client:GetActiveWeapon()
-		local wasRaised = client:IsWepRaised()
-		local result = originalOnRun(this, client, ...)
-
-		if (result == nil and self:CanAutoNarrate(client) and self:IsNarratableWeapon(weapon)) then
-			local phrasePool = wasRaised and {
-				"novelizerLower1",
-				"novelizerLower2",
-				"novelizerLower3"
-			} or {
-				"novelizerRaise1",
-				"novelizerRaise2",
-				"novelizerRaise3"
-			}
-
-			self:SendNovelMe(client, table.Random(phrasePool), {
-				self:GetWeaponSubject(weapon)
-			})
-		end
-
-		return result
+		return originalOnRun(this, client, ...)
 	end
 end
 
@@ -1912,12 +3011,28 @@ function PLUGIN:PatchLootSearch()
 		local result = originalSearchLootContainer(this, ent, ply, ...)
 
 		if (canSearch) then
-			self:SendNovelMe(ply, table.Random({
-				"novelizerLoot1",
-				"novelizerLoot2",
-				"novelizerLoot3"
-			}), {
-				self:GetEntitySubject(ent)
+			local phrasePool
+			local arguments = nil
+
+			if (IsValid(ent) and ent:GetClass():find("ix_loot_", 1, true)) then
+				phrasePool = {
+					"novelizerLootGeneric1",
+					"novelizerLootGeneric2",
+					"novelizerLootGeneric3"
+				}
+			else
+				phrasePool = {
+					"novelizerLoot1",
+					"novelizerLoot2",
+					"novelizerLoot3"
+				}
+				arguments = {
+					self:GetEntitySubject(ent)
+				}
+			end
+
+			self:SendNovelMe(ply, table.Random(phrasePool), arguments, {
+				actionKey = "loot_search"
 			})
 		end
 
@@ -1962,10 +3077,14 @@ function PLUGIN:PatchCraftingActions()
 
 			self:SendNovelMe(client, table.Random(phrasePool), {
 				stationSubject
+			}, {
+				actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
 			})
 
 			if (IsValid(stationEntity)) then
-				local itKey = string.lower(tostring(recipeTable.category or "")) == "food" and "stove_heat" or "workbench_rattle"
+				local itKey = string.lower(tostring(recipeTable.category or "")) == "food"
+					and self:GetHeatItKey(stationEntity)
+					or "workbench_rattle"
 
 				self:EmitConditionalIt(stationEntity, itKey, {
 					cooldown = 4
@@ -1974,6 +3093,644 @@ function PLUGIN:PatchCraftingActions()
 		end
 
 		return result
+	end
+end
+
+function PLUGIN:PatchRaiseState()
+	if (self.ixNovelizerRaiseWrapped) then
+		return
+	end
+
+	local playerMeta = FindMetaTable("Player")
+
+	if (not playerMeta or not isfunction(playerMeta.SetWepRaised)) then
+		return
+	end
+
+	self.ixNovelizerRaiseWrapped = true
+
+	local originalSetWepRaised = playerMeta.SetWepRaised
+
+	playerMeta.SetWepRaised = function(client, bState, weapon)
+		local oldRaised = client:IsWepRaised()
+		local activeWeapon = weapon or client:GetActiveWeapon()
+		local result = originalSetWepRaised(client, bState, weapon)
+
+		if (SERVER
+			and IsValid(client)
+			and oldRaised ~= (bState == true)
+			and IsValid(activeWeapon)
+			and PLUGIN:CanAutoNarrate(client)
+			and PLUGIN:CanNarrateRaisedWeapon(activeWeapon)
+			and (client.ixNovelizerLastSwitchTime or 0) + 0.25 <= CurTime()) then
+			local phrasePool = PLUGIN:GetRaisePhrasePool(activeWeapon, bState)
+
+			PLUGIN:SendNovelMe(client, table.Random(phrasePool), PLUGIN:GetRaiseArguments(activeWeapon), {
+				actionKey = bState and "weapon_raise" or "weapon_lower"
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchHandsWeapon()
+	if (self.ixNovelizerHandsWrapped) then
+		return
+	end
+
+	local weaponTable = weapons.GetStored("ix_hands")
+
+	if (not weaponTable) then
+		return
+	end
+
+	self.ixNovelizerHandsWrapped = true
+
+	local originalPickupObject = weaponTable.PickupObject
+	local originalDropObject = weaponTable.DropObject
+
+	local function GetNearbyHealthCharger(entity)
+		if (not IsValid(entity)) then
+			return nil
+		end
+
+		for _, charger in ipairs(ents.FindInSphere(entity:GetPos(), 48)) do
+			if (IsValid(charger) and charger:GetClass() == "ix_health_charger"
+				and isfunction(charger.CanConsumeGrubEntity) and charger:CanConsumeGrubEntity(entity)) then
+				return charger
+			end
+		end
+
+		return nil
+	end
+
+	if (isfunction(originalPickupObject)) then
+		weaponTable.PickupObject = function(weapon, entity)
+			local result = originalPickupObject(weapon, entity)
+			local client = weapon:GetOwner()
+
+			if (SERVER and IsValid(client) and IsValid(entity)
+				and weapon.heldEntity == entity and entity.ixHeldOwner == client) then
+				PLUGIN:SendNovelMe(client, table.Random({
+					"novelizerHandsPickup1",
+					"novelizerHandsPickup2",
+					"novelizerHandsPickup3"
+				}), {
+					PLUGIN:GetEntitySubject(entity)
+				}, {
+					actionKey = "hands_pickup"
+				})
+			end
+
+			return result
+		end
+	end
+
+	if (isfunction(originalDropObject)) then
+		weaponTable.DropObject = function(weapon, bThrow)
+			local heldEntity = weapon.heldEntity
+			local client = weapon:GetOwner()
+			local result = originalDropObject(weapon, bThrow)
+
+			if (SERVER and IsValid(client) and IsValid(heldEntity)
+				and bThrow ~= true and not IsValid(weapon.heldEntity)) then
+				local charger = GetNearbyHealthCharger(heldEntity)
+
+				if (charger) then
+					PLUGIN:SendNovelMe(client, table.Random({
+						"novelizerMachineHealthGrub1",
+						"novelizerMachineHealthGrub2",
+						"novelizerMachineHealthGrub3"
+					}), {
+						PLUGIN:GetEntitySubject(heldEntity),
+						PLUGIN:GetPossessiveEntitySubject(charger)
+					}, {
+						actionKey = "health_charger_grub"
+					})
+
+					return result
+				end
+
+				PLUGIN:SendNovelMe(client, table.Random({
+					"novelizerHandsDrop1",
+					"novelizerHandsDrop2",
+					"novelizerHandsDrop3"
+				}), {
+					PLUGIN:GetEntitySubject(heldEntity)
+				}, {
+					actionKey = "hands_drop"
+				})
+			end
+
+			return result
+		end
+	end
+end
+
+function PLUGIN:PatchStoveEntity()
+	local stored = scripted_ents.GetStored("ix_stove")
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable.ixNovelizerUseWrapped or not isfunction(entityTable.Use)) then
+		return
+	end
+
+	entityTable.ixNovelizerUseWrapped = true
+
+	local originalUse = entityTable.Use
+
+	entityTable.Use = function(entity, activator, ...)
+		local wasActive = entity:GetNetVar("active", false)
+		local result = originalUse(entity, activator, ...)
+		local isActive = entity:GetNetVar("active", false)
+
+		if (SERVER and IsValid(activator) and activator:IsPlayer() and wasActive ~= isActive) then
+			if (isActive) then
+				PLUGIN:SetIdleWarmup(entity)
+			else
+				PLUGIN:ClearIdleWarmup(entity)
+			end
+
+			local phrasePool = isActive and {
+				"novelizerStoveOn1",
+				"novelizerStoveOn2",
+				"novelizerStoveOn3"
+			} or {
+				"novelizerStoveOff1",
+				"novelizerStoveOff2",
+				"novelizerStoveOff3"
+			}
+
+			PLUGIN:SendNovelMe(activator, table.Random(phrasePool), {
+				PLUGIN:GetEntitySubject(entity)
+			}, {
+				actionKey = isActive and "stove_on" or "stove_off"
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchFireEntity(className)
+	local stored = scripted_ents.GetStored(className)
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable["ixNovelizerUseWrapped_" .. className] or not isfunction(entityTable.Use)) then
+		return
+	end
+
+	entityTable["ixNovelizerUseWrapped_" .. className] = true
+
+	local originalUse = entityTable.Use
+
+	entityTable.Use = function(entity, activator, ...)
+		local wasActive = entity:GetNetVar("active", false)
+		local result = originalUse(entity, activator, ...)
+
+		timer.Simple(1.6, function()
+			if (not SERVER or not IsValid(entity) or not IsValid(activator) or not activator:IsPlayer()) then
+				return
+			end
+
+			local isActive = entity:GetNetVar("active", false)
+
+			if (wasActive == isActive) then
+				return
+			end
+
+			if (isActive) then
+				PLUGIN:SetIdleWarmup(entity)
+			else
+				PLUGIN:ClearIdleWarmup(entity)
+			end
+
+			local phrasePool = isActive and {
+				"novelizerFireOn1",
+				"novelizerFireOn2",
+				"novelizerFireOn3"
+			} or {
+				"novelizerFireOff1",
+				"novelizerFireOff2",
+				"novelizerFireOff3"
+			}
+
+			PLUGIN:SendNovelMe(activator, table.Random(phrasePool), {
+				PLUGIN:GetEntitySubject(entity)
+			}, {
+				actionKey = isActive and (className .. "_on") or (className .. "_off")
+			})
+		end)
+
+		return result
+	end
+end
+
+function PLUGIN:PatchRecyclerEntity()
+	local stored = scripted_ents.GetStored("ix_recycler")
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable.ixNovelizerTurnOnWrapped or not isfunction(entityTable.TurnOn)) then
+		return
+	end
+
+	entityTable.ixNovelizerTurnOnWrapped = true
+
+	local originalTurnOn = entityTable.TurnOn
+
+	entityTable.TurnOn = function(entity, client, ...)
+		local wasActive = entity.GetIsActivated and entity:GetIsActivated() or false
+		local result = originalTurnOn(entity, client, ...)
+		local isActive = entity.GetIsActivated and entity:GetIsActivated() or false
+
+		if (SERVER and result == true and not wasActive and isActive and IsValid(client) and client:IsPlayer()) then
+			PLUGIN:SetIdleWarmup(entity)
+
+			PLUGIN:SendNovelMe(client, table.Random({
+				"novelizerMachineRecycler1",
+				"novelizerMachineRecycler2",
+				"novelizerMachineRecycler3"
+			}), {
+				PLUGIN:GetEntitySubject(entity)
+			}, {
+				actionKey = "recycler_start"
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchLockEntity(className)
+	local stored = scripted_ents.GetStored(className)
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable["ixNovelizerDetonateWrapped_" .. className] or not isfunction(entityTable.Detonate)) then
+		return
+	end
+
+	entityTable["ixNovelizerDetonateWrapped_" .. className] = true
+
+	local originalDetonate = entityTable.Detonate
+
+	entityTable.Detonate = function(entity, client, ...)
+		local wasDetonating = entity.GetDetonating and entity:GetDetonating() or false
+		local result = originalDetonate(entity, client, ...)
+		local isDetonating = entity.GetDetonating and entity:GetDetonating() or false
+
+		if (SERVER and IsValid(client) and client:IsPlayer() and not wasDetonating and isDetonating) then
+			PLUGIN:SendNovelMe(client, table.Random({
+				"novelizerLockDetonate1",
+				"novelizerLockDetonate2",
+				"novelizerLockDetonate3"
+			}), {
+				PLUGIN:GetEntitySubject(entity)
+			}, {
+				actionKey = className .. "_detonate"
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchStaminaConsumption()
+	if (self.ixNovelizerStaminaWrapped) then
+		return
+	end
+
+	local playerMeta = FindMetaTable("Player")
+
+	if (not playerMeta or not isfunction(playerMeta.ConsumeStamina)) then
+		return
+	end
+
+	self.ixNovelizerStaminaWrapped = true
+
+	local originalConsumeStamina = playerMeta.ConsumeStamina
+
+	playerMeta.ConsumeStamina = function(client, amount)
+		local previous = client:GetLocalVar("stm", 0)
+		local result = originalConsumeStamina(client, amount)
+		local current = client:GetLocalVar("stm", 0)
+
+		if (SERVER and previous > 0 and current <= 0 and PLUGIN:CanAutoNarrate(client)) then
+			PLUGIN:SendNovelMe(client, table.Random({
+				"novelizerStaminaEmpty1",
+				"novelizerStaminaEmpty2",
+				"novelizerStaminaEmpty3"
+			}), nil, {
+				actionKey = "stamina_empty",
+				cooldown = 5,
+				bypassGlobalCooldown = true
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchChargerEntity(className, phrasePool, actionKey)
+	local stored = scripted_ents.GetStored(className)
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable["ixNovelizerUseWrapped_" .. className] or not isfunction(entityTable.Use)) then
+		return
+	end
+
+	entityTable["ixNovelizerUseWrapped_" .. className] = true
+
+	local originalUse = entityTable.Use
+
+	entityTable.Use = function(entity, client, ...)
+		local wasActive = entity.IsActive and entity:IsActive() or entity:GetNetVar("active", false)
+		local result = originalUse(entity, client, ...)
+		local isActive = entity.IsActive and entity:IsActive() or entity:GetNetVar("active", false)
+
+		if (SERVER and not wasActive and isActive and IsValid(client) and client:IsPlayer()) then
+			PLUGIN:SendNovelMe(client, table.Random(phrasePool), nil, {
+				actionKey = actionKey
+			})
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:PatchChargers()
+	self:PatchChargerEntity("ix_health_charger", {
+		"novelizerMachineHealth1",
+		"novelizerMachineHealth2",
+		"novelizerMachineHealth3"
+	}, "health_charger")
+	self:PatchChargerEntity("ix_suit_charger", {
+		"novelizerMachineSuit1",
+		"novelizerMachineSuit2",
+		"novelizerMachineSuit3"
+	}, "suit_charger")
+end
+
+function PLUGIN:PatchLaundryPipeEntity()
+	local stored = scripted_ents.GetStored("ix_laundry_pipe")
+	local entityTable = stored and stored.t
+
+	if (not istable(entityTable) or entityTable.ixNovelizerUseWrapped or not isfunction(entityTable.Use)) then
+		return
+	end
+
+	entityTable.ixNovelizerUseWrapped = true
+
+	local originalUse = entityTable.Use
+
+	entityTable.Use = function(entity, activator, caller, ...)
+		local client = IsValid(caller) and caller:IsPlayer() and caller or activator
+		local previousNextUse = entity.nextUse or 0
+		local result = originalUse(entity, activator, caller, ...)
+		local nextUse = entity.nextUse or 0
+
+		if (SERVER and IsValid(client) and client:IsPlayer() and previousNextUse <= CurTime() and nextUse > CurTime()) then
+			if (PLUGIN:SendNovelMe(client, table.Random({
+				"novelizerMachineLaundryPipe1",
+				"novelizerMachineLaundryPipe2",
+				"novelizerMachineLaundryPipe3"
+			}), {
+				PLUGIN:GetEntitySubject(entity)
+			}, {
+				actionKey = "laundry_pipe_use"
+			})) then
+				PLUGIN:EmitConditionalIt(entity, "laundry_pipe", {
+					cooldown = 4
+				})
+			end
+		end
+
+		return result
+	end
+end
+
+function PLUGIN:CanNarrateEntityUse(client, entity)
+	if (not IsValid(client) or not IsValid(entity)) then
+		return false
+	end
+
+	local className = entity:GetClass()
+
+	if (className == "ix_forcefield") then
+		return entity.IsAuthorized and entity:IsAuthorized(client) == true
+	end
+
+	if (className == "ix_health_charger") then
+		return client:Health() < client:GetMaxHealth()
+	end
+
+	if (className == "ix_suit_charger") then
+		local maxArmor = entity.GetClientMaxArmor and entity:GetClientMaxArmor(client) or 0
+
+		return client:Armor() < maxArmor
+	end
+
+	if (className == "ix_rationdispenser") then
+		if ((entity.nextUseTime or 0) > CurTime() or entity.canUse == false or client:IsCombine()) then
+			return false
+		end
+
+		if (not entity:GetEnabled()) then
+			return false
+		end
+
+		local character = client:GetCharacter()
+		local inventory = character and character.GetInventory and character:GetInventory() or nil
+		local cid = inventory and inventory:HasItem("cid") or nil
+		local token = inventory and inventory:HasItem("ration_token") or nil
+
+		return token ~= false and token ~= nil or (cid and cid:GetData("nextRationTime", 0) < os.time())
+	end
+
+	if (className == "ix_doorbreach") then
+		return (entity.nextUseTime or 0) <= CurTime() and entity:GetNWBool("beep", false) ~= true
+	end
+
+	if (className == "ix_combinelock" or className == "ix_unionlock") then
+		if (client:KeyDown(IN_WALK)) then
+			return false
+		end
+
+		return (entity.nextUseTime or 0) <= CurTime()
+			and (not entity.IsLockDisabled or entity:IsLockDisabled() ~= true)
+			and (not entity.detonatePreparing)
+			and (not entity.HasAccess or entity:HasAccess(client) == true)
+	end
+
+	if (className == "ix_interactive_computer" or className:find("computer", 1, true) or className:find("terminal", 1, true)) then
+		return self:IsInteractiveComputerEntity(entity, true)
+	end
+
+	return true
+end
+
+function PLUGIN:HasNarrationListenerNear(entity, range)
+	if (not IsValid(entity)) then
+		return false
+	end
+
+	local checkRange = tonumber(range) or GetChatRange()
+	local maxDist = checkRange * checkRange
+
+	for _, client in ipairs(player.GetAll()) do
+		if (self:CanAutoNarrate(client) and client:GetPos():DistToSqr(entity:GetPos()) <= maxDist) then
+			return true
+		end
+	end
+
+	return false
+end
+
+function PLUGIN:IsSeatLikeVehicle(vehicle)
+	if (not IsValid(vehicle)) then
+		return false
+	end
+
+	if (vehicle.playerdynseat) then
+		return true
+	end
+
+	local className = string.lower(tostring(vehicle:GetClass() or ""))
+	local model = string.lower(tostring(vehicle:GetModel() or ""))
+
+	return className:find("chair", 1, true) or className:find("seat", 1, true)
+		or model:find("chair", 1, true) or model:find("seat", 1, true)
+end
+
+function PLUGIN:GetMusicRadioSignalState(entity)
+	if (not IsValid(entity) or entity:GetClass() ~= "ix_music_radio") then
+		return nil
+	end
+
+	if (entity:GetNetVar("power", false) ~= true or entity:GetNetVar("volume", 100) <= 0) then
+		return nil
+	end
+
+	local musicPlugin = ix.plugin.list["music_radio"]
+
+	if (not musicPlugin or not istable(musicPlugin.channels)) then
+		return "radio_static"
+	end
+
+	local currentFreq = tonumber(entity:GetNetVar("channel", 88.0)) or 88.0
+	local bestDist = math.huge
+
+	for _, channel in ipairs(musicPlugin.channels) do
+		local distance = math.abs((tonumber(channel.freq) or 0) - currentFreq)
+
+		if (distance < bestDist) then
+			bestDist = distance
+		end
+	end
+
+	if (bestDist <= 0.05) then
+		return "radio_music"
+	end
+
+	return "radio_offfreq"
+end
+
+function PLUGIN:EmitIdleIt()
+	local idleDefinitions = {
+		{
+			classes = {"ix_forcefield"},
+			key = "forcefield_buzz",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "forcefield_ambient",
+			canEmit = function(entity)
+				return entity.GetMode and entity:GetMode() ~= 1
+			end
+		},
+		{
+			classes = {"ix_vendingmachine", "ix_pepsimachine", "ix_coffeemachine"},
+			key = "vending_hum",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "vending_idle"
+		},
+		{
+			classes = {"ix_stationary_radio", "ix_radiorepeater"},
+			key = "radio_static",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "radio_idle"
+		},
+		{
+			classes = {"ix_music_radio"},
+			key = "radio_music",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "music_radio_idle",
+			canEmit = function(entity)
+				return self:GetMusicRadioSignalState(entity) ~= nil
+			end,
+			getKey = function(entity)
+				return self:GetMusicRadioSignalState(entity)
+			end,
+			listenerRange = function()
+				return ix.config.Get("radioDist", 550)
+			end
+		},
+		{
+			classes = {"ix_stove"},
+			key = "stove_gas_heat",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "stove_idle",
+			canEmit = function(entity)
+				return entity:GetNetVar("active", false) == true
+			end
+		},
+		{
+			classes = {"ix_bonfire", "ix_bucket"},
+			key = "stove_heat",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "stove_idle",
+			canEmit = function(entity)
+				return entity:GetNetVar("active", false) == true
+			end
+		},
+		{
+			classes = {"ix_recycler"},
+			key = "machine_hum",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "recycler_idle",
+			canEmit = function(entity)
+				return entity.GetIsActivated and entity:GetIsActivated() == true
+			end
+		},
+		{
+			classes = {"ix_washing_machine", "ix_washing_machine_small"},
+			key = "washer",
+			cooldown = DEFAULT_IT_COOLDOWN,
+			cooldownKey = "washer_idle",
+			canEmit = function(entity)
+				return entity.GetWashing and entity:GetWashing() == true
+			end
+		}
+	}
+
+	for _, definition in ipairs(idleDefinitions) do
+		for _, className in ipairs(definition.classes) do
+			for _, entity in ipairs(ents.FindByClass(className)) do
+				local key = definition.getKey and definition.getKey(entity) or definition.key
+				local listenerRange = definition.listenerRange and definition.listenerRange(entity) or nil
+
+				if (IsValid(entity)
+					and IsFilledString(key)
+					and self:HasNarrationListenerNear(entity, listenerRange)
+					and self:CanEmitIdleNow(entity)
+					and (not isfunction(definition.canEmit) or definition.canEmit(entity))) then
+					self:EmitConditionalIt(entity, key, {
+						chatType = "novelit_idle",
+						cooldown = definition.cooldown,
+						cooldownKey = definition.cooldownKey,
+						range = math.min(GetChatRange() * 0.6, listenerRange or GetChatRange())
+					})
+				end
+			end
+		end
 	end
 end
 
@@ -2013,6 +3770,26 @@ function PLUGIN:InitializedPlugins()
 		"novelizerItRadio2",
 		"novelizerItRadio3"
 	})
+	self:RegisterItPhrases("radio_music", {
+		"novelizerItRadioMusic1",
+		"novelizerItRadioMusic2",
+		"novelizerItRadioMusic3"
+	})
+	self:RegisterItPhrases("radio_offfreq", {
+		"novelizerItRadioOffFreq1",
+		"novelizerItRadioOffFreq2",
+		"novelizerItRadioOffFreq3"
+	})
+	self:RegisterItPhrases("door_locked", {
+		"novelizerItDoorLocked1",
+		"novelizerItDoorLocked2",
+		"novelizerItDoorLocked3"
+	})
+	self:RegisterItPhrases("stove_gas_heat", {
+		"novelizerItGasStove1",
+		"novelizerItGasStove2",
+		"novelizerItGasStove3"
+	})
 	self:RegisterItPhrases("stove_heat", {
 		"novelizerItStove1",
 		"novelizerItStove2",
@@ -2030,18 +3807,41 @@ function PLUGIN:InitializedPlugins()
 	self:PatchCommandActions()
 	self:PatchApplyCommand()
 	self:PatchToggleRaiseCommand()
+	self:PatchRaiseState()
 	self:PatchLootSearch()
 	self:PatchCraftingActions()
+	self:PatchHandsWeapon()
+	self:PatchStoveEntity()
+	self:PatchFireEntity("ix_bucket")
+	self:PatchFireEntity("ix_bonfire")
+	self:PatchLockEntity("ix_combinelock")
+	self:PatchLockEntity("ix_unionlock")
+	self:PatchRecyclerEntity()
+	self:PatchChargers()
+	self:PatchLaundryPipeEntity()
+	self:PatchStaminaConsumption()
 end
 
 function PLUGIN:OnReloaded()
+	self:RegisterDefaultEntityPhrases()
 	self:PatchItems()
 	self:PatchWaterCommand()
 	self:PatchCommandActions()
 	self:PatchApplyCommand()
 	self:PatchToggleRaiseCommand()
+	self:PatchRaiseState()
 	self:PatchLootSearch()
 	self:PatchCraftingActions()
+	self:PatchHandsWeapon()
+	self:PatchStoveEntity()
+	self:PatchFireEntity("ix_bucket")
+	self:PatchFireEntity("ix_bonfire")
+	self:PatchLockEntity("ix_combinelock")
+	self:PatchLockEntity("ix_unionlock")
+	self:PatchRecyclerEntity()
+	self:PatchChargers()
+	self:PatchLaundryPipeEntity()
+	self:PatchStaminaConsumption()
 end
 
 function PLUGIN:InitializedConfig()
@@ -2064,7 +3864,13 @@ function PLUGIN:InitializedConfig()
 		OnChatAdd = function(self, speaker, text, anonymous, data)
 			local color = self:GetColor(speaker, text, data)
 			local name, nameColor = PLUGIN:GetCharacterDisplayName(speaker, anonymous, data)
-			local phrase = PLUGIN:TranslatePhrase(text, data)
+			local success, phrase = pcall(function()
+				return PLUGIN:TranslatePhrase(text, data)
+			end)
+
+			if (not success or not IsFilledString(phrase)) then
+				return
+			end
 			local placeholder = "@@NAME@@"
 			local format = GetPhraseTemplate("novelizerMeFormat") or "** %s %s"
 			local formatted = string.format(format, placeholder, phrase)
@@ -2098,8 +3904,54 @@ function PLUGIN:InitializedConfig()
 			return listener:GetPos():DistToSqr(position) <= (range * range)
 		end,
 		OnChatAdd = function(self, speaker, text, anonymous, data)
+			if (not IsFilledString(text)) then
+				return
+			end
+
 			local color = ix.config.Get("chatColor")
-			local phrase = PLUGIN:TranslatePhrase(text, data)
+			local success, phrase = pcall(function()
+				return PLUGIN:TranslatePhrase(text, data)
+			end)
+
+			if (not success or not IsFilledString(phrase)) then
+				return
+			end
+
+			chat.AddText(color, "** " .. phrase)
+		end,
+		font = "ixChatFontItalics",
+		indicator = "chatPerforming",
+		deadCanChat = true
+	})
+
+	ix.chat.Register("novelit_idle", {
+		CanHear = function(self, speaker, listener, data)
+			local position = data and data.position
+			local range = data and data.range or (GetChatRange() * 0.6)
+
+			if (not position) then
+				if (IsValid(speaker)) then
+					position = speaker:GetPos()
+				else
+					return false
+				end
+			end
+
+			return listener:GetPos():DistToSqr(position) <= (range * range)
+		end,
+		OnChatAdd = function(self, speaker, text, anonymous, data)
+			if (not IsFilledString(text)) then
+				return
+			end
+
+			local color = ix.config.Get("chatColor")
+			local success, phrase = pcall(function()
+				return PLUGIN:TranslatePhrase(text, data)
+			end)
+
+			if (not success or not IsFilledString(phrase)) then
+				return
+			end
 
 			chat.AddText(color, "** " .. phrase)
 		end,
@@ -2110,23 +3962,46 @@ function PLUGIN:InitializedConfig()
 end
 
 function PLUGIN:PlayerUse(client, entity)
-	if (not self:CanAutoNarrate(client) or self:ShouldIgnoreEntityUse(entity) or not self:PassUseCooldown(client, entity)) then
+	if (not self:CanAutoNarrate(client) or self:ShouldIgnoreEntityUse(entity)) then
+		return
+	end
+
+	local className = entity:GetClass()
+	if (not self:CanNarrateEntityUse(client, entity)) then
 		return
 	end
 
 	local phrasePool = entity:IsDoor() and self:GetDoorPhrasePool(entity) or self:ResolveEntityUsePhrasePool(entity)
 
-	if (not istable(phrasePool) or #phrasePool == 0) then
+	if (not istable(phrasePool) or #phrasePool == 0 or not self:PassUseCooldown(client, entity)) then
 		return
 	end
 
-	self:SendNovelMe(client, table.Random(phrasePool), {
+	local phraseKey = table.Random(phrasePool)
+
+	if (not IsFilledString(phraseKey)) then
+		return
+	end
+
+	local actionKey = entity:IsDoor() and self:GetDoorActionKey(entity) or ("use_" .. className)
+
+	if (entity:IsDoor() and actionKey == "door_locked") then
+		local lockedPool = self:ResolveItPhrasePool(entity, "door_locked")
+		local lockedPhraseKey = istable(lockedPool) and table.Random(lockedPool) or nil
+
+		self:SendNovelIt(lockedPhraseKey, self:GetItArguments(entity, "door_locked", lockedPhraseKey), {
+			position = entity:GetPos()
+		})
+		return
+	end
+
+	self:SendNovelMe(client, phraseKey, entity:IsDoor() and {
 		self:GetEntitySubject(entity)
+	} or self:GetEntityUseArguments(entity, phraseKey), {
+		actionKey = actionKey
 	})
 
-	local className = entity:GetClass()
-
-	if (className == "ix_interactive_computer" or className:find("computer", 1, true) or className:find("terminal", 1, true)) then
+	if (self:IsInteractiveComputerEntity(entity, true)) then
 		self:EmitConditionalIt(entity, "disk_read", {
 			cooldown = 4
 		})
@@ -2142,11 +4017,20 @@ function PLUGIN:PlayerUse(client, entity)
 		self:EmitConditionalIt(entity, "radio_static", {
 			cooldown = 4
 		})
-	elseif (className == "ix_recycler" or className == "ix_forcefield" or className == "ix_rationdispenser") then
-		self:EmitConditionalIt(entity, className == "ix_forcefield" and "forcefield_buzz" or "machine_hum", {
+	elseif (className == "ix_music_radio") then
+		local itKey = self:GetMusicRadioSignalState(entity)
+
+		if (itKey and self:HasNarrationListenerNear(entity, ix.config.Get("radioDist", 550))) then
+			self:EmitConditionalIt(entity, itKey, {
+				cooldown = 4,
+				range = math.min(GetChatRange(), ix.config.Get("radioDist", 550))
+			})
+		end
+	elseif (className == "ix_rationdispenser") then
+		self:EmitConditionalIt(entity, "machine_hum", {
 			cooldown = 5
 		})
-	elseif (className == "ix_stove" or className == "ix_bonfire" or className == "ix_bucket") then
+	elseif (className == "ix_bonfire" or className == "ix_bucket") then
 		self:EmitConditionalIt(entity, "stove_heat", {
 			cooldown = 4
 		})
@@ -2158,23 +4042,234 @@ function PLUGIN:PlayerUse(client, entity)
 end
 
 function PLUGIN:PlayerSwitchFlashlight(client, enabled)
-	if (not self:CanAutoNarrate(client) or not self:PassNamedCooldown(client, "flashlight", 0.5)) then
+	if (not IsValid(client)) then
 		return
 	end
 
-	local nextState = not client:GetNetVar("flashlight", false)
-	local phrasePool = nextState and {
-		"novelizerFlashlightOn1",
-		"novelizerFlashlightOn2",
-		"novelizerFlashlightOn3"
+	self.ixNovelizerFlashlightStates = self.ixNovelizerFlashlightStates or {}
+	self.ixNovelizerFlashlightStates[client] = self.ixNovelizerFlashlightStates[client]
+		or client:GetNetVar("flashlight", false)
+end
+
+function PLUGIN:Think()
+	local currentTime = CurTime()
+
+	if ((self.nextIdleItThink or 0) <= currentTime) then
+		self.nextIdleItThink = currentTime + 3
+		self:EmitIdleIt()
+	end
+
+	if (SERVER) then
+		self.ixNovelizerFlashlightStates = self.ixNovelizerFlashlightStates or {}
+
+		for _, client in ipairs(player.GetAll()) do
+			if (IsValid(client)) then
+				local enabled = client:GetNetVar("flashlight", false) == true
+				local previous = self.ixNovelizerFlashlightStates[client]
+
+				if (previous == nil) then
+					self.ixNovelizerFlashlightStates[client] = enabled
+				elseif (previous ~= enabled) then
+					self.ixNovelizerFlashlightStates[client] = enabled
+
+					if (client:Alive() and client:GetCharacter()) then
+						self:HandleFlashlightStateChange(client, enabled)
+					end
+				end
+			end
+		end
+	end
+
+	self.ixNovelizerLadderStates = self.ixNovelizerLadderStates or {}
+
+	for _, client in ipairs(player.GetAll()) do
+		if (IsValid(client)) then
+			local onLadder = client:GetMoveType() == MOVETYPE_LADDER
+			local state = self.ixNovelizerLadderStates[client]
+
+			if (not state) then
+				state = {
+					active = false,
+					startTime = 0,
+					narrated = false
+				}
+				self.ixNovelizerLadderStates[client] = state
+			end
+
+			if (onLadder) then
+				if (state.active ~= true) then
+					state.active = true
+					state.startTime = currentTime
+					state.narrated = false
+				elseif (state.narrated ~= true
+					and currentTime >= (state.startTime or currentTime) + 0.25
+					and self:CanAutoNarrate(client)
+					and (client.ixNovelizerLastLadderTime or 0) + 2 <= currentTime
+					and self:PassNamedCooldown(client, "ladder", 3)) then
+					state.narrated = true
+					client.ixNovelizerLastLadderTime = currentTime
+
+					self:SendNovelMe(client, table.Random({
+						"novelizerLadder1",
+						"novelizerLadder2",
+						"novelizerLadder3"
+					}), nil, {
+						actionKey = "ladder"
+					})
+				end
+			else
+				state.active = false
+				state.startTime = 0
+				state.narrated = false
+			end
+		end
+	end
+end
+
+function PLUGIN:OnItemEquipped(item, client)
+	if (not item or item.isWeapon ~= true or not self:CanAutoNarrate(client)) then
+		return
+	end
+
+	local lastNarration = item.ixNovelizerLastEquipmentNarration
+
+	if (istable(lastNarration) and lastNarration.state == true and (lastNarration.time or 0) + 0.25 >= CurTime()) then
+		return
+	end
+
+	if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, "Equip")), {
+		self:GetItemSubject(item)
+	}, {
+		actionKey = "equip_" .. self:GetEquipCategory(item)
+	})) then
+		item.ixNovelizerLastEquipmentNarration = {
+			state = true,
+			time = CurTime()
+		}
+	end
+end
+
+function PLUGIN:OnItemUnequipped(item, client)
+	if (not item or item.isWeapon ~= true or not self:CanAutoNarrate(client)) then
+		return
+	end
+
+	local lastNarration = item.ixNovelizerLastEquipmentNarration
+
+	if (istable(lastNarration) and lastNarration.state == false and (lastNarration.time or 0) + 0.25 >= CurTime()) then
+		return
+	end
+
+	if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, "EquipUn")), {
+		self:GetItemSubject(item)
+	}, {
+		actionKey = "unequip_" .. self:GetEquipCategory(item)
+	})) then
+		item.ixNovelizerLastEquipmentNarration = {
+			state = false,
+			time = CurTime()
+		}
+	end
+end
+
+function PLUGIN:CharacterVendorTraded(client, vendor, uniqueID, isSellingToVendor)
+	if (not self:CanAutoNarrate(client) or not IsValid(vendor)) then
+		return
+	end
+
+	self:SendNovelMe(client, table.Random({
+		"novelizerVendorTrade1",
+		"novelizerVendorTrade2",
+		"novelizerVendorTrade3"
+	}), {
+		self:GetWithEntitySubject(vendor)
+	}, {
+		actionKey = isSellingToVendor and "vendor_sell" or "vendor_buy"
+	})
+end
+
+function PLUGIN:PlayerEnteredVehicle(client, vehicle, role)
+	if (not self:CanAutoNarrate(client) or not IsValid(vehicle)) then
+		return
+	end
+
+	local seatedOnly = self:IsSeatLikeVehicle(vehicle)
+	local phrasePool = seatedOnly and {
+		"novelizerVehicleSeatEnter1",
+		"novelizerVehicleSeatEnter2",
+		"novelizerVehicleSeatEnter3"
 	} or {
-		"novelizerFlashlightOff1",
-		"novelizerFlashlightOff2",
-		"novelizerFlashlightOff3"
+		"novelizerVehicleEnter1",
+		"novelizerVehicleEnter2",
+		"novelizerVehicleEnter3"
 	}
 
-	local subject = BuildArgument("Flashlight", "object", "Flashlight")
-	self:SendNovelMe(client, table.Random(phrasePool), {subject})
+	self:SendNovelMe(client, table.Random(phrasePool), seatedOnly and nil or {
+		self:GetEntitySubjectWithParticle(vehicle, "location")
+	}, {
+		actionKey = "vehicle_enter"
+	})
+end
+
+function PLUGIN:PlayerLeaveVehicle(client, vehicle)
+	if (not self:CanAutoNarrate(client) or not IsValid(vehicle)) then
+		return
+	end
+
+	local seatedOnly = self:IsSeatLikeVehicle(vehicle)
+	local phrasePool = seatedOnly and {
+		"novelizerVehicleSeatExit1",
+		"novelizerVehicleSeatExit2",
+		"novelizerVehicleSeatExit3"
+	} or {
+		"novelizerVehicleExit1",
+		"novelizerVehicleExit2",
+		"novelizerVehicleExit3"
+	}
+
+	self:SendNovelMe(client, table.Random(phrasePool), seatedOnly and nil or {
+		self:GetEntitySubjectWithParticle(vehicle, "source")
+	}, {
+		actionKey = "vehicle_exit"
+	})
+end
+
+function PLUGIN:PostEntityTakeDamage(target, dmgInfo, tookDamage)
+	if (not tookDamage or not IsValid(target) or not target:IsPlayer() or not target:Alive()
+		or dmgInfo:GetDamage() <= 0 or not self:CanAutoNarrate(target)) then
+		return
+	end
+
+	local damageData = self:ClassifyDamageType(dmgInfo)
+
+	if (not damageData) then
+		return
+	end
+
+	self:SendNovelMe(target, damageData.hurt, nil, {
+		actionKey = "hurt_" .. damageData.key,
+		cooldown = 1.5,
+		bypassGlobalCooldown = true
+	})
+end
+
+function PLUGIN:DoPlayerDeath(client, attacker, dmgInfo)
+	if (not IsValid(client) or not client:GetCharacter()) then
+		return
+	end
+
+	local damageData = self:ClassifyDamageType(dmgInfo)
+
+	if (not damageData) then
+		return
+	end
+
+	self:SendNovelMe(client, damageData.death, nil, {
+		actionKey = "death_" .. damageData.key,
+		cooldown = 2,
+		allowDead = true,
+		bypassGlobalCooldown = true
+	})
 end
 
 function PLUGIN:KeyPress(client, key)
@@ -2202,9 +4297,17 @@ function PLUGIN:KeyPress(client, key)
 			}
 		end
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
-			self:GetWeaponSubject(weapon)
-		})
+			self:SendNovelMe(client, table.Random(phrasePool), {
+				self:GetWeaponSubject(weapon)
+			}, {
+				actionKey = weapon.ixItem and weapon.ixItem.isGrenade and weapon.ixItem.uniqueID == "molotov" and "molotov_prime" or "grenade_prime"
+			})
+			client.ixNovelizerGrenadePrimeData = {
+				className = weapon:GetClass(),
+				time = CurTime(),
+				isMolotov = weapon.ixItem and weapon.ixItem.uniqueID == "molotov",
+				subject = self:GetWeaponSubject(weapon)
+			}
 		return
 	end
 
@@ -2219,25 +4322,66 @@ function PLUGIN:KeyPress(client, key)
 				"novelizerReload3"
 			}), {
 				self:GetWeaponSubject(weapon)
+			}, {
+				actionKey = "weapon_reload"
 			})
 		end
 	end
 end
 
-function PLUGIN:PlayerSwitchWeapon(client, oldWeapon, weapon)
-	if (not self:CanAutoNarrate(client) or not self:IsNarratableWeapon(weapon)) then
+function PLUGIN:KeyRelease(client, key)
+	if (key ~= IN_ATTACK or not self:CanAutoNarrate(client)) then
 		return
 	end
+
+	local weapon = client:GetActiveWeapon()
+	local primeData = client.ixNovelizerGrenadePrimeData
+
+	if (not istable(primeData) or (primeData.time or 0) + 8 < CurTime()) then
+		return
+	end
+
+	if (IsValid(weapon) and primeData.className ~= weapon:GetClass()) then
+		return
+	end
+
+	client.ixNovelizerGrenadePrimeData = nil
+
+	if (not self:PassNamedCooldown(client, "grenade_throw", 0.75)) then
+		return
+	end
+
+	local phrasePool = primeData.isMolotov and {
+		"novelizerMolotovThrow1",
+		"novelizerMolotovThrow2",
+		"novelizerMolotovThrow3"
+	} or {
+		"novelizerGrenadeThrow1",
+		"novelizerGrenadeThrow2",
+		"novelizerGrenadeThrow3"
+	}
+
+	self:SendNovelMe(client, table.Random(phrasePool), {
+		primeData.subject or self:GetWeaponSubject(weapon)
+	}, {
+		actionKey = primeData.isMolotov and "molotov_throw" or "grenade_throw"
+	})
+end
+
+function PLUGIN:PlayerSwitchWeapon(client, oldWeapon, weapon)
+	if (not self:CanAutoNarrate(client) or not self:IsSpecialSwitchWeapon(weapon)) then
+		return
+	end
+
+	client.ixNovelizerLastSwitchTime = CurTime()
 
 	if (not self:PassNamedCooldown(client, "weapon_switch", 0.75)) then
 		return
 	end
 
-	self:SendNovelMe(client, table.Random({
-		"novelizerSwitch1",
-		"novelizerSwitch2",
-		"novelizerSwitch3"
-	}), {
-		self:GetWeaponSubject(weapon)
+	local phraseKey = table.Random(self:GetSwitchPhrasePool(weapon))
+
+	self:SendNovelMe(client, phraseKey, self:GetSwitchArguments(weapon, phraseKey), {
+		actionKey = "weapon_switch"
 	})
 end
