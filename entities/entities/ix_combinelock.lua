@@ -12,13 +12,23 @@ ENT.bNoPersist = true
 function ENT:SetupDataTables()
 	self:NetworkVar("Bool", 0, "Locked")
 	self:NetworkVar("Bool", 1, "DisplayError")
+	self:NetworkVar("Bool", 2, "Detonating")
+	self:NetworkVar("Float", 0, "DisabledUntil")
 
 	if (SERVER) then
 		self:NetworkVarNotify("Locked", self.OnLockChanged)
 	end
 end
 
+function ENT:IsLockDisabled()
+	return self:GetDetonating() or self:GetDisabledUntil() > CurTime()
+end
+
 if (SERVER) then
+	local DETONATE_ARM_TIME = 1.5
+	local DETONATE_DURATION = 10
+	local DISABLE_DURATION = 300
+
 	function ENT:GetLockPosition(door, normal, fallback)
 		local index = door:LookupBone("handle")
 		local position = fallback or door:GetPos()
@@ -148,14 +158,143 @@ if (SERVER) then
 		end)
 	end
 
-	function ENT:Toggle(client)
-		if (self.nextUseTime > CurTime()) then
+	function ENT:Ping()
+		self:SetDisplayError(true)
+		self:EmitSound("npc/turret_floor/ping.wav")
+
+		timer.Simple(0.1, function()
+			if (IsValid(self)) then
+				self:SetDisplayError(false)
+			end
+		end)
+	end
+
+	function ENT:HasAccess(client)
+		local character = client:GetCharacter()
+		local inventory = character and character:GetInventory()
+		local hasCombineKey = inventory and inventory:HasItem("comkey")
+
+		return client:IsCombine() or hasCombineKey
+	end
+
+	function ENT:Detonate(client)
+		if (self.nextUseTime > CurTime() or self:IsLockDisabled()) then
 			return
 		end
 
-		local comkey = client:GetCharacter():GetInventory():HasItem("comkey")
+		if (!self:HasAccess(client)) then
+			self:DisplayError()
+			self.nextUseTime = CurTime() + 2
 
-		if (!client:IsCombine() and client:Team() != FACTION_ADMIN and !comkey) then
+			return
+		end
+
+		self:SetDetonating(true)
+		self:SetDisplayError(false)
+		self.detonateStartTime = CurTime()
+		self.detonateEndTime = self.detonateStartTime + DETONATE_DURATION
+		self.explodeDir = client:GetAimVector() * 500
+		self.nextPing = 0
+		self.nextUseTime = self.detonateEndTime
+	end
+
+	function ENT:StartDetonationAction(client)
+		if (self.nextUseTime > CurTime() or self:IsLockDisabled() or self.detonatePreparing) then
+			return
+		end
+
+		if (!self:HasAccess(client)) then
+			self:DisplayError()
+			self.nextUseTime = CurTime() + 2
+
+			return
+		end
+
+		self.detonatePreparing = client
+		client:SetAction("Preparing detonation...", DETONATE_ARM_TIME)
+		client:DoStaredAction(self, function()
+			if (!IsValid(self) or !IsValid(client) or self.detonatePreparing != client) then
+				return
+			end
+
+			self.detonatePreparing = nil
+			client:SetAction()
+			self:Detonate(client)
+		end, DETONATE_ARM_TIME, function()
+			if (IsValid(self) and self.detonatePreparing == client) then
+				self.detonatePreparing = nil
+			end
+
+			if (IsValid(client)) then
+				client:SetAction()
+			end
+		end)
+	end
+
+	function ENT:FinishDetonation()
+		self:SetDetonating(false)
+		self:SetDisplayError(false)
+		self:SetDisabledUntil(CurTime() + DISABLE_DURATION)
+		self.nextUseTime = self:GetDisabledUntil()
+
+		local effect = EffectData()
+			effect:SetOrigin(self:GetPos())
+		util.Effect("Explosion", effect)
+
+		if (self:GetLocked()) then
+			self:SetLocked(false)
+		else
+			if (IsValid(self.door)) then
+				self.door:Fire("unlock")
+			end
+
+			if (IsValid(self.doorPartner)) then
+				self.doorPartner:Fire("unlock")
+			end
+		end
+
+		if (IsValid(self.door)) then
+			self.door:EmitSound("physics/wood/wood_crate_break"..math.random(1, 5)..".wav", 150)
+			self.door:Fire("open")
+		end
+
+		if (IsValid(self.doorPartner)) then
+			self.doorPartner:Fire("open")
+		end
+	end
+
+	function ENT:Think()
+		if (!self:GetDetonating()) then
+			return
+		end
+
+		local curTime = CurTime()
+
+		if (self.detonateEndTime <= curTime) then
+			self:FinishDetonation()
+			return
+		end
+
+		if ((self.nextPing or 0) >= curTime) then
+			return
+		end
+
+		local fraction = 1 - math.Clamp(math.TimeFraction(
+			self.detonateStartTime,
+			self.detonateEndTime,
+			curTime
+		), 0, 1)
+
+		self.nextPing = curTime + fraction
+		self:Ping()
+	end
+
+	function ENT:Toggle(client)
+		if (self.nextUseTime > CurTime() or self:IsLockDisabled()) then
+			return
+		end
+
+		if (!self:HasAccess(client)) then
 			self:DisplayError()
 			self.nextUseTime = CurTime() + 2
 
@@ -167,6 +306,11 @@ if (SERVER) then
 	end
 
 	function ENT:Use(client)
+		if (client:KeyDown(IN_WALK)) then
+			self:StartDetonationAction(client)
+			return
+		end
+
 		self:Toggle(client)
 	end
 else
@@ -177,6 +321,10 @@ else
 
 	function ENT:Draw()
 		self:DrawModel()
+
+		if (self:IsLockDisabled()) then
+			return
+		end
 
 		local color = color_green
 
