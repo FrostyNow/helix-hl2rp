@@ -1,7 +1,7 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Slot Weapon Select"
-PLUGIN.author = "OpenAI"
+PLUGIN.author = "Ronald"
 PLUGIN.description = "Replaces the linear web weapon selector with a slot-aware selector that respects equipped gear weapons."
 
 if SERVER then
