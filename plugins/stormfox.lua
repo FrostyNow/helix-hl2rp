@@ -172,6 +172,13 @@ ix.lang.AddTable("english", {
 	curfewStartNotify = "Attention citizens. A night curfew is now in effect. Move to your residential block immediately.",
 	curfewReminderNotify = "Attention citizens. Night curfew is currently in effect. Avoid unnecessary travel outside of residential blocks.",
 	curfewEndNotify = "Attention citizens. The night curfew has been lifted. Return to your assigned duties.",
+	cmdSetYear = "Set the current year.",
+	yearSet = "The year has been set to %s.",
+	cmdSetMonth = "Set the current month.",
+	monthSet = "The month has been set to %s.",
+	cmdSetDay = "Set the current day.",
+	daySet = "The day has been set to %s.",
+	invalidDay = "Invalid day for the current month and year!",
 })
 
 ix.lang.AddTable("korean", {
@@ -187,6 +194,13 @@ ix.lang.AddTable("korean", {
 	curfewStartNotify = "시민에게 알린다. 야간 통행 금지령이 발효되었다. 시민 거주구로 즉시 이동하라.",
 	curfewReminderNotify = "시민에게 알린다. 야간 통행 금지령이 발효 중이다. 시민 거주구 외로 불필요한 통행을 자제하라.",
 	curfewEndNotify = "시민에게 알린다. 야간 통행 금지령이 해제되었다. 지정된 업무에 종사하라.",
+	cmdSetYear = "현재 연도를 설정합니다.",
+	yearSet = "연도가 %s년으로 설정되었습니다.",
+	cmdSetMonth = "현재 월을 설정합니다.",
+	monthSet = "월이 %s월로 설정되었습니다.",
+	cmdSetDay = "현재 일자를 설정합니다.",
+	daySet = "일자가 %s일로 설정되었습니다.",
+	invalidDay = "현재 연도와 월에 유효하지 않은 일자입니다!",
 })
 
 ix.command.Add("TimeSync", {
@@ -203,10 +217,18 @@ ix.command.Add("TimeSync", {
 
 ix.command.Add("TimeSet", {
 	description = "@cmdTimeSet",
-	adminOnly = true,
-	arguments = ix.type.string,
+	superAdminOnly = true,
+	arguments = {ix.type.string, ix.type.optional},
 	OnRun = function(self, client, time)
 		local hours, minutes
+
+		time = time and time:lower() or "1200"
+
+		if time == "night" then
+            time = "2030"
+        elseif time == "day" then
+            time = "1200"
+        end
 
 		if (tonumber(time) and (#time == 3 or #time == 4)) then
 			if #time == 4 then
@@ -246,5 +268,76 @@ ix.command.Add("Time", {
 		if (not client:GetCharacter()) then return client:NotifyLocalized("unknownError") end
 		
 		return client:NotifyLocalized(ix.date.GetLocalizedTime(client))
+	end
+})
+
+ix.command.Add("SetYear", {
+	description = "@cmdSetYear",
+	superAdminOnly = true,
+	arguments = ix.type.number,
+	OnRun = function(self, client, year)
+		local date = ix.date.Get()
+		date:setyear(year)
+
+		ix.date.current = date
+		ix.date.start = CurTime()
+		ix.date.Send()
+		ix.date.Save()
+
+		return client:NotifyLocalized("yearSet", year)
+	end
+})
+
+ix.command.Add("SetMonth", {
+	description = "@cmdSetMonth",
+	superAdminOnly = true,
+	arguments = ix.type.number,
+	OnRun = function(self, client, month)
+		if (month < 1 or month > 12) then
+			return "@unknownError"
+		end
+
+		local date = ix.date.Get()
+		date:setmonth(month)
+
+		ix.date.current = date
+		ix.date.start = CurTime()
+		ix.date.Send()
+		ix.date.Save()
+
+		return client:NotifyLocalized("monthSet", month)
+	end
+})
+
+ix.command.Add("SetDay", {
+	description = "@cmdSetDay",
+	superAdminOnly = true,
+	arguments = ix.type.number,
+	OnRun = function(self, client, day)
+		local date = ix.date.Get()
+		local year = date:getyear()
+		local month = date:getmonth()
+
+		local daysInMonth = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
+
+		-- Leap year check
+		if (month == 2) then
+			if (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)) then
+				daysInMonth[2] = 29
+			end
+		end
+
+		if (day < 1 or day > daysInMonth[month]) then
+			return "@invalidDay"
+		end
+
+		date:setday(day)
+
+		ix.date.current = date
+		ix.date.start = CurTime()
+		ix.date.Send()
+		ix.date.Save()
+
+		return client:NotifyLocalized("daySet", day)
 	end
 })
