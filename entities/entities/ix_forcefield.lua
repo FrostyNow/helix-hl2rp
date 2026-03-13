@@ -61,11 +61,11 @@ function ENT:SetupDataTables()
 	self:NetworkVar("Entity", 0, "Dummy")
 end
 
--- Helper to check if a player is authorized (Combine, Admin, or has Comkey)
+-- Helper to check if a player is authorized (Combine or has Comkey)
 function ENT:IsAuthorized(client)
 	if (!IsValid(client) or !client:IsPlayer()) then return false end
 	
-	if (client:IsCombine() or client:Team() == FACTION_ADMIN) then
+	if (client:IsCombine()) then
 		return true
 	end
 	
@@ -119,6 +119,28 @@ function ENT:CreateShieldPhysics(dummyPos)
 end
 
 if (SERVER) then
+	function ENT:UpdateLoopSound(forceState)
+		local isPowered = forceState
+
+		if (isPowered == nil) then
+			isPowered = self:GetMode() ~= MODE_ALLOW_ALL
+		end
+
+		if (not self.loopSound) then
+			self.loopSound = CreateSound(self, "ambient/energy/force_field_loop1.wav")
+		end
+
+		if (not self.loopSound) then
+			return
+		end
+
+		if (isPowered) then
+			self.loopSound:PlayEx(0.08, 100)
+		else
+			self.loopSound:FadeOut(0.4)
+		end
+	end
+
 	function ENT:SpawnFunction(client, trace)
 		local pos = trace.HitPos
 		local normal = trace.HitNormal
@@ -215,6 +237,8 @@ if (SERVER) then
 		self:SetMoveType(MOVETYPE_PUSH)
 		self:MakePhysicsObjectAShadow()
 		self:SetMode(MODE_ALLOW_ALL)
+		self.ixLastPoweredState = self:GetMode() ~= MODE_ALLOW_ALL
+		self:UpdateLoopSound(self.ixLastPoweredState)
 	end
 
 	function ENT:StartTouch(entity)
@@ -239,6 +263,11 @@ if (SERVER) then
 	end
 
 	function ENT:OnRemove()
+		if (self.loopSound) then
+			self.loopSound:Stop()
+			self.loopSound = nil
+		end
+
 		if (self.buzzer) then
 			self.buzzer:Stop()
 			self.buzzer = nil
@@ -271,6 +300,7 @@ if (SERVER) then
 			end
 
 			self:EmitSound("buttons/combine_button5.wav", 140, 100 + (self:GetMode() - 1) * 15)
+			self:UpdateLoopSound()
 			
 			local modeKey = MODES[self:GetMode()][2]
 			activator:NotifyLocalized("ffModeTitle", L(modeKey, activator))
@@ -279,6 +309,18 @@ if (SERVER) then
 		else
 			self:EmitSound("buttons/combine_button3.wav")
 		end
+	end
+
+	function ENT:Think()
+		local isPowered = self:GetMode() ~= MODE_ALLOW_ALL
+
+		if (self.ixLastPoweredState ~= isPowered) then
+			self.ixLastPoweredState = isPowered
+			self:UpdateLoopSound(isPowered)
+		end
+
+		self:NextThink(CurTime() + 0.2)
+		return true
 	end
 else
 	local SHIELD_MATERIAL = ix.util.GetMaterial("effects/combineshield/comshieldwall3")
@@ -348,11 +390,72 @@ else
 	end
 end
 
+local function PlayerHasCID(client)
+	if (!IsValid(client) or !client:IsPlayer()) then
+		return false
+	end
+
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
+	local inventory = character:GetInventory()
+
+	return inventory and inventory:HasItem("cid") or false
+end
+
+local function GetRagdollOwner(ragdoll)
+	if (!IsValid(ragdoll) or !ragdoll:IsRagdoll()) then
+		return nil
+	end
+
+	local owner = ragdoll:GetNetVar("player")
+
+	if (IsValid(owner) and owner:IsPlayer()) then
+		return owner
+	end
+
+	return nil
+end
+
+local function GetVehicleDriver(vehicle)
+	if (!IsValid(vehicle) or !vehicle:IsVehicle()) then
+		return nil
+	end
+
+	local driver = vehicle.GetDriver and vehicle:GetDriver() or nil
+
+	if (IsValid(driver) and driver:IsPlayer()) then
+		return driver
+	end
+
+	return nil
+end
+
+local function ShouldCollideWithUnauthorizedPlayer(entity, mode, client)
+	if (!IsValid(client) or !client:IsPlayer()) then
+		return false
+	end
+
+	if (entity.IsAuthorized and entity:IsAuthorized(client)) then
+		return false
+	end
+
+	if (mode == MODE_ALLOW_CID) then
+		return !client:IsCombine() and !PlayerHasCID(client)
+	end
+
+	return true
+end
+
 -- Shared hook to allow client-side prediction and smooth passing
 hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 	local client
 	local entity
 	local ragdoll
+	local vehicle
 
 	if (a:IsPlayer()) then
 		client = a
@@ -366,6 +469,12 @@ hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 	elseif (b:IsRagdoll()) then
 		ragdoll = b
 		entity = a
+	elseif (a:IsVehicle()) then
+		vehicle = a
+		entity = b
+	elseif (b:IsVehicle()) then
+		vehicle = b
+		entity = a
 	end
 
 	if (IsValid(entity) and entity:GetClass() == "ix_forcefield") then
@@ -376,23 +485,30 @@ hook.Add("ShouldCollide", "ix_forcefields", function(a, b)
 			return false
 		end
 
-		-- Ragdolls collide in all active modes
 		if (IsValid(ragdoll)) then
-			return true
+			local owner = GetRagdollOwner(ragdoll)
+
+			if (!IsValid(owner)) then
+				return mode != MODE_ALLOW_CID
+			end
+
+			return ShouldCollideWithUnauthorizedPlayer(entity, mode, owner)
 		end
 
-		if (IsValid(client)) then
-			-- Authorized personnel (Combine, Admin, Comkey) always pass
-			if (entity.IsAuthorized and entity:IsAuthorized(client)) then
+		if (IsValid(vehicle)) then
+			local driver = GetVehicleDriver(vehicle)
+
+			if (!IsValid(driver)) then
 				return false
 			end
 
-			-- Check mode-specific logic for unauthorized players
-			return istable(MODES[mode]) and MODES[mode][1](client)
+			return ShouldCollideWithUnauthorizedPlayer(entity, mode, driver)
+		end
+
+		if (IsValid(client)) then
+			return ShouldCollideWithUnauthorizedPlayer(entity, mode, client)
 		else
-			-- For other entities (props, etc)
-			-- Since mode is not 1, we collide by default
-			return true
+			return false
 		end
 	end
 end)
