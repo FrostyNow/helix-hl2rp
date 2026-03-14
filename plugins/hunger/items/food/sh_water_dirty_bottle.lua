@@ -4,4 +4,4 @@ ITEM.description = "itemDirtyWaterDesc"
 ITEM.thirst = 25
 ITEM.hunger = -100
 ITEM.price = 12
-ITEM.sound = "interface/inv_drink_can2.ogg"
+ITEM.sound = "interface/inv_drink_tea.ogg"
