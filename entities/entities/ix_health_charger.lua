@@ -330,11 +330,24 @@ else
 			self:ManipulateBonePosition(idxHealth, Vector(1 + (-8 * self.smoothUsed), 0, 0))
 		end
 
-		light = light + ft * (self:IsActive() and 4 or 1)
 		local position = self:GetPos() + self:GetForward() * 7.5 + self:GetUp() * -0.5 + self:GetRight() * 2.5
-		
+		local color = self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE
+
 		render.SetMaterial(GLOW_MATERIAL)
-		render.DrawSprite(position, 8 + math.sin(light), 8 + math.sin(light), self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE)
+		render.DrawSprite(position, 10, 10, color)
+
+		local dlight = DynamicLight(self:EntIndex())
+
+		if (dlight) then
+			dlight.pos = position
+			dlight.r = color.r
+			dlight.g = color.g
+			dlight.b = color.b
+			dlight.brightness = 2
+			dlight.Decay = 1000
+			dlight.Size = 64
+			dlight.DieTime = CurTime() + 0.1
+		end
 	end
 
 	function ENT:OnPopulateEntityInfo(charger)

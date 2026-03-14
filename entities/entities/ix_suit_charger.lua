@@ -290,14 +290,24 @@ else
 	end
 
 	function ENT:DrawTranslucent()
-		local ft = FrameTime()
-
-		self.lightPhase = self.lightPhase + ft * (self:IsActive() and 4 or 1)
-
 		local position = self:GetPos() + self:GetForward() * 8 + self:GetUp() * 11 + self:GetRight() * 1
-		
+		local color = self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE
+
 		render.SetMaterial(GLOW_MATERIAL)
-		render.DrawSprite(position, 8 + math.sin(self.lightPhase), 8 + math.sin(self.lightPhase), self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE)
+		render.DrawSprite(position, 10, 10, color)
+
+		local dlight = DynamicLight(self:EntIndex())
+
+		if (dlight) then
+			dlight.pos = position
+			dlight.r = color.r
+			dlight.g = color.g
+			dlight.b = color.b
+			dlight.brightness = 2
+			dlight.Decay = 1000
+			dlight.Size = 64
+			dlight.DieTime = CurTime() + 0.1
+		end
 	end
 
 	function ENT:OnPopulateEntityInfo(charger)
