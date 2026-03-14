@@ -7,3 +7,4 @@ ENT.AdminOnly = false
 ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 ENT.PopulateEntityInfo = true
+ENT.RenderGroup = RENDERGROUP_BOTH

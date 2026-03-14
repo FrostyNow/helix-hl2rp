@@ -1,5 +1,95 @@
 local PLUGIN = PLUGIN
 
+local SEARCH_DURATION = 5
+local SEARCH_SOUND_INTERVAL = 0.85
+
+local metalSearchSounds = {
+	"physics/metal/metal_barrel_impact_soft1.wav",
+	"physics/metal/metal_barrel_impact_soft2.wav",
+	"physics/metal/metal_barrel_impact_soft3.wav"
+}
+
+local woodSearchSounds = {
+	"physics/wood/wood_crate_impact_soft2.wav",
+	"physics/wood/wood_crate_impact_soft3.wav",
+	"physics/wood/wood_crate_impact_soft4.wav"
+}
+
+local cardboardSearchSounds = {
+	"physics/cardboard/cardboard_box_impact_soft1.wav",
+	"physics/cardboard/cardboard_box_impact_soft2.wav",
+	"physics/cardboard/cardboard_box_impact_soft3.wav"
+}
+
+function PLUGIN:GetLootSearchSounds(ent)
+	local model = string.lower(tostring(ent:GetModel() or ""))
+	local class = string.lower(tostring(ent:GetClass() or ""))
+
+	if (
+		model:find("crate", 1, true) and !model:find("ammocrate", 1, true)
+	) then
+		return woodSearchSounds
+	end
+
+	if (
+		model:find("trash", 1, true) or
+		model:find("dumpster", 1, true) or
+		class:find("trash", 1, true) or
+		class:find("dumpster", 1, true)
+	) then
+		return cardboardSearchSounds
+	end
+
+	return metalSearchSounds
+end
+
+function PLUGIN:PlayLootSearchSound(ent)
+	if (!IsValid(ent)) then
+		return
+	end
+
+	local sounds = self:GetLootSearchSounds(ent)
+	local soundPath = sounds[math.random(1, #sounds)]
+
+	ent:EmitSound(soundPath, 60, math.random(95, 108), 0.75)
+end
+
+function PLUGIN:StopLootSearchSound(ply)
+	if (!ply) then
+		return
+	end
+
+	local timerID = ply.ixLootSearchSoundTimer
+
+	if (timerID) then
+		timer.Remove(timerID)
+		ply.ixLootSearchSoundTimer = nil
+	end
+end
+
+function PLUGIN:StartLootSearchSound(ent, ply)
+	self:StopLootSearchSound(ply)
+
+	local timerID = "ixLootSearchSound" .. ply:SteamID64()
+	ply.ixLootSearchSoundTimer = timerID
+
+	self:PlayLootSearchSound(ent)
+
+	timer.Create(timerID, SEARCH_SOUND_INTERVAL, 0, function()
+		if (!IsValid(ply)) then
+			timer.Remove(timerID)
+			return
+		end
+
+		if (!IsValid(ent) or ply.ixLootSearchSoundTimer != timerID) then
+			self:StopLootSearchSound(ply)
+			return
+		end
+
+		self:PlayLootSearchSound(ent)
+	end)
+end
+
 function PLUGIN:GetRandomItem(lootTable)
 	local totalWeight = 0
 
@@ -38,8 +128,10 @@ function PLUGIN:SearchLootContainer(ent, ply)
 				end
 
 				-- ply:Freeze(true)
-				ply:SetAction("@storageSearching", 5)
+				ply:SetAction("@storageSearching", SEARCH_DURATION)
+				self:StartLootSearchSound(ent, ply)
 				ply:DoStaredAction(ent, function()
+					self:StopLootSearchSound(ply)
 					-- ply:Freeze(false)
 					for i = 1, lootAmount do
 						if (randomChance == math.random(1,20)) then
@@ -58,7 +150,8 @@ function PLUGIN:SearchLootContainer(ent, ply)
 					end
 
 					ent.containerAlreadyUsed = CurTime() + 180
-				end, 5, function()
+				end, SEARCH_DURATION, function()
+					self:StopLootSearchSound(ply)
 					ply:SetAction(false)
 				end)
 			else

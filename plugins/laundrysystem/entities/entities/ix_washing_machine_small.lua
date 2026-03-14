@@ -136,16 +136,30 @@ else
         local pos = self:GetPos()
         pos = pos + self:GetForward() * -8
         pos = pos + self:GetUp() * 20
-        pos = pos + self:GetRight() * -10
+        pos = pos + self:GetRight() * 9
         
+        local color = Color(255, 44, 44)
         if (self:GetWashing()) then
             local alpha = math.Clamp(math.abs(ms(6 * rt) + ms(14 * rt) + mc(22 * rt)) * 500, 0, 255)
+            color = Color(44, 255, 44)
             render.SetMaterial(GLOW_MATERIAL)
             render.DrawSprite(pos, 10, 10, Color(44, 255, 44, (alpha / 255) * distalpha))
         else
             local alpha = math.Clamp(math.abs(ms(2 * rt)) * 255, 0, 255)
             render.SetMaterial(GLOW_MATERIAL)
             render.DrawSprite(pos, 10, 10, Color(255, 44, 44, (alpha / 255) * distalpha))
+        end
+
+        local dlight = DynamicLight(self:EntIndex())
+        if (dlight) then
+            dlight.pos = pos
+            dlight.r = color.r
+            dlight.g = color.g
+            dlight.b = color.b
+            dlight.brightness = 2
+            dlight.Decay = 1000
+            dlight.Size = 64
+            dlight.DieTime = CurTime() + 0.1
         end
 	end
 

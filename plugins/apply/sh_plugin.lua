@@ -13,7 +13,7 @@ ix.lang.AddTable("english", {
 	cmdName = "Says your name.",
 	dontHaveCID = "You don't own a CID!",
 	applyCooldown = "You must wait %s second(s) before using /Apply again.",
-	cidTitle = "<:: CITY 17 CITIZEN ID",
+	cidTitle = "<:: CITY 17 CITIZEN ID ::>",
 	cidName = "Name",
 	cidID = "ID",
 	cidGrade = "Grade",
@@ -27,7 +27,7 @@ ix.lang.AddTable("korean", {
 	cmdName = "이름을 말합니다.",
 	dontHaveCID = "당신은 신분증이 없습니다!",
 	applyCooldown = "/Apply를 다시 사용하려면 %s초 더 기다려야 합니다.",
-	cidTitle = "<:: 17번 지구 시민증",
+	cidTitle = "<:: 17번 지구 시민증 ::>",
 	cidName = "이름",
 	cidID = "ID",
 	cidGrade = "등급",
@@ -48,6 +48,14 @@ if (CLIENT) then
 			ix.gui.cidPanel:Remove()
 		end
 
+		local color = team.GetColor(FACTION_CITIZEN) or Color(200, 100, 0)
+
+		if (class == "Civil Worker's Union") then
+			color = (ix.class.list[CLASS_CWU] and ix.class.list[CLASS_CWU].color) or Color(50, 150, 50)
+		elseif (class == "First Class Citizen") then
+			color = (ix.class.list[CLASS_ELITE_CITIZEN] and ix.class.list[CLASS_ELITE_CITIZEN].color) or Color(50, 100, 200)
+		end
+
 		local panel = vgui.Create("DFrame")
 		panel:SetSize(400, 260)
 		panel:Center()
@@ -64,15 +72,20 @@ if (CLIENT) then
 		end
 
 		function panel:Paint(w, h)
-			surface.SetDrawColor(40, 40, 40, 240)
+			ix.util.DrawBlur(self, 5)
+
+			surface.SetDrawColor(0, 0, 0, 180)
 			surface.DrawRect(0, 0, w, h)
 
-			surface.SetDrawColor(100, 100, 100, 150)
+			surface.SetDrawColor(30, 30, 30, 200)
 			surface.DrawOutlinedRect(0, 0, w, h)
 
 			-- Header
-			surface.SetDrawColor(200, 100, 0, 200)
+			surface.SetDrawColor(color.r, color.g, color.b, 200)
 			surface.DrawRect(0, 0, w, 40)
+
+			surface.SetDrawColor(255, 255, 255, 20)
+			surface.DrawOutlinedRect(0, 0, w, 40)
 
 			draw.SimpleText(L("cidTitle"), "ixMediumFont", w / 2, 20, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
@@ -84,13 +97,13 @@ if (CLIENT) then
 		local function AddInfo(label, value)
 			local row = content:Add("Panel")
 			row:Dock(TOP)
-			row:SetTall(40)
-			row:DockMargin(0, 5, 0, 5)
+			row:SetTall(45)
+			row:DockMargin(0, 5, 0, 2)
 
 			local lbl = row:Add("DLabel")
 			lbl:SetText(L(label):upper())
 			lbl:SetFont("ixSmallFont")
-			lbl:SetTextColor(Color(150, 150, 150))
+			lbl:SetTextColor(color_white)
 			lbl:Dock(TOP)
 			lbl:SetTall(15)
 

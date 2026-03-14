@@ -100,7 +100,7 @@ function ENT:Use(client)
 		self.Entity.Is_playing = false
 		character:TakeMoney(ix.config.Get("gamblingPrice", 13))
 		self:EmitSound("ambient/levels/labs/coinslot1.wav", 60, 100)
-		self:EmitSound("spin.wav", 100, 100)
+		self:EmitSound("spin.wav", 60, 100)
 		self.spin_1:SetSkin(0)
 		self.spin_2:SetSkin(0)
 		self.spin_3:SetSkin(0)
@@ -127,21 +127,21 @@ function ENT:Use(client)
 
 	if self.Select_one == true then
 		self.spin_1:SetSkin(self.pick_one)
-		self:EmitSound("drum_stop.wav", 100, 100)
+		self:EmitSound("drum_stop.wav", 60, 100)
 		self.Select_one = false
 		return
 	end
 
 	if self.Select_two == true then
 		self.spin_2:SetSkin(self.pick_one)
-		self:EmitSound("drum_stop.wav", 100, 100)
+		self:EmitSound("drum_stop.wav", 60, 100)
 		self.Select_two = false
 		return
 	end
 
 	if self.Select_three == true then
 		self.spin_3:SetSkin(self.pick_one)
-		self:EmitSound("drum_stop.wav", 100, 100)
+		self:EmitSound("drum_stop.wav", 60, 100)
 		self.Select_three = false
 	end
 
@@ -183,9 +183,9 @@ function ENT:Use(client)
 		if self.jackpot == true and self.spin_3:GetSkin() == 10 then self.payout = ix.config.Get("horseShoeDoubleBar", 100) end
 		if self.jackpot == true and self.spin_3:GetSkin() == 12 then self.payout = ix.config.Get("singleBarDollarSign", 50) end
 
-		if self.payout > ix.config.Get("singleBarDollarSign", 50) - 1 then self:EmitSound("jackpot.wav", 100, 100) end
+		if self.payout > ix.config.Get("singleBarDollarSign", 50) - 1 then self:EmitSound("jackpot.wav", 60, 100) end
 
-		if self.payout > 9 then self:EmitSound("payout.wav", 100, 100) character:GiveMoney(self.payout)
+		if self.payout > 9 then self:EmitSound("payout.wav", 60, 100) character:GiveMoney(self.payout)
 			client:NotifyLocalized("gamblePayout", ix.currency.Get(self.payout, client))
 		end
 

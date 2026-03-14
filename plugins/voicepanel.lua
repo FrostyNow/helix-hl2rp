@@ -5,6 +5,7 @@ PLUGIN.desc = "This plugin makes voice overlay clear and look nice (really?)"
 if (CLIENT) then
 	local PANEL = {}
 	local ixVoicePanels = {}
+	local MAX_PANEL_WIDTH = 560
 
 	function PANEL:Init()
 		self.Icon = vgui.Create("DLabel", self)
@@ -25,7 +26,7 @@ if (CLIENT) then
 
 		self.Color = color_transparent
 
-		self:SetSize(280, 32 + 8)
+		self:SetSize(MAX_PANEL_WIDTH, 32 + 8)
 		self:DockPadding(4, 4, 4, 4)
 		self:DockMargin(2, 2, 2, 2)
 		self:Dock(BOTTOM)
@@ -76,7 +77,7 @@ if (CLIENT) then
 
 				surface.SetFont("ixMediumFont")
 				local nameW = surface.GetTextSize(name)
-				local totalW = math.Clamp(nameW + 62, 150, 280)
+				local totalW = math.Clamp(nameW + 62, 150, MAX_PANEL_WIDTH)
 
 				if (self.targetWidth != totalW) then
 					self.targetWidth = totalW

@@ -95,7 +95,7 @@ function ENT:Use(ply)
 
 		if (self:GetNetVar("alarm", false)) then return end
 
-		local area = ply:GetArea()
+		local area = ply:GetAreaName()
 		local cidName = "Anonymous"
 		local cidID = "000000"
 		for _, v in pairs(ply:GetCharacter():GetInventory():GetItems()) do

@@ -421,18 +421,34 @@ else
 				pos = pos + self:GetUp() * -10.6
 				pos = pos + self:GetRight() * -3.8
 				
+				local color = Color(255, 44, 44)
 				if (self:GetIsActivated()) then
 					local alpha = math.Clamp(math.abs(ms(6 * rt) + ms(14 * rt) + mc(22 * rt)) * 500, 0, 255)
+					color = Color(44, 255, 44)
 					render.SetMaterial(GLOW_MATERIAL)
 					render.DrawSprite(pos, 12, 12, Color(44, 255, 44, (alpha / 255) * distalpha))
 				else
 					local alpha = math.Clamp(math.abs(ms(2 * rt)) * 255, 0, 255)
 					render.SetMaterial(GLOW_MATERIAL)
 					if (self:GetIsHoldingTokens()) then
+						color = Color(255, 150, 10)
 						render.DrawSprite(pos, 12, 12, Color(255, 150, 10, (alpha / 255) * distalpha))
 					else
+						color = Color(255, 44, 44)
 						render.DrawSprite(pos, 12, 12, Color(255, 44, 44, (alpha / 255) * distalpha))
 					end
+				end
+
+				local dlight = DynamicLight(self:EntIndex())
+				if (dlight) then
+					dlight.pos = pos
+					dlight.r = color.r
+					dlight.g = color.g
+					dlight.b = color.b
+					dlight.brightness = 2
+					dlight.Decay = 1000
+					dlight.Size = 64
+					dlight.DieTime = CurTime() + 0.1
 				end
 			end
 

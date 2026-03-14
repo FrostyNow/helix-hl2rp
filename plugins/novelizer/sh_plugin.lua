@@ -19,6 +19,13 @@ local GLOBAL_ACTION_COOLDOWN = 2
 local IDLE_WARMUP_MIN = 3
 local IDLE_WARMUP_MAX = 7
 local NOVELIZER_RAISE_PATCH_VERSION = 2
+local NOVELIZER_3D_NET = "ixNovelizerDisplay3D"
+local IDLE_IT_RANDOM_WINDOW = 5
+local NOVELIZER_3D_SURFACE_PADDING = 2
+
+if (SERVER) then
+	util.AddNetworkString(NOVELIZER_3D_NET)
+end
 
 ix.lang.AddTable("english", {
 	optNovelizerAutoActions = "Enable novelizer auto actions",
@@ -465,7 +472,7 @@ ix.lang.AddTable("english", {
 	novelizerInjuredPoison = "wavers under a sudden toxic reaction.",
 	novelizerDeathPoison = "succumbs to the poison.",
 	novelizerItRadioMusic1 = "%s plays a faint stream of music.",
-	novelizerItRadioMusic2 = "%s carries a thin wash of distant music.",
+	novelizerItRadioMusic2 = "%s carries a thin wash of music.",
 	novelizerItRadioMusic3 = "%s murmurs with a steady broadcast.",
 	novelizerItRadioOffFreq1 = "%s crackles off-station through bursts of static.",
 	novelizerItRadioOffFreq2 = "%s hisses between channels without finding a clean signal.",
@@ -962,7 +969,7 @@ ix.lang.AddTable("korean", {
 	novelizerInjuredPoison = "독성 반응에 비틀거립니다.",
 	novelizerDeathPoison = "독성 쇼크 끝에 쓰러집니다.",
 	novelizerItRadioMusic1 = "%s 희미한 음악을 흘립니다.",
-	novelizerItRadioMusic2 = "%s 멀리서 들려오는 듯한 음악 소리를 내보냅니다.",
+	novelizerItRadioMusic2 = "%s 잔잔한 음악 소리를 내보냅니다.",
 	novelizerItRadioMusic3 = "%s 안정된 채널로 음악을 틀어 둡니다.",
 	novelizerItRadioOffFreq1 = "%s 채널이 어긋난 채 지직거립니다.",
 	novelizerItRadioOffFreq2 = "%s 주파수를 못 잡고 잡음만 흘립니다.",
@@ -1017,7 +1024,29 @@ ix.config.Add("novelizerEnableIt", true, "Whether novelizer should emit ambient 
 	category = "chat"
 })
 
+ix.config.Add("novelizerUse3DText", false, "Whether novelizer should show temporary 3D text for /it lines instead of chat lines.", nil, {
+	category = "chat"
+})
+
+ix.config.Add("novelizer3DTextDuration", 4.5, "How long temporary 3D novelizer text stays visible.", nil, {
+	data = {min = 1, max = 12},
+	category = "chat"
+})
+
+ix.config.Add("novelizerIdleItCooldown", DEFAULT_IT_COOLDOWN, "Base cooldown for idle entity /it narration. Actual delay is randomized by about +/- 5 seconds.", nil, {
+	data = {min = 10, max = 300},
+	category = "chat"
+})
+
 local function GetChatRange()
+	return ix.config.Get("chatRange", 280)
+end
+
+local function GetNovelMeRange()
+	return GetChatRange()
+end
+
+local function GetNovelItRange()
 	return ix.config.Get("chatRange", 280) * DEFAULT_RANGE_MULTIPLIER
 end
 
@@ -1303,13 +1332,97 @@ function PLUGIN:GetCharacterDisplayName(client, anonymous, info)
 	end
 
 	local color = ix.config.Get("chatColor")
-	local name = hook.Run("GetCharacterName", client, "novelme") or (IsValid(client) and client:Name() or "Console")
+	local name = hook.Run("GetCharacterName", client, "me") or (IsValid(client) and client:Name() or "Console")
 
 	if (IsValid(client)) then
-		color = client:GetClassColor() or team.GetColor(client:Team())
+		color = hook.Run("GetPlayerChatColor", client, ix.chat.classes.me)
+			or client:GetClassColor()
+			or team.GetColor(client:Team())
 	end
 
 	return name, color
+end
+
+function PLUGIN:ShouldUse3DText()
+	return ix.config.Get("novelizerUse3DText", false) == true
+end
+
+function PLUGIN:GetNovelItDisplayText(phraseKey, data)
+	local success, phrase = pcall(function()
+		return self:TranslatePhrase(phraseKey, data)
+	end)
+
+	if (not success or not IsFilledString(phrase)) then
+		return nil
+	end
+
+	return "** " .. phrase
+end
+
+function PLUGIN:GetListenersInRange(position, range)
+	if (not position) then
+		return {}
+	end
+
+	local listeners = {}
+	local radius = tonumber(range) or GetNovelItRange()
+	local maxDistance = radius * radius
+
+	for _, listener in ipairs(player.GetAll()) do
+		if (IsValid(listener) and listener:GetPos():DistToSqr(position) <= maxDistance) then
+			listeners[#listeners + 1] = listener
+		end
+	end
+
+	return listeners
+end
+
+function PLUGIN:SendNovel3DText(receivers, payload)
+	if (CLIENT or not istable(payload)) then
+		return false
+	end
+
+	net.Start(NOVELIZER_3D_NET)
+		net.WriteString(payload.kind or "it")
+		net.WriteEntity(IsValid(payload.anchor) and payload.anchor or NULL)
+		net.WriteEntity(IsValid(payload.speaker) and payload.speaker or NULL)
+		net.WriteVector(payload.position or vector_origin)
+		net.WriteString(tostring(payload.phraseKey or ""))
+		net.WriteTable(payload.arguments or {})
+		net.WriteFloat(tonumber(payload.duration) or ix.config.Get("novelizer3DTextDuration", 4.5))
+		net.WriteFloat(tonumber(payload.range) or GetNovelItRange())
+		net.WriteBool(payload.anonymous == true)
+	net.Broadcast()
+
+	return true
+end
+
+function PLUGIN:GetIdleItCooldown()
+	local baseCooldown = math.max(tonumber(ix.config.Get("novelizerIdleItCooldown", DEFAULT_IT_COOLDOWN)) or DEFAULT_IT_COOLDOWN, 1)
+	local minCooldown = math.max(baseCooldown - IDLE_IT_RANDOM_WINDOW, 1)
+	local maxCooldown = math.max(baseCooldown + IDLE_IT_RANDOM_WINDOW, minCooldown)
+
+	return math.Rand(minCooldown, maxCooldown)
+end
+
+function PLUGIN:GetIdleComputerEntities()
+	local interactivePlugin = ix.plugin.list["interactive_computers"]
+	local entities = {}
+
+	if (not interactivePlugin or not interactivePlugin.IsPrimaryComputerEntity) then
+		return entities
+	end
+
+	for _, entity in ipairs(ents.GetAll()) do
+		if (IsValid(entity)
+			and interactivePlugin:IsPrimaryComputerEntity(entity)
+			and entity.GetPowered
+			and entity:GetPowered()) then
+			entities[#entities + 1] = entity
+		end
+	end
+
+	return entities
 end
 
 function PLUGIN:ResolveItemSubjectData(item)
@@ -2322,7 +2435,7 @@ function PLUGIN:SendNovelMe(client, phraseKey, arguments, data)
 	end
 
 	data.arguments = arguments or {}
-	data.range = data.range or GetChatRange()
+	data.range = data.range or GetNovelMeRange()
 
 	ix.chat.Send(client, "novelme", phraseKey, false, nil, data)
 	return true
@@ -2339,10 +2452,22 @@ function PLUGIN:SendNovelIt(phraseKey, arguments, data)
 		return false
 	end
 
+	if (self:ShouldUse3DText()) then
+		return self:SendNovel3DText(nil, {
+			kind = "it",
+			anchor = data.anchor,
+			position = data.position,
+			phraseKey = phraseKey,
+			arguments = arguments or {},
+			range = data.range or GetNovelItRange(),
+			duration = data.duration
+		})
+	end
+
 	ix.chat.Send(nil, data.chatType or "novelit", phraseKey, false, nil, {
 		arguments = arguments or {},
 		position = data.position,
-		range = data.range or GetChatRange()
+		range = data.range or GetNovelItRange()
 	})
 
 	return true
@@ -2410,13 +2535,13 @@ function PLUGIN:EmitConditionalIt(entity, key, data)
 
 	local arguments = data.arguments and CopyArray(data.arguments) or self:GetItArguments(entity, key, phraseKey)
 
-	ix.chat.Send(nil, data.chatType or "novelit", phraseKey, false, nil, {
-		arguments = arguments,
+	return self:SendNovelIt(phraseKey, arguments, {
+		chatType = data.chatType,
 		position = position,
-		range = data.range or GetChatRange()
+		range = data.range or GetNovelItRange(),
+		duration = data.duration,
+		anchor = entity
 	})
-
-	return true
 end
 
 function PLUGIN:PatchItemAction(itemTable, action)
@@ -3665,6 +3790,95 @@ function PLUGIN:PatchLaundryPipeEntity()
 	end
 end
 
+function PLUGIN:CanOpenInteractiveComputer(client, entity, interactivePlugin)
+	if (not IsValid(client) or not client:GetCharacter() or not interactivePlugin) then
+		return false
+	end
+
+	entity = interactivePlugin.ResolveComputerEntity and interactivePlugin:ResolveComputerEntity(entity) or entity
+
+	if (not IsValid(entity)) then
+		return false
+	end
+
+	if (client:GetPos():DistToSqr(entity:GetPos()) > (160 * 160)) then
+		return false
+	end
+
+	local isCombineTerminal = entity.IsCombineTerminal and entity:IsCombineTerminal()
+	local isSecurityBypassed = entity.IsSecurityBypassed and entity:IsSecurityBypassed()
+
+	if (isCombineTerminal
+		and interactivePlugin.HasCombineTerminalAccess
+		and not interactivePlugin:HasCombineTerminalAccess(client)
+		and not isSecurityBypassed) then
+		if (interactivePlugin.IsCivicComputer and interactivePlugin:IsCivicComputer(entity)) then
+			if (not interactivePlugin.HasCivicTerminalAccess or not interactivePlugin:HasCivicTerminalAccess(client)) then
+				return false
+			end
+		else
+			return false
+		end
+	end
+
+	local storageEntity = interactivePlugin.ResolveStorageEntity and interactivePlugin:ResolveStorageEntity(entity) or entity
+
+	if (IsValid(storageEntity) and IsValid(storageEntity.ixActiveUser) and storageEntity.ixActiveUser != client) then
+		return false
+	end
+
+	if (interactivePlugin.IsComputerAssemblyValid and not interactivePlugin:IsComputerAssemblyValid(entity)) then
+		return false
+	end
+
+	return true, entity
+end
+
+function PLUGIN:PatchInteractiveComputers()
+	local interactivePlugin = ix.plugin.list["interactive_computers"]
+
+	if (not interactivePlugin or interactivePlugin.ixNovelizerOpenWrapped) then
+		return
+	end
+
+	if (not isfunction(interactivePlugin.OpenComputer)) then
+		return
+	end
+
+	interactivePlugin.ixNovelizerOpenWrapped = true
+
+	local originalOpenComputer = interactivePlugin.OpenComputer
+
+	interactivePlugin.OpenComputer = function(this, client, entity, ...)
+		local result = originalOpenComputer(this, client, entity, ...)
+
+		if (SERVER and IsValid(client) and IsValid(entity) and PLUGIN:CanAutoNarrate(client)) then
+			local canOpen, resolvedEntity = PLUGIN:CanOpenInteractiveComputer(client, entity, this)
+
+			if (canOpen and IsValid(resolvedEntity) and PLUGIN:IsInteractiveComputerEntity(resolvedEntity, true)
+				and PLUGIN:CanNarrateEntityUse(client, resolvedEntity)) then
+				local phrasePool = PLUGIN:ResolveEntityUsePhrasePool(resolvedEntity)
+
+				if (istable(phrasePool) and #phrasePool > 0 and PLUGIN:PassUseCooldown(client, resolvedEntity)) then
+					local phraseKey = table.Random(phrasePool)
+
+					if (IsFilledString(phraseKey)) then
+						PLUGIN:SendNovelMe(client, phraseKey, PLUGIN:GetEntityUseArguments(resolvedEntity, phraseKey), {
+							actionKey = "use_" .. resolvedEntity:GetClass()
+						})
+
+						PLUGIN:EmitConditionalIt(resolvedEntity, "disk_read", {
+							cooldown = 4
+						})
+					end
+				end
+			end
+		end
+
+		return result
+	end
+end
+
 function PLUGIN:CanNarrateEntityUse(client, entity)
 	if (not IsValid(client) or not IsValid(entity)) then
 		return false
@@ -3730,7 +3944,7 @@ function PLUGIN:HasNarrationListenerNear(entity, range)
 		return false
 	end
 
-	local checkRange = tonumber(range) or GetChatRange()
+	local checkRange = tonumber(range) or GetNovelItRange()
 	local maxDist = checkRange * checkRange
 
 	for _, client in ipairs(player.GetAll()) do
@@ -3794,9 +4008,15 @@ end
 function PLUGIN:EmitIdleIt()
 	local idleDefinitions = {
 		{
+			finder = function()
+				return self:GetIdleComputerEntities()
+			end,
+			key = "machine_hum",
+			cooldownKey = "computer_idle"
+		},
+		{
 			classes = {"ix_forcefield"},
 			key = "forcefield_buzz",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "forcefield_ambient",
 			canEmit = function(entity)
 				return entity.GetMode and entity:GetMode() ~= 1
@@ -3805,19 +4025,16 @@ function PLUGIN:EmitIdleIt()
 		{
 			classes = {"ix_vendingmachine", "ix_pepsimachine", "ix_coffeemachine"},
 			key = "vending_hum",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "vending_idle"
 		},
 		{
 			classes = {"ix_stationary_radio", "ix_radiorepeater"},
 			key = "radio_static",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "radio_idle"
 		},
 		{
 			classes = {"ix_music_radio"},
 			key = "radio_music",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "music_radio_idle",
 			canEmit = function(entity)
 				return self:GetMusicRadioSignalState(entity) ~= nil
@@ -3832,7 +4049,6 @@ function PLUGIN:EmitIdleIt()
 		{
 			classes = {"ix_stove"},
 			key = "stove_gas_heat",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "stove_idle",
 			canEmit = function(entity)
 				return entity:GetNetVar("active", false) == true
@@ -3841,7 +4057,6 @@ function PLUGIN:EmitIdleIt()
 		{
 			classes = {"ix_bonfire", "ix_bucket"},
 			key = "stove_heat",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "stove_idle",
 			canEmit = function(entity)
 				return entity:GetNetVar("active", false) == true
@@ -3850,7 +4065,6 @@ function PLUGIN:EmitIdleIt()
 		{
 			classes = {"ix_recycler"},
 			key = "machine_hum",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "recycler_idle",
 			canEmit = function(entity)
 				return entity.GetIsActivated and entity:GetIsActivated() == true
@@ -3859,7 +4073,6 @@ function PLUGIN:EmitIdleIt()
 		{
 			classes = {"ix_washing_machine", "ix_washing_machine_small"},
 			key = "washer",
-			cooldown = DEFAULT_IT_COOLDOWN,
 			cooldownKey = "washer_idle",
 			canEmit = function(entity)
 				return entity.GetWashing and entity:GetWashing() == true
@@ -3868,8 +4081,18 @@ function PLUGIN:EmitIdleIt()
 	}
 
 	for _, definition in ipairs(idleDefinitions) do
-		for _, className in ipairs(definition.classes) do
-			for _, entity in ipairs(ents.FindByClass(className)) do
+		local entityLists = {}
+
+		if (isfunction(definition.finder)) then
+			entityLists[1] = definition.finder()
+		else
+			for _, className in ipairs(definition.classes) do
+				entityLists[#entityLists + 1] = ents.FindByClass(className)
+			end
+		end
+
+		for _, entityList in ipairs(entityLists) do
+			for _, entity in ipairs(entityList) do
 				local key = definition.getKey and definition.getKey(entity) or definition.key
 				local listenerRange = definition.listenerRange and definition.listenerRange(entity) or nil
 
@@ -3880,9 +4103,9 @@ function PLUGIN:EmitIdleIt()
 					and (not isfunction(definition.canEmit) or definition.canEmit(entity))) then
 					self:EmitConditionalIt(entity, key, {
 						chatType = "novelit_idle",
-						cooldown = definition.cooldown,
+						cooldown = self:GetIdleItCooldown(),
 						cooldownKey = definition.cooldownKey,
-						range = math.min(GetChatRange() * 0.6, listenerRange or GetChatRange())
+						range = math.min(GetNovelItRange() * 0.6, listenerRange or GetNovelItRange())
 					})
 				end
 			end
@@ -3975,6 +4198,7 @@ function PLUGIN:InitializedPlugins()
 	self:PatchRecyclerEntity()
 	self:PatchChargers()
 	self:PatchLaundryPipeEntity()
+	self:PatchInteractiveComputers()
 	self:PatchStaminaConsumption()
 end
 
@@ -3997,6 +4221,7 @@ function PLUGIN:OnReloaded()
 	self:PatchRecyclerEntity()
 	self:PatchChargers()
 	self:PatchLaundryPipeEntity()
+	self:PatchInteractiveComputers()
 	self:PatchStaminaConsumption()
 end
 
@@ -4014,7 +4239,7 @@ function PLUGIN:InitializedConfig()
 				return false
 			end
 
-			local range = data and data.range or GetChatRange()
+			local range = data and data.range or GetNovelMeRange()
 			return listener:GetPos():DistToSqr(speaker:GetPos()) <= (range * range)
 		end,
 		OnChatAdd = function(self, speaker, text, anonymous, data)
@@ -4047,7 +4272,7 @@ function PLUGIN:InitializedConfig()
 	ix.chat.Register("novelit", {
 		CanHear = function(self, speaker, listener, data)
 			local position = data and data.position
-			local range = data and data.range or GetChatRange()
+			local range = data and data.range or GetNovelItRange()
 
 			if (not position) then
 				if (IsValid(speaker)) then
@@ -4083,7 +4308,7 @@ function PLUGIN:InitializedConfig()
 	ix.chat.Register("novelit_idle", {
 		CanHear = function(self, speaker, listener, data)
 			local position = data and data.position
-			local range = data and data.range or (GetChatRange() * 0.6)
+			local range = data and data.range or (GetNovelItRange() * 0.6)
 
 			if (not position) then
 				if (IsValid(speaker)) then
@@ -4122,6 +4347,10 @@ function PLUGIN:PlayerUse(client, entity)
 		return
 	end
 
+	if (self:IsInteractiveComputerEntity(entity, true)) then
+		return
+	end
+
 	local className = entity:GetClass()
 	if (not self:CanNarrateEntityUse(client, entity)) then
 		return
@@ -4157,11 +4386,7 @@ function PLUGIN:PlayerUse(client, entity)
 		actionKey = actionKey
 	})
 
-	if (self:IsInteractiveComputerEntity(entity, true)) then
-		self:EmitConditionalIt(entity, "disk_read", {
-			cooldown = 4
-		})
-	elseif (className == "ix_washing_machine" or className == "ix_washing_machine_small") then
+	if (className == "ix_washing_machine" or className == "ix_washing_machine_small") then
 		self:EmitConditionalIt(entity, "washer", {
 			cooldown = 5
 		})
@@ -4179,7 +4404,7 @@ function PLUGIN:PlayerUse(client, entity)
 		if (itKey and self:HasNarrationListenerNear(entity, ix.config.Get("radioDist", 550))) then
 			self:EmitConditionalIt(entity, itKey, {
 				cooldown = 4,
-				range = math.min(GetChatRange(), ix.config.Get("radioDist", 550))
+				range = math.min(GetNovelItRange(), ix.config.Get("radioDist", 550))
 			})
 		end
 	elseif (className == "ix_rationdispenser") then
@@ -4194,6 +4419,138 @@ function PLUGIN:PlayerUse(client, entity)
 		self:EmitConditionalIt(entity, "workbench_rattle", {
 			cooldown = 4
 		})
+	end
+end
+
+if (CLIENT) then
+	PLUGIN.active3DTexts = PLUGIN.active3DTexts or {}
+
+	function PLUGIN:LoadFonts(font, genericFont)
+		surface.CreateFont("ixNovelizer3DText", {
+			font = genericFont,
+			size = 48,
+			weight = 700,
+			extended = true
+		})
+	end
+
+	function PLUGIN:GetNovelizer3DOrigin(entry)
+		local localPlayer = LocalPlayer()
+
+		if (IsValid(entry.anchor) and IsValid(localPlayer)) then
+			local centerLocal = entry.anchor:OBBCenter()
+			local centerWorld = entry.anchor:LocalToWorld(centerLocal)
+			local toPlayer = localPlayer:EyePos() - centerWorld
+			toPlayer.z = 0
+
+			if (toPlayer:LengthSqr() <= 0.001) then
+				toPlayer = localPlayer:GetForward()
+				toPlayer.z = 0
+			end
+
+			toPlayer:Normalize()
+
+			local directionLocal = entry.anchor:WorldToLocal(centerWorld + toPlayer) - centerLocal
+			local length = directionLocal:Length()
+
+			if (length > 0) then
+				directionLocal:Mul(1 / length)
+			end
+
+			local mins = entry.anchor:OBBMins() - centerLocal
+			local maxs = entry.anchor:OBBMaxs() - centerLocal
+			local surfaceDistance = math.abs(directionLocal.x) * math.max(math.abs(mins.x), math.abs(maxs.x))
+				+ math.abs(directionLocal.y) * math.max(math.abs(mins.y), math.abs(maxs.y))
+				+ math.abs(directionLocal.z) * math.max(math.abs(mins.z), math.abs(maxs.z))
+			local origin = centerWorld + toPlayer * (surfaceDistance + NOVELIZER_3D_SURFACE_PADDING)
+
+			origin.z = centerWorld.z
+
+			return origin
+		end
+
+		return entry.position
+	end
+
+	net.Receive(NOVELIZER_3D_NET, function()
+		local kind = net.ReadString()
+		local anchor = net.ReadEntity()
+		local speaker = net.ReadEntity()
+		local position = net.ReadVector()
+		local phraseKey = net.ReadString()
+		local arguments = net.ReadTable() or {}
+		local duration = math.max(net.ReadFloat(), 0.1)
+		local range = math.max(net.ReadFloat(), 1)
+		local anonymous = net.ReadBool()
+		local data = {
+			arguments = arguments,
+			anonymous = anonymous
+		}
+		local color = ix.config.Get("chatColor")
+		local text = PLUGIN:GetNovelItDisplayText(phraseKey, data)
+
+		if (not IsFilledString(text)) then
+			return
+		end
+
+		table.insert(PLUGIN.active3DTexts, {
+			kind = kind,
+			anchor = IsValid(anchor) and anchor or nil,
+			speaker = IsValid(speaker) and speaker or nil,
+			position = position,
+			range = range,
+			text = text,
+			color = color,
+			startTime = CurTime(),
+			dieTime = CurTime() + duration
+		})
+	end)
+
+	function PLUGIN:PostDrawTranslucentRenderables(bDrawingDepth, bDrawingSkybox)
+		if (bDrawingDepth or bDrawingSkybox or not self:ShouldUse3DText()) then
+			return
+		end
+
+		local texts = self.active3DTexts or {}
+		local curTime = CurTime()
+		local eyePos = EyePos()
+		local angle = EyeAngles()
+
+		angle:RotateAroundAxis(angle:Up(), -90)
+		angle:RotateAroundAxis(angle:Forward(), 90)
+
+		for index = #texts, 1, -1 do
+			local entry = texts[index]
+
+			if (curTime >= entry.dieTime) then
+				table.remove(texts, index)
+				continue
+			end
+
+			local origin = self:GetNovelizer3DOrigin(entry)
+
+			if (not origin or eyePos:DistToSqr(origin) > (entry.range * entry.range)) then
+				continue
+			end
+
+			local distance = eyePos:Distance(origin)
+			local alpha = math.Clamp((entry.dieTime - curTime) / math.min(entry.dieTime - entry.startTime, 1.25), 0, 1) * 255
+			local scale = math.Clamp(distance * 0.0003, 0.07, 0.14)
+
+			cam.Start3D2D(origin, angle, scale)
+				draw.SimpleTextOutlined(
+					entry.text,
+					"ixNovelizer3DText",
+					0,
+					0,
+					ColorAlpha(entry.color, alpha),
+					TEXT_ALIGN_CENTER,
+					TEXT_ALIGN_CENTER,
+					1,
+					ColorAlpha(color_black, alpha)
+				)
+			cam.End3D2D()
+		end
 	end
 end
 

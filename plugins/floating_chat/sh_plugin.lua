@@ -80,19 +80,19 @@ if (CLIENT) then
 	function PLUGIN:LoadFonts(font, genericFont)
 		surface.CreateFont("ixFloatingChatFont", {
 			font = genericFont,
-			size = 44,
+			size = 56,
 			extended = true,
 			weight = 500
 		})
 		surface.CreateFont("ixFloatingChatFontLarge", {
 			font = genericFont,
-			size = 56,
+			size = 72,
 			extended = true,
 			weight = 800
 		})
 		surface.CreateFont("ixFloatingChatFontSmall", {
 			font = genericFont,
-			size = 36,
+			size = 44,
 			extended = true,
 			weight = 500
 		})

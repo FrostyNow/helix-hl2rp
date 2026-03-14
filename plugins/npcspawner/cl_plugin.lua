@@ -22,8 +22,9 @@ function PLUGIN:HUDPaint()
     if (not ix.option.Get("npcSpawnerESP", true)) then return end
 
     local client = LocalPlayer()
-    if (not client:IsSuperAdmin()) then return end
-    if (client:GetMoveType() ~= MOVETYPE_NOCLIP) then return end
+    if (not client:IsAdmin() or client:InVehicle() or client:GetMoveType() ~= MOVETYPE_NOCLIP) then
+        return
+    end
 
     for id, spawner in pairs(self.spawners or {}) do
         local dist = client:GetPos():Distance(spawner.pos)

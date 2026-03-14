@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Team Frosty Rolplaying</title>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+		rel="stylesheet">
+	<style>
+		:root {
+			--helix-blue: #00a8ff;
+			--helix-dark: #070707;
+			--panel-bg: rgba(25, 25, 25, 0.7);
+			--nav-width: 280px;
+			--border-color: rgba(255, 255, 255, 0.08);
+			--text-main: #ffffff;
+			--text-muted: #888888;
+			--accent-glow: rgba(0, 168, 255, 0.25);
+			--transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+		}
+
+		* {
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: 'Inter', sans-serif;
+			-webkit-font-smoothing: antialiased;
+		}
+
+		body {
+			background-color: var(--helix-dark);
+			color: var(--text-main);
+			height: 100vh;
+			overflow: hidden;
+		}
+
+		/* Background Wallpaper with Blur */
+		.wallpaper {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: url('https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=2000') no-repeat center center;
+			background-size: cover;
+			filter: blur(15px) brightness(0.3);
+			transform: scale(1.1);
+			/* Prevent white edges from blur */
+			z-index: -2;
+		}
+
+		/* Gradient Overlay */
+		.overlay {
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background:
+				radial-gradient(circle at 0% 0%, rgba(0, 168, 255, 0.08) 0%, transparent 40%),
+				radial-gradient(circle at 100% 100%, rgba(0, 168, 255, 0.05) 0%, transparent 50%),
+				rgba(5, 5, 5, 0.4);
+			z-index: -1;
+		}
+
+		/* Scanline Overlay */
+		body::after {
+			content: "";
+			position: fixed;
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%),
+				linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+			background-size: 100% 3px, 3px 100%;
+			pointer-events: none;
+			z-index: 1000;
+		}
+
+		.dashboard {
+			display: flex;
+			width: 100%;
+			height: 100vh;
+			animation: fadeIn 0.6s ease-out;
+		}
+
+		/* Side Navigation */
+		.sidebar {
+			width: var(--nav-width);
+			background: rgba(10, 10, 10, 0.8);
+			border-right: 1px solid var(--border-color);
+			display: flex;
+			flex-direction: column;
+			padding: 40px 0;
+			backdrop-filter: blur(20px);
+			z-index: 10;
+		}
+
+		.logo-area {
+			padding: 0 30px;
+			margin-bottom: 50px;
+		}
+
+		.logo-area h2 {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.85rem;
+			color: var(--helix-blue);
+			letter-spacing: 4px;
+			text-transform: uppercase;
+			margin-bottom: 5px;
+		}
+
+		.logo-area .server-name {
+			font-size: 1.5rem;
+			font-weight: 800;
+			text-transform: uppercase;
+			letter-spacing: -0.5px;
+		}
+
+		.nav-links {
+			flex: 1;
+		}
+
+		.nav-item {
+			padding: 16px 30px;
+			cursor: pointer;
+			color: var(--text-muted);
+			font-size: 0.9rem;
+			font-weight: 500;
+			text-transform: uppercase;
+			letter-spacing: 2px;
+			transition: var(--transition);
+			position: relative;
+			display: flex;
+			align-items: center;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+		}
+
+		.nav-item:hover {
+			color: var(--text-main);
+			background: rgba(255, 255, 255, 0.03);
+			padding-left: 36px;
+		}
+
+		.nav-item.active {
+			color: var(--text-main);
+			background: rgba(0, 168, 255, 0.1);
+		}
+
+		.nav-item.active::before {
+			content: "";
+			position: absolute;
+			left: 0;
+			top: 0;
+			height: 100%;
+			width: 4px;
+			background: var(--helix-blue);
+			box-shadow: 0 0 15px var(--helix-blue);
+		}
+
+		.sidebar-footer {
+			padding: 20px 30px;
+			font-size: 0.7rem;
+			color: #444;
+			font-family: 'JetBrains Mono', monospace;
+			text-transform: uppercase;
+			letter-spacing: 1px;
+		}
+
+		/* Content Area */
+		.content {
+			flex: 1;
+			padding: 60px 80px;
+			overflow-y: auto;
+			position: relative;
+		}
+
+		.content-panel {
+			display: none;
+			animation: slideIn 0.4s ease-out;
+		}
+
+		.content-panel.active {
+			display: block;
+		}
+
+		.panel-header {
+			margin-bottom: 40px;
+			border-bottom: 1px solid var(--border-color);
+			padding-bottom: 20px;
+		}
+
+		.panel-header h1 {
+			font-size: 2.5rem;
+			font-weight: 700;
+			text-transform: uppercase;
+			margin-bottom: 8px;
+		}
+
+		.panel-header p {
+			color: var(--text-muted);
+			font-size: 1rem;
+		}
+
+		/* Panels & Cards */
+		.info-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+			gap: 24px;
+		}
+
+		.card {
+			background: var(--panel-bg);
+			border: 1px solid var(--border-color);
+			padding: 30px;
+			border-radius: 4px;
+			transition: var(--transition);
+		}
+
+		.card:hover {
+			border-color: rgba(0, 168, 255, 0.3);
+			transform: translateY(-5px);
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+		}
+
+		.card-tag {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 0.75rem;
+			color: var(--helix-blue);
+			margin-bottom: 15px;
+			display: block;
+			text-transform: uppercase;
+		}
+
+		.card h3 {
+			font-size: 1.25rem;
+			margin-bottom: 15px;
+		}
+
+		.card p {
+			color: #bbb;
+			line-height: 1.6;
+			font-size: 0.95rem;
+		}
+
+		/* Rules List */
+		.rules-list {
+			counter-reset: rules;
+		}
+
+		.rule-item {
+			display: flex;
+			gap: 20px;
+			margin-bottom: 20px;
+			padding: 20px;
+			background: rgba(255, 255, 255, 0.02);
+			border-radius: 4px;
+		}
+
+		.rule-item::before {
+			counter-increment: rules;
+			content: counter(rules, decimal-leading-zero);
+			font-family: 'JetBrains Mono', monospace;
+			color: var(--helix-blue);
+			font-weight: 700;
+		}
+
+		/* Animations */
+		@keyframes fadeIn {
+			from {
+				opacity: 0;
+			}
+
+			to {
+				opacity: 1;
+			}
+		}
+
+		@keyframes slideIn {
+			from {
+				opacity: 0;
+				transform: translateX(20px);
+			}
+
+			to {
+				opacity: 1;
+				transform: translateX(0);
+			}
+		}
+
+		/* Scrollbar */
+		::-webkit-scrollbar {
+			width: 6px;
+		}
+
+		::-webkit-scrollbar-track {
+			background: transparent;
+		}
+
+		::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.1);
+			border-radius: 10px;
+		}
+
+		@media (max-width: 900px) {
+			.dashboard {
+				flex-direction: column;
+			}
+
+			.sidebar {
+				width: 100%;
+				height: auto;
+				border-right: none;
+				border-bottom: 1px solid var(--border-color);
+			}
+
+			.nav-links {
+				display: flex;
+				overflow-x: auto;
+			}
+
+			.nav-item {
+				white-space: nowrap;
+				padding: 15px 20px;
+			}
+
+			.nav-item.active::before {
+				height: 4px;
+				width: 100%;
+				top: auto;
+				bottom: 0;
+			}
+
+			.content {
+				padding: 30px;
+			}
+		}
+	</style>
+</head>
+
+<body>
+	<div class="wallpaper"></div>
+	<div class="overlay"></div>
+	<div class="dashboard">
+		<aside class="sidebar">
+			<div class="logo-area">
+				<h2>TEAM FROST</h2>
+				<div class="server-name">HL2 RP: <br>GRIZZLY GROTTO</div>
+			</div>
+
+			<nav class="nav-links">
+				<div class="nav-item active" data-panel="home">대시보드</div>
+				<div class="nav-item" data-panel="news">공지 및 안내</div>
+				<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=268714411" class="nav-item"
+					style="text-decoration: none;" target="_blank">
+					규칙 <span style="font-size: 0.6rem; opacity: 0.6; margin-left: auto;">외부 링크</span>
+				</a>
+				<a href="https://discord.com/invite/qpSA7WWde8" class="nav-item" style="text-decoration: none;"
+					target="_blank">
+					Discord <span style="font-size: 0.6rem; opacity: 0.6; margin-left: auto;">외부 링크</span>
+				</a>
+				<a href="https://steamcommunity.com/sharedfiles/filedetails/?id=389031629" class="nav-item"
+					style="text-decoration: none;" target="_blank">
+					창작마당 <span style="font-size: 0.6rem; opacity: 0.6; margin-left: auto;">외부 링크</span>
+				</a>
+			</nav>
+
+			<div class="sidebar-footer">
+				Powered by Helix<br>
+				Provided by Team Frosty<br>
+				All rights reserved
+			</div>
+		</aside>
+
+		<main class="content">
+			<!-- HOME PANEL -->
+			<section id="home" class="content-panel active">
+				<div class="panel-header">
+					<h1>17번 지구에 오신 것을 환영합니다</h1>
+					<p>팀 프로스티 롤플레이 서버 대시보드입니다.</p>
+				</div>
+
+				<div class="info-grid">
+					<div class="card" id="status-card">
+						<div
+							style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+							<span class="card-tag">:: 서버 상태</span>
+							<div id="status-indicator"
+								style="width: 10px; height: 10px; border-radius: 50%; background: #555; box-shadow: 0 0 10px rgba(255,255,255,0.1);">
+							</div>
+						</div>
+						<h3 id="server-status-text">연결 중...</h3>
+						<p id="server-detail-text">서버 데이터를 불러오고 있습니다.</p>
+						<a href="steam://connect/119.196.45.176:27016" id="connect-btn" class="nav-item"
+							style="margin-top: 15px; text-decoration: none; display: none; justify-content: center; background: rgba(0, 168, 255, 0.2); border-color: var(--helix-blue); font-size: 0.8rem;">
+							서버 접속하기
+						</a>
+					</div>
+				</div>
+			</section>
+
+			<!-- NEWS PANEL -->
+			<section id="news" class="content-panel">
+				<div class="panel-header">
+					<h1>공지 및 안내</h1>
+					<p>서버 공지사항 및 안내입니다.</p>
+				</div>
+
+				<div class="info-grid" style="grid-template-columns: 1fr;">
+					<div class="card">
+						<span class="card-tag">2026-03-14 | SYSTEM UPDATE</span>
+						<h3>Helix Core v1.4.2 패치 완료</h3>
+						<p>인벤토리 통신 프로토콜 최적화가 완료되었습니다. 컨테이너 개폐 시의 렉 현상이 대폭 개선되었습니다.</p>
+					</div>
+					<div class="card">
+						<span class="card-tag">2026-03-12 | ADMINISTRATION</span>
+						<h3>거주 구역 재배치 공지</h3>
+						<p>도시 정비 사업의 일환으로 District 4의 일부 거주 구역이 폐쇄 및 이동되었습니다. 지도 정보를 다시 확인하세요.</p>
+					</div>
+				</div>
+			</section>
+
+			<!-- RULES PANEL -->
+			<section id="rules" class="content-panel">
+				<div class="panel-header">
+					<h1>Server Rules</h1>
+					<p>우리 서버의 질서를 위해 반드시 준수해야 할 사항입니다.</p>
+				</div>
+
+				<div class="rules-list">
+					<div class="rule-item">
+						<div>
+							<h3>민주적인 소통</h3>
+							<p>모든 유저는 다른 플레이어의 RP를 존중해야 하며, 폭언이나 혐오 표현을 금합니다.</p>
+						</div>
+					</div>
+					<div class="rule-item">
+						<div>
+							<h3>RP 질서 유지</h3>
+							<p>RDM, VDM, 그리고 타당한 근거 없는 공격 행위는 엄격히 제한됩니다.</p>
+						</div>
+					</div>
+					<div class="rule-item">
+						<div>
+							<h3>메타게이밍 엄금</h3>
+							<p>캐릭터가 알 수 없는 정보를 플레이어가 사용하는 행위는 RP의 몰입을 방해합니다.</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+
+		</main>
+	</div>
+
+	<script>
+		// Sound System
+		const pressSound = new Audio('https://github.com/Metastruct/garrysmod-chatsounds/raw/master/sound/chatsounds/autoadd/ui/buttonclickrelease.wav');
+		const hoverSound = new Audio('https://github.com/Metastruct/garrysmod-chatsounds/raw/master/sound/chatsounds/autoadd/ui/buttonrollover.wav');
+
+		pressSound.volume = 0.5;
+		hoverSound.volume = 0.2;
+
+		const playPress = () => {
+			pressSound.currentTime = 0;
+			pressSound.play().catch(e => console.log('Interatction required for audio'));
+		};
+		const playHover = () => {
+			hoverSound.currentTime = 0;
+			hoverSound.play().catch(e => console.log('Interatction required for audio'));
+		};
+
+		document.querySelectorAll('.nav-item, .card').forEach(element => {
+			element.addEventListener('click', playPress);
+			element.addEventListener('mouseenter', playHover);
+		});
+
+		document.querySelectorAll('.nav-item').forEach(item => {
+			item.addEventListener('click', () => {
+				if (item.hasAttribute('data-panel')) {
+					// Remove active classes from navigation
+					document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+					// Hide all panels
+					document.querySelectorAll('.content-panel').forEach(p => p.classList.remove('active'));
+
+					// Set current active nav and panel
+					item.classList.add('active');
+					const panelId = item.getAttribute('data-panel');
+					document.getElementById(panelId).classList.add('active');
+				}
+			});
+		});
+
+		// Real-time Server Status Fetcher
+		const updateServerStatus = async () => {
+			const statusText = document.getElementById('server-status-text');
+			const detailText = document.getElementById('server-detail-text');
+			const indicator = document.getElementById('status-indicator');
+			const card = document.getElementById('status-card');
+			const connectBtn = document.getElementById('connect-btn');
+
+			const ip = '119.196.45.176';
+			const port = '27016';
+
+			console.log(`[Helix-Status] 점검 시작: ${ip}:${port}`);
+
+			try {
+				// Prevent caching by adding a timestamp
+				const targetUrl = `https://api.gamemonitoring.net/v1/server?ip=${ip}&port=${port}`;
+				const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}&_=${Date.now()}`;
+
+				const response = await fetch(proxyUrl);
+				if (!response.ok) throw new Error(`HTTP Error: ${response.status}`);
+
+				const wrapper = await response.json();
+				const data = JSON.parse(wrapper.contents);
+
+				console.log("[Helix-Status] API 응답 데이터:", data);
+
+				if (data && data.status === 'online') {
+					statusText.innerText = '온라인';
+					statusText.style.color = '#00ff88';
+					detailText.innerHTML = `인원: ${data.players} / ${data.maxplayers}<br>맵: ${data.map}`;
+					indicator.style.background = '#00ff88';
+					indicator.style.boxShadow = '0 0 15px #00ff88';
+					card.style.borderColor = 'rgba(0, 255, 136, 0.3)';
+					connectBtn.style.display = 'flex';
+				} else {
+					console.warn("[Helix-Status] 서버가 오프라인 상태로 보고됨.");
+					statusText.innerText = '오프라인';
+					statusText.style.color = '#ff4444';
+					detailText.innerHTML = `데이터를 받아왔으나 서버가 응답하지 않습니다.<br><small style="color:#666;">포트포워딩(UDP ${port}) 상태를 확인하세요.</small>`;
+					indicator.style.background = '#ff4444';
+					indicator.style.boxShadow = '0 0 15px #ff4444';
+					card.style.borderColor = 'rgba(255, 68, 68, 0.3)';
+					connectBtn.style.display = 'none';
+				}
+			} catch (error) {
+				console.error('[Helix-Status] 에러 발생:', error);
+				statusText.innerText = '점검 불가';
+
+				// Check for typical local file security issues
+				if (window.location.protocol === 'file:') {
+					detailText.innerHTML = `<span style="color:#eda1a1;">로컬 파일 환경 보안 차단</span><br><small style="color:#888;">브라우저 보안 정책상 file:// 주소에서는 외부 데이터를 가져올 수 없습니다. 웹 서버(http://)를 통해 열어주세요.</small>`;
+				} else {
+					detailText.innerHTML = `네트워크 연결 오류<br><small style="color:#888;">${error.message}</small>`;
+				}
+				connectBtn.style.display = 'none';
+			}
+		};
+
+		// Initial Check
+		updateServerStatus();
+		// Refresh every 60 seconds
+		setInterval(updateServerStatus, 60000);
+	</script>
+</body>
+
+</html>

@@ -24,29 +24,16 @@ ix.config.Add("notifyCurfew", true, "Whether or not to automatically announce th
 	category = "StormFox 2"
 })
 
-local function PerformTimeSync()
-	if not StormFox2 then return end
+local function PerformTimeSync(bVerbose)
+	if not StormFox2 or not StormFox2.Time then return end
 
-	local helixTimeStr = ix.date.GetFormatted("%H:%M")
-	local sfTime = StormFox2.Time.StringToTime(helixTimeStr)
-		
-	if sfTime then
-		StormFox2.Time.Set(sfTime)
-	end
+	local helixDate = ix.date.Get()
+	local sfTime = (helixDate:gethours() * 60) + helixDate:getminutes() + (helixDate:getseconds() / 60)
 
-	local helixTimeScale = ix.config.Get("secondsPerMinute", 60)
+	StormFox2.Time.Set(sfTime)
 
-	if helixTimeScale > 0 then
-		local dayLength = ix.config.Get("dayLength", 12)
-		local nightLength = ix.config.Get("nightLength", 12)
-		local dayPhase = dayLength * helixTimeScale
-		local nightPhase = nightLength * helixTimeScale
-		
-		if StormFox2.Setting then
-			StormFox2.Setting.Set("day_length", dayPhase)
-			StormFox2.Setting.Set("night_length", nightPhase)
-			print(string.format("[Helix] StormFox2 synchronized: Day %dh (%dm), Night %dh (%dm)", dayLength, dayPhase, nightLength, nightPhase))
-		end
+	if bVerbose then
+		print(string.format("[Helix] StormFox2 synchronized to %02d:%02d:%02d.", helixDate:gethours(), helixDate:getminutes(), helixDate:getseconds()))
 	end
 end
 
@@ -54,12 +41,17 @@ if SERVER then
 	local bHasSync = false
 	hook.Add("PlayerInitialSpawn", "ix_StormFox2_AutoSync", function(client)
 		if not bHasSync then
-			PerformTimeSync()
+			timer.Simple(0, function()
+				if StormFox2 and StormFox2.Time then
+					PerformTimeSync(true)
+				end
+			end)
 			bHasSync = true
 		end
 	end)
 
 	PLUGIN.nextDayCheck = 0
+	PLUGIN.nextTimeSync = 0
 	PLUGIN.isDay = nil
 	PLUGIN.lastCurfewMinute = -1
 
@@ -68,6 +60,11 @@ if SERVER then
 		self.nextDayCheck = CurTime() + 1
 
 		if (not StormFox2) then return end
+
+		if (self.nextTimeSync <= CurTime()) then
+			self.nextTimeSync = CurTime() + 1
+			PerformTimeSync()
+		end
 
 		-- Day/Night change notification
 		if (ix.config.Get("notifyTimeChange", false)) then

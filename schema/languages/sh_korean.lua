@@ -553,6 +553,8 @@ LANGUAGE = {
 	itemCoffeBeansDesc = "커피를 재배해서 열매를 딴 뒤 볶는 과정을 거친 원두입니다.",
 	["Empty Canister"] = "빈 연료통",
 	itemCanisterDesc = "녹으로 덮인 금속 가솔린 연료통입니다.",
+	["Plate"] = "접시",
+	itemPlateDesc = "음식을 담는 데 쓰는 평범한 세라믹 접시입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

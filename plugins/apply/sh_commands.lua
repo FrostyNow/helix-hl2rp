@@ -31,7 +31,7 @@ ix.command.Add("Apply", {
 
 				applyCooldowns[client] = curTime + 5
 
-				ix.chat.Send(client, "me", name .. " #" .. id)
+				-- ix.chat.Send(client, "me", name .. " #" .. id)
 
 				local data = {}
 				data.start = client:GetShootPos()

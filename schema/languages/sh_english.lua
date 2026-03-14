@@ -263,6 +263,7 @@ LANGUAGE = {
 	gasmaskNoNeedRepair = "You do not have a gasmask that needs a new filter.",
 	itemCoffeBeansDesc = "Coffee beans that are used to make coffee.",
 	itemCanisterDesc = "A metal gasoline canister covered in rust.",
+	itemPlateDesc = "A plain ceramic plate used for serving food.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

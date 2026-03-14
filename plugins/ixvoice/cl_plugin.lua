@@ -1,5 +1,5 @@
-local RADIO_NOISE_DISTANCE = PLUGIN.radioNoiseDistance
-local RADIO_NOISE_DISTANCE_SQR = PLUGIN.radioNoiseDistanceSqr
+local PLUGIN = PLUGIN
+
 local FORCE_RADIO_NOISE_TEST = false
 local RADIO_FILTER_DSP = 31
 local RADIO_FILTER_MIN_PITCH = 95
@@ -12,6 +12,12 @@ local RADIO_STATIC_SOUNDS = {
 	"ambient/levels/prison/radio_random2.wav",
 	"ambient/levels/prison/radio_random6.wav"
 }
+
+local function getRadioNoiseDistanceSqr()
+	local distance = PLUGIN.radioNoiseDistance or 1200
+
+	return PLUGIN.radioNoiseDistanceSqr or (distance * distance)
+end
 
 local function playVoiceSequence(entity, sounds, volume)
 	ix.util.EmitQueuedSounds(entity, sounds, nil, nil, volume)
@@ -77,7 +83,7 @@ netstream.Hook("voicePlay", function(sounds, volume, index, isRadioTransmission,
 			local loweredClass = string.lower(voiceClassName or "")
 			local shouldUseRadioFilter = isRadioTransmission and (
 				FORCE_RADIO_NOISE_TEST
-				or (IsValid(LocalPlayer()) and LocalPlayer():GetPos():DistToSqr(client:GetPos()) > RADIO_NOISE_DISTANCE_SQR)
+				or (IsValid(LocalPlayer()) and LocalPlayer():GetPos():DistToSqr(client:GetPos()) > getRadioNoiseDistanceSqr())
 			) and loweredClass != "overwatch"
 
 			if (shouldUseRadioFilter) then

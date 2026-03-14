@@ -122,6 +122,10 @@ LANGUAGE = {
 	recipeScrapMoneyDesc = "이제는 쓸모없는 종잇쪼가리를 찢어 더 쓸만한 형태로 가공합니다.",
 	["Scrap Empty Bottle"] = "빈 병 분해",
 	recipeScrapEmptyBottleDesc = "병을 잘라내거나 성형하여 적절한 형태로 가공합니다.",
+	["Scrap Shotglass"] = "유리잔 분해",
+	recipeScrapShotglassDesc = "유리잔을 부숩니다.",
+	["Scrap Plate"] = "접시 분해",
+	recipeScrapPlateDesc = "접시를 부숩니다.",
 
 	["Scrap Bucket"] = "양동이 분해",
 	recipeScrapBucketDesc = "양동이를 분해합니다.",

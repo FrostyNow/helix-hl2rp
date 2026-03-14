@@ -106,6 +106,7 @@ PLUGIN.randomLoot.common = {
 	["coffee_beans"] = 2,
 	["vegetable_oil"] = 2,
 	["misc_canister"] = 2,
+	["misc_plate"] = 2,
 }
 
 PLUGIN.randomLoot.rare = {

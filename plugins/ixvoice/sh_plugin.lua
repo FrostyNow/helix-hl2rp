@@ -3,11 +3,11 @@ PLUGIN.description = "Let's users string multiple voice commands together. The n
 PLUGIN.author = "Ronald and Frosty"
 PLUGIN.schema = "HL2 RP"
 
+PLUGIN.radioNoiseDistance = PLUGIN.radioNoiseDistance or 1200
+PLUGIN.radioNoiseDistanceSqr = PLUGIN.radioNoiseDistanceSqr or (PLUGIN.radioNoiseDistance * PLUGIN.radioNoiseDistance)
+
 ix.util.Include("cl_plugin.lua")
 ix.util.Include("sv_plugin.lua")
-
-PLUGIN.radioNoiseDistance = 1200
-PLUGIN.radioNoiseDistanceSqr = PLUGIN.radioNoiseDistance * PLUGIN.radioNoiseDistance
 
 if (SERVER) then
 	resource.AddWorkshop("2291046370")

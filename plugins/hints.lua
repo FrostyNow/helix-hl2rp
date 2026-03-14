@@ -48,7 +48,7 @@ ix.lang.AddTable("english", {
 	hintGetWater = "You can get water from sink or stream using the /water command.",
 	hintDirtyWater = "Drinking dirty water is not a good idea.",
 	hintCID = "Your Citizen ID is very important. Never lose it.",
-	hintVortessense = "Vortigaunts can communicate with each other using the /ve command.",
+	hintVortessence = "Vortigaunts can communicate with each other using the /ve command.",
 	hintCurfew = "Every day from 12 AM to 6 AM, a curfew is in effect.",
 	hintApply = "If CP demands to see your Citizen ID, you must use the /apply command.",
 	
@@ -90,7 +90,7 @@ ix.lang.AddTable("korean", {
 	hintGetWater = "/water 명령어로 싱크대나 물가에서 물을 뜰 수 있습니다.",
 	hintDirtyWater = "더러운 물을 마시는 것은 좋은 생각이 아닙니다.",
 	hintCID = "신분증은 굉장히 중요합니다. 절대 잃어버리지 마십시오.",
-	hintVortessense = "보르티곤트는 /ve 명령어로 서로 정신 연결이 가능하다고 합니다.",
+	hintVortessence = "보르티곤트는 /ve 명령어로 서로 정신 연결이 가능하다고 합니다.",
 	hintCurfew = "매일 오전 12시부터 오전 6시까지는 통행 금지령이 내려집니다.",
 	hintApply = "보호 기동대원이 시민증 제시를 요구하면 /apply 해야 합니다.",
 

@@ -67,6 +67,8 @@ LANGUAGE = {
 	recipePlankDesc = "Break down a wooden plank into usable scraps.",
 	recipeScrapMoneyDesc = "Tear up useless paper money into a more usable form.",
 	recipeScrapEmptyBottleDesc = "Break down an empty bottle into usable glass materials.",
+	recipeScrapShotglassDesc = "Break down a shotglass.",
+	recipeScrapPlateDesc = "Break down a plate.",
 
 	recipeScrapBucketDesc = "Disassemble a bucket.",
 	recipeScrapCafeteriaTrayDesc = "Disassemble a cafeteria tray.",
