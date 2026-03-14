@@ -18,6 +18,7 @@ local DEFAULT_ACTION_COOLDOWN = 10
 local GLOBAL_ACTION_COOLDOWN = 2
 local IDLE_WARMUP_MIN = 3
 local IDLE_WARMUP_MAX = 7
+local NOVELIZER_RAISE_PATCH_VERSION = 2
 
 ix.lang.AddTable("english", {
 	optNovelizerAutoActions = "Enable novelizer auto actions",
@@ -414,6 +415,12 @@ ix.lang.AddTable("english", {
 	novelizerVehicleExit1 = "gets out of %s.",
 	novelizerVehicleExit2 = "climbs out of %s.",
 	novelizerVehicleExit3 = "steps out of %s.",
+	novelizerFallover1 = "drops hard to the ground.",
+	novelizerFallover2 = "goes limp and collapses.",
+	novelizerFallover3 = "crumples down, losing consciousness.",
+	novelizerDoorKnock1 = "knocks on %s with their hand.",
+	novelizerDoorKnock2 = "raps their knuckles against %s.",
+	novelizerDoorKnock3 = "gives %s a quick knock.",
 	novelizerEquipSidearm1 = "gets %s ready at hand.",
 	novelizerEquipSidearm2 = "settles %s into an easy draw.",
 	novelizerEquipSidearm3 = "positions %s for quick use.",
@@ -443,8 +450,16 @@ ix.lang.AddTable("english", {
 	novelizerDeathShock = "locks up under the current and drops.",
 	novelizerInjuredBlast = "is thrown off balance by the blast.",
 	novelizerDeathBlast = "is taken down in the explosion.",
-	novelizerInjuredSlash = "recoils from a cutting wound.",
-	novelizerDeathSlash = "falls after a deep cutting strike.",
+	novelizerInjuredVehicle = "is jolted hard by the vehicle impact.",
+	novelizerDeathVehicle = "is struck down by the vehicle impact.",
+	novelizerInjuredSonic = "reels as the sonic force hits them.",
+	novelizerDeathSonic = "drops under the sonic blast.",
+	novelizerInjuredEnergyBeam = "twists back from the beam's impact.",
+	novelizerDeathEnergyBeam = "goes down under the beam.",
+	novelizerInjuredSlash = "recoils from the strike.",
+	novelizerDeathSlash = "goes down under the blow.",
+	novelizerInjuredDrown = "chokes as water fills their lungs.",
+	novelizerDeathDrown = "goes limp in the water.",
 	novelizerInjuredAcid = "lashes back from the corrosive burn.",
 	novelizerDeathAcid = "fails under the corrosive damage.",
 	novelizerInjuredPoison = "wavers under a sudden toxic reaction.",
@@ -740,9 +755,9 @@ ix.lang.AddTable("korean", {
 	novelizerStoveOff3 = "%s 화구를 꺼 둡니다.",
 	novelizerFireOn1 = "%s 불을 붙입니다.",
 	novelizerFireOn2 = "%s 점화합니다.",
-	novelizerFireOn3 = "%s 안의 불씨를 살립니다.",
+	novelizerFireOn3 = "%s 불씨를 살립니다.",
 	novelizerFireOff1 = "%s 불을 끕니다.",
-	novelizerFireOff2 = "%s 안의 불을 눌러 끕니다.",
+	novelizerFireOff2 = "%s 불을 눌러 끕니다.",
 	novelizerFireOff3 = "%s 불씨를 꺼뜨립니다.",
 
 	novelizerMachineVending1 = "%s 선택 버튼을 눌러 봅니다.",
@@ -897,6 +912,12 @@ ix.lang.AddTable("korean", {
 	novelizerVehicleExit1 = "%s 내립니다.",
 	novelizerVehicleExit2 = "%s 빠져나옵니다.",
 	novelizerVehicleExit3 = "%s 내려섭니다.",
+	novelizerFallover1 = "바닥에 힘없이 쓰러집니다.",
+	novelizerFallover2 = "몸의 힘이 풀리며 고꾸라집니다.",
+	novelizerFallover3 = "의식을 잃듯 주저앉아 쓰러집니다.",
+	novelizerDoorKnock1 = "%s 손으로 두드립니다.",
+	novelizerDoorKnock2 = "%s 손등으로 가볍게 노크합니다.",
+	novelizerDoorKnock3 = "%s 짧게 두드립니다.",
 	novelizerEquipSidearm1 = "%s 손닿기 좋게 준비합니다.",
 	novelizerEquipSidearm2 = "%s 바로 꺼낼 수 있게 정리합니다.",
 	novelizerEquipSidearm3 = "%s 곧바로 쓸 수 있게 갖춥니다.",
@@ -926,8 +947,16 @@ ix.lang.AddTable("korean", {
 	novelizerDeathShock = "강한 전격에 몸이 굳으며 쓰러집니다.",
 	novelizerInjuredBlast = "폭발 충격에 크게 휘청입니다.",
 	novelizerDeathBlast = "폭발에 휩쓸려 쓰러집니다.",
-	novelizerInjuredSlash = "베인 상처에 몸을 움찔합니다.",
-	novelizerDeathSlash = "깊게 베여 쓰러집니다.",
+	novelizerInjuredVehicle = "차량 충격에 크게 휘청입니다.",
+	novelizerDeathVehicle = "차량에 들이받혀 쓰러집니다.",
+	novelizerInjuredSonic = "음파 충격에 몸을 비틀거립니다.",
+	novelizerDeathSonic = "강한 음파에 버티지 못하고 쓰러집니다.",
+	novelizerInjuredEnergyBeam = "에너지 광선 충격에 몸을 젖힙니다.",
+	novelizerDeathEnergyBeam = "에너지 광선에 맞아 쓰러집니다.",
+	novelizerInjuredSlash = "타격에 몸을 움찔합니다.",
+	novelizerDeathSlash = "강한 타격 끝에 쓰러집니다.",
+	novelizerInjuredDrown = "물을 들이마시며 버둥입니다.",
+	novelizerDeathDrown = "익사하며 쓰러집니다.",
 	novelizerInjuredAcid = "부식성 손상에 급히 몸을 뺍니다.",
 	novelizerDeathAcid = "산성 손상에 버티지 못하고 쓰러집니다.",
 	novelizerInjuredPoison = "독성 반응에 비틀거립니다.",
@@ -1325,6 +1354,14 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 
 	if (IsFilledString(subjectPhrase)) then
 		return subjectPhrase, subjectPhrase
+	end
+
+	if (entity:IsVehicle()) then
+		if (self:IsSeatLikeVehicle(entity)) then
+			return "chair", "novelizerChairProp"
+		end
+
+		return "vehicle", "novelizerVehicleProp"
 	end
 
 	if (entity:IsDoor()) then
@@ -1750,6 +1787,39 @@ function PLUGIN:GetRaiseArguments(weapon)
 	}
 end
 
+function PLUGIN:HandleManualRaiseToggle(client, weapon, raised)
+	if (not SERVER or not IsValid(client) or not IsValid(weapon)) then
+		return
+	end
+
+	if (not self:CanAutoNarrate(client) or not self:CanNarrateRaisedWeapon(weapon)) then
+		return
+	end
+
+	local weaponClass = weapon:GetClass()
+	local currentTime = CurTime()
+	local lastNarration = client.ixNovelizerLastRaiseNarration
+
+	if (istable(lastNarration)
+		and lastNarration.weaponClass == weaponClass
+		and lastNarration.raised == (raised == true)
+		and (lastNarration.time or 0) + 0.35 >= currentTime) then
+		return
+	end
+
+	client.ixNovelizerLastRaiseNarration = {
+		weaponClass = weaponClass,
+		raised = raised == true,
+		time = currentTime
+	}
+
+	self:SendNovelMe(client, table.Random(self:GetRaisePhrasePool(weapon, raised == true)), self:GetRaiseArguments(weapon), {
+		actionKey = raised == true and "weapon_raise" or "weapon_lower",
+		cooldown = 0.35,
+		bypassGlobalCooldown = true
+	})
+end
+
 function PLUGIN:IsObserver(client)
 	return IsValid(client) and client:GetMoveType() == MOVETYPE_NOCLIP and not client:InVehicle()
 end
@@ -1956,9 +2026,7 @@ function PLUGIN:ShouldIgnoreEntityUse(entity)
 	end
 
 	if (entity:IsDoor()) then
-		local handleBone = entity.LookupBone and entity:LookupBone("handle") or nil
-
-		return not handleBone or handleBone < 0
+		return not self:HasDoorHandle(entity)
 	end
 
 	local className = entity:GetClass()
@@ -2015,6 +2083,15 @@ function PLUGIN:IsNarratableWeapon(weapon)
 		and item.isWeapon == true
 		and IsFilledString(item.class)
 		and item.class == weapon:GetClass()
+end
+
+function PLUGIN:HasDoorHandle(entity)
+	if (not IsValid(entity) or not entity:IsDoor()) then
+		return false
+	end
+
+	local handleBone = entity.LookupBone and entity:LookupBone("handle") or nil
+	return isnumber(handleBone) and handleBone >= 0
 end
 
 function PLUGIN:GetDoorPhrasePool(entity)
@@ -2084,7 +2161,11 @@ function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 		or phraseKey == "novelizerMachineRadio1" or phraseKey == "novelizerMachineRadio2"
 		or phraseKey == "novelizerMachineRadio3"
 		or phraseKey == "novelizerDoorBreachUse1" or phraseKey == "novelizerDoorBreachUse2"
-		or phraseKey == "novelizerDoorBreachUse3" or phraseKey == "novelizerMachineDigitalClock2") then
+		or phraseKey == "novelizerDoorBreachUse3" or phraseKey == "novelizerMachineDigitalClock2"
+		or phraseKey == "novelizerStoveOn1" or phraseKey == "novelizerStoveOn2" or phraseKey == "novelizerStoveOn3"
+		or phraseKey == "novelizerStoveOff1" or phraseKey == "novelizerStoveOff2" or phraseKey == "novelizerStoveOff3"
+		or phraseKey == "novelizerFireOn1" or phraseKey == "novelizerFireOn2" or phraseKey == "novelizerFireOn3"
+		or phraseKey == "novelizerFireOff1" or phraseKey == "novelizerFireOff2" or phraseKey == "novelizerFireOff3") then
 		return {
 			self:GetPossessiveEntitySubject(entity)
 		}
@@ -2181,9 +2262,13 @@ function PLUGIN:ClassifyDamageType(dmgInfo)
 		{key = "radiation", hurt = "novelizerInjuredRadiation", death = "novelizerDeathRadiation", flags = {DMG_RADIATION}},
 		{key = "burn", hurt = "novelizerInjuredBurn", death = "novelizerDeathBurn", flags = {DMG_BURN, DMG_SLOWBURN}},
 		{key = "blast", hurt = "novelizerInjuredBlast", death = "novelizerDeathBlast", flags = {DMG_BLAST}},
+		{key = "vehicle", hurt = "novelizerInjuredVehicle", death = "novelizerDeathVehicle", flags = {DMG_VEHICLE}},
+		{key = "sonic", hurt = "novelizerInjuredSonic", death = "novelizerDeathSonic", flags = {DMG_SONIC}},
+		{key = "energybeam", hurt = "novelizerInjuredEnergyBeam", death = "novelizerDeathEnergyBeam", flags = {DMG_ENERGYBEAM}},
 		{key = "fall", hurt = "novelizerInjuredFall", death = "novelizerDeathFall", flags = {DMG_FALL}},
 		{key = "gun", hurt = "novelizerInjuredGun", death = "novelizerDeathGun", flags = {DMG_BULLET, DMG_BUCKSHOT}},
 		{key = "slash", hurt = "novelizerInjuredSlash", death = "novelizerDeathSlash", flags = {DMG_SLASH}},
+		{key = "drown", hurt = "novelizerInjuredDrown", death = "novelizerDeathDrown", flags = {DMG_DROWN}},
 		{key = "acid", hurt = "novelizerInjuredAcid", death = "novelizerDeathAcid", flags = {DMG_ACID}},
 		{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
 		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}}
@@ -3097,40 +3182,70 @@ function PLUGIN:PatchCraftingActions()
 end
 
 function PLUGIN:PatchRaiseState()
-	if (self.ixNovelizerRaiseWrapped) then
-		return
-	end
-
 	local playerMeta = FindMetaTable("Player")
 
-	if (not playerMeta or not isfunction(playerMeta.SetWepRaised)) then
+	if (not playerMeta) then
 		return
 	end
 
-	self.ixNovelizerRaiseWrapped = true
+	if (playerMeta.ixNovelizerRaisePatchVersion == NOVELIZER_RAISE_PATCH_VERSION) then
+		return
+	end
 
-	local originalSetWepRaised = playerMeta.SetWepRaised
+	playerMeta.ixNovelizerRaisePatchVersion = NOVELIZER_RAISE_PATCH_VERSION
 
 	playerMeta.SetWepRaised = function(client, bState, weapon)
-		local oldRaised = client:IsWepRaised()
-		local activeWeapon = weapon or client:GetActiveWeapon()
-		local result = originalSetWepRaised(client, bState, weapon)
+		weapon = weapon or client:GetActiveWeapon()
 
-		if (SERVER
-			and IsValid(client)
-			and oldRaised ~= (bState == true)
-			and IsValid(activeWeapon)
-			and PLUGIN:CanAutoNarrate(client)
-			and PLUGIN:CanNarrateRaisedWeapon(activeWeapon)
-			and (client.ixNovelizerLastSwitchTime or 0) + 0.25 <= CurTime()) then
-			local phrasePool = PLUGIN:GetRaisePhrasePool(activeWeapon, bState)
+		if (IsValid(weapon)) then
+			local canShoot = (not bState and weapon.FireWhenLowered) or bState
+			client:SetNetVar("raised", bState)
 
-			PLUGIN:SendNovelMe(client, table.Random(phrasePool), PLUGIN:GetRaiseArguments(activeWeapon), {
-				actionKey = bState and "weapon_raise" or "weapon_lower"
-			})
+			if (canShoot) then
+				timer.Create("ixWeaponRaise" .. client:SteamID64(), 1, 1, function()
+					if (IsValid(client)) then
+						client:SetNetVar("canShoot", true)
+					end
+				end)
+			else
+				timer.Remove("ixWeaponRaise" .. client:SteamID64())
+				client:SetNetVar("canShoot", false)
+			end
+		else
+			timer.Remove("ixWeaponRaise" .. client:SteamID64())
+			client:SetNetVar("raised", false)
+			client:SetNetVar("canShoot", false)
+		end
+	end
+
+	playerMeta.ToggleWepRaised = function(client)
+		local weapon = client:GetActiveWeapon()
+
+		if (not IsValid(weapon)) then
+			return
 		end
 
-		return result
+		local alwaysRaised = ALWAYS_RAISED and ALWAYS_RAISED[weapon:GetClass()]
+
+		if (weapon.IsAlwaysRaised or alwaysRaised
+			or weapon.IsAlwaysLowered or weapon.NeverRaised) then
+			return
+		end
+
+		local wasRaised = client:IsWepRaised()
+		client:SetWepRaised(not wasRaised, weapon)
+
+		local isRaised = client:IsWepRaised()
+
+		if (isRaised and weapon.OnRaised) then
+			weapon:OnRaised()
+		elseif (not isRaised and weapon.OnLowered) then
+			weapon:OnLowered()
+		end
+
+		if (wasRaised ~= isRaised) then
+			PLUGIN:HandleManualRaiseToggle(client, weapon, isRaised)
+		end
 	end
 end
 
@@ -3149,6 +3264,7 @@ function PLUGIN:PatchHandsWeapon()
 
 	local originalPickupObject = weaponTable.PickupObject
 	local originalDropObject = weaponTable.DropObject
+	local originalSecondaryAttack = weaponTable.SecondaryAttack
 
 	local function GetNearbyHealthCharger(entity)
 		if (not IsValid(entity)) then
@@ -3220,6 +3336,46 @@ function PLUGIN:PatchHandsWeapon()
 					PLUGIN:GetEntitySubject(heldEntity)
 				}, {
 					actionKey = "hands_drop"
+				})
+			end
+
+			return result
+		end
+	end
+
+	if (isfunction(originalSecondaryAttack)) then
+		weaponTable.SecondaryAttack = function(weapon, ...)
+			local client = weapon:GetOwner()
+			local knockedDoor
+
+			if (SERVER and IsValid(client) and not weapon:IsHoldingObject()) then
+				local startPos = client:GetShootPos()
+				local trace = util.TraceLine({
+					start = startPos,
+					endpos = startPos + client:GetAimVector() * 84,
+					filter = {weapon, client}
+				})
+				local entity = trace.Entity
+
+				if (IsValid(entity) and entity:IsDoor() and PLUGIN:HasDoorHandle(entity)
+					and hook.Run("CanPlayerKnock", client, entity) ~= false) then
+					knockedDoor = entity
+				end
+			end
+
+			local result = originalSecondaryAttack(weapon, ...)
+
+			if (SERVER and IsValid(client) and IsValid(knockedDoor)) then
+				PLUGIN:SendNovelMe(client, table.Random({
+					"novelizerDoorKnock1",
+					"novelizerDoorKnock2",
+					"novelizerDoorKnock3"
+				}), {
+					PLUGIN:GetEntitySubject(knockedDoor)
+				}, {
+					actionKey = "door_knock",
+					cooldown = 0.45,
+					bypassGlobalCooldown = true
 				})
 			end
 
@@ -4268,6 +4424,22 @@ function PLUGIN:DoPlayerDeath(client, attacker, dmgInfo)
 		actionKey = "death_" .. damageData.key,
 		cooldown = 2,
 		allowDead = true,
+		bypassGlobalCooldown = true
+	})
+end
+
+function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
+	if (bFallenOver ~= true or not self:CanAutoNarrate(client)) then
+		return
+	end
+
+	self:SendNovelMe(client, table.Random({
+		"novelizerFallover1",
+		"novelizerFallover2",
+		"novelizerFallover3"
+	}), nil, {
+		actionKey = "fallover",
+		cooldown = 2,
 		bypassGlobalCooldown = true
 	})
 end
