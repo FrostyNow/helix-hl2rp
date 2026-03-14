@@ -76,10 +76,23 @@ if (CLIENT) then
 
 				surface.SetFont("ixMediumFont")
 				local nameW = surface.GetTextSize(name)
-				local totalW = math.max(280, nameW + 30 + 16 + 16) -- icon(30) + margins(16) + padding(8*2)
+				local totalW = math.Clamp(nameW + 62, 150, 280)
 
-				if (self:GetWide() != totalW) then
-					self:SetWide(totalW)
+				if (self.targetWidth != totalW) then
+					self.targetWidth = totalW
+				end
+			end
+
+			if (self.targetWidth) then
+				local parent = self:GetParent()
+				if (IsValid(parent)) then
+					local parentW = parent:GetWide()
+					local margin = math.max(0, parentW - self.targetWidth - 2)
+					local _, t, r, b = self:GetDockMargin()
+
+					if (_ != margin) then
+						self:DockMargin(margin, t, r, b)
+					end
 				end
 			end
 
