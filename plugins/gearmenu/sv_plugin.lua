@@ -55,7 +55,7 @@ end
 -- Transfer helpers
 -- ============================================================
 
-local function SyncGearSlots(client)
+function PLUGIN:SyncGearSlots(client)
 	local character = client:GetCharacter()
 	if (!character) then return end
 
@@ -406,7 +406,7 @@ function PLUGIN:CharacterLoaded(character)
 						end
 					end
 
-					SyncGearSlots(client)
+					self:SyncGearSlots(client)
 				end)
 			end
 		end)

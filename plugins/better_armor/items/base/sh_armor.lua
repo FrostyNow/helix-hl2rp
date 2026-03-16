@@ -75,17 +75,6 @@ local function armorPlayer(client, target, amount)
 end
 -- Inventory drawing
 if (CLIENT) then
-	function ITEM:PopulateModelSupportTooltip(tooltip)
-		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
-			local warning = tooltip:AddRow("warning")
-			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
-			warning:SetText(L("modelNotSupported"))
-			warning:SetFont("DermaDefault")
-			warning:SetExpensiveShadow(1, color_black)
-			warning:SizeToContents()
-		end
-	end
-
 	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
 		labelText = labelText or self.tooltipLabelText
 
@@ -131,6 +120,17 @@ if (CLIENT) then
 			filterRow:SizeToContents()
 		end
 	end
+	
+	function ITEM:PopulateModelSupportTooltip(tooltip)
+		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
+			local warning = tooltip:AddRow("warning")
+			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
+			warning:SetText(L("modelNotSupported"))
+			warning:SetFont("DermaDefault")
+			warning:SetExpensiveShadow(1, color_black)
+			warning:SizeToContents()
+		end
+	end
 end
 
 function ITEM:RemoveOutfit(client)
@@ -138,10 +138,6 @@ function ITEM:RemoveOutfit(client)
 	local outfitPlugin = ix.plugin.Get("better_outfits")
 	local badair = GetBadAirPlugin()
 
-	if (badair and badair:ItemRequiresGasmaskFilter(self) and badair:HasItemFilterInstalled(self)) then
-		badair:RemoveFilterFromItem(self, character and character:GetInventory(), client)
-	end
-			
 	client:SetNetVar("gasmask", false)
 
 	armorPlayer(client, client, 0)
@@ -437,6 +433,10 @@ function ITEM:ApplyOutfit(client)
 		Schema:RefreshFlashlight(client)
 	end
 
+	if (self.UpdateResistance) then
+		self:UpdateResistance(client)
+	end
+
 	self:OnEquipped()
 end
 
@@ -467,14 +467,19 @@ ITEM.functions.Equip = {
 			return false
 	end,
 	OnCanRun = function(item)
-		local client = item.player
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
 
-		if (item.allowedModels and !table.HasValue(item.allowedModels, item.player:GetModel())) then
+		if (item.allowedModels and !table.HasValue(item.allowedModels, client:GetModel())) then
 			return false
 		end
 
-		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:CanEquipOutfit() and
-			hook.Run("CanPlayerEquipItem", client, item) != false and item.invID == client:GetCharacter():GetInventory():GetID()
+		local char = client:GetCharacter()
+		local invID = char:GetInventory():GetID()
+		local gearInvID = char:GetData("gearInvID")
+
+		return !IsValid(item.entity) and item:GetData("equip") != true and item:CanEquipOutfit() and
+			hook.Run("CanPlayerEquipItem", client, item) != false and (item.invID == invID or (gearInvID and item.invID == gearInvID))
 	end
 }
 
@@ -522,9 +527,10 @@ ITEM.functions.InstallFilter = {
 	tip = "useTip",
 	icon = "icon16/add.png",
 	OnRun = function(item)
-		local client = item.player
-		local badair = GetBadAirPlugin()
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
 
+		local badair = GetBadAirPlugin()
 		if (!badair or !badair:ItemRequiresGasmaskFilter(item)) then
 			return false
 		end
@@ -534,8 +540,18 @@ ITEM.functions.InstallFilter = {
 			return false
 		end
 
-		local inventory = client:GetCharacter():GetInventory()
+		local character = client:GetCharacter()
+		local inventory = character:GetInventory()
 		local filterItem = badair:GetFirstAvailableFilterItem(inventory)
+
+		-- Try gear inventory if not found in main inventory
+		if (!filterItem) then
+			local gearInvID = character:GetData("gearInvID")
+			local gearInv = gearInvID and ix.item.inventories[gearInvID]
+			if (gearInv) then
+				filterItem = badair:GetFirstAvailableFilterItem(gearInv)
+			end
+		end
 
 		if (!filterItem) then
 			client:NotifyLocalized("filterNoCompatibleMask")
@@ -556,21 +572,32 @@ ITEM.functions.InstallFilter = {
 		client:EmitSound("weapons/usp/usp_silencer_on.wav")
 		client:NotifyLocalized("filterInstalledNotify")
 
+		if (SERVER) then
+			local gearMenu = ix.plugin.Get("gearmenu")
+			if (gearMenu and gearMenu.SyncGearSlots) then
+				gearMenu:SyncGearSlots(client)
+			end
+		end
+
 		return false
 	end,
 	OnCanRun = function(item)
-		local client = item.player
-		local badair = GetBadAirPlugin()
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
 
+		local badair = GetBadAirPlugin()
 		if (!badair or !badair:ItemRequiresGasmaskFilter(item) or badair:HasItemFilterInstalled(item)) then
 			return false
 		end
 
-		if (IsValid(item.entity) or !IsValid(client) or item.invID != client:GetCharacter():GetInventory():GetID()) then
-			return false
-		end
+		local char = client:GetCharacter()
+		local invID = char:GetInventory():GetID()
+		local gearInvID = char:GetData("gearInvID")
 
-		return badair:GetFirstAvailableFilterItem(client:GetCharacter():GetInventory()) != nil
+		local bInInventory = (item.invID == invID or (gearInvID and item.invID == gearInvID))
+		if (!bInInventory) then return false end
+
+		return badair:GetFirstAvailableFilterItem(char:GetInventory()) != nil or (gearInvID and badair:GetFirstAvailableFilterItem(ix.item.inventories[gearInvID]) != nil)
 	end
 }
 
@@ -579,7 +606,9 @@ ITEM.functions.RemoveFilter = {
 	tip = "useTip",
 	icon = "icon16/delete.png",
 	OnRun = function(item)
-		local client = item.player
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
 		local badair = GetBadAirPlugin()
 
 		if (!badair or !badair:ItemRequiresGasmaskFilter(item) or !badair:HasItemFilterInstalled(item)) then
@@ -597,13 +626,25 @@ ITEM.functions.RemoveFilter = {
 		client:EmitSound("weapons/usp/usp_silencer_off.wav")
 		client:NotifyLocalized("filterRemovedNotify")
 
+		if (SERVER) then
+			local gearMenu = ix.plugin.Get("gearmenu")
+			if (gearMenu and gearMenu.SyncGearSlots) then
+				gearMenu:SyncGearSlots(client)
+			end
+		end
+
 		return false
 	end,
 	OnCanRun = function(item)
-		local client = item.player
-		local badair = GetBadAirPlugin()
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
 
-		return !IsValid(item.entity) and IsValid(client) and item.invID == client:GetCharacter():GetInventory():GetID()
+		local badair = GetBadAirPlugin()
+		local char = client:GetCharacter()
+		local invID = char:GetInventory():GetID()
+		local gearInvID = char:GetData("gearInvID")
+
+		return !IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))
 			and badair and badair:ItemRequiresGasmaskFilter(item) and badair:HasItemFilterInstalled(item)
 	end
 }

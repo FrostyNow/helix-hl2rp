@@ -576,7 +576,7 @@ ix.lang.AddTable("korean", {
 
 	novelizerEat1 = "%s 천천히 한입 베어 뭅니다.",
 	novelizerEat2 = "%s 조금 먹습니다.",
-	novelizerEat3 = "%s 조금씩 뜯어 먹습니다.",
+	novelizerEat3 = "%s 뜯어 조금씩 먹습니다.",
 	novelizerEat4 = "%s 입에 가져갑니다.",
 
 	novelizerDrink1 = "%s 조심스럽게 한 모금 마십니다.",

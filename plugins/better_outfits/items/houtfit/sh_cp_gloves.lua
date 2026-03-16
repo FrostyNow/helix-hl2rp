@@ -1,11 +1,11 @@
-ITEM.base = "base_houtfit"
-ITEM.name = "CP Gear"
-ITEM.description = "cpGearDesc"
-ITEM.category = "Outfit"
-ITEM.width = 1
-ITEM.height = 1
-ITEM.price = 50
-ITEM.noBusiness = true
+ITEM.name = "CP Gloves"
+ITEM.description = "cpGlovesDesc"
+ITEM.model = "models/tnb/items/aphelion/gloves.mdl"
+ITEM.price = 30
+ITEM.outfitCategory = "gloves"
+ITEM.eqBodyGroups = {
+	["gloves"] = 1,
+}
 
 local function GetMPFModels()
 	local faction = ix.faction.indices[FACTION_MPF]
@@ -52,3 +52,4 @@ function ITEM:CanEquipOutfit()
 
 	return IsValid(client) and client:Team() == FACTION_MPF
 end
+

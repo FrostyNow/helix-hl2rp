@@ -97,7 +97,7 @@ LANGUAGE = {
 	noItemsInRange = "범위 내에 제거할 아이템이 없습니다.",
 	serverCfgChanged = "서버 설정이 성공적으로 변경되었습니다.",
 	tooFar = "대상으로부터 너무 멀리 떨어졌습니다!",
-	
+
 	["Intelligence"] = "지능",
 	["Endurance"] = "지구력",
 	["Strength"] = "근력",
@@ -549,6 +549,7 @@ LANGUAGE = {
 	replaceFilter = "정화통 교체하기",
 	gasmaskFilterReplaced = "방독면 정화통을 성공적으로 교체했습니다.",
 	gasmaskNoNeedRepair = "정화통을 교체해야 할 방독면을 가지고 있지 않습니다.",
+	["Filter Durability"] = "정화통 내구도",
 	["Coffee Beans"] = "커피 원두",
 	itemCoffeBeansDesc = "커피를 재배해서 열매를 딴 뒤 볶는 과정을 거친 원두입니다.",
 	["Empty Canister"] = "빈 연료통",

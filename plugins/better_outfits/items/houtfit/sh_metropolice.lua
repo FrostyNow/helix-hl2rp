@@ -5,27 +5,27 @@ ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
 ITEM.price = 375
 ITEM.width = 1
 ITEM.height = 1
-ITEM.gasmask = false -- Mask handling should come from dedicated metrocop bodygroup items
-ITEM.resistance = true -- This will activate the protection bellow
-ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80.
-			.9, -- Bullets
-			.9, -- Slash
-			.9, -- Shock
-			.9, -- Burn
-			.7, -- Radiation
-			.7, -- Acid
-			.9, -- Explosion
-}
-ITEM.maxDurability = 150
+-- ITEM.gasmask = false -- Mask handling should come from dedicated metrocop bodygroup items
+-- ITEM.resistance = true -- This will activate the protection bellow
+-- ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80.
+-- 			.9, -- Bullets
+-- 			.9, -- Slash
+-- 			.9, -- Shock
+-- 			.9, -- Burn
+-- 			.7, -- Radiation
+-- 			.7, -- Acid
+-- 			.9, -- Explosion
+-- }
+-- ITEM.maxDurability = 150
 ITEM.outfitCategory = "torso"
-ITEM.pacData = {}
+-- ITEM.pacData = {}
 ITEM.replacements = {
 	{"humans/pandafishizens", "conceptbine_policeforce/rnd"}
 }
 ITEM.eqBodyGroups = {
-	["vest"] = 1,
-	["gloves"] = 1,
-	["boots"] = 1,
+	-- ["vest"] = 1,
+	-- ["gloves"] = 1,
+	-- ["boots"] = 1,
 	["lower gear"] = 1,
 	["lower radio"] = 1,
 }

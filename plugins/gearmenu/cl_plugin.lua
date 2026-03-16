@@ -484,7 +484,11 @@ function PANEL:RefreshGearInv()
 	local hash = ""
 	local weaponDisplayIndex = 0
 	for _, item in ipairs(equippedItems) do
-		hash = hash .. item.id .. ","
+		local filterHash = "0"
+		if (item.GetData) then
+			filterHash = item:GetData("filterInstalled") and "1" or "0"
+		end
+		hash = hash .. (item.id or "0") .. filterHash .. ","
 	end
 
 	self.bShowEmptyMessage = (#equippedItems == 0)

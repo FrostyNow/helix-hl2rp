@@ -7,9 +7,9 @@ ITEM.category = "Utility"
 ITEM.isStackable = true
 ITEM.maxDurability = 100
 
-function ITEM:GetDescription()
-	return string.format("%s\n \n%s: %d / %d", L(self.description), L("Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)
-end
+-- function ITEM:GetDescription()
+-- 	return string.format("%s\n \n%s: %d / %d", L(self.description), L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)
+-- end
 
 function ITEM:OnInstanced()
 	if (self:GetData("Durability") == nil) then
@@ -22,7 +22,9 @@ ITEM.functions.Use = {
 	tip = "useTip",
 	icon = "icon16/wrench.png",
 	OnRun = function(item)
-		local client = item.player
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
 		local character = client:GetCharacter()
 		local inventory = character:GetInventory()
 		local badair = ix.plugin.Get("badair")
@@ -52,6 +54,16 @@ ITEM.functions.Use = {
 			client:NotifyLocalized("filterNoCompatibleMask")
 			return false
 		end
+	end,
+	OnCanRun = function(item)
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
+		local char = client:GetCharacter()
+		local invID = char:GetInventory():GetID()
+		local gearInvID = char:GetData("gearInvID")
+
+		return !IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))
 	end
 }
 
@@ -59,7 +71,7 @@ if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local durability = tooltip:AddRow("durability")
 		durability:SetBackgroundColor(derma.GetColor("Warning", tooltip))
-		durability:SetText(string.format("%s: %d / %d", L("Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
+		durability:SetText(string.format("%s: %d / %d", L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
 		durability:SizeToContents()
 
 		local data = tooltip:AddRow("data")

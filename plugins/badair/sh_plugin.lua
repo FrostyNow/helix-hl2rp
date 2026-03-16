@@ -101,11 +101,7 @@ function PLUGIN:HasItemFilterInstalled(item)
 		return false
 	end
 
-	if (item:GetData("filterInstalled") != nil) then
-		return item:GetData("filterInstalled") == true
-	end
-
-	return item:GetData("FilterDurability") != nil
+	return item:GetData("filterInstalled") == true
 end
 
 function PLUGIN:SetItemFilterInstalled(item, installed)
@@ -113,8 +109,8 @@ function PLUGIN:SetItemFilterInstalled(item, installed)
 		return false
 	end
 
-	installed = installed == true
-	item:SetData("filterInstalled", installed and true or nil)
+	installed = (installed == true)
+	item:SetData("filterInstalled", installed)
 
 	if (!installed) then
 		item:SetData("FilterDurability", nil)

@@ -98,17 +98,17 @@ local function DefineCitizenClothing()
 		{id = "gold_ring", category = "hands", index = 4, model = "models/props_junk/cardboard_box004a.mdl", price = 500},
 
 		-- Headgear
-		{id = "dark_grey_beanie", category = "head", index = 1, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
-		{id = "green_beanie", category = "head", index = 2, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
-		{id = "black_beanie", category = "head", index = 3, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
-		{id = "dark_blue_beanie", category = "head", index = 4, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
-		{id = "field_cap", category = "head", index = 5, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
-		{id = "boonie_hat", category = "head", index = 6, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
-		{id = "blue_ballcap", category = "head", index = 7, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
-		{id = "flat_cap", category = "head", index = 8, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
-		{id = "hard_helmet", category = "head", index = 9, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
-		{id = "ushanka", category = "head", index = 10, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
-		{id = "brown_flat_cap", category = "head", index = 11, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
+		{id = "dark_grey_beanie", category = "headgear", outfitCategory = "head", index = 1, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
+		{id = "green_beanie", category = "headgear", outfitCategory = "head", index = 2, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
+		{id = "black_beanie", category = "headgear", outfitCategory = "head", index = 3, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
+		{id = "dark_blue_beanie", category = "headgear", outfitCategory = "head", index = 4, model = "models/tnb/items/aphelion/beanie.mdl", price = 30},
+		{id = "field_cap", category = "headgear", outfitCategory = "head", index = 5, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
+		{id = "boonie_hat", category = "headgear", outfitCategory = "head", index = 6, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
+		{id = "blue_ballcap", category = "headgear", outfitCategory = "head", index = 7, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
+		{id = "flat_cap", category = "headgear", outfitCategory = "head", index = 8, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
+		{id = "hard_helmet", category = "headgear", outfitCategory = "head", index = 9, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
+		{id = "ushanka", category = "headgear", outfitCategory = "head", index = 10, model = "models/props_junk/cardboard_box004a.mdl", price = 50},
+		{id = "brown_flat_cap", category = "headgear", outfitCategory = "head", index = 11, model = "models/props_junk/cardboard_box004a.mdl", price = 30},
 
 		-- Bag
 		{id = "backpack", category = "bag", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 100, isBag = true, invWidth = 3, invHeight = 2},
@@ -122,11 +122,11 @@ local function DefineCitizenClothing()
 		{id = "satchel", category = "satchel", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 80, isBag = true, invWidth = 2, invHeight = 2},
 
 		-- Headstrap
-		{id = "mask", category = "face", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
-		{id = "dust_mask", category = "face", index = 2, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
-		{id = "red_shemagh", category = "face", index = 4, model = "models/tnb/items/aphelion/facewrap.mdl", price = 50, noBusiness = true},
-		{id = "blue_shemagh", category = "face", index = 5, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
-		{id = "black_shemagh", category = "face", index = 6, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
+		{id = "mask", category = "headstrap", outfitCategory = "face", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
+		{id = "dust_mask", category = "headstrap", outfitCategory = "face", index = 2, model = "models/props_junk/cardboard_box004a.mdl", price = 20},
+		{id = "red_shemagh", category = "headstrap", outfitCategory = "face", index = 4, model = "models/tnb/items/aphelion/facewrap.mdl", price = 50, noBusiness = true},
+		{id = "blue_shemagh", category = "headstrap", outfitCategory = "face", index = 5, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
+		{id = "black_shemagh", category = "headstrap", outfitCategory = "face", index = 6, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
 
 		-- Belt
 		{id = "cp_belt", category = "belt", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true},
@@ -148,7 +148,7 @@ local function DefineCitizenClothing()
 		ITEM.width = 1
 		ITEM.height = 1
 		ITEM.price = v.price or 50
-		ITEM.outfitCategory = v.category
+		ITEM.outfitCategory = v.outfitCategory or v.category
 		ITEM.eqBodyGroups = {
 			[v.category] = v.index
 		}
