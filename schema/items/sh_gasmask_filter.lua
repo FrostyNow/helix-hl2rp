@@ -8,7 +8,7 @@ ITEM.isStackable = true
 ITEM.maxDurability = 100
 
 function ITEM:GetDescription()
-	return string.format("%s\n \nDurability: %d / %d", L(self.description), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)
+	return string.format("%s\n \n%s: %d / %d", L(self.description), L("Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)
 end
 
 function ITEM:OnInstanced()
@@ -59,7 +59,7 @@ if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local durability = tooltip:AddRow("durability")
 		durability:SetBackgroundColor(derma.GetColor("Warning", tooltip))
-		durability:SetText(string.format("Durability: %d / %d", math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
+		durability:SetText(string.format("%s: %d / %d", L("Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
 		durability:SizeToContents()
 
 		local data = tooltip:AddRow("data")

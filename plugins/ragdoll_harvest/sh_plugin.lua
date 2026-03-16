@@ -8,7 +8,7 @@ local HARVEST_OPTION_KEY = "harvestCorpse"
 local HARVEST_ACTION_KEY = "@harvestingCorpse"
 local DEFAULT_HARVEST_TIME = 6
 local DEFAULT_HARVEST_SOUND = "physics/body/body_medium_break3.wav"
-local HUMAN_BREAK_DAMAGE = 200
+local HUMAN_BREAK_DAMAGE = 500
 local HUMAN_BREAK_SOUND = "physics/body/body_medium_break2.wav"
 
 local humanNPCClasses = {
@@ -16,7 +16,7 @@ local humanNPCClasses = {
 	npc_barney = true,
 	npc_breen = true,
 	npc_citizen = true,
-	npc_combine_s = true,
+	-- npc_combine_s = true,
 	npc_eli = true,
 	npc_gman = true,
 	npc_kleiner = true,
@@ -29,7 +29,7 @@ local humanNPCClasses = {
 local humanModelPrefixes = {
 	"models/barney.mdl",
 	"models/breen.mdl",
-	"models/combine_",
+	-- "models/combine_",
 	"models/eli.mdl",
 	"models/gman_high.mdl",
 	"models/humans/",
@@ -37,7 +37,8 @@ local humanModelPrefixes = {
 	"models/monk.mdl",
 	"models/mossman.mdl",
 	"models/odessa.mdl",
-	"models/police.mdl"
+	"models/police.mdl",
+	"models/Humans/Group0",
 }
 
 PLUGIN.harvestables = {
@@ -46,6 +47,8 @@ PLUGIN.harvestables = {
 		amount = {1, 1},
 		time = DEFAULT_HARVEST_TIME,
 		sound = DEFAULT_HARVEST_SOUND,
+		effect = "blood_impact_yellow_01",
+		decal = "YellowBlood",
 		models = {
 			["models/headcrabclassic.mdl"] = true,
 			["models/headcrab.mdl"] = true,
@@ -58,9 +61,11 @@ PLUGIN.breakables = {
 	human = {
 		damage = HUMAN_BREAK_DAMAGE,
 		sound = HUMAN_BREAK_SOUND,
+		effect = "blood_advisor_puncture_withdraw",
+		decal = "Blood",
 		drops = {
 			{
-				item = "flesh_chunk",
+				item = "flesh",
 				amount = {2, 3}
 			},
 			{
@@ -68,38 +73,31 @@ PLUGIN.breakables = {
 				amount = {1, 1}
 			},
 			{
-				item = "comp_bone",
+				item = "rib",
 				amount = {1, 2}
 			}
 		}
 	}
 }
 
-do
-	ix.lang.AddTable("english", {
-		harvestCorpse = "Butcher",
-		harvestingCorpse = "Butchering...",
-		itemFleshChunk = "Flesh Chunk",
-		itemHumanMeatDesc = "A ragged strip of flesh hacked from a ruined human corpse."
-	})
+ix.lang.AddTable("english", {
+	harvestCorpse = "Butcher",
+	harvestingCorpse = "Butchering...",
+	itemFleshDesc = "A ragged strip of flesh hacked from a ruined human corpse.",
+	itemBloodySkullDesc = "A blood-soaked human skull cracked loose from a shattered corpse.",
+	itemRibDesc = "A rib bone from a shattered corpse.",
+})
 
-	ix.lang.AddTable("korean", {
-		harvestCorpse = "도축하기",
-		harvestingCorpse = "도축 중...",
-		itemFleshChunk = "살점",
-		itemHumanMeatDesc = "심하게 훼손된 사람 시체에서 뜯겨 나온 살점입니다."
-	})
-
-	ix.lang.AddTable("english", {
-		itemBloodySkull = "Bloody Skull",
-		itemBloodySkullDesc = "A blood-soaked human skull cracked loose from a shattered corpse."
-	})
-
-	ix.lang.AddTable("korean", {
-		itemBloodySkull = "피투성이 두개골",
-		itemBloodySkullDesc = "산산조각 난 시체에서 떨어져 나온 피투성이 인간 두개골입니다."
-	})
-end
+ix.lang.AddTable("korean", {
+	harvestCorpse = "도축하기",
+	harvestingCorpse = "도축 중...",
+	["Flesh Chunk"] = "살점",
+	itemFleshDesc = "심하게 훼손된 사람 시체에서 뜯겨 나온 살점입니다.",
+	["Bloody Skull"] = "피투성이 두개골",
+	itemBloodySkullDesc = "산산조각 난 시체에서 떨어져 나온 피투성이 인간 두개골입니다.",
+	["Rib"] = "갈비뼈",
+	itemRibDesc = "산산조각 시체에서 나온 갈비뼈입니다.",
+})
 
 local function CopyOptions(source)
 	local options = {}
@@ -130,11 +128,11 @@ function PLUGIN:GetHarvestID(npc, ragdoll)
 end
 
 function PLUGIN:IsHumanCorpse(npc, ragdoll)
-	if (!IsValid(npc) or !npc:IsNPC()) then
+	if (!IsValid(npc)) then
 		return false
 	end
 
-	if (humanNPCClasses[npc:GetClass()]) then
+	if (npc:IsNPC() and humanNPCClasses[npc:GetClass()]) then
 		return true
 	end
 
@@ -188,19 +186,39 @@ end
 function PLUGIN:IsMarkedPlayerCorpse(entity)
 	return IsValid(entity) and entity:GetClass() == "prop_ragdoll" and (
 		entity:GetNetVar("player") != nil
+		or entity:GetNetVar("ixPlayerOwner") != nil
 		or entity:GetNetVar("ixInventory") != nil
 		or entity:GetNetVar("ixPlayerName") != nil
 	)
 end
 
-function PLUGIN:IsDisconnectedPlayerCorpse(entity)
+function PLUGIN:IsBreakablePlayerCorpse(entity)
 	if (!self:IsMarkedPlayerCorpse(entity)) then
 		return false
 	end
 
-	local owner = entity:GetNetVar("player")
+	-- 도축 중인 시체는 보호합니다.
+	if (entity:GetNetVar("ixHarvestBusy", false)) then
+		return false
+	end
 
-	return !IsValid(owner)
+	-- 1. 우리 플러그인이 관리하는 최신 시체 소유권 확인
+	local owner = entity:GetNetVar("ixPlayerOwner")
+	if (IsValid(owner)) then
+		return false -- 보호함
+	end
+
+	-- 2. (백업용) 다른 플러그인이 설정한 player 넷바 확인
+	local altOwner = entity:GetNetVar("player")
+	if (IsValid(altOwner)) then
+		-- 만약 Persistent Corpses가 넷바를 안 지웠더라도, 엔진 레벨 체크로 이중 보호
+		if (altOwner:GetRagdollEntity() == entity or altOwner.ixRagdoll == entity) then
+			return false
+		end
+	end
+
+	-- 주인이 없거나 서버를 나갔거나, 더 이상 최신 시체가 아니면 터짐
+	return true
 end
 
 function PLUGIN:CanHarvestEntity(entity)
@@ -244,13 +262,33 @@ if (CLIENT) then
 end
 
 if (SERVER) then
-	function PLUGIN:MarkHarvestableRagdoll(npc, ragdoll)
-		if (!IsValid(npc) or !npc:IsNPC() or !IsValid(ragdoll) or ragdoll:GetClass() != "prop_ragdoll") then
+	function PLUGIN:MarkHarvestableRagdoll(owner, ragdoll)
+		if (!IsValid(owner) or !IsValid(ragdoll) or ragdoll:GetClass() != "prop_ragdoll") then
 			return
 		end
 
-		local harvestID = self:GetHarvestID(npc, ragdoll)
-		local breakID = self:GetBreakID(npc, ragdoll)
+		local isPlayer = owner:IsPlayer()
+		local isNPC = owner:IsNPC()
+
+		if (!isPlayer and !isNPC) then
+			return
+		end
+
+		-- 플레이어 시체인 경우 최신 시체 관리
+		if (isPlayer) then
+			-- 이 플레이어의 기존 시체들에서 소유권(보호권)을 제거합니다.
+			for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
+				if (v:GetNetVar("ixPlayerOwner") == owner) then
+					v:SetNetVar("ixPlayerOwner", nil)
+				end
+			end
+
+			-- 새 시체에 소유권을 부여합니다.
+			ragdoll:SetNetVar("ixPlayerOwner", owner)
+		end
+
+		local harvestID = self:GetHarvestID(owner, ragdoll)
+		local breakID = self:GetBreakID(owner, ragdoll)
 
 		if (!harvestID and !breakID) then
 			return
@@ -288,6 +326,10 @@ if (SERVER) then
 		self:MarkHarvestableRagdoll(npc, ragdoll)
 	end
 
+	function PLUGIN:OnPlayerCorpseCreated(client, ragdoll)
+		self:MarkHarvestableRagdoll(client, ragdoll)
+	end
+
 	function PLUGIN:ShatterCorpse(entity, breakData)
 		if (!IsValid(entity) or !breakData or entity:GetNetVar("ixCorpseDestroyed", false)) then
 			return
@@ -304,7 +346,24 @@ if (SERVER) then
 		effectData:SetScale(1)
 
 		entity:EmitSound(breakData.sound or HUMAN_BREAK_SOUND)
-		util.Effect("BloodImpact", effectData, true, true)
+
+		if (breakData.effect) then
+			ParticleEffect(breakData.effect, dropPos, Angle(0, 0, 0))
+		else
+			util.Effect("BloodImpact", effectData, true, true)
+		end
+
+		if (breakData.decal) then
+			local trace = util.TraceLine({
+				start = dropPos + Vector(0, 0, 32),
+				endpos = dropPos - Vector(0, 0, 128),
+				filter = entity
+			})
+
+			if (trace.Hit) then
+				util.Decal(breakData.decal, trace.HitPos + trace.HitNormal, trace.HitPos - trace.HitNormal, entity)
+			end
+		end
 
 		for _, dropInfo in ipairs(breakData.drops or {}) do
 			if (ix.item.Get(dropInfo.item)) then
@@ -326,14 +385,22 @@ if (SERVER) then
 			return
 		end
 
+		-- 도축 중(로딩바)인 시체는 데미지로 터지지 않도록 보호합니다.
+		if (entity:GetNetVar("ixHarvestBusy", false)) then
+			return
+		end
+
 		local breakData = self:GetBreakData(entity)
 
 		if (!breakData) then
-			if (self:IsDisconnectedPlayerCorpse(entity)) then
+			if (self:IsBreakablePlayerCorpse(entity)) then
 				breakData = self.breakables.human
 			elseif (self:IsMarkedPlayerCorpse(entity)) then
 				return
 			end
+		elseif (self:IsMarkedPlayerCorpse(entity) and !self:IsBreakablePlayerCorpse(entity)) then
+			-- 플레이어 시체이면서 최신/보호 대상인 경우, breakData가 있더라도 터지지 않게 보호
+			return
 		end
 
 		if (!breakData or entity:GetNetVar("ixCorpseDestroyed", false)) then
@@ -343,7 +410,11 @@ if (SERVER) then
 		entity.ixCorpseDamage = (entity.ixCorpseDamage or 0) + math.max(dmgInfo:GetDamage(), 0)
 
 		if (entity.ixCorpseDamage >= (breakData.damage or HUMAN_BREAK_DAMAGE)) then
-			self:ShatterCorpse(entity, breakData)
+			timer.Simple(0, function()
+				if (IsValid(entity)) then
+					self:ShatterCorpse(entity, breakData)
+				end
+			end)
 		end
 	end
 
@@ -399,6 +470,22 @@ if (SERVER) then
 			local maxAmount = (liveData.amount and liveData.amount[2]) or minAmount
 			local amount = math.max(1, math.random(minAmount, maxAmount))
 			local dropPos = entity:GetPos() + Vector(0, 0, 12)
+
+			if (liveData.effect) then
+				ParticleEffect(liveData.effect, dropPos, Angle(0, 0, 0))
+			end
+
+			if (liveData.decal) then
+				local trace = util.TraceLine({
+					start = dropPos + Vector(0, 0, 32),
+					endpos = dropPos - Vector(0, 0, 128),
+					filter = entity
+				})
+
+				if (trace.Hit) then
+					util.Decal(liveData.decal, trace.HitPos + trace.HitNormal, trace.HitPos - trace.HitNormal, entity)
+				end
+			end
 
 			for i = 1, amount do
 				ix.item.Spawn(liveData.item, dropPos + VectorRand() * 10)
