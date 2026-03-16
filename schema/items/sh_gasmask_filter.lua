@@ -62,7 +62,7 @@ if (CLIENT) then
 		durability:SetText(string.format("Durability: %d / %d", math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
 		durability:SizeToContents()
 
-		ocal data = tooltip:AddRow("data")
+		local data = tooltip:AddRow("data")
 		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
 		data:SetText(L("securitizedItemTooltip"))
 		data:SetExpensiveShadow(0.5)
