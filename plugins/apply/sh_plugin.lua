@@ -1,11 +1,43 @@
+local PLUGIN = PLUGIN
+
 PLUGIN.name = "Apply"
 PLUGIN.author = "FatherSquirrel | Heavily modified by Frosty"
 PLUGIN.description = "Adds the functionality to show your CID or just say your name."
 
 ix.util.Include("sh_commands.lua")
 
+function PLUGIN:GetCIDData(item, character)
+	if (!item) then
+		return nil
+	end
+
+	local fallbackName = character and character:GetName() or L("unknown")
+	local fallbackID = character and character:GetData("cid", "00000") or "00000"
+
+	return {
+		name = item:GetData("name", fallbackName),
+		id = item:GetData("id", fallbackID),
+		class = item:GetData("class", "Second Class Citizen")
+	}
+end
+
 if (SERVER) then
 	util.AddNetworkString("ixApplyCID")
+
+	function PLUGIN:SendCIDPanel(target, owner, data)
+		if (!IsValid(target) or !data) then
+			return
+		end
+
+		net.Start("ixApplyCID")
+			net.WriteTable({
+				name = data.name,
+				id = data.id,
+				class = data.class,
+				owner = owner
+			})
+		net.Send(target)
+	end
 end
 
 ix.lang.AddTable("english", {
@@ -37,11 +69,14 @@ ix.lang.AddTable("korean", {
 })
 
 if (CLIENT) then
-	net.Receive("ixApplyCID", function()
-		local data = net.ReadTable()
-		local name = data.name
-		local id = data.id
-		local class = data.class
+	function PLUGIN:OpenCIDPanel(data)
+		if (!istable(data)) then
+			return
+		end
+
+		local name = data.name or L("unknown")
+		local id = tostring(data.id or "00000")
+		local class = data.class or "Second Class Citizen"
 		local owner = data.owner
 
 		if (IsValid(ix.gui.cidPanel)) then
@@ -66,7 +101,7 @@ if (CLIENT) then
 		ix.gui.cidPanel = panel
 
 		function panel:Think()
-			if (!IsValid(owner) or owner:GetPos():DistToSqr(LocalPlayer():GetPos()) > 16384) then -- 128^2
+			if (owner != LocalPlayer() and (!IsValid(owner) or owner:GetPos():DistToSqr(LocalPlayer():GetPos()) > 16384)) then
 				self:Remove()
 			end
 		end
@@ -80,7 +115,6 @@ if (CLIENT) then
 			surface.SetDrawColor(30, 30, 30, 200)
 			surface.DrawOutlinedRect(0, 0, w, h)
 
-			-- Header
 			surface.SetDrawColor(color.r, color.g, color.b, 200)
 			surface.DrawRect(0, 0, w, 40)
 
@@ -116,6 +150,10 @@ if (CLIENT) then
 
 		AddInfo("cidName", name)
 		AddInfo("cidID", "#" .. id)
-		AddInfo("cidGrade", L(class or "Second Class Citizen"))
+		AddInfo("cidGrade", L(class))
+	end
+
+	net.Receive("ixApplyCID", function()
+		PLUGIN:OpenCIDPanel(net.ReadTable())
 	end)
 end

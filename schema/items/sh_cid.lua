@@ -4,6 +4,52 @@ ITEM.model = Model("models/synapse/props/id_card.mdl")
 ITEM.description = "cidDesc"
 ITEM.price = 50
 ITEM.noDeathDrop = true
+ITEM.functions.View = {
+	name = "View",
+	icon = "icon16/vcard.png",
+	OnClick = function(itemTable)
+		local applyPlugin = ix.plugin.Get("apply")
+
+		if (!applyPlugin or !isfunction(applyPlugin.OpenCIDPanel)) then
+			return false
+		end
+
+		local client = LocalPlayer()
+		local character = client:GetCharacter()
+		local cidData = applyPlugin.GetCIDData and applyPlugin:GetCIDData(itemTable, character) or {
+			name = itemTable:GetData("name", character and character:GetName() or L("unknown")),
+			id = itemTable:GetData("id", character and character:GetData("cid", "00000") or "00000"),
+			class = itemTable:GetData("class", "Second Class Citizen")
+		}
+
+		cidData.owner = client
+		applyPlugin:OpenCIDPanel(cidData)
+
+		return false
+	end,
+	OnCanRun = function(itemTable)
+		if (IsValid(itemTable.entity)) then
+			return false
+		end
+
+		local applyPlugin = ix.plugin.Get("apply")
+
+		if (!applyPlugin or !isfunction(applyPlugin.OpenCIDPanel)) then
+			return false
+		end
+
+		local client = itemTable.player
+
+		if (CLIENT) then
+			client = LocalPlayer()
+		end
+
+		local character = IsValid(client) and client:GetCharacter()
+
+		return character and itemTable.invID == character:GetInventory():GetID()
+	end
+}
+
 ITEM.functions.Use = {
 	name = "Assign",
 	icon = "icon16/pencil_go.png",

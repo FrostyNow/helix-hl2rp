@@ -25,9 +25,8 @@ ix.command.Add("Apply", {
 			end
 
 			if cidItem then
-				local name = cidItem:GetData("name", character:GetName())
-				local id = cidItem:GetData("id", "00000")
-				local class = cidItem:GetData("class", "Second Class Citizen")
+				local cidData = PLUGIN:GetCIDData(cidItem, character)
+				local name = cidData.name
 
 				applyCooldowns[client] = curTime + 5
 
@@ -45,14 +44,7 @@ ix.command.Add("Apply", {
 						target:GetCharacter():Recognize(character:GetID())
 					end
 
-					net.Start("ixApplyCID")
-						net.WriteTable({
-							name = name,
-							id = id,
-							class = class,
-							owner = client -- Pass owner for distance check on client
-						})
-					net.Send(target)
+					PLUGIN:SendCIDPanel(target, client, cidData)
 				end
 			else
 				return client:NotifyLocalized("dontHaveCID")
