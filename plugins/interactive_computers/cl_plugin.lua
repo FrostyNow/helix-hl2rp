@@ -48,6 +48,14 @@ surface.CreateFont("ixComputerCombineHeader", {
 	antialias = true
 })
 
+surface.CreateFont("ixComputerCombineGrid", {
+	font = "Combine 17",
+	size = 26,
+	weight = 700,
+	extended = true,
+	antialias = true
+})
+
 surface.CreateFont("ixComputerCombineBody", {
 	font = "Trebuchet MS",
 	size = 16,
@@ -77,6 +85,8 @@ local COMBINE_DIM = Color(90, 138, 178)
 local COMBINE_ACCENT = Color(36, 104, 168)
 local COMBINE_GLOW = Color(70, 170, 255, 35)
 local COMBINE_LOGO = Material("vgui/hl2rp/terminal/cmb_logo_white.png", "smooth mips")
+local COMBINE_LOGO_TEXTURE_OFFSET_X = -20
+local COMBINE_JOURNAL_TOP = 84
 local TYPE_SOUNDS = {
 	"ambient/machines/keyboard1_clicks.wav",
 	"ambient/machines/keyboard2_clicks.wav",
@@ -319,11 +329,12 @@ end
 
 local function DrawCombineLogo(centerX, centerY, size, alpha)
 	alpha = alpha or 255
+
 	if (COMBINE_LOGO and !COMBINE_LOGO:IsError()) then
 		local drawSize = size * 2.25
 		surface.SetMaterial(COMBINE_LOGO)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, alpha)
-		surface.DrawTexturedRect(centerX - drawSize * 0.5, centerY - drawSize * 0.5, drawSize, drawSize)
+		surface.DrawTexturedRect(centerX - drawSize * 0.5 + COMBINE_LOGO_TEXTURE_OFFSET_X, centerY - drawSize * 0.5, drawSize, drawSize)
 		return
 	end
 
@@ -371,7 +382,17 @@ local function DrawCombineBackdrop(width, height, title, subtitle)
 
 	draw.SimpleText(title, "ixComputerCombineHeader", 22, 16, COMBINE_TEXT, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	if (subtitle and subtitle != "") then
-		draw.SimpleText(subtitle .. " " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		if (subtitle == "overwatch grid") then
+			surface.SetFont("ixComputerCombineGrid")
+
+			local subtitleWidth = surface.GetTextSize(subtitle)
+			draw.SimpleText(subtitle, "ixComputerCombineGrid", 24, 48, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+			draw.SimpleText(" - " .. GetTerminalTime(), "ixComputerCombineBody", 24 + subtitleWidth + 8, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		else
+			draw.SimpleText(subtitle .. " " .. GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+		end
+	else
+		draw.SimpleText(GetTerminalTime(), "ixComputerCombineBody", 24, 52, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	end
 end
 
@@ -1609,7 +1630,7 @@ end
 
 function JOURNAL:Paint(width, height)
 	DrawCombineBackdrop(width, height, L("interactiveComputerComLogTitle"), "<:: COMBINE PERSONAL LOG ::>")
-	PaintCombineContentBox(18, 72, width - 36, height - 126)
+	PaintCombineContentBox(18, COMBINE_JOURNAL_TOP, width - 36, height - 138)
 end
 
 function JOURNAL:AppendConsole(text, color)
@@ -1650,7 +1671,7 @@ end
 
 function JOURNAL:PaintOver(width, height)
 	if (!IsTerminalReady(self)) then
-		PaintCombineContentBox(18, 72, width - 36, height - 126)
+		PaintCombineContentBox(18, COMBINE_JOURNAL_TOP, width - 36, height - 138)
 		local progress = GetBootProgress(self)
 		local barY = math.floor(height * 0.58)
 		local barWidth = width - 220
@@ -1662,6 +1683,35 @@ function JOURNAL:PaintOver(width, height)
 		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 120)
 		surface.DrawRect(112, barY + 2, math.max(0, math.floor((barWidth - 4) * progress)), 14)
 	end
+end
+
+function JOURNAL:PerformLayout(width, height)
+	if (!IsValid(self.closeButton) or !IsValid(self.powerButton) or !IsValid(self.backButton) or !IsValid(self.output) or !IsValid(self.promptLabel) or !IsValid(self.commandEntry)) then
+		return
+	end
+
+	self.closeButton:SetPos(width - 58, 14)
+	self.closeButton:SetSize(40, 32)
+
+	self.powerButton:SetPos(width - 112, 14)
+	self.powerButton:SetSize(44, 32)
+
+	self.backButton:SetPos(width - 166, 14)
+	self.backButton:SetSize(44, 32)
+
+	local top = COMBINE_JOURNAL_TOP
+	local bottom = 18
+	local inputHeight = 30
+
+	self.output:SetPos(18, top)
+	self.output:SetSize(width - 36, height - top - bottom - inputHeight)
+
+	self.promptLabel:SizeToContents()
+	self.promptLabel:SetPos(18, height - bottom - inputHeight + 4)
+
+	local promptWidth = self.promptLabel:GetWide() + 8
+	self.commandEntry:SetPos(18 + promptWidth, height - bottom - inputHeight)
+	self.commandEntry:SetSize(width - 36 - promptWidth, inputHeight)
 end
 
 local function ApplyCombineJournalStyling(frame)
@@ -1968,7 +2018,7 @@ function COMBINE:UpdateStatus()
 end
 
 function COMBINE:Paint(width, height)
-	DrawCombineBackdrop(width, height, L("interactiveComputerCombineTitle"), "OVERWATCH GRID - ")
+	DrawCombineBackdrop(width, height, L("interactiveComputerCombineTitle"))
 
 	local navX = 22
 	local top = 92
@@ -1993,7 +2043,7 @@ function COMBINE:Paint(width, height)
 		local progress = GetBootProgress(self)
 
 		DrawCombineLogo(centerX, centerY - 30, math.min(contentWidth, contentHeight) * 0.15, 220)
-		draw.SimpleText("OVERWATCH GRID", "ixComputerCombineHeader", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("overwatch grid", "ixComputerCombineGrid", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(L(IsTerminalReady(self) and "interactiveComputerSelectModule" or (IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff")), "ixComputerCombineBody", centerX, centerY + 116, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(IsTerminalReady(self) and "OBJECTIVES / CIVIL DATA / PERSONAL LOG / PUBLIC PANEL" or L("interactiveComputerPowerPrompt"), "ixComputerDOSTiny", centerX, centerY + 144, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
@@ -2617,7 +2667,7 @@ function CIVIC:UpdateVisibleState()
 end
 
 function CIVIC:Paint(width, height)
-	DrawCombineBackdrop(width, height, L("interactiveComputerCivicTitle"), "CIVIC UPLINK - ")
+	DrawCombineBackdrop(width, height, L("interactiveComputerCivicTitle"))
 
 	local navX = 22
 	local top = 92
@@ -2644,7 +2694,7 @@ function CIVIC:Paint(width, height)
 		local progress = GetBootProgress(self)
 
 		DrawCombineLogo(centerX, centerY - 30, math.min(contentWidth, contentHeight) * 0.15, 220)
-		draw.SimpleText("CIVIC UPLINK", "ixComputerCombineHeader", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		draw.SimpleText("civic uplink", "ixComputerCombineGrid", centerX, centerY + 78, COMBINE_TEXT, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(L(IsTerminalReady(self) and "interactiveComputerSelectModule" or (IsBootSequenceActive(self) and "interactiveComputerBooting" or "interactiveComputerPowerOff")), "ixComputerCombineBody", centerX, centerY + 116, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		draw.SimpleText(IsTerminalReady(self) and "NOTICE / AGENDA / Q&A" or L("interactiveComputerPowerPrompt"), "ixComputerDOSTiny", centerX, centerY + 144, COMBINE_DIM, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 

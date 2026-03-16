@@ -3,6 +3,54 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
+local function PlayLockedSound(entity)
+	if ((entity.nextLockSoundTime or 0) < CurTime()) then
+		entity:EmitSound("buttons/combine_button_locked.wav")
+		entity.nextLockSoundTime = CurTime() + 1
+	end
+end
+
+local function ClearRequestState(entity, activator)
+	entity:EmitSound("buttons/combine_button5.wav")
+	entity:SetNetVar("alarm", false)
+	entity:SetNetVar("alarmLights", false)
+	entity:SetNetVar("requester", nil)
+	entity:SetNetVar("requesterCharID", nil)
+
+	local waypointPlugin = ix.plugin.Get("waypoints")
+	if (waypointPlugin) then
+		local waypointIndex = entity:GetNetVar("waypoint")
+
+		if (waypointIndex) then
+			waypointPlugin:UpdateWaypoint(waypointIndex, nil)
+			entity:SetNetVar("waypoint", nil)
+		end
+	end
+
+	if (IsValid(activator)) then
+		activator:NotifyLocalized("terminalRequestCancelled")
+	end
+end
+
+local function CanCancelRequest(entity, ply)
+	if (!IsValid(ply) or !entity:GetNetVar("alarm", false)) then
+		return false
+	end
+
+	if (ply:IsCombine()) then
+		return true
+	end
+
+	if (ply:IsAdmin() and ply:GetMoveType() == MOVETYPE_NOCLIP) then
+		return true
+	end
+
+	local character = ply:GetCharacter()
+	local requesterCharID = entity:GetNetVar("requesterCharID")
+
+	return character and requesterCharID and character:GetID() == requesterCharID
+end
+
 function ENT:Initialize()
 	self:SetModel("models/props_combine/combine_smallmonitor001.mdl")
 	self:SetMoveType(MOVETYPE_VPHYSICS)
@@ -11,55 +59,37 @@ function ENT:Initialize()
 	self:SetSolid(SOLID_VPHYSICS)
 
 	self:SetNetVar("alarm", false)
+	self:SetNetVar("requesterCharID", nil)
 end
 
 function ENT:Use(ply)
-	local bIsCombine = ply:IsCombine()
-
-	if (bIsCombine) then
-		if ( self:GetNetVar("alarm", false) ) then
-			self:EmitSound("buttons/combine_button5.wav")
-			self:SetNetVar("alarm", false)
-			self:SetNetVar("requester", nil)
-
-			local waypointPlugin = ix.plugin.Get("waypoints")
-			if (waypointPlugin) then
-				local waypointIndex = self:GetNetVar("waypoint")
-
-				if ( waypointIndex ) then
-					waypointPlugin:UpdateWaypoint(waypointIndex, nil)
-					self:SetNetVar("waypoint", nil)
-				end
-			end
+	if ( self:GetNetVar("alarm", false) ) then
+		if (CanCancelRequest(self, ply)) then
+			ClearRequestState(self, ply)
+		else
+			PlayLockedSound(self)
+			ply:NotifyLocalized("terminalOnlyRequesterCanCancel")
 		end
+
 		return
 	end
 
-	-- Citizen logic
-	if ( self:GetNetVar("alarm", false) ) then
-		if ((self.nextLockSoundTime or 0) < CurTime()) then
-			self:EmitSound("buttons/combine_button_locked.wav")
-			self.nextLockSoundTime = CurTime() + 1
-		end
+	local character = ply:GetCharacter()
+
+	if (!character) then
 		return
 	end
 
 	if ( (self.nextUseTime or 0) > CurTime() ) then
-		if ((self.nextLockSoundTime or 0) < CurTime()) then
-			self:EmitSound("buttons/combine_button_locked.wav")
-			self.nextLockSoundTime = CurTime() + 1
-		end
+		PlayLockedSound(self)
 
 		local timeLeft = math.ceil(self.nextUseTime - CurTime())
 		ply:NotifyLocalized("terminalCooldown", timeLeft)
 		return
 	end
 
-	if ( !ply:GetCharacter():GetInventory():HasItem("cid") ) then
-		if ((self.nextLockSoundTime or 0) < CurTime()) then
-			self:EmitSound("buttons/combine_button_locked.wav")
-			self.nextLockSoundTime = CurTime() + 1
-		end
+	if ( !character:GetInventory():HasItem("cid") ) then
+		PlayLockedSound(self)
 
 		ply:NotifyLocalized("terminalNeedsCID")
 		return
@@ -98,7 +128,7 @@ function ENT:Use(ply)
 		local area = ply:GetAreaName()
 		local cidName = "Anonymous"
 		local cidID = "000000"
-		for _, v in pairs(ply:GetCharacter():GetInventory():GetItems()) do
+		for _, v in pairs(character:GetInventory():GetItems()) do
 			if (v.uniqueID == "cid") then
 				cidName = v:GetData("name")
 				cidID = v:GetData("id")
@@ -113,6 +143,7 @@ function ENT:Use(ply)
 		self:EmitSound("buttons/combine_button1.wav")
 		self:SetNetVar("alarm", true)
 		self:SetNetVar("requester", cidName)
+		self:SetNetVar("requesterCharID", character:GetID())
 
 		ix.chat.Send(ply, "dispatchradio", L("terminalDispatch", nil, area:sub(1,1) == "@" and L(area:sub(2)) or area, cidName), false, nil)
 

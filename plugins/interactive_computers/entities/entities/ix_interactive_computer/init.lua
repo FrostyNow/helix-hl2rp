@@ -3,10 +3,9 @@ AddCSLuaFile("shared.lua")
 
 include("shared.lua")
 
-local COMBINE_LOOP_SOUND = "ambient/machines/combine_terminal_loop1.wav"
-local GENERAL_LOOP_SOUND = "npc/scanner/combat_scan_loop6.wav"
 local GENERAL_BOOT_SOUND = "npc/scanner/combat_scan1.wav"
-local GENERAL_LOOP_INTERVAL = 1.1
+local ACTIVE_CHECK_INTERVAL = 0.2
+local SUPPORT_CHECK_INTERVAL = 1
 
 function ENT:Initialize()
 	local plugin = ix.plugin.Get("interactive_computers")
@@ -103,6 +102,8 @@ end
 function ENT:SetPowered(state, silent)
 	local plugin = ix.plugin.Get("interactive_computers")
 	state = state == true
+	local previousState = self.ixPowered == true or self:GetNetVar("powered", false)
+	local hasStateChanged = previousState != state
 	self.ixPowered = state
 	self:SetNetVar("powered", state)
 
@@ -110,48 +111,25 @@ function ENT:SetPowered(state, silent)
 	local isCombineFamily = definition and definition.family == "combine"
 	local isGeneralFamily = definition and definition.family == "general"
 	local bootTimerID = "ixInteractiveComputerBootTone" .. self:EntIndex()
-	local generalLoopTimerID = "ixInteractiveComputerGeneralLoop" .. self:EntIndex()
 
 	if (plugin) then
 		local visualState = state and "on" or (self:GetNetVar("assemblyError", false) and "error" or "off")
 		plugin:UpdateComputerVisualState(self, visualState)
 	end
 
-	if (isCombineFamily) then
-		self.ixLoopSound = self.ixLoopSound or CreateSound(self, COMBINE_LOOP_SOUND)
+	if (isGeneralFamily) then
+		timer.Remove(bootTimerID)
 
-		if (state) then
-			if (self.ixLoopSound) then
-				self.ixLoopSound:PlayEx(0.08, 100)
-			end
-		elseif (self.ixLoopSound) then
-			self.ixLoopSound:Stop()
-		end
-	elseif (isGeneralFamily) then
-		if (state) then
-			timer.Remove(generalLoopTimerID)
-			self:EmitSound(GENERAL_LOOP_SOUND, 80, 108, 0.12)
-			timer.Create(generalLoopTimerID, GENERAL_LOOP_INTERVAL, 0, function()
-				if (IsValid(self) and self:GetPowered()) then
-					self:EmitSound(GENERAL_LOOP_SOUND, 80, 108, 0.12)
-				else
-					timer.Remove(generalLoopTimerID)
-				end
-			end)
-
-			timer.Remove(bootTimerID)
+		if (state and hasStateChanged) then
 			timer.Create(bootTimerID, 1, 1, function()
 				if (IsValid(self) and self:GetPowered()) then
 					self:EmitSound(GENERAL_BOOT_SOUND, 80, 108, 0.5)
 				end
 			end)
-		else
-			timer.Remove(generalLoopTimerID)
-			timer.Remove(bootTimerID)
 		end
 	end
 
-	if (!silent) then
+	if (!silent and hasStateChanged) then
 		if (isCombineFamily) then
 			self:EmitSound(state and "buttons/combine_button1.wav" or "buttons/combine_button2.wav", 80, state and 110 or 95, 0.75)
 			if (!state) then
@@ -172,21 +150,25 @@ end
 function ENT:Think()
 	local plugin = ix.plugin.Get("interactive_computers")
 	if (plugin and plugin:IsSupportComputer(self)) then
-		self:NextThink(CurTime() + 1)
+		self:NextThink(CurTime() + SUPPORT_CHECK_INTERVAL)
 		return true
 	end
 
 	if (plugin and self:GetPowered() and !plugin:IsComputerAssemblyValid(self)) then
-		self:SetNetVar("assemblyError", true)
-		plugin:UpdateComputerVisualState(self, "error")
-		self:SetPowered(false)
+		if (!self:IsCombineTerminal() and plugin.HandleGeneralAssemblyFailure) then
+			plugin:HandleGeneralAssemblyFailure(self)
+		else
+			self:SetNetVar("assemblyError", true)
+			plugin:UpdateComputerVisualState(self, "error")
+			self:SetPowered(false)
+		end
 	elseif (plugin and !self:GetPowered()) then
 		local hasError = !plugin:IsComputerAssemblyValid(self)
 		self:SetNetVar("assemblyError", hasError)
 		plugin:UpdateComputerVisualState(self, hasError and "error" or "off")
 	end
 
-	self:NextThink(CurTime() + 1)
+	self:NextThink(CurTime() + ACTIVE_CHECK_INTERVAL)
 	return true
 end
 
@@ -202,11 +184,5 @@ function ENT:Use(activator)
 end
 
 function ENT:OnRemove()
-	if (self.ixLoopSound) then
-		self.ixLoopSound:Stop()
-		self.ixLoopSound = nil
-	end
-
 	timer.Remove("ixInteractiveComputerBootTone" .. self:EntIndex())
-	timer.Remove("ixInteractiveComputerGeneralLoop" .. self:EntIndex())
 end

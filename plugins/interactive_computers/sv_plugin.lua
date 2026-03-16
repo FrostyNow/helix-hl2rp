@@ -177,10 +177,32 @@ function PLUGIN:UpdateComputerVisualState(entity, state)
 
 		local candidateDefinition = self:GetComputerDefinition(candidate:GetClass())
 		if (candidateDefinition and definition and candidateDefinition.family == definition.family) then
-			if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (self.assemblyMaxDistance * self.assemblyMaxDistance)) then
+			local maxDistance = self:GetSupportMaxDistance(entity, nil, candidateDefinition.role)
+			if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (maxDistance * maxDistance)) then
 				self:SetEntitySkinForState(candidate, candidateDefinition.skins, state)
 			end
 		end
+	end
+end
+
+function PLUGIN:RefreshInteractiveComputerVisualStates()
+	for _, entity in ipairs(ents.GetAll()) do
+		if (!self:IsInteractiveComputer(entity)) then
+			continue
+		end
+
+		local isAssemblyValid = self:IsComputerAssemblyValid(entity)
+		local state
+
+		if (entity:GetPowered()) then
+			entity:SetNetVar("assemblyError", !isAssemblyValid)
+			state = isAssemblyValid and "on" or "error"
+		else
+			entity:SetNetVar("assemblyError", !isAssemblyValid)
+			state = isAssemblyValid and "off" or "error"
+		end
+
+		self:UpdateComputerVisualState(entity, state)
 	end
 end
 
@@ -305,6 +327,58 @@ function PLUGIN:BuildOpenContext(client, entity)
 	end
 
 	return context
+end
+
+function PLUGIN:GetSessionStorageEntity(entity)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity)) then
+		return
+	end
+
+	if (IsValid(entity.ixSessionStorageEntity)) then
+		return entity.ixSessionStorageEntity
+	end
+
+	return self:ResolveStorageEntity(entity) or entity
+end
+
+function PLUGIN:GetActiveComputerUser(entity)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity)) then
+		return
+	end
+
+	if (IsValid(entity.ixActiveUser)) then
+		return entity.ixActiveUser
+	end
+
+	local storageEntity = self:GetSessionStorageEntity(entity)
+	if (IsValid(storageEntity) and IsValid(storageEntity.ixActiveUser)) then
+		return storageEntity.ixActiveUser
+	end
+end
+
+function PLUGIN:HandleGeneralAssemblyFailure(entity)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or entity:IsCombineTerminal()) then
+		return
+	end
+
+	local storageEntity = self:GetSessionStorageEntity(entity) or entity
+	local activeUser = self:GetActiveComputerUser(entity)
+
+	entity:SetNetVar("assemblyError", true)
+
+	if (entity:GetPowered()) then
+		entity:SetPowered(false)
+	end
+
+	if (IsValid(activeUser)) then
+		local filtered, context = self:BuildGeneralPayload(activeUser, storageEntity)
+		netstream.Start(activeUser, "ixInteractiveComputerSync", entity, filtered, entity:GetPowered(), context)
+	end
+
+	self:ReleaseComputerUser(entity, activeUser)
 end
 
 function PLUGIN:GetAccessSession(entity, client)
@@ -502,6 +576,8 @@ function PLUGIN:OpenComputer(client, entity)
 	end
 
 	storageEntity.ixActiveUser = client
+	entity.ixActiveUser = client
+	entity.ixSessionStorageEntity = storageEntity
 
 	if (self:IsCivicComputer(entity)) then
 		netstream.Start(client, "ixInteractiveComputerOpen", entity, entity:GetComputerData(), entity:GetPowered(), self:BuildCivicPayload(client))
@@ -518,14 +594,28 @@ function PLUGIN:OpenComputer(client, entity)
 end
 
 function PLUGIN:ReleaseComputerUser(entity, client)
-	entity = self:ResolveStorageEntity(entity) or self:ResolveComputerEntity(entity)
-	if (!IsValid(entity)) then
+	local primaryEntity = self:ResolveComputerEntity(entity)
+	local storageEntity = self:GetSessionStorageEntity(primaryEntity) or primaryEntity
+	if (!IsValid(primaryEntity) and !IsValid(storageEntity)) then
 		return
 	end
 
-	if (!client or entity.ixActiveUser == client) then
-		entity.ixActiveUser = nil
-		self:ClearAccessSession(entity, client)
+	local canRelease = !client
+		or (IsValid(primaryEntity) and primaryEntity.ixActiveUser == client)
+		or (IsValid(storageEntity) and storageEntity.ixActiveUser == client)
+
+	if (!canRelease) then
+		return
+	end
+
+	if (IsValid(primaryEntity)) then
+		primaryEntity.ixActiveUser = nil
+		primaryEntity.ixSessionStorageEntity = nil
+	end
+
+	if (IsValid(storageEntity)) then
+		storageEntity.ixActiveUser = nil
+		self:ClearAccessSession(storageEntity, client)
 	end
 end
 
@@ -592,6 +682,7 @@ function PLUGIN:LoadData()
 	end
 
 	self.nextComputerID = maxID + 1
+	self:RefreshInteractiveComputerVisualStates()
 end
 
 function PLUGIN:EntityRemoved(entity)

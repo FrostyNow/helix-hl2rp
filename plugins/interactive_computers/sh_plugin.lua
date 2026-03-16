@@ -29,6 +29,9 @@ PLUGIN.combineModels = {
 }
 PLUGIN.spawnCategory = "HL2 RP: Computers"
 PLUGIN.assemblyMaxDistance = 140
+PLUGIN.generalAssemblyMaxDistance = 72
+PLUGIN.generalKeyboardMaxDistance = 72
+PLUGIN.combineAssemblyMaxDistance = 140
 PLUGIN.entityDefinitions = {
 	{
 		class = "ix_computer_desktop_open",
@@ -507,7 +510,6 @@ function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 
 	local bestCandidate
 	local bestDistance = math.huge
-	local maxDistanceSqr = self.assemblyMaxDistance * self.assemblyMaxDistance
 
 	for _, candidate in ipairs(ents.GetAll()) do
 		if (!self:IsSupportComputer(candidate)) then
@@ -524,7 +526,8 @@ function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 		end
 
 		local distance = entity:GetPos():DistToSqr(candidate:GetPos())
-		if (distance > maxDistanceSqr) then
+		local maxDistance = self:GetSupportMaxDistance(entity, requestedRole, candidateDefinition.role)
+		if (distance > (maxDistance * maxDistance)) then
 			continue
 		end
 
@@ -537,10 +540,39 @@ function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 	return bestCandidate
 end
 
+function PLUGIN:GetSupportMaxDistance(entity, requestedRole, candidateRole)
+	entity = self:ResolveComputerEntity(entity) or entity
+
+	local definition = IsValid(entity) and self:GetComputerDefinition(entity:GetClass())
+	if (!definition or !definition.family) then
+		return self.assemblyMaxDistance
+	end
+
+	if (definition.family == "general") then
+		local role = requestedRole or candidateRole
+
+		if (role == "keyboard") then
+			return self.generalKeyboardMaxDistance or self.generalAssemblyMaxDistance or self.assemblyMaxDistance
+		end
+
+		return self.generalAssemblyMaxDistance or self.assemblyMaxDistance
+	end
+
+	if (definition.family == "combine") then
+		return self.combineAssemblyMaxDistance or self.assemblyMaxDistance
+	end
+
+	return self.assemblyMaxDistance
+end
+
 function PLUGIN:GetRequiredSupportRoles(entity)
 	local definition = IsValid(entity) and self:GetComputerDefinition(entity:GetClass())
 	if (!definition or definition.interactive != true) then
 		return {}
+	end
+
+	if (definition.family == "general") then
+		return {"desktop"}
 	end
 
 	return {}
