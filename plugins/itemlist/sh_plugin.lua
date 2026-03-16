@@ -9,6 +9,13 @@ CAMI.RegisterPrivilege({
 	MinAccess = "superadmin"
 })
 
+ix.lang.AddTable("english", {
+	items = "Items",
+})
+ix.lang.AddTable("korean", {
+	items = "아이템",
+})
+
 if (SERVER) then
 	netstream.Hook("MenuItemSpawn", function(ply, uniqueID)
 		if (!IsValid(ply)) then return end
@@ -84,6 +91,8 @@ else
 		["Tools"] = "wrench",
 		["Utility"] = "find",
 		["Permits"] = "book",
+		["ARC9 Attachments"] = "plugin",
+		["misc"] = "zoom",
 	}
 
 	spawnmenu.AddContentType("ixItem", function(container, data)
@@ -181,7 +190,22 @@ else
 		return base
 	end
 
-	spawnmenu.AddCreationTab("Items", CreateItemsPanel, "icon16/script_key.png")
+	local function GetLocalizedText(key)
+		local lang = GetConVar("gmod_language"):GetString()
+		if (lang == "ko") then
+			if (ix.lang.stored["korean"] and ix.lang.stored["korean"][key]) then
+				return ix.lang.stored["korean"][key]
+			end
+		end
+		
+		if (ix.lang.stored["english"] and ix.lang.stored["english"][key]) then
+			return ix.lang.stored["english"][key]
+		end
+
+		return L(key)
+	end
+
+	spawnmenu.AddCreationTab(GetLocalizedText("items"), CreateItemsPanel, "icon16/script_key.png")
 
 	netstream.Hook("CheckForItemTab", function()
 		if !LocalPlayer():GetNWBool("spawnmenu_reloaded") then
