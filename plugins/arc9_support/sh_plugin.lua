@@ -6,6 +6,10 @@ ix.util.Include("sh_net.lua")
 ix.util.IncludeDir(PLUGIN.folder .. "/libs", true)
 ix.util.IncludeDir(PLUGIN.folder .. "/hooks", true)
 
+ix.lang.AddTable("english", {
+	["ARC9 Attachments"] = "ARC9 부착물",
+})
+
 function PLUGIN:OnLoaded()
     if (SERVER) then
         local conVar = GetConVar("arc9_mult_defaultammo")
