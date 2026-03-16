@@ -7,6 +7,8 @@ LANGUAGE = {
 	["CraftMissingCookingStation"] = "You need to be near a cooking station.",
 	["CraftStoveInactive"] = "The cooking station must be turned on.",
 	["CraftSuccess"] = "You have successfully crafted %s.",
+	["CraftingProgress"] = "Crafting %s...",
+	["CraftAlreadyInProgress"] = "You are already crafting something else.",
 
 	["CraftTools"] = "TOOLS",
 	["CraftRequirements"] = "REQUIREMENTS",

@@ -121,6 +121,12 @@ end
 if (SERVER) then
 	PLUGIN.corpses = {}
 
+	local REVIVE_ITEMS = {
+		health_kit = true,
+		health_vial = true,
+		aed = true
+	}
+
 	-- disable the regular hl2 ragdolls
 	function PLUGIN:ShouldSpawnClientRagdoll(client)
 		return false
@@ -414,6 +420,114 @@ if (SERVER) then
 		end
 	end
 
+	function PLUGIN:IsReviveItem(item)
+		return item and REVIVE_ITEMS[item.uniqueID] == true
+	end
+
+	function PLUGIN:GetReviveItem(inventory)
+		if (!inventory) then
+			return nil
+		end
+
+		return inventory:HasItem("health_kit") or inventory:HasItem("health_vial") or inventory:HasItem("aed")
+	end
+
+	function PLUGIN:StartCorpseRevive(client, entity, item)
+		if (!IsValid(client) or !IsValid(entity) or entity:GetClass() != "prop_ragdoll") then
+			return false
+		end
+
+		local target = entity:GetNetVar("player")
+
+		if (!IsValid(target) or target:Alive()) then
+			return false
+		end
+
+		local character = client:GetCharacter()
+
+		if (!character) then
+			return false
+		end
+
+		local inventory = character:GetInventory()
+		item = item or self:GetReviveItem(inventory)
+
+		if (!self:IsReviveItem(item) or item.invID != inventory:GetID()) then
+			client:NotifyLocalized("noHealItem")
+			return true
+		end
+
+		if (character:GetAttribute("int", 0) < (item.medAttr or 0)) then
+			client:NotifyLocalized("lowMedicalSkill")
+			return true
+		end
+
+		client:SetAction("@revivingCorpse", 3)
+
+		local uniqueID = "ixCorpseRevive_" .. client:SteamID64()
+		local itemID = item:GetID()
+
+		timer.Create(uniqueID, 0.1, 30, function()
+			if (!IsValid(entity) or !IsValid(client) or !client:Alive() or !IsValid(target) or target:Alive()) then
+				timer.Remove(uniqueID)
+
+				if (IsValid(client)) then
+					client:SetAction()
+				end
+
+				return
+			end
+
+			if (client:GetPos():DistToSqr(entity:GetPos()) > 6400) then
+				timer.Remove(uniqueID)
+				client:SetAction()
+				client:NotifyLocalized("tooFar")
+				return
+			end
+
+			if (timer.RepsLeft(uniqueID) == 0) then
+				local liveItem = ix.item.instances[itemID]
+
+				if (!liveItem or liveItem.bPendingRemoval or liveItem.invID != inventory:GetID()) then
+					client:SetAction()
+					return
+				end
+
+				local pos = entity:GetPos()
+				local angles = entity:GetAngles()
+				local amount = liveItem.healthPoint or 25
+
+				if (amount < 0) then
+					amount = target:GetMaxHealth()
+				end
+
+				entity.ixIsReviving = true
+
+				target:Spawn()
+				timer.Simple(0, function()
+					if (IsValid(target)) then
+						target:SetPos(pos)
+						target:SetEyeAngles(Angle(0, angles.y, 0))
+						target:SetHealth(amount)
+					end
+				end)
+
+				liveItem:Remove()
+
+				if (liveItem.sound) then
+					client:EmitSound(liveItem.sound)
+				end
+
+				client:NotifyLocalized("reviveNotify", L(liveItem.name, client), target:GetName())
+				target:NotifyLocalized("revive03", client:GetName())
+
+				entity:Remove()
+			end
+		end)
+
+		return true
+	end
+
 	function PLUGIN:PlayerInteractEntity(client, entity, option, data)
 		if (entity:GetClass() != "prop_ragdoll") then return end
 
@@ -463,70 +577,7 @@ if (SERVER) then
 				end)
 			end
 		elseif (isRevive) then
-			if (IsValid(target) and !target:Alive()) then
-				local character = client:GetCharacter()
-				local inventory = character:GetInventory()
-				local item = inventory:HasItem("health_kit") or inventory:HasItem("health_vial") or inventory:HasItem("aed")
-
-				if (item) then
-					if (character:GetAttribute("int", 0) < (item.medAttr or 0)) then
-						client:NotifyLocalized("lowMedicalSkill")
-						return
-					end
-
-					client:SetAction("@revivingCorpse", 3)
-					
-					local uniqueID = "ixCorpseRevive_" .. client:SteamID64()
-					timer.Create(uniqueID, 0.1, 30, function()
-						if (!IsValid(entity) or !IsValid(client) or !client:Alive() or !IsValid(target) or target:Alive()) then 
-							timer.Remove(uniqueID)
-							if (IsValid(client)) then client:SetAction() end
-							return 
-						end
-						
-						if (client:GetPos():DistToSqr(entity:GetPos()) > 6400) then
-							timer.Remove(uniqueID)
-							client:SetAction()
-							client:NotifyLocalized("tooFar")
-							return
-						end
-
-						if (timer.RepsLeft(uniqueID) == 0) then
-							-- Double check if item still exists after action time
-							if (!inventory:HasItem(item.uniqueID)) then return end
-
-							local pos = entity:GetPos()
-							local angles = entity:GetAngles()
-							local amount = item.healthPoint or 25
-
-							if amount < 0 then amount = target:GetMaxHealth() end
-
-							entity.ixIsReviving = true
-							
-							target:Spawn()
-							timer.Simple(0, function()
-								if (IsValid(target)) then
-									target:SetPos(pos)
-									target:SetEyeAngles(Angle(0, angles.y, 0))
-									target:SetHealth(amount)
-								end
-							end)
-
-							item:Remove()
-							if (item.sound) then
-								client:EmitSound(item.sound)
-							end
-							
-							client:NotifyLocalized("reviveNotify", L(item.name, client), target:GetName())
-							target:NotifyLocalized("revive03", client:GetName())
-
-							entity:Remove()
-						end
-					end)
-				else
-					client:NotifyLocalized("noHealItem")
-				end
-			end
+			self:StartCorpseRevive(client, entity)
 		end
 	end
 

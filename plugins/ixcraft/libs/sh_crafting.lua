@@ -80,37 +80,121 @@ if (SERVER) then
 	util.AddNetworkString("ixCraftRecipe")
 	util.AddNetworkString("ixCraftRefresh")
 
+	local function RefreshCraftingMenu(client)
+		timer.Simple(0.2, function()
+			if (!IsValid(client)) then
+				return
+			end
+
+			net.Start("ixCraftRefresh")
+			net.Send(client)
+		end)
+	end
+
+	local function NotifyCraftMessage(client, text, a, b, c, d)
+		if (!text) then
+			return
+		end
+
+		if (text:sub(1, 1) == "@") then
+			text = L(text:sub(2), client, a, b, c, d)
+		end
+
+		client:Notify(text)
+	end
+
+	local function ClearCraftState(client)
+		if (!IsValid(client)) then
+			return
+		end
+
+		client.ixCraftingRecipe = nil
+		client:SetAction(false)
+		timer.Remove("ixStare" .. client:SteamID64())
+	end
+
+	local function CompleteCraft(client, recipeTable)
+		local success, craftString, a, b, c, d = recipeTable:OnCraft(client)
+
+		NotifyCraftMessage(client, craftString, a, b, c, d)
+		hook.Run("CraftRecipeCompleted", client, recipeTable, success)
+		RefreshCraftingMenu(client)
+
+		return success
+	end
+
 	function PLUGIN.craft.CraftRecipe(client, uniqueID)
 		local recipeTable = PLUGIN.craft.recipes[uniqueID]
 
 		if (recipeTable) then
-			local bCanCraft, failString, c, d, e, f = recipeTable:OnCanCraft(client)
+			local bCanCraft, failString, a, b, c, d = recipeTable:OnCanCraft(client)
 
 			if (!bCanCraft) then
-				if (failString) then
-					if (failString:sub(1, 1) == "@") then
-						failString = L(failString:sub(2), client, c, d, e, f)
-					end
-
-					client:Notify(failString)
-				end
+				NotifyCraftMessage(client, failString, a, b, c, d)
 
 				return false
 			end
 
-			local success, craftString, c, d, e, f = recipeTable:OnCraft(client)
+			if (client.ixCraftingRecipe) then
+				client:NotifyLocalized("CraftAlreadyInProgress")
 
-			if (craftString) then
-				if (craftString:sub(1, 1) == "@") then
-					craftString = L(craftString:sub(2), client, c, d, e, f)
-				end
-
-				client:Notify(craftString)
+				return false
 			end
 
-			return success
+			local craftTime = recipeTable.GetCraftTime and recipeTable:GetCraftTime(client) or 0
+
+			if (craftTime <= 0) then
+				return CompleteCraft(client, recipeTable)
+			end
+
+			local actionText = recipeTable.GetCraftActionText and recipeTable:GetCraftActionText(client) or L("CraftingProgress", client, recipeTable:GetName())
+			local actionEntity = recipeTable.GetCraftActionEntity and recipeTable:GetCraftActionEntity(client) or nil
+			local craftSound = recipeTable.GetCraftSound and recipeTable:GetCraftSound(client) or nil
+			local soundEntity = IsValid(actionEntity) and actionEntity or client
+
+			client.ixCraftingRecipe = uniqueID
+
+			if (craftSound and IsValid(soundEntity)) then
+				soundEntity:EmitSound(craftSound, 60, 100, 0.5)
+			end
+
+			hook.Run("CraftRecipeStarted", client, recipeTable, craftTime, actionEntity)
+
+			local function FinishCraft()
+				if (!IsValid(client) or client.ixCraftingRecipe != uniqueID) then
+					return
+				end
+
+				client.ixCraftingRecipe = nil
+				CompleteCraft(client, recipeTable)
+			end
+
+			local function CancelCraft()
+				if (!IsValid(client)) then
+					return
+				end
+
+				ClearCraftState(client)
+				hook.Run("CraftRecipeCancelled", client, recipeTable)
+				RefreshCraftingMenu(client)
+			end
+
+			if (IsValid(actionEntity)) then
+				client:SetAction(actionText, craftTime)
+				client:DoStaredAction(actionEntity, FinishCraft, craftTime, CancelCraft, 100)
+			else
+				client:SetAction(actionText, craftTime, FinishCraft)
+			end
+
+			return true
 		end
 	end
+
+	hook.Add("PlayerSpawn", "ixCraftingCancelCraft", function(client)
+		if (client.ixCraftingRecipe) then
+			ClearCraftState(client)
+		end
+	end)
 
 	net.Receive("ixCraftRecipe", function(length, client)
 		local uniqueID = net.ReadString()
@@ -127,11 +211,6 @@ if (SERVER) then
 		client.ixCurrentStationEnt = stationEntIndex > 0 and Entity(stationEntIndex) or nil
 
 		PLUGIN.craft.CraftRecipe(client, uniqueID)
-
-		timer.Simple(0.2, function()
-			net.Start("ixCraftRefresh")
-			net.Send(client)
-		end)
 	end)
 end
 

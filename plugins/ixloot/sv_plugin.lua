@@ -2,6 +2,7 @@ local PLUGIN = PLUGIN
 
 local SEARCH_DURATION = 5
 local SEARCH_SOUND_INTERVAL = 0.85
+local SEARCH_BED_INTERVAL = 0.27
 
 local metalSearchSounds = {
 	"physics/metal/metal_barrel_impact_soft1.wav",
@@ -19,6 +20,12 @@ local cardboardSearchSounds = {
 	"physics/cardboard/cardboard_box_impact_soft1.wav",
 	"physics/cardboard/cardboard_box_impact_soft2.wav",
 	"physics/cardboard/cardboard_box_impact_soft3.wav"
+}
+
+local searchBedSounds = {
+	"npc/zombie/foot_slide1.wav",
+	"npc/zombie/foot_slide2.wav",
+	"npc/zombie/foot_slide3.wav"
 }
 
 function PLUGIN:GetLootSearchSounds(ent)
@@ -59,19 +66,30 @@ function PLUGIN:StopLootSearchSound(ply)
 		return
 	end
 
-	local timerID = ply.ixLootSearchSoundTimer
+	local timerIDs = {
+		ply.ixLootSearchSoundTimer,
+		ply.ixLootSearchBedTimer
+	}
 
-	if (timerID) then
+	for _, timerID in ipairs(timerIDs) do
+		if (!timerID) then
+			continue
+		end
+
 		timer.Remove(timerID)
-		ply.ixLootSearchSoundTimer = nil
 	end
+
+	ply.ixLootSearchSoundTimer = nil
+	ply.ixLootSearchBedTimer = nil
 end
 
 function PLUGIN:StartLootSearchSound(ent, ply)
 	self:StopLootSearchSound(ply)
 
 	local timerID = "ixLootSearchSound" .. ply:SteamID64()
+	local bedTimerID = "ixLootSearchBed" .. ply:SteamID64()
 	ply.ixLootSearchSoundTimer = timerID
+	ply.ixLootSearchBedTimer = bedTimerID
 
 	self:PlayLootSearchSound(ent)
 
@@ -87,6 +105,20 @@ function PLUGIN:StartLootSearchSound(ent, ply)
 		end
 
 		self:PlayLootSearchSound(ent)
+	end)
+
+	timer.Create(bedTimerID, SEARCH_BED_INTERVAL, 0, function()
+		if (!IsValid(ply)) then
+			timer.Remove(bedTimerID)
+			return
+		end
+
+		if (!IsValid(ent) or ply.ixLootSearchBedTimer != bedTimerID) then
+			self:StopLootSearchSound(ply)
+			return
+		end
+
+		ent:EmitSound(searchBedSounds[math.random(1, #searchBedSounds)], 45, math.random(88, 104), 0.18)
 	end)
 end
 

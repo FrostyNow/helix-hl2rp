@@ -88,7 +88,7 @@ else
 		PLUGIN.spawns = net.ReadTable()
 	end)
 
-	local dimDistance = 1024
+	local dimDistance = 2048
 
 	function PLUGIN:HUDPaint()
 		local client = LocalPlayer()

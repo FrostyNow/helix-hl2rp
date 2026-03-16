@@ -43,7 +43,7 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 				for k, v in pairs(ents.GetAll()) do
 					if v:GetClass() == "ix_item" then
 						local distance = client:GetPos():Distance(v:GetPos())
-						if (distance > 2048) then continue end
+						if (distance > 4096) then continue end
 
 						local screenPosition = v:GetPos():ToScreen()
 						

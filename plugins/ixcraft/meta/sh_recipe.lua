@@ -8,6 +8,7 @@ RECIPE.name = "undefined"
 RECIPE.description = "undefined"
 RECIPE.uniqueID = "undefined"
 RECIPE.category = "Crafting"
+RECIPE.craftTime = 2
 
 local cookingStations = {
 	"ix_bucket",
@@ -33,6 +34,38 @@ end
 
 function RECIPE:GetDescription()
 	return self.description
+end
+
+function RECIPE:GetCraftTime(client)
+	local craftTime = self.craftTime
+
+	if (isfunction(craftTime)) then
+		craftTime = craftTime(self, client)
+	end
+
+	return isnumber(craftTime) and math.max(craftTime, 0) or 0
+end
+
+function RECIPE:GetCraftSound(client)
+	local craftSound = self.craftSound
+
+	if (isfunction(craftSound)) then
+		craftSound = craftSound(self, client)
+	end
+
+	if (isstring(craftSound) and craftSound != "") then
+		return craftSound
+	end
+
+	return "physics/metal/metal_box_strain2.wav"
+end
+
+function RECIPE:GetCraftActionText(client)
+	local recipeName = self.GetName and self:GetName() or self.name
+
+	recipeName = CLIENT and L(recipeName) or L(recipeName, client)
+
+	return CLIENT and L("CraftingProgress", recipeName) or L("CraftingProgress", client, recipeName)
 end
 
 function RECIPE:GetSkin()
@@ -190,6 +223,40 @@ function RECIPE:GetNearbyCookingStation(client)
 
 	for _, className in ipairs(cookingStations) do
 		for _, entity in ipairs(ents.FindByClass(className)) do
+			if (client:GetPos():DistToSqr(entity:GetPos()) < maxDist) then
+				return entity
+			end
+		end
+	end
+end
+
+function RECIPE:GetCraftActionEntity(client)
+	local maxDist = 100 * 100
+
+	if (self.category == "Food") then
+		local cookingStation = self:GetNearbyCookingStation(client)
+
+		if (IsValid(cookingStation)) then
+			return cookingStation
+		end
+	end
+
+	local stations = self:GetStations()
+
+	if (!stations) then
+		return nil
+	end
+
+	local currentStationEnt = client.ixCurrentStationEnt
+
+	if (IsValid(currentStationEnt) and isfunction(currentStationEnt.GetStationID) and table.HasValue(stations, currentStationEnt:GetStationID())) then
+		if (client:GetPos():DistToSqr(currentStationEnt:GetPos()) < maxDist) then
+			return currentStationEnt
+		end
+	end
+
+	for _, stationID in ipairs(stations) do
+		for _, entity in ipairs(ents.FindByClass("ix_station_" .. stationID)) do
 			if (client:GetPos():DistToSqr(entity:GetPos()) < maxDist) then
 				return entity
 			end

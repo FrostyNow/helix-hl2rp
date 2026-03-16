@@ -8,6 +8,8 @@ LANGUAGE = {
 	["CraftMissingCookingStation"] = "근처에 조리대가 있어야 합니다.",
 	["CraftStoveInactive"] = "조리대를 켜야 조리할 수 있습니다.",
 	["CraftSuccess"] = "%s(을)를 성공적으로 만들었습니다.",
+	["CraftingProgress"] = "%s 제작 중...",
+	["CraftAlreadyInProgress"] = "이미 다른 제작을 진행 중입니다.",
 
 	["CraftTools"] = "도구",
 	["CraftRequirements"] = "재료",

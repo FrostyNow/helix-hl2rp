@@ -29,7 +29,7 @@ function PLUGIN:HUDPaint()
     for id, spawner in pairs(self.spawners or {}) do
         local dist = client:GetPos():Distance(spawner.pos)
 
-        if (dist > 2048) then continue end
+        if (dist > 4096) then continue end
 
         local pos = spawner.pos:ToScreen()
         

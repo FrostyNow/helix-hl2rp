@@ -32,7 +32,7 @@ function PLUGIN:HUDPaint()
 	if (!PLUGIN.spawner.positions) then return end
 	
 	for _, v in ipairs(PLUGIN.spawner.positions) do
-		if (v.position:DistToSqr(client:GetPos()) > 8388608) then continue end
+		if (v.position:DistToSqr(client:GetPos()) > 16000000) then continue end
 
 		local pos = v.position:ToScreen()
 

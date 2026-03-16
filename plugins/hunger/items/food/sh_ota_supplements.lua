@@ -1,7 +1,7 @@
 
 ITEM.name = "OTA Supplements"
-ITEM.model = Model("models/probs_misc/tobbcco_box-1.mdl")
-ITEM.description = "otaSupplementsDesc"
+ITEM.model = Model("models/props_lab/jar01b.mdl")
+ITEM.description = "itemOTASupplementsDesc"
 ITEM.category = "Utility"
 ITEM.factions = {FACTION_OTA}
 ITEM.hunger = 100
