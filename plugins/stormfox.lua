@@ -6,6 +6,8 @@ PLUGIN.version = 1.0
 
 if not StormFox2 then return end
 
+local TIME_SYNC_INTERVAL = 30
+
 ix.config.Add("notifyTimeChange", true, "Whether or not to notify players when the time changes (Day/Night).", nil, {
 	category = "StormFox 2"
 })
@@ -62,7 +64,7 @@ if SERVER then
 		if (not StormFox2) then return end
 
 		if (self.nextTimeSync <= CurTime()) then
-			self.nextTimeSync = CurTime() + 1
+			self.nextTimeSync = CurTime() + TIME_SYNC_INTERVAL
 			PerformTimeSync()
 		end
 
