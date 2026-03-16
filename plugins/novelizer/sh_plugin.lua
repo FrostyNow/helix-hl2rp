@@ -1,5 +1,12 @@
 local PLUGIN = PLUGIN
 
+-- Localize common metatables and functions
+local playerMeta = FindMetaTable("Player")
+local entityMeta = FindMetaTable("Entity")
+local wordMeta = FindMetaTable("Vector") -- Just for consistency if needed
+local L = L or (ix and ix.lang and ix.lang.Get)
+local L2 = L -- Support both just in case a schema or other plugin expects L2
+
 PLUGIN.name = "Novelizer"
 PLUGIN.author = "Codex"
 PLUGIN.description = "Localized automatic narrative emotes for item use, interactions, and ambient machine actions."
@@ -1460,7 +1467,7 @@ end
 
 function PLUGIN:GetRawItemSubject(item)
 	local text, phrase = self:ResolveItemSubjectData(item)
-	local localized = phrase and (L2(phrase) or phrase) or text
+	local localized = phrase and (L(phrase) or phrase) or text
 
 	return localized or L("novelizerSomething")
 end
@@ -1580,7 +1587,7 @@ end
 
 function PLUGIN:GetRawEntitySubject(entity)
 	local text, phrase = self:ResolveEntitySubjectData(entity)
-	local localized = phrase and (L2(phrase) or phrase) or text
+	local localized = phrase and (L(phrase) or phrase) or text
 
 	return localized or L("novelizerSomething")
 end
@@ -1679,14 +1686,16 @@ function PLUGIN:GetEquipCategory(item)
 		return "suitcase"
 	end
 
-	if (item.isWeapon and (string.lower(tostring(item.weaponCategory or "")) == "sidearm"
+	local weaponCategory = string.lower(tostring(item.weaponCategory or ""))
+
+	if (item.isWeapon and (weaponCategory == "sidearm"
 		or uniqueID:find("pistol", 1, true) or uniqueID:find("revolver", 1, true)
 		or uniqueID:find("handgun", 1, true) or name:find("pistol", 1, true)
 		or name:find("revolver", 1, true) or name:find("handgun", 1, true))) then
 		return "sidearm"
 	end
 
-	if (item.isWeapon and string.lower(tostring(item.weaponCategory or "")) == "melee") then
+	if (item.isWeapon and weaponCategory == "melee") then
 		return "melee"
 	end
 
@@ -1694,7 +1703,9 @@ function PLUGIN:GetEquipCategory(item)
 		return "weapon"
 	end
 
-	if (item.gasmask or uniqueID:find("gasmask", 1, true) or name:find("gasmask", 1, true) or uniqueID:find("cp_mask", 1, true) or name:find("CP Mask", 1, true) or uniqueID:find("respirator", 1, true) or name:find("respirator", 1, true)) then
+	if (uniqueID:find("gasmask", 1, true) or name:find("gasmask", 1, true)
+		or uniqueID:find("cp_mask", 1, true) or name:find("cp mask", 1, true)
+		or uniqueID:find("respirator", 1, true) or name:find("respirator", 1, true)) then
 		return "respirator"
 	end
 
@@ -1729,10 +1740,7 @@ function PLUGIN:GetEquipCategory(item)
 		return "uniform"
 	end
 
-	if (category == "torso") then
-		return "torso"
-	end
-
+	-- torso is handled as uniform above
 	if (category == "legs" or uniqueID:find("pants", 1, true) or uniqueID:find("trousers", 1, true)
 		or name:find("pants", 1, true) or name:find("trousers", 1, true)) then
 		return "legs"
@@ -1788,9 +1796,6 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "melee") then
 		return isEquip and {"novelizerEquipMelee1", "novelizerEquipMelee2", "novelizerEquipMelee3"}
 			or {"novelizerUnequipMelee1", "novelizerUnequipMelee2", "novelizerUnequipMelee3"}
-	elseif (category == "torso") then
-		return isEquip and {"novelizerEquipTorso1", "novelizerEquipTorso2", "novelizerEquipTorso3"}
-			or {"novelizerUnequipTorso1", "novelizerUnequipTorso2", "novelizerUnequipTorso3"}
 	elseif (category == "legs") then
 		return isEquip and {"novelizerEquipLegs1", "novelizerEquipLegs2", "novelizerEquipLegs3"}
 			or {"novelizerUnequipLegs1", "novelizerUnequipLegs2", "novelizerUnequipLegs3"}
@@ -1995,42 +2000,12 @@ function PLUGIN:GetNarratedConsumeAction(item, action)
 		return action
 	end
 
-	if (IsFilledString(item.novelizerConsumeAction)) then
-		return item.novelizerConsumeAction
-	end
-
-	local uniqueID = string.lower(tostring(item.uniqueID or ""))
-	local name = string.lower(tostring(item.name or ""))
-	local model = string.lower(tostring(item.model or ""))
-	local sound = string.lower(tostring(item.sound or ""))
-	local drinkHints = {
-		"coffee",
-		"tea",
-		"water",
-		"soda",
-		"cola",
-		"coke",
-		"pepsi",
-		"milk",
-		"beer",
-		"juice",
-		"vodka",
-		"wine",
-		"whiskey",
-		"booze",
-		"liquor",
-		"flask",
-		"canteen"
-	}
-
-	if (sound:find("drink", 1, true) or sound:find("beer", 1, true) or sound:find("tea", 1, true)) then
+	if (item.isDrink) then
 		return "Drink"
 	end
 
-	for _, hint in ipairs(drinkHints) do
-		if (uniqueID:find(hint, 1, true) or name:find(hint, 1, true) or model:find(hint, 1, true)) then
-			return "Drink"
-		end
+	if (IsFilledString(item.novelizerConsumeAction)) then
+		return item.novelizerConsumeAction
 	end
 
 	return action
@@ -2247,7 +2222,8 @@ function PLUGIN:GetDoorPhrasePool(entity)
 	local saveTable = entity.GetSaveTable and entity:GetSaveTable() or nil
 	local toggleState = saveTable and (saveTable.m_toggle_state or saveTable.m_eDoorState) or nil
 
-	if (toggleState == 0) then
+	-- 0: Closed, 1: Opening, 2: Open, 3: Closing
+	if (toggleState == 0 or toggleState == 3) then
 		return {
 			"novelizerMachineDoorOpen1",
 			"novelizerMachineDoorOpen2",
@@ -4136,73 +4112,23 @@ function PLUGIN:EmitIdleIt()
 	end
 end
 
-function PLUGIN:InitializedPlugins()
-	self:RegisterItPhrases("disk_read", {
-		"novelizerItDiskRead1",
-		"novelizerItDiskRead2",
-		"novelizerItDiskRead3"
-	})
-	self:RegisterItPhrases("machine_hum", {
-		"novelizerItMachineHum1",
-		"novelizerItMachineHum2",
-		"novelizerItMachineHum3"
-	})
-	self:RegisterItPhrases("laundry_pipe", {
-		"novelizerItLaundryPipe1",
-		"novelizerItLaundryPipe2",
-		"novelizerItLaundryPipe3"
-	})
-	self:RegisterItPhrases("washer", {
-		"novelizerItWasher1",
-		"novelizerItWasher2",
-		"novelizerItWasher3"
-	})
-	self:RegisterItPhrases("vending_hum", {
-		"novelizerItVending1",
-		"novelizerItVending2",
-		"novelizerItVending3"
-	})
-	self:RegisterItPhrases("forcefield_buzz", {
-		"novelizerItForcefield1",
-		"novelizerItForcefield2",
-		"novelizerItForcefield3"
-	})
-	self:RegisterItPhrases("radio_static", {
-		"novelizerItRadio1",
-		"novelizerItRadio2",
-		"novelizerItRadio3"
-	})
-	self:RegisterItPhrases("radio_music", {
-		"novelizerItRadioMusic1",
-		"novelizerItRadioMusic2",
-		"novelizerItRadioMusic3"
-	})
-	self:RegisterItPhrases("radio_offfreq", {
-		"novelizerItRadioOffFreq1",
-		"novelizerItRadioOffFreq2",
-		"novelizerItRadioOffFreq3"
-	})
-	self:RegisterItPhrases("door_locked", {
-		"novelizerItDoorLocked1",
-		"novelizerItDoorLocked2",
-		"novelizerItDoorLocked3"
-	})
-	self:RegisterItPhrases("stove_gas_heat", {
-		"novelizerItGasStove1",
-		"novelizerItGasStove2",
-		"novelizerItGasStove3"
-	})
-	self:RegisterItPhrases("stove_heat", {
-		"novelizerItStove1",
-		"novelizerItStove2",
-		"novelizerItStove3"
-	})
-	self:RegisterItPhrases("workbench_rattle", {
-		"novelizerItWorkbench1",
-		"novelizerItWorkbench2",
-		"novelizerItWorkbench3"
-	})
+function PLUGIN:PerformAllPatches()
+	-- Register ambient phrase pools
+	self:RegisterItPhrases("disk_read", { "novelizerItDiskRead1", "novelizerItDiskRead2", "novelizerItDiskRead3" })
+	self:RegisterItPhrases("machine_hum", { "novelizerItMachineHum1", "novelizerItMachineHum2", "novelizerItMachineHum3" })
+	self:RegisterItPhrases("laundry_pipe", { "novelizerItLaundryPipe1", "novelizerItLaundryPipe2", "novelizerItLaundryPipe3" })
+	self:RegisterItPhrases("washer", { "novelizerItWasher1", "novelizerItWasher2", "novelizerItWasher3" })
+	self:RegisterItPhrases("vending_hum", { "novelizerItVending1", "novelizerItVending2", "novelizerItVending3" })
+	self:RegisterItPhrases("forcefield_buzz", { "novelizerItForcefield1", "novelizerItForcefield2", "novelizerItForcefield3" })
+	self:RegisterItPhrases("radio_static", { "novelizerItRadio1", "novelizerItRadio2", "novelizerItRadio3" })
+	self:RegisterItPhrases("radio_music", { "novelizerItRadioMusic1", "novelizerItRadioMusic2", "novelizerItRadioMusic3" })
+	self:RegisterItPhrases("radio_offfreq", { "novelizerItRadioOffFreq1", "novelizerItRadioOffFreq2", "novelizerItRadioOffFreq3" })
+	self:RegisterItPhrases("door_locked", { "novelizerItDoorLocked1", "novelizerItDoorLocked2", "novelizerItDoorLocked3" })
+	self:RegisterItPhrases("stove_gas_heat", { "novelizerItGasStove1", "novelizerItGasStove2", "novelizerItGasStove3" })
+	self:RegisterItPhrases("stove_heat", { "novelizerItStove1", "novelizerItStove2", "novelizerItStove3" })
+	self:RegisterItPhrases("workbench_rattle", { "novelizerItWorkbench1", "novelizerItWorkbench2", "novelizerItWorkbench3" })
 
+	-- Run entity and action patches
 	self:RegisterDefaultEntityPhrases()
 	self:PatchItems()
 	self:PatchWaterCommand()
@@ -4220,22 +4146,12 @@ function PLUGIN:InitializedPlugins()
 	self:PatchStaminaConsumption()
 end
 
+function PLUGIN:InitializedPlugins()
+	self:PerformAllPatches()
+end
+
 function PLUGIN:OnReloaded()
-	self:RegisterDefaultEntityPhrases()
-	self:PatchItems()
-	self:PatchWaterCommand()
-	self:PatchCommandActions()
-	self:PatchApplyCommand()
-	self:PatchToggleRaiseCommand()
-	self:PatchLootSearch()
-	self:PatchCraftingActions()
-	self:PatchLockEntity("ix_combinelock")
-	self:PatchLockEntity("ix_unionlock")
-	self:PatchRecyclerEntity()
-	self:PatchChargers()
-	self:EnsureCorePatches()
-	self:PatchInteractiveComputers()
-	self:PatchStaminaConsumption()
+	self:PerformAllPatches()
 end
 
 function PLUGIN:InitializedConfig()
@@ -4590,11 +4506,19 @@ function PLUGIN:Think()
 		self:EmitIdleIt()
 	end
 
-	if (SERVER) then
-		self.ixNovelizerFlashlightStates = self.ixNovelizerFlashlightStates or {}
+	if ((self.nextStateThink or 0) <= currentTime) then
+		self.nextStateThink = currentTime + 0.1 -- 10Hz is plenty for responsive ladder/flashlight detection
 
-		for _, client in ipairs(player.GetAll()) do
-			if (IsValid(client)) then
+		local players = player.GetAll()
+		local server = SERVER
+
+		for i = 1, #players do
+			local client = players[i]
+			if (not IsValid(client) or not client:GetCharacter()) then continue end
+
+			-- Flashlight state change detection
+			if (server) then
+				self.ixNovelizerFlashlightStates = self.ixNovelizerFlashlightStates or {}
 				local enabled = client:GetNetVar("flashlight", false) == true
 				local previous = self.ixNovelizerFlashlightStates[client]
 
@@ -4603,43 +4527,35 @@ function PLUGIN:Think()
 				elseif (previous ~= enabled) then
 					self.ixNovelizerFlashlightStates[client] = enabled
 
-					if (client:Alive() and client:GetCharacter()) then
+					if (client:Alive()) then
 						self:HandleFlashlightStateChange(client, enabled)
 					end
 				end
 			end
-		end
-	end
 
-	self.ixNovelizerLadderStates = self.ixNovelizerLadderStates or {}
-
-	for _, client in ipairs(player.GetAll()) do
-		if (IsValid(client)) then
+			-- Ladder state change detection
 			local onLadder = client:GetMoveType() == MOVETYPE_LADDER
+			self.ixNovelizerLadderStates = self.ixNovelizerLadderStates or {}
 			local state = self.ixNovelizerLadderStates[client]
 
 			if (not state) then
-				state = {
-					active = false,
-					startTime = 0,
-					narrated = false,
-					leaveTime = nil
-				}
+				state = { active = false, startTime = 0, narrated = false, leaveTime = nil }
 				self.ixNovelizerLadderStates[client] = state
 			end
 
 			if (onLadder) then
 				state.leaveTime = nil
 
-				if (state.active ~= true) then
+				if (not state.active) then
 					state.active = true
 					state.startTime = currentTime
 					state.narrated = false
-				elseif (state.narrated ~= true
-					and currentTime >= (state.startTime or currentTime) + 0.25
+				elseif (not state.narrated
+					and currentTime >= state.startTime + 0.25
 					and self:CanAutoNarrate(client)
 					and (client.ixNovelizerLastLadderTime or 0) + 2 <= currentTime
 					and self:PassNamedCooldown(client, "ladder", 3)) then
+
 					state.narrated = true
 					client.ixNovelizerLastLadderTime = currentTime
 
@@ -4647,24 +4563,17 @@ function PLUGIN:Think()
 						"novelizerLadder1",
 						"novelizerLadder2",
 						"novelizerLadder3"
-					}), nil, {
-						actionKey = "ladder"
-					})
+					}), nil, { actionKey = "ladder" })
 				end
-			elseif (state.active == true) then
+			elseif (state.active) then
 				state.leaveTime = state.leaveTime or currentTime
 
-				if ((state.leaveTime or 0) + 0.4 <= currentTime) then
+				if (state.leaveTime + 0.4 <= currentTime) then
 					state.active = false
 					state.startTime = 0
 					state.narrated = false
 					state.leaveTime = nil
 				end
-			else
-				state.active = false
-				state.startTime = 0
-				state.narrated = false
-				state.leaveTime = nil
 			end
 		end
 	end
