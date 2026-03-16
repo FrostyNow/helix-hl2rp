@@ -5,3 +5,4 @@ ITEM.empty = "empty_can"
 ITEM.thirst = 25
 ITEM.price = 12
 ITEM.usenum = 1
+ITEM.isDrink = true

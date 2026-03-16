@@ -4,3 +4,4 @@ ITEM.description = "itemMineralWaterDesc"
 ITEM.thirst = 25
 ITEM.price = 12
 ITEM.empty = "misc_plasticbottle"
+ITEM.isDrink = true

@@ -5,6 +5,7 @@ ITEM.thirst = 15
 ITEM.price = 5
 ITEM.empty = "water_empty"
 ITEM.sound = "interface/inv_drink_can2.ogg"
+ITEM.isDrink = true
 
 ITEM:Hook("Eat", function(item)
 	local client = item.player

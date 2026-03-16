@@ -8,3 +8,4 @@ ITEM.hunger = 5
 ITEM.price = 15
 ITEM.heal = 5
 ITEM.usenum = 2
+ITEM.isDrink = true

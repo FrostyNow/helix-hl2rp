@@ -7,3 +7,4 @@ ITEM.price = 5
 ITEM.heal = 5
 ITEM.sound = "interface/inv_drink_tea.ogg"
 ITEM.empty = "misc_coffeecup"
+ITEM.isDrink = true

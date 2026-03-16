@@ -9,6 +9,7 @@ ITEM.usenum = 2
 ITEM.sound = "interface/inv_beer.ogg"
 ITEM.empty = "coke_bottle_empty"
 ITEM.exRender = true
+ITEM.isDrink = true
 
 ITEM.bodyGroups = {
 	["Bottlecap"] = 0

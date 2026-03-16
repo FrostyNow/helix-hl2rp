@@ -6,3 +6,4 @@ ITEM.thirst = 30
 ITEM.price = 20
 ITEM.heal = -20
 ITEM.usenum = 4
+ITEM.isDrink = true

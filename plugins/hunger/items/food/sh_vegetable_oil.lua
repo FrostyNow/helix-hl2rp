@@ -5,3 +5,4 @@ ITEM.hunger = -10
 ITEM.thirst = -10
 ITEM.price = 60
 ITEM.usenum = 2
+ITEM.isDrink = true

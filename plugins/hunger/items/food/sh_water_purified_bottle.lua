@@ -5,3 +5,4 @@ ITEM.empty = "misc_plasticbottle"
 ITEM.thirst = 25
 ITEM.price = 12
 ITEM.usenum = 1
+ITEM.isDrink = true

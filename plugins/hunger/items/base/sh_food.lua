@@ -11,6 +11,7 @@ ITEM.empty = false
 ITEM.cookable = false
 ITEM.heal = 0
 ITEM.sound = "npc/barnacle/barnacle_gulp2.wav"
+ITEM.isDrink = false
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
