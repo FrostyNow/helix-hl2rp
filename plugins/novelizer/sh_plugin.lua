@@ -65,6 +65,8 @@ ix.lang.AddTable("english", {
 	novelizerSniperRifle = "sniper rifle",
 	novelizerKeys = "keyring",
 	novelizerHands = "fists",
+	novelizerBody = "body",
+	novelizerCorpse = "corpse",
 	novelizerSuitcase = "suitcase",
 	novelizerRationPack = "ration pack",
 	novelizerCID = "CID card",
@@ -552,6 +554,8 @@ ix.lang.AddTable("korean", {
 	novelizerSniperRifle = "저격총",
 	novelizerKeys = "열쇠고리",
 	novelizerHands = "주먹",
+	novelizerBody = "몸",
+	novelizerCorpse = "시신",
 	novelizerSuitcase = "여행 가방",
 	novelizerRationPack = "배급 포대",
 	novelizerCID = "신분증",
@@ -1455,6 +1459,19 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	end
 
 	local className = entity:GetClass()
+
+	if (className == "prop_ragdoll") then
+		local owner = entity.GetNetVar and entity:GetNetVar("player") or nil
+		local isCorpse = (entity.GetNetVar and (entity:GetNetVar("ixInventory") or entity:GetNetVar("ixPlayerName")))
+			or entity.ixInventory or entity.ixPlayerName
+
+		if (isCorpse or (IsValid(owner) and owner:IsPlayer() and not owner:Alive())) then
+			return "corpse", "novelizerCorpse"
+		end
+
+		return "body", "novelizerBody"
+	end
+
 	local subjectPhrase = classSubjectPhrases[className]
 
 	if (IsFilledString(subjectPhrase)) then
@@ -3261,39 +3278,30 @@ function PLUGIN:PatchCraftingActions()
 
 	craftPlugin.ixNovelizerCraftWrapped = true
 
-	local originalCraftRecipe = craftPlugin.craft.CraftRecipe
-
-	if (not isfunction(originalCraftRecipe)) then
-		return
-	end
-
-	craftPlugin.craft.CraftRecipe = function(client, uniqueID, ...)
-		local recipeTable = craftPlugin.craft.recipes and craftPlugin.craft.recipes[uniqueID]
-		local result = originalCraftRecipe(client, uniqueID, ...)
-
-		if (result and self:CanAutoNarrate(client) and recipeTable) then
-			local phrasePool = self:GetRecipePhrasePool(recipeTable)
-			local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
-
-			self:SendNovelMe(client, table.Random(phrasePool), {
-				stationSubject
-			}, {
-				actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
-			})
-
-			if (IsValid(stationEntity)) then
-				local itKey = string.lower(tostring(recipeTable.category or "")) == "food"
-					and self:GetHeatItKey(stationEntity)
-					or "workbench_rattle"
-
-				self:EmitConditionalIt(stationEntity, itKey, {
-					cooldown = 4
-				})
-			end
+	hook.Add("CraftRecipeCompleted", "ixNovelizerCraftingActions", function(client, recipeTable, success)
+		if (not success or not self:CanAutoNarrate(client) or not recipeTable) then
+			return
 		end
 
-		return result
-	end
+		local phrasePool = self:GetRecipePhrasePool(recipeTable)
+		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+
+		self:SendNovelMe(client, table.Random(phrasePool), {
+			stationSubject
+		}, {
+			actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
+		})
+
+		if (IsValid(stationEntity)) then
+			local itKey = string.lower(tostring(recipeTable.category or "")) == "food"
+				and self:GetHeatItKey(stationEntity)
+				or "workbench_rattle"
+
+			self:EmitConditionalIt(stationEntity, itKey, {
+				cooldown = 4
+			})
+		end
+	end)
 end
 
 function PLUGIN:PatchRaiseState()
@@ -3303,13 +3311,14 @@ function PLUGIN:PatchRaiseState()
 		return
 	end
 
-	if (playerMeta.ixNovelizerRaisePatchVersion == NOVELIZER_RAISE_PATCH_VERSION) then
+	if (playerMeta.SetWepRaised == self.ixNovelizerPatchedSetWepRaised
+		and playerMeta.ToggleWepRaised == self.ixNovelizerPatchedToggleWepRaised) then
 		return
 	end
 
 	playerMeta.ixNovelizerRaisePatchVersion = NOVELIZER_RAISE_PATCH_VERSION
 
-	playerMeta.SetWepRaised = function(client, bState, weapon)
+	local patchedSetWepRaised = function(client, bState, weapon)
 		weapon = weapon or client:GetActiveWeapon()
 
 		if (IsValid(weapon)) then
@@ -3333,7 +3342,7 @@ function PLUGIN:PatchRaiseState()
 		end
 	end
 
-	playerMeta.ToggleWepRaised = function(client)
+	local patchedToggleWepRaised = function(client)
 		local weapon = client:GetActiveWeapon()
 
 		if (not IsValid(weapon)) then
@@ -3362,20 +3371,22 @@ function PLUGIN:PatchRaiseState()
 			PLUGIN:HandleManualRaiseToggle(client, weapon, isRaised)
 		end
 	end
+
+	playerMeta.SetWepRaised = patchedSetWepRaised
+	playerMeta.ToggleWepRaised = patchedToggleWepRaised
+
+	self.ixNovelizerPatchedSetWepRaised = patchedSetWepRaised
+	self.ixNovelizerPatchedToggleWepRaised = patchedToggleWepRaised
 end
 
 function PLUGIN:PatchHandsWeapon()
-	if (self.ixNovelizerHandsWrapped) then
-		return
-	end
-
 	local weaponTable = weapons.GetStored("ix_hands")
 
-	if (not weaponTable) then
+	if (not weaponTable or weaponTable.ixNovelizerHandsWrapped) then
 		return
 	end
 
-	self.ixNovelizerHandsWrapped = true
+	weaponTable.ixNovelizerHandsWrapped = true
 
 	local originalPickupObject = weaponTable.PickupObject
 	local originalDropObject = weaponTable.DropObject
@@ -3532,10 +3543,9 @@ function PLUGIN:PatchStoveEntity()
 				"novelizerStoveOff2",
 				"novelizerStoveOff3"
 			}
+			local phraseKey = table.Random(phrasePool)
 
-			PLUGIN:SendNovelMe(activator, table.Random(phrasePool), {
-				PLUGIN:GetEntitySubject(entity)
-			}, {
+			PLUGIN:SendNovelMe(activator, phraseKey, PLUGIN:GetEntityUseArguments(entity, phraseKey), {
 				actionKey = isActive and "stove_on" or "stove_off"
 			})
 		end
@@ -3586,10 +3596,9 @@ function PLUGIN:PatchFireEntity(className)
 				"novelizerFireOff2",
 				"novelizerFireOff3"
 			}
+			local phraseKey = table.Random(phrasePool)
 
-			PLUGIN:SendNovelMe(activator, table.Random(phrasePool), {
-				PLUGIN:GetEntitySubject(entity)
-			}, {
+			PLUGIN:SendNovelMe(activator, phraseKey, PLUGIN:GetEntityUseArguments(entity, phraseKey), {
 				actionKey = isActive and (className .. "_on") or (className .. "_off")
 			})
 		end)
@@ -3778,6 +3787,15 @@ function PLUGIN:PatchLaundryPipeEntity()
 
 		return result
 	end
+end
+
+function PLUGIN:EnsureCorePatches()
+	self:PatchRaiseState()
+	self:PatchHandsWeapon()
+	self:PatchStoveEntity()
+	self:PatchFireEntity("ix_bucket")
+	self:PatchFireEntity("ix_bonfire")
+	self:PatchLaundryPipeEntity()
 end
 
 function PLUGIN:CanOpenInteractiveComputer(client, entity, interactivePlugin)
@@ -4176,18 +4194,13 @@ function PLUGIN:InitializedPlugins()
 	self:PatchCommandActions()
 	self:PatchApplyCommand()
 	self:PatchToggleRaiseCommand()
-	self:PatchRaiseState()
 	self:PatchLootSearch()
 	self:PatchCraftingActions()
-	self:PatchHandsWeapon()
-	self:PatchStoveEntity()
-	self:PatchFireEntity("ix_bucket")
-	self:PatchFireEntity("ix_bonfire")
 	self:PatchLockEntity("ix_combinelock")
 	self:PatchLockEntity("ix_unionlock")
 	self:PatchRecyclerEntity()
 	self:PatchChargers()
-	self:PatchLaundryPipeEntity()
+	self:EnsureCorePatches()
 	self:PatchInteractiveComputers()
 	self:PatchStaminaConsumption()
 end
@@ -4199,18 +4212,13 @@ function PLUGIN:OnReloaded()
 	self:PatchCommandActions()
 	self:PatchApplyCommand()
 	self:PatchToggleRaiseCommand()
-	self:PatchRaiseState()
 	self:PatchLootSearch()
 	self:PatchCraftingActions()
-	self:PatchHandsWeapon()
-	self:PatchStoveEntity()
-	self:PatchFireEntity("ix_bucket")
-	self:PatchFireEntity("ix_bonfire")
 	self:PatchLockEntity("ix_combinelock")
 	self:PatchLockEntity("ix_unionlock")
 	self:PatchRecyclerEntity()
 	self:PatchChargers()
-	self:PatchLaundryPipeEntity()
+	self:EnsureCorePatches()
 	self:PatchInteractiveComputers()
 	self:PatchStaminaConsumption()
 end
@@ -4557,6 +4565,11 @@ end
 function PLUGIN:Think()
 	local currentTime = CurTime()
 
+	if ((self.nextPatchEnsure or 0) <= currentTime) then
+		self.nextPatchEnsure = currentTime + 5
+		self:EnsureCorePatches()
+	end
+
 	if ((self.nextIdleItThink or 0) <= currentTime) then
 		self.nextIdleItThink = currentTime + 3
 		self:EmitIdleIt()
@@ -4594,12 +4607,15 @@ function PLUGIN:Think()
 				state = {
 					active = false,
 					startTime = 0,
-					narrated = false
+					narrated = false,
+					leaveTime = nil
 				}
 				self.ixNovelizerLadderStates[client] = state
 			end
 
 			if (onLadder) then
+				state.leaveTime = nil
+
 				if (state.active ~= true) then
 					state.active = true
 					state.startTime = currentTime
@@ -4620,10 +4636,20 @@ function PLUGIN:Think()
 						actionKey = "ladder"
 					})
 				end
+			elseif (state.active == true) then
+				state.leaveTime = state.leaveTime or currentTime
+
+				if ((state.leaveTime or 0) + 0.4 <= currentTime) then
+					state.active = false
+					state.startTime = 0
+					state.narrated = false
+					state.leaveTime = nil
+				end
 			else
 				state.active = false
 				state.startTime = 0
 				state.narrated = false
+				state.leaveTime = nil
 			end
 		end
 	end
