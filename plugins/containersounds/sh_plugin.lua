@@ -1,5 +1,5 @@
 PLUGIN.name = "Container Sounds"
-PLUGIN.author = "OpenAI"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds open and close sounds to storage containers."
 
 local metalOpenSounds = {
@@ -32,6 +32,18 @@ local cardboardCloseSounds = {
 	"physics/cardboard/cardboard_box_impact_soft6.wav"
 }
 
+local metalSearchStartSounds = {
+	"doors/door_latch3.wav"
+}
+
+local woodSearchStartSounds = {
+	"physics/wood/wood_crate_impact_soft1.wav"
+}
+
+local cardboardSearchStartSounds = {
+	"physics/cardboard/cardboard_box_impact_soft1.wav"
+}
+
 local function GetContainerEntityTable()
 	local stored = scripted_ents.GetStored("ix_container")
 
@@ -60,16 +72,17 @@ local function GetSoundValue(spec)
 	end
 end
 
-local function GetFallbackSoundSpec(entity, bOpening)
+local function GetContainerMaterial(entity)
 	local model = string.lower(tostring(entity:GetModel() or ""))
-	local sounds
 
 	if (
 		model:find("cardboard", 1, true) or
 		model:find("cashregister", 1, true)
 	) then
-		sounds = bOpening and cardboardOpenSounds or cardboardCloseSounds
-	elseif (
+		return "cardboard"
+	end
+
+	if (
 		model:find("wood_crate", 1, true) or
 		model:find("footlocker", 1, true) or
 		model:find("item_crate", 1, true) or
@@ -77,20 +90,51 @@ local function GetFallbackSoundSpec(entity, bOpening)
 		model:find("dresser", 1, true) or
 		model:find("desk01a", 1, true)
 	) then
-		sounds = bOpening and woodOpenSounds or woodCloseSounds
+		return "wood"
+	end
+
+	return "metal"
+end
+
+local function GetFallbackSoundSpec(entity, phase)
+	local material = GetContainerMaterial(entity)
+	local sounds
+
+	if (phase == "search") then
+		if (material == "cardboard") then
+			sounds = cardboardSearchStartSounds
+		elseif (material == "wood") then
+			sounds = woodSearchStartSounds
+		else
+			sounds = metalSearchStartSounds
+		end
+	elseif (phase == "close") then
+		if (material == "cardboard") then
+			sounds = cardboardCloseSounds
+		elseif (material == "wood") then
+			sounds = woodCloseSounds
+		else
+			sounds = metalCloseSounds
+		end
 	else
-		sounds = bOpening and metalOpenSounds or metalCloseSounds
+		if (material == "cardboard") then
+			sounds = cardboardOpenSounds
+		elseif (material == "wood") then
+			sounds = woodOpenSounds
+		else
+			sounds = metalOpenSounds
+		end
 	end
 
 	return sounds[math.random(1, #sounds)]
 end
 
-function PLUGIN:EmitContainerSound(entity, definition, bOpening)
+function PLUGIN:EmitContainerSound(entity, definition, phase)
 	if (!IsValid(entity)) then
 		return
 	end
 
-	local key = bOpening and "opensound" or "closesound"
+	local key = phase == "close" and "closesound" or phase == "search" and "searchsound" or "opensound"
 	local soundPath, level, pitch, volume
 
 	if (istable(definition) and definition[key] != nil) then
@@ -100,7 +144,7 @@ function PLUGIN:EmitContainerSound(entity, definition, bOpening)
 
 		soundPath, level, pitch, volume = GetSoundValue(definition[key])
 	else
-		soundPath = GetFallbackSoundSpec(entity, bOpening)
+		soundPath = GetFallbackSoundSpec(entity, phase)
 	end
 
 	if (!isstring(soundPath) or soundPath == "") then
@@ -132,13 +176,18 @@ function PLUGIN:PatchContainerEntity()
 				entity = self,
 				searchTime = ix.config.Get("containerOpenTime", 0.7),
 				data = {money = self:GetMoney()},
+				OnPlayerOpenStart = function(client)
+					if (soundPlugin) then
+						soundPlugin:EmitContainerSound(self, definition, "search")
+					end
+				end,
 				OnPlayerOpenComplete = function(client)
 					if (definition and definition.OnOpen) then
 						definition.OnOpen(self, client)
 					end
 
 					if (soundPlugin) then
-						soundPlugin:EmitContainerSound(self, definition, true)
+						soundPlugin:EmitContainerSound(self, definition, "open")
 					end
 				end,
 				OnPlayerClose = function(client)
@@ -147,7 +196,7 @@ function PLUGIN:PatchContainerEntity()
 					end
 
 					if (soundPlugin) then
-						soundPlugin:EmitContainerSound(self, definition, false)
+						soundPlugin:EmitContainerSound(self, definition, "close")
 					end
 
 					ix.log.Add(client, "closeContainer", name, inventory:GetID())
@@ -190,6 +239,11 @@ function PLUGIN:PatchStorageLibrary()
 
 		if (storageInfo.searchTime > 0) then
 			client:SetAction(storageInfo.searchText, storageInfo.searchTime)
+
+			if (isfunction(storageInfo.OnPlayerOpenStart)) then
+				storageInfo.OnPlayerOpenStart(client)
+			end
+
 			client:DoStaredAction(storageInfo.entity, function()
 				if (IsValid(client) and IsValid(storageInfo.entity) and inventory.storageInfo) then
 					ix.storage.Sync(client, inventory)
