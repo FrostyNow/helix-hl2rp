@@ -135,6 +135,9 @@ end
 function Schema:PlayerLoadedCharacter(client, character, oldCharacter)
 	local faction = character:GetFaction()
 
+	self:SyncCitizenID(client, character)
+	self:RefreshFlashlight(client)
+
 	if (faction == FACTION_CITIZEN) then
 		self:AddCombineDisplayMessage("@cCitizenLoaded", Color(255, 100, 255, 255))
 	elseif (client:IsCombine()) then
@@ -144,7 +147,12 @@ end
 
 function Schema:CharacterVarChanged(character, key, oldValue, value)
 	local client = character:GetPlayer()
-	if (key == "name") then
+
+	if (key == "faction" and IsValid(client)) then
+		self:RefreshFlashlight(client)
+	end
+
+	if (key == "name" and IsValid(client)) then
 		local factionTable = ix.faction.Get(client:Team())
 
 		if (factionTable.OnNameChanged) then
@@ -170,6 +178,7 @@ function Schema:PlayerSpawn(client)
 	local inv = character and character:GetInventory()
 
 	client:SetCanZoom(character and (client:IsCombine() or client:IsAdmin() or (inv and inv:HasItem("binoculars"))))
+	self:RefreshFlashlight(client)
 
 	-- Clear name panels from any existing corpses upon spawning
 	for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do

@@ -40,14 +40,7 @@ ITEM.noBusiness = true
 ITEM.armorAmount = 50
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}
 ITEM.resistance = true
-ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
+ITEM.hitGroups = {HITGROUP_CHEST}
 
-if (CLIENT) then
-    function ITEM:PopulateTooltip(tooltip)
-        local data = tooltip:AddRow("data")
-        data:SetBackgroundColor(Color(218, 24, 24))
-        data:SetText(L("sociocidalItemTooltip"))
-        data:SetExpensiveShadow(0.5)
-        data:SizeToContents()
-    end
-end
+ITEM.tooltipLabelText = "sociocidalItemTooltip"
+ITEM.tooltipLabelColor = Color(218, 24, 24)

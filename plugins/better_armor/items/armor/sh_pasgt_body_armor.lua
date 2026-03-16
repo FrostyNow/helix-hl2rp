@@ -2,8 +2,8 @@
 ITEM.name = "PASGT Vest"
 ITEM.description = "pasgtBodyArmorDesc"
 ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
-ITEM.height = 2
-ITEM.width = 2
+ITEM.height = 1
+ITEM.width = 1
 ITEM.armorAmount = 70
 ITEM.price = 250
 ITEM.gasmask = false -- It will protect you from bad air
@@ -45,12 +45,5 @@ ITEM.allowedModels = {
 	"models/models/army/female_07.mdl"
 }
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-	end
-end
+ITEM.tooltipLabelText = "securitizedItemTooltip"
+ITEM.tooltipLabelFactionColor = FACTION_MPF

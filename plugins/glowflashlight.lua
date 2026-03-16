@@ -171,15 +171,16 @@ if ( SERVER ) then
 
 	function PLUGIN:PlayerSwitchFlashlight(client, enabled)
 		local character = client:GetCharacter()
-		local inventory = character and character:GetInventory()
 
 		if (!character or client:IsRagdoll()) then
 			return false
 		end
 
-		local bHasFlashlightItem = ix.item.list["flashlight"] != nil
+		if (IsValid(client.ixScn)) then
+			return
+		end
 
-		if (!bHasFlashlightItem or (inventory and inventory:GetItemCount("flashlight") > 0) or client:IsCombine()) then
+		if (Schema and Schema.CanPlayerUseFlashlight and Schema:CanPlayerUseFlashlight(client)) then
 			client:SetNetVar("flashlight", !client:GetNetVar("flashlight", false))
 		end
 

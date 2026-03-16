@@ -1094,10 +1094,14 @@ function PLUGIN:OverwriteClasses()
 			local frac = math.min(math.max(0, frac+garbleOffset), 100)
 
 			if (ix.config.Get("chatAutoFormat", true)) then
-				local lastChar = text:sub(-1)
+				if (Schema and Schema.IsCombineChatWrapped and Schema:IsCombineChatWrapped(text)) then
+					text = Schema:AppendCombineChatPunctuation(text)
+				else
+					local lastChar = text:sub(-1)
 
-				if (lastChar != "." and lastChar != "!" and lastChar != "?") then
-					text = text .. "."
+					if (lastChar != "." and lastChar != "!" and lastChar != "?") then
+						text = text .. "."
+					end
 				end
 			end
 

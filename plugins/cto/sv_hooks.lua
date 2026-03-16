@@ -122,10 +122,10 @@ function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
 	if (client:IsCombine() and !client:GetNetVar("IsBiosignalGone")) then
 		if (bFallenOver) then
 			local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
-			local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
+			local unitID = Schema:GetCombineUnitID(client)
 
 			Schema:AddCombineDisplayMessage("@DownloadingTrauma", Color(255, 255, 255, 255))
-			Schema:AddCombineDisplayMessage("@UnitLostConsciousness", Color(255, 0, 0, 255), digits, location)
+			Schema:AddCombineDisplayMessage("@UnitLostConsciousness", Color(255, 0, 0, 255), unitID, location)
 		end
 	end
 end

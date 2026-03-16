@@ -274,10 +274,6 @@ ix.lang.AddTable("english", {
 	novelizerMachineVending2 = "jabs at the controls on %s.",
 	novelizerMachineVending3 = "coaxes a choice out of %s.",
 
-	novelizerMachineCoffee1 = "keys a drink selection into %s.",
-	novelizerMachineCoffee2 = "works through the options on %s.",
-	novelizerMachineCoffee3 = "taps a selection into %s and waits.",
-
 	novelizerMachineHealth1 = "starts the automated medical station.",
 	novelizerMachineHealth2 = "leans into the automated medical station.",
 	novelizerMachineHealth3 = "activates the automated medical station's treatment cycle.",
@@ -550,7 +546,7 @@ ix.lang.AddTable("korean", {
 	novelizerTVProp = "TV",
 	novelizerBucketFire = "양동이 화로",
 	novelizerBonfire = "모닥불",
-	novelizerBreachCharge = "문폭파 장치",
+	novelizerBreachCharge = "폭파 장치",
 	novelizerDigitalClock = "디지털 시계",
 	novelizerMachineGun = "기관총",
 	novelizerSniperRifle = "저격총",
@@ -596,9 +592,9 @@ ix.lang.AddTable("korean", {
 
 	novelizerRaise1 = "%s 겨눌 태세로 들어 올립니다.",
 	novelizerRaise2 = "%s 사격 준비 자세로 올립니다.",
-	novelizerRaise3 = "%s 어깨선까지 끌어올립니다.",
+	novelizerRaise3 = "%s 들어 올립니다.",
 	novelizerLower1 = "%s 내립니다.",
-	novelizerLower2 = "%s 긴장한 자세에서 내립니다.",
+	novelizerLower2 = "%s 편안한 자세로 내립니다.",
 	novelizerLower3 = "%s 준비 자세에서 풀어 둡니다.",
 	novelizerReload1 = "%s 다시 장전합니다.",
 	novelizerReload2 = "새 탄창을 갈아 끼웁니다.",
@@ -622,9 +618,9 @@ ix.lang.AddTable("korean", {
 	novelizerRequest1 = "단말기에 짧은 요청을 넣습니다.",
 	novelizerRequest2 = "기기에 대고 짧게 요청합니다.",
 	novelizerRequest3 = "장치로 간단한 요청을 보냅니다.",
-	novelizerRadio1 = "무전을 잡고 송신합니다.",
+	novelizerRadio1 = "무전을 송신합니다.",
 	novelizerRadio2 = "무전기에 입을 가까이 대고 말합니다.",
-	novelizerRadio3 = "무전 송신 키를 누릅니다.",
+	novelizerRadio3 = "무전 송신 버튼을 누릅니다.",
 	novelizerSetFreq1 = "무전 주파수를 조정합니다.",
 	novelizerSetFreq2 = "무전 채널을 다시 맞춥니다.",
 	novelizerSetFreq3 = "새 무전 주파수를 입력합니다.",
@@ -722,11 +718,11 @@ ix.lang.AddTable("korean", {
 	novelizerGrenadePrime3 = "%s 짧게 당겨 기폭 준비를 합니다.",
 	novelizerMolotovPrime1 = "%s 불을 붙입니다.",
 	novelizerMolotovPrime2 = "%s 심지에 불을 옮깁니다.",
-	novelizerMolotovPrime3 = "%s 점화한 채 팔을 뒤로 젖힙니다.",
+	novelizerMolotovPrime3 = "%s 불을 붙이고 던지려고 합니다.",
 	novelizerGrenadeThrow1 = "%s 던집니다.",
 	novelizerGrenadeThrow2 = "%s 힘껏 내던집니다.",
 	novelizerGrenadeThrow3 = "%s 빠르게 투척합니다.",
-	novelizerMolotovThrow1 = "%s 불붙은 궤적과 함께 던집니다.",
+	novelizerMolotovThrow1 = "%s 불붙은 궤적을 그리도록 던집니다.",
 	novelizerMolotovThrow2 = "%s 화염병을 내던집니다.",
 	novelizerMolotovThrow3 = "%s 불길을 그리며 투척합니다.",
 	novelizerAmmo1 = "%s 탄약을 꺼내 장전합니다.",
@@ -767,22 +763,18 @@ ix.lang.AddTable("korean", {
 	novelizerFireOff2 = "%s 불을 눌러 끕니다.",
 	novelizerFireOff3 = "%s 불씨를 꺼뜨립니다.",
 
-	novelizerMachineVending1 = "%s 선택 버튼을 눌러 봅니다.",
-	novelizerMachineVending2 = "%s 조작부를 두드립니다.",
+	novelizerMachineVending1 = "%s 선택 버튼을 누릅니다.",
+	novelizerMachineVending2 = "%s 조작부를 건드립니다.",
 	novelizerMachineVending3 = "%s 앞에서 원하는 항목을 고릅니다.",
 
-	novelizerMachineCoffee1 = "%s 음료 선택부를 눌러 봅니다.",
-	novelizerMachineCoffee2 = "%s 메뉴를 훑으며 버튼을 누릅니다.",
-	novelizerMachineCoffee3 = "%s 조작부에 짧게 입력합니다.",
-
 	novelizerMachineHealth1 = "자동화 의료 장치를 작동시킵니다.",
-	novelizerMachineHealth2 = "자동화 의료 장치에 몸을 붙입니다.",
-	novelizerMachineHealth3 = "자동화 의료 장치의 치료 주기를 시작합니다.",
-	novelizerMachineHealthGrub1 = "%s %s의 투입구에 밀어 넣습니다.",
-	novelizerMachineHealthGrub2 = "%s %s 안쪽으로 집어넣습니다.",
-	novelizerMachineHealthGrub3 = "%s %s의 공급구에 밀어 넣습니다.",
+	novelizerMachineHealth2 = "자동화 의료 장치에 손을 올려놓습니다.",
+	novelizerMachineHealth3 = "자동화 의료 장치의 치료 기능을 작동시킵니다.",
+	novelizerMachineHealthGrub1 = "%s %s의 투입구에 끼워 넣습니다.",
+	novelizerMachineHealthGrub2 = "%s %s 앞에 끼워 넣습니다.",
+	novelizerMachineHealthGrub3 = "%s %s의 공급구에 넣습니다.",
 	novelizerMachineSuit1 = "충전 장치에서 전력을 받기 시작합니다.",
-	novelizerMachineSuit2 = "충전 장치에 몸을 붙여 충전을 시작합니다.",
+	novelizerMachineSuit2 = "충전 장치에 연결해 충전을 시작합니다.",
 	novelizerMachineSuit3 = "충전 장치를 작동시켜 전력을 끌어옵니다.",
 
 	novelizerMachineRation1 = "%s 앞에서 인증 절차를 밟습니다.",
@@ -795,11 +787,11 @@ ix.lang.AddTable("korean", {
 	novelizerMachineMannable2 = "%s 붙잡고 사격 자세로 들어갑니다.",
 	novelizerMachineMannable3 = "%s 뒤에 붙어 조작을 시작합니다.",
 	novelizerMachineSniper1 = "%s 붙잡고 조준 자세를 잡습니다.",
-	novelizerMachineSniper2 = "%s 스코프 뒤에 눈을 맞춥니다.",
+	novelizerMachineSniper2 = "%s 조준경을 통해 조준합니다.",
 	novelizerMachineSniper3 = "%s 몸을 붙여 사격 준비를 합니다.",
-	novelizerDoorBreachPlace1 = "문에 문폭파 장치를 부착합니다.",
-	novelizerDoorBreachPlace2 = "문에 문폭파 장치를 눌러 붙입니다.",
-	novelizerDoorBreachPlace3 = "문 표면에 문폭파 장치를 고정합니다.",
+	novelizerDoorBreachPlace1 = "문에 장치를 부착합니다.",
+	novelizerDoorBreachPlace2 = "문에 장치를 눌러 붙입니다.",
+	novelizerDoorBreachPlace3 = "문에 장치를 고정합니다.",
 	novelizerDoorBreachUse1 = "%s 기폭 장치를 작동시킵니다.",
 	novelizerDoorBreachUse2 = "%s 타이머를 누릅니다.",
 	novelizerDoorBreachUse3 = "%s 폭파 절차를 시작합니다.",
@@ -812,17 +804,17 @@ ix.lang.AddTable("korean", {
 	novelizerMachineComputer3 = "%s 조작합니다.",
 	novelizerMachineComputer4 = "%s 메뉴를 빠르게 넘깁니다.",
 
-	novelizerMachineTerminal1 = "%s 사용해 짧은 요청을 입력합니다.",
+	novelizerMachineTerminal1 = "%s 사용해 요청을 입력합니다.",
 	novelizerMachineTerminal2 = "%s 조작합니다.",
-	novelizerMachineTerminal3 = "%s 입력부를 조작합니다.",
+	novelizerMachineTerminal3 = "%s 스크린을 터치합니다.",
 
 	novelizerMachineLock1 = "%s 상태를 점검합니다.",
-	novelizerMachineLock2 = "%s 입력부에 값을 넣습니다.",
-	novelizerMachineLock3 = "%s 제어부를 조작합니다.",
+	novelizerMachineLock2 = "%s 입력 값을 넣습니다.",
+	novelizerMachineLock3 = "%s 제어합니다.",
 
 	novelizerMachineRecycler1 = "%s 폐품을 밀어 넣고 작동시킵니다.",
 	novelizerMachineRecycler2 = "%s 투입구에 재료를 넣습니다.",
-	novelizerMachineRecycler3 = "%s 덜컹거리게 만들며 주기를 시작합니다.",
+	novelizerMachineRecycler3 = "%s 작동시켜 재활용을 시작합니다.",
 
 	novelizerMachineForcefield1 = "역장의 제어부에 손을 뻗습니다.",
 	novelizerMachineForcefield2 = "역장 설정을 조정합니다.",
@@ -833,23 +825,23 @@ ix.lang.AddTable("korean", {
 	novelizerMachineRadio3 = "%s 조작부를 손으로 조정합니다.",
 
 	novelizerMachinePanel1 = "%s 표면을 훑고 조작부를 누릅니다.",
-	novelizerMachinePanel2 = "%s 짧은 입력 절차를 밟습니다.",
+	novelizerMachinePanel2 = "%s 입력 절차를 밟습니다.",
 	novelizerMachinePanel3 = "%s 익숙한 손놀림으로 다룹니다.",
 	novelizerMachineContainer1 = "%s 열어 안쪽을 살핍니다.",
 	novelizerMachineContainer2 = "%s 열고 안을 뒤적입니다.",
 	novelizerMachineContainer3 = "%s 열어 내용물을 확인합니다.",
-	novelizerMachineLaundryPipe1 = "%s 조작해 세탁물을 받아 냅니다.",
-	novelizerMachineLaundryPipe2 = "%s 사용해 천 뭉치를 끌어냅니다.",
+	novelizerMachineLaundryPipe1 = "%s 쳐서 세탁물을 받아 냅니다.",
+	novelizerMachineLaundryPipe2 = "%s 두들겨 옷가지가 떨어지게 만듭니다.",
 	novelizerMachineLaundryPipe3 = "%s 건드려 세탁물이 떨어지길 기다립니다.",
 	novelizerMachineWasher1 = "%s 세탁물을 넣고 세탁을 시작합니다.",
-	novelizerMachineWasher2 = "%s 조작부를 눌러 세탁을 돌리기 시작합니다.",
+	novelizerMachineWasher2 = "%s 조작하여 세탁을 돌리기 시작합니다.",
 	novelizerMachineWasher3 = "%s 닫고 세탁을 돌립니다.",
 	novelizerMachineDoorOpen1 = "%s 엽니다.",
 	novelizerMachineDoorOpen2 = "%s 열어 둡니다.",
-	novelizerMachineDoorOpen3 = "%s 열어 둡니다.",
+	novelizerMachineDoorOpen3 = "%s 열어 놓습니다.",
 	novelizerMachineDoorClose1 = "%s 닫습니다.",
-	novelizerMachineDoorClose2 = "%s 닫아 둡니다.",
-	novelizerMachineDoorClose3 = "%s 다시 닫습니다.",
+	novelizerMachineDoorClose2 = "%s 닫아 놓습니다.",
+	novelizerMachineDoorClose3 = "%s 닫아 둡니다.",
 	novelizerMachineDoorUse1 = "%s 만져 봅니다.",
 	novelizerMachineDoorUse2 = "%s 건드려 봅니다.",
 	novelizerMachineDoorUse3 = "%s 반응을 살펴봅니다.",
@@ -903,10 +895,10 @@ ix.lang.AddTable("korean", {
 	novelizerHandsRaise3 = "손을 말아쥐고 싸울 자세를 잡습니다.",
 	novelizerHandsLower1 = "주먹을 풉니다.",
 	novelizerHandsLower2 = "두 손을 천천히 내립니다.",
-	novelizerHandsLower3 = "경계 자세를 풀어 손을 느슨하게 둡니다.",
-	novelizerLadder1 = "사다리를 붙잡고 오르기 시작합니다.",
-	novelizerLadder2 = "사다리에 발을 올리고 움직이기 시작합니다.",
-	novelizerLadder3 = "사다리를 타기 시작합니다.",
+	novelizerHandsLower3 = "경계 자세를 풉니다.",
+	novelizerLadder1 = "사다리를 붙잡습니다.",
+	novelizerLadder2 = "사다리에 발을 딛습니다.",
+	novelizerLadder3 = "사다리를 탑니다.",
 	novelizerVehicleSeatEnter1 = "앉습니다.",
 	novelizerVehicleSeatEnter2 = "자리에 털썩 앉습니다.",
 	novelizerVehicleSeatEnter3 = "몸을 낮춰 앉습니다.",
@@ -921,7 +913,7 @@ ix.lang.AddTable("korean", {
 	novelizerVehicleExit3 = "%s 내려섭니다.",
 	novelizerFallover1 = "바닥에 힘없이 쓰러집니다.",
 	novelizerFallover2 = "몸의 힘이 풀리며 고꾸라집니다.",
-	novelizerFallover3 = "의식을 잃듯 주저앉아 쓰러집니다.",
+	novelizerFallover3 = "의식을 잃고 주저앉아 쓰러집니다.",
 	novelizerDoorKnock1 = "%s 손으로 두드립니다.",
 	novelizerDoorKnock2 = "%s 손등으로 가볍게 노크합니다.",
 	novelizerDoorKnock3 = "%s 짧게 두드립니다.",
@@ -937,7 +929,7 @@ ix.lang.AddTable("korean", {
 	novelizerGrenadeLower1 = "%s 투척 자세에서 내립니다.",
 	novelizerGrenadeLower2 = "%s 아래로 내려 잡습니다.",
 	novelizerGrenadeLower3 = "%s 쥔 손의 힘을 풉니다.",
-	novelizerStaminaEmpty1 = "행동력이 바닥나 거칠게 숨을 몰아쉽니다.",
+	novelizerStaminaEmpty1 = "지친 듯 거칠게 숨을 몰아쉽니다.",
 	novelizerStaminaEmpty2 = "기진한 듯 잠시 몸을 늘어뜨립니다.",
 	novelizerStaminaEmpty3 = "행동력이 다해 숨을 고릅니다.",
 	novelizerInjuredGun = "총격을 받고 몸을 크게 움찔합니다.",
@@ -980,19 +972,19 @@ ix.lang.AddTable("korean", {
 	novelizerUse3 = "%s 잠시 다뤄 봅니다.",
 	novelizerUse4 = "%s 살펴본 뒤 사용합니다.",
 
-	novelizerItDiskRead1 = "%s 디스크를 읽는 달그락거림이 새어 나옵니다.",
+	novelizerItDiskRead1 = "%s 디스크를 긁는 달그락거림이 새어 나옵니다.",
 	novelizerItDiskRead2 = "%s 저장 장치를 읽는 짧은 기계음이 울립니다.",
-	novelizerItDiskRead3 = "%s 데이터를 읽으며 딸깍거리고 윙윙거립니다.",
+	novelizerItDiskRead3 = "%s 데이터를 읽는 딸깍거리고 윙윙거리는 소음을 냅니다.",
 	novelizerItMachineHum1 = "%s 낮은 기계음을 흘립니다.",
 	novelizerItMachineHum2 = "%s 작동하며 조용히 웅웅거립니다.",
-	novelizerItMachineHum3 = "%s 일정한 산업용 진동음을 냅니다.",
-	novelizerItLaundryPipe1 = "%s 위쪽에서 세탁물이 떨어지며 덜컹거립니다.",
-	novelizerItLaundryPipe2 = "%s 안에서 천 뭉치가 지나가며 약하게 금속음을 냅니다.",
+	novelizerItMachineHum3 = "%s 일정한 산업 진동을 냅니다.",
+	novelizerItLaundryPipe1 = "%s 세탁물이 떨어지며 덜컹거립니다.",
+	novelizerItLaundryPipe2 = "%s 안에서 옷가지가 지나가며 약하게 금속음을 냅니다.",
 	novelizerItLaundryPipe3 = "%s 세탁물이 미끄러져 내려오며 한차례 떨립니다.",
-	novelizerItWasher1 = "%s 세탁 주기를 돌리며 철퍽거리고 웅웅거립니다.",
+	novelizerItWasher1 = "%s 빨래통을 돌리며 철퍽거리고 웅웅거립니다.",
 	novelizerItWasher2 = "%s 젖은 세탁물을 굴리며 무겁게 흔들립니다.",
-	novelizerItWasher3 = "%s 드럼이 한 바퀴 돌 때마다 낮게 울립니다.",
-	novelizerItVending1 = "%s 안쪽 코일 뒤에서 윙윙거리며 덜컹댑니다.",
+	novelizerItWasher3 = "%s 빨래통이 한 바퀴 돌 때마다 낮게 울립니다.",
+	novelizerItVending1 = "%s 코일이 안쪽에서 윙윙거리며 덜컹댑니다.",
 	novelizerItVending2 = "%s 오래된 냉각 장치가 웅웅거립니다.",
 	novelizerItVending3 = "%s 내부 어딘가에서 금속성 덜컥임이 납니다.",
 	novelizerItForcefield1 = "%s 딱딱 튀는 전기음과 함께 지직거립니다.",
@@ -1006,7 +998,7 @@ ix.lang.AddTable("korean", {
 	novelizerItDoorLocked3 = "%s 잠금장치가 버티며 열리지 않습니다.",
 	novelizerItGasStove1 = "%s 일정한 가스 불꽃 소리와 함께 치익거립니다.",
 	novelizerItGasStove2 = "%s 점화된 화구에서 고른 열기를 뿜습니다.",
-	novelizerItGasStove3 = "%s 푸른 불꽃을 유지한 채 낮게 속삭이듯 타오릅니다.",
+	novelizerItGasStove3 = "%s 불꽃을 유지한 채 낮게 속삭이듯 타오릅니다.",
 	novelizerItStove1 = "%s 일정하게 타오르며 치익거립니다.",
 	novelizerItStove2 = "%s 타오르며 약하게 타닥거립니다.",
 	novelizerItStove3 = "%s 열기를 뿜으며 잔불 소리를 냅니다.",
@@ -2269,8 +2261,7 @@ function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 	if (phraseKey == "novelizerMachineLock1" or phraseKey == "novelizerMachineLock2"
 		or phraseKey == "novelizerMachineLock3" or phraseKey == "novelizerMachineTerminal3"
 		or phraseKey == "novelizerMachineDoorUse3" or phraseKey == "novelizerMachineVending1"
-		or phraseKey == "novelizerMachineVending2" or phraseKey == "novelizerMachineCoffee1"
-		or phraseKey == "novelizerMachineCoffee3" or phraseKey == "novelizerMachineComputer4"
+		or phraseKey == "novelizerMachineVending2" or phraseKey == "novelizerMachineComputer4"
 		or phraseKey == "novelizerMachineRadio1" or phraseKey == "novelizerMachineRadio2"
 		or phraseKey == "novelizerMachineRadio3"
 		or phraseKey == "novelizerDoorBreachUse1" or phraseKey == "novelizerDoorBreachUse2"
@@ -2284,8 +2275,7 @@ function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 		}
 	end
 
-	if (phraseKey == "novelizerMachineCoffee2" or phraseKey == "novelizerMachineVending3"
-		or phraseKey == "novelizerMachineRation1" or phraseKey == "novelizerMachineRation2") then
+	if (phraseKey == "novelizerMachineVending3" or phraseKey == "novelizerMachineRation1" or phraseKey == "novelizerMachineRation2") then
 		return {
 			self:GetBareEntitySubject(entity)
 		}
@@ -2833,9 +2823,9 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineVending3"
 	})
 	self:RegisterEntityUsePhrases("ix_coffeemachine", {
-		"novelizerMachineCoffee1",
-		"novelizerMachineCoffee2",
-		"novelizerMachineCoffee3"
+		"novelizerMachineVending1",
+		"novelizerMachineVending2",
+		"novelizerMachineVending3"
 	})
 	self:RegisterEntityUsePhrases("ix_health_charger", {
 		"novelizerMachineHealth1",

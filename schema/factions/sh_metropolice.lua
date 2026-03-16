@@ -30,6 +30,7 @@ FACTION.genderModels = {
 		"models/conceptbine_policeforce/rnd/female_06.mdl",
 		"models/conceptbine_policeforce/rnd/female_07.mdl",
 		"models/conceptbine_policeforce/rnd/female_11.mdl",
+		"models/conceptbine_policeforce/rnd/female_17.mdl",
 		"models/conceptbine_policeforce/rnd/female_18.mdl",
 		"models/conceptbine_policeforce/rnd/female_19.mdl",
 		"models/conceptbine_policeforce/rnd/female_24.mdl"
@@ -40,6 +41,77 @@ for gender, models in SortedPairs(FACTION.genderModels) do
 	for _, v in ipairs(models) do
 		table.insert(FACTION.models, v)
 	end
+end
+
+local UNIFORM_STATE_KEY = "mpfUniformState"
+local DEFAULT_CITIZEN_FACTION = "citizen"
+local dutyModelFallbacks = {
+	["models/humans/pandafishizens/male_12.mdl"] = "models/conceptbine_policeforce/rnd/male_11.mdl",
+	["models/humans/pandafishizens/female_17.mdl"] = "models/conceptbine_policeforce/rnd/female_17.mdl"
+}
+
+local function NormalizeModel(model)
+	return isstring(model) and model:gsub("\\", "/"):lower() or ""
+end
+
+local function GetGenderFromModel(model)
+	model = NormalizeModel(model)
+
+	if (model:find("/female_", 1, true)) then
+		return "female"
+	end
+
+	return "male"
+end
+
+function FACTION:GetUniformState(character)
+	local state = character:GetData(UNIFORM_STATE_KEY, {})
+
+	if (!istable(state)) then
+		return {}
+	end
+
+	return table.Copy(state)
+end
+
+function FACTION:SetUniformState(character, state)
+	character:SetData(UNIFORM_STATE_KEY, state)
+end
+
+function FACTION:IsUniformCitizenDuty(character)
+	local state = self:GetUniformState(character)
+
+	return state.active == true and (state.originalFaction == nil or state.originalFaction == DEFAULT_CITIZEN_FACTION)
+end
+
+function FACTION:ResolveDutyModel(character, citizenModel)
+	local state = self:GetUniformState(character)
+	local sourceModel = NormalizeModel(citizenModel or state.originalModel or character:GetModel())
+	local mappedModel = dutyModelFallbacks[sourceModel]
+
+	if (mappedModel and table.HasValue(self.models, mappedModel)) then
+		return mappedModel
+	end
+
+	if (sourceModel:find("conceptbine_policeforce/rnd", 1, true) and table.HasValue(self.models, sourceModel)) then
+		return sourceModel
+	end
+
+	local derivedModel = sourceModel:gsub("humans/pandafishizens", "conceptbine_policeforce/rnd")
+
+	if (derivedModel != sourceModel and table.HasValue(self.models, derivedModel)) then
+		return derivedModel
+	end
+
+	local gender = GetGenderFromModel(sourceModel)
+	return self.genderModels[gender] and self.genderModels[gender][1] or self.models[1]
+end
+
+function FACTION:GetUniformReturnFaction(character)
+	local state = self:GetUniformState(character)
+	local faction = ix.faction.teams[state.originalFaction or DEFAULT_CITIZEN_FACTION]
+
+	return faction and faction.index or FACTION_CITIZEN
 end
 
 FACTION.bodyGroups = {
@@ -89,34 +161,42 @@ function FACTION:OnCharacterCreated(client, character)
 end
 
 function FACTION:GetDefaultName(client)
-	return "c17:MPF-RCT.UNKNOWN:" .. Schema:ZeroNumber(math.random(1, 999), 3), true
+	return Schema:FormatCombineName("MPF", "RCT"), true
 end
 
 function FACTION:OnTransferred(character)
-	character:SetName(self:GetDefaultName())
+	local state = self:GetUniformState(character)
+	local client = character:GetPlayer()
+
+	if (state.active) then
+		state.dutyName = Schema:NormalizeCombineName(state.dutyName or self:GetDefaultName(client), "MPF")
+		state.dutyModel = state.dutyModel or self:ResolveDutyModel(character, state.originalModel)
+		self:SetUniformState(character, state)
+
+		character:SetName(state.dutyName)
+		character:SetModel(state.dutyModel)
+		return
+	end
+
+	character:SetName(self:GetDefaultName(client))
 	character:SetModel(self.models[1])
 end
 
 function FACTION:OnNameChanged(client, oldValue, value)
 	local character = client:GetCharacter()
+	local state = self:GetUniformState(character)
 
-	if (!Schema:IsCombineRank(oldValue, "RCT") and Schema:IsCombineRank(value, "RCT")) then
-		character:JoinClass(CLASS_MPR)
-	elseif (!Schema:IsCombineRank(oldValue, "OfC") and Schema:IsCombineRank(value, "OfC")) then
-		-- character:SetModel("models/dpfilms/metropolice/policetrench.mdl")
-	elseif (!Schema:IsCombineRank(oldValue, "EpU") and Schema:IsCombineRank(value, "EpU")) then
-		character:JoinClass(CLASS_EMP)
-		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
-	elseif (!Schema:IsCombineRank(oldValue, "DvL") and Schema:IsCombineRank(value, "DvL")) then
-		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
-	elseif (!Schema:IsCombineRank(oldValue, "SeC") and Schema:IsCombineRank(value, "SeC")) then
-		-- character:SetModel("models/metropolice/leet_police_v2.mdl")
-	-- elseif (!Schema:IsCombineRank(oldValue, "SCN") and Schema:IsCombineRank(value, "SCN")
-	-- or !Schema:IsCombineRank(oldValue, "SHIELD") and Schema:IsCombineRank(value, "SHIELD")) then
-	-- 	character:JoinClass(CLASS_MPS)
-	elseif (!Schema:IsCombineRank(oldValue, "SCN") and Schema:IsCombineRank(value, "SCN")) then
-		character:SetModel("models/Combine_Scanner.mdl")
-		character:JoinClass(CLASS_SCANNER)
+	if (state.active) then
+		state.dutyName = value
+		self:SetUniformState(character, state)
+	end
+
+	Schema:SyncCombineClass(client, value)
+	client:SetArmor(Schema:IsCombineRank(value, "RCT") and 50 or 100)
+
+	if (state.active) then
+		state.dutyModel = character:GetModel()
+		self:SetUniformState(character, state)
 	end
 end
 

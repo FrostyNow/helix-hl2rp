@@ -1,28 +1,17 @@
-ITEM.name = "CP Mask"
-ITEM.description = "cpMaskDesc"
-ITEM.model = "models/conceptbine_policeforce/rnd/leetmask.mdl"
+ITEM.name = "CP Armor Vest"
+ITEM.description = "cp_vest_mpf_desc"
+ITEM.model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl"
+ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
-ITEM.iconCam = {
-	pos = Vector(27.34, -71.44, 184.57),
-	ang = Angle(66.8, 110.14, 0),
-	fov = 3.76
-}
-ITEM.exRender = true
-ITEM.price = 50
+ITEM.outfitCategory = "vest"
 ITEM.eqBodyGroups = {
-	["mask"] = 2,
-	["mask eyes"] = 1,
-	["mask back"] = 1,
+	["vest"] = 1,
 }
-ITEM.outfitCategory = "mask"
-ITEM.badAirProtection = true
-ITEM.combineMaskProtection = true
-ITEM.requiresGasmaskFilter = true
-ITEM.filterMaxDurability = 100
-ITEM.filterIgnoreItemDurability = true
+ITEM.noBusiness = true
 
-ITEM.allowedModels = {
+local faction = ix.faction.indices[FACTION_MPF]
+ITEM.allowedModels = faction and table.Copy(faction.models) or {
 	"models/conceptbine_policeforce/rnd/male_01.mdl",
 	"models/conceptbine_policeforce/rnd/male_02.mdl",
 	"models/conceptbine_policeforce/rnd/male_03.mdl",
@@ -49,5 +38,16 @@ ITEM.allowedModels = {
 	"models/conceptbine_policeforce/rnd/female_24.mdl"
 }
 
+ITEM.armorAmount = 50
+ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}
+ITEM.resistance = true
+ITEM.hitGroups = {HITGROUP_CHEST}
+
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
+
+function ITEM:CanEquipOutfit()
+	local client = self.player or self:GetOwner()
+
+	return IsValid(client) and client:Team() == FACTION_MPF
+end

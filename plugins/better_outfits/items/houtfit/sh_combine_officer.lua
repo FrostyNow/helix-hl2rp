@@ -7,36 +7,31 @@ ITEM.height = 1
 ITEM.price = 150
 ITEM.outfitCategory = "outfit"
 ITEM.replacements = {
-	{"tnb/citizens", "humans"},
-	{"aphelion", "combine"}
+	{"humans/pandafishizens", "humans/combine"}
 }
 ITEM.allowedModels = {
-	"models/tnb/citizens/aphelion/male_01.mdl",
-	"models/tnb/citizens/aphelion/male_02.mdl",
-	"models/tnb/citizens/aphelion/male_03.mdl",
-	"models/tnb/citizens/aphelion/male_04.mdl",
-	"models/tnb/citizens/aphelion/male_05.mdl",
-	"models/tnb/citizens/aphelion/male_06.mdl",
-	"models/tnb/citizens/aphelion/male_07.mdl",
-	"models/tnb/citizens/aphelion/male_09.mdl",
-	"models/tnb/citizens/aphelion/male_16.mdl",
-	"models/tnb/citizens/aphelion/female_01.mdl",
-	"models/tnb/citizens/aphelion/female_02.mdl",
-	"models/tnb/citizens/aphelion/female_03.mdl",
-	"models/tnb/citizens/aphelion/female_04.mdl",
-	"models/tnb/citizens/aphelion/female_05.mdl",
-	"models/tnb/citizens/aphelion/female_08.mdl",
-	"models/tnb/citizens/aphelion/female_09.mdl",
-	"models/tnb/citizens/aphelion/female_10.mdl",
-	"models/tnb/citizens/aphelion/female_11.mdl"
+	"models/humans/pandafishizens/male_01.mdl",
+	"models/humans/pandafishizens/male_02.mdl",
+	"models/humans/pandafishizens/male_03.mdl",
+	"models/humans/pandafishizens/male_04.mdl",
+	"models/humans/pandafishizens/male_05.mdl",
+	"models/humans/pandafishizens/male_06.mdl",
+	"models/humans/pandafishizens/male_07.mdl",
+	"models/humans/pandafishizens/male_08.mdl",
+	"models/humans/pandafishizens/male_09.mdl",
+	"models/humans/pandafishizens/male_10.mdl",
+	"models/humans/pandafishizens/male_11.mdl",
+	"models/humans/pandafishizens/male_12.mdl",
+	"models/humans/pandafishizens/male_15.mdl",
+	"models/humans/pandafishizens/male_16.mdl",
+	"models/humans/pandafishizens/female_01.mdl",
+	"models/humans/pandafishizens/female_02.mdl",
+	"models/humans/pandafishizens/female_03.mdl",
+	"models/humans/pandafishizens/female_04.mdl",
+	"models/humans/pandafishizens/female_06.mdl",
+	"models/humans/pandafishizens/female_07.mdl",
+	"models/humans/pandafishizens/female_11.mdl"
 }
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-	end
-end
+ITEM.tooltipLabelText = "securitizedItemTooltip"
+ITEM.tooltipLabelFactionColor = FACTION_MPF

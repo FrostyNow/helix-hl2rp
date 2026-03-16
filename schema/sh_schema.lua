@@ -26,6 +26,7 @@ ix.flag.Add("V", "Access to heavy blackmarket goods.")
 ix.flag.Add("b", "Access to edit your own bodygroups.")
 ix.flag.Add("s", "Access to edit your own skin.")
 
+-- Metrocop
 ix.anim.SetModelClass("models/eliteghostcp.mdl", "metrocop")
 ix.anim.SetModelClass("models/eliteshockcp.mdl", "metrocop")
 ix.anim.SetModelClass("models/leet_police2.mdl", "metrocop")
@@ -60,10 +61,63 @@ ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_11.mdl", "metroco
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_15.mdl", "metrocop")
 ix.anim.SetModelClass("models/conceptbine_policeforce/rnd/male_16.mdl", "metrocop")
 
+-- Citizen Male
+ix.anim.SetModelClass("models/humans/pandafishizens/male_01.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_02.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_03.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_04.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_05.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_06.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_07.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_08.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_09.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_10.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_11.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_12.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_15.mdl", "citizen_male")
+ix.anim.SetModelClass("models/humans/pandafishizens/male_16.mdl", "citizen_male")
+ix.anim.SetModelClass("models/npc/engineer_male.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/erdimnovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/ericnovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/joenovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/mikenovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/sandronovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/tednovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/vannovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/vancenovest.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/erdim.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/eric.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/joe.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/mike.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/sandro.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/ted.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/van.mdl", "citizen_male")
+ix.anim.SetModelClass("models/wichacks/vance.mdl", "citizen_male")
+ix.anim.SetModelClass("models/ddok1994/1980_hazmat.mdl", "citizen_male")
+
+-- Citizen Female
+ix.anim.SetModelClass("models/humans/pandafishizens/female_01.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_02.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_03.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_04.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_06.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_07.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_11.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_17.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_18.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_19.mdl", "citizen_female")
+ix.anim.SetModelClass("models/humans/pandafishizens/female_24.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_01.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_02.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_03.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_04.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_06.mdl", "citizen_female")
+ix.anim.SetModelClass("models/models/army/female_07.mdl", "citizen_female")
+
+-- Overwatch
 ix.anim.SetModelClass("models/Combine_Soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/Combine_Soldier_PrisonGuard.mdl", "overwatch")
 ix.anim.SetModelClass("models/Combine_Super_Soldier.mdl", "overwatch")
-
 ix.anim.SetModelClass("models/ninja/combine/combine_soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/ninja/combine/combine_soldier_prisonguard.mdl", "overwatch")
 ix.anim.SetModelClass("models/ninja/combine/combine_super_soldier.mdl", "overwatch")
@@ -83,9 +137,10 @@ ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_beta_h.mdl"
 ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_recon_h.mdl", "overwatch")
 ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_h.mdl", "overwatch")
 ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_shotgunner_h.mdl", "overwatch")
-
-ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
 ix.anim.SetModelClass("models/armacham/security/enemy/guard_1.mdl", "overwatch")
+
+-- Player
+ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
 
 ALWAYS_RAISED["gmod_gphone"] = true
 ALWAYS_RAISED["weapon_portalgun"] = true
@@ -120,14 +175,453 @@ function Schema:ZeroNumber(number, length)
 	return string.rep("0", amount)..tostring(number)
 end
 
+Schema.combineNameData = Schema.combineNameData or {
+	MPF = {
+		defaultRank = "RCT",
+		pattern = "^c17:MPF%-([%w]+)%.([A-Z]+):([1-9])$",
+		legacyPattern = "^c17:MPF%-([%w]+)%.([A-Z]+):(%d+)$",
+		callsigns = {
+			"DEFENDER", "HERO", "JURY", "KING", "LINE", "PATROL", "QUICK", "ROLLER",
+			"STICK", "TAP", "UNION", "VICTOR", "XRAY", "YELLOW", "VICE"
+		},
+		unitRanks = {
+			["05"] = true,
+			["04"] = true,
+			["03"] = true,
+			["02"] = true,
+			["01"] = true
+		},
+		eliteRanks = {
+			EpU = true,
+			OfC = true,
+			DvL = true,
+			SeC = true,
+			CmD = true
+		}
+	},
+	OTA = {
+		defaultRank = "OWS",
+		pattern = "^OTA%.([%w]+)%-([A-Z]+):([1-9])$",
+		legacyPattern = "^OTA%.([%w]+)%-([A-Z]+):(%d+)$",
+		callsigns = {
+			"LEADER", "FLASH", "RANGER", "HUNTER", "BLADE", "HAMMER", "SWEEPER", "SWIFT",
+			"FIST", "SWORD", "SAVAGE", "TRACKER", "SLASH", "RAZOR", "STAB", "SPEAR",
+			"STRIKER", "DAGGER"
+		}
+	}
+}
+
+local function GetCombineNameData(branch)
+	return Schema.combineNameData[branch]
+end
+
+function Schema:GetCombineNameInfo(text)
+	if (!isstring(text) or text == "") then
+		return nil
+	end
+
+	for branch, data in pairs(self.combineNameData) do
+		local rank, callsign, number = text:match(data.pattern)
+
+		if (rank) then
+			number = tonumber(number)
+
+			return {
+				branch = branch,
+				rank = rank,
+				callsign = callsign,
+				number = number,
+				unitID = string.format("%s-%d", callsign, number),
+				isLegacy = false
+			}
+		end
+
+		rank, callsign, number = text:match(data.legacyPattern)
+
+		if (rank) then
+			local legacyNumber = tostring(number)
+			local collapsed = tonumber(string.sub(legacyNumber, -1)) or 0
+
+			return {
+				branch = branch,
+				rank = rank,
+				callsign = callsign,
+				number = collapsed,
+				legacyNumber = legacyNumber,
+				unitID = string.format("%s-%s", callsign, legacyNumber),
+				isLegacy = true
+			}
+		end
+	end
+
+	return nil
+end
+
+function Schema:GetCombineRank(text)
+	local info = self:GetCombineNameInfo(text)
+
+	return info and info.rank or nil
+end
+
+function Schema:GetCombineUnitID(value)
+	local text = value
+
+	if (IsValid(value) and value:IsPlayer()) then
+		text = value:Name()
+	end
+
+	local info = self:GetCombineNameInfo(text)
+
+	if (info) then
+		return info.unitID, info
+	end
+
+	if (isstring(text)) then
+		return text:match("%d%d%d%d?%d?") or "???", nil
+	end
+
+	return "???", nil
+end
+
+function Schema:FormatCombineName(branch, rank, callsign, number)
+	local data = GetCombineNameData(branch)
+
+	if (!data) then
+		return nil
+	end
+
+	rank = rank or data.defaultRank
+	callsign = string.upper(callsign or table.Random(data.callsigns) or "UNKNOWN")
+	number = math.Clamp(math.floor(tonumber(number) or math.random(1, 9)), 1, 9)
+
+	if (branch == "MPF") then
+		return string.format("c17:MPF-%s.%s:%d", rank, callsign, number)
+	end
+
+	if (branch == "OTA") then
+		return string.format("OTA.%s-%s:%d", rank, callsign, number)
+	end
+end
+
+function Schema:NormalizeCombineName(text, branchOverride)
+	local info = self:GetCombineNameInfo(text)
+
+	if (!info) then
+		return text
+	end
+
+	if (!info.isLegacy and (!branchOverride or branchOverride == info.branch)) then
+		return text
+	end
+
+	local number = info.number
+
+	if (number == nil or number < 1 or number > 9) then
+		local source = tostring(info.legacyNumber or "")
+		number = tonumber(string.sub(source, -1)) or math.random(1, 9)
+	end
+
+	return self:FormatCombineName(branchOverride or info.branch, info.rank, info.callsign, number)
+end
+
 function Schema:IsCombineRank(text, rank)
-	return string.find(text, "[%D+]"..rank.."[%D+]")
+	local info = self:GetCombineNameInfo(text)
+
+	if (info) then
+		return info.rank == rank
+	end
+
+	if (!isstring(text) or !isstring(rank)) then
+		return false
+	end
+
+	return text:find("%f[%w]" .. rank .. "%f[%W]") != nil
+end
+
+Schema.conscriptRanks = Schema.conscriptRanks or {
+	{
+		id = "private",
+		ko = "이병",
+		en = "Pvt.",
+		aliases = {"private", "pvt", "e-byeong", "이병"}
+	},
+	{
+		id = "firstclass",
+		ko = "일병",
+		en = "Pfc.",
+		aliases = {"firstclass", "pfc", "il-byeong", "일병"}
+	},
+	{
+		id = "senior",
+		ko = "상병",
+		en = "Lcpl.",
+		aliases = {"senior", "lcpl", "lancecorporal", "sang-byeong", "상병"}
+	},
+	{
+		id = "corporal",
+		ko = "병장",
+		en = "Cpl.",
+		aliases = {"corporal", "cpl", "byeong-jang", "병장"}
+	}
+}
+
+Schema.conscriptRankLookup = Schema.conscriptRankLookup or {}
+
+for _, data in ipairs(Schema.conscriptRanks) do
+	Schema.conscriptRankLookup[data.id] = data
+
+	for _, alias in ipairs(data.aliases or {}) do
+		Schema.conscriptRankLookup[string.Trim(string.lower(alias:gsub("%.$", "")))] = data
+	end
+end
+
+function Schema:GetDefaultConscriptRank()
+	return self.conscriptRanks[1] and self.conscriptRanks[1].id or "private"
+end
+
+function Schema:GetConscriptRankData(value)
+	if (istable(value) and value.id) then
+		return value
+	end
+
+	local key = isstring(value) and string.Trim(string.lower(value:gsub("%.$", ""))) or nil
+
+	if (key and key != "") then
+		return self.conscriptRankLookup[key] or self.conscriptRankLookup[value]
+	end
+
+	return self.conscriptRanks[1]
+end
+
+function Schema:IsEnglishPersonalName(name)
+	if (!isstring(name)) then
+		return false
+	end
+
+	name = string.Trim(name)
+
+	if (name == "") then
+		return false
+	end
+
+	return name:find("[A-Za-z]") != nil and name:find("^[A-Za-z%s%-%.'`]+$") != nil
+end
+
+function Schema:ExtractConscriptBaseName(text)
+	if (!isstring(text)) then
+		return ""
+	end
+
+	local trimmed = string.Trim(text)
+	local lowered = string.lower(trimmed)
+
+	for _, data in ipairs(self.conscriptRanks) do
+		for _, prefix in ipairs({data.ko .. ".", data.en}) do
+			local prefixLength = #prefix
+
+			if (lowered:sub(1, prefixLength) == string.lower(prefix)) then
+				local remaining = string.Trim(trimmed:sub(prefixLength + 1))
+
+				if (remaining != "") then
+					return remaining
+				end
+			end
+		end
+	end
+
+	return trimmed
+end
+
+function Schema:FormatConscriptName(baseName, rank)
+	local rankData = self:GetConscriptRankData(rank) or self.conscriptRanks[1]
+	baseName = self:ExtractConscriptBaseName(baseName or "")
+
+	if (baseName == "") then
+		return self:IsEnglishPersonalName(baseName) and rankData.en or rankData.ko
+	end
+
+	if (self:IsEnglishPersonalName(baseName)) then
+		return string.format("%s %s", rankData.en, baseName)
+	end
+
+	return string.format("%s. %s", rankData.ko, baseName)
+end
+
+function Schema:GetCombineClassFromRank(branch, rank)
+	if (branch == FACTION_MPF) then
+		branch = "MPF"
+	elseif (branch == FACTION_OTA) then
+		branch = "OTA"
+	end
+
+	if (branch == "MPF") then
+		local data = GetCombineNameData("MPF")
+
+		if (rank == "RCT") then
+			return CLASS_MPR
+		elseif (data and data.unitRanks[rank]) then
+			return CLASS_MPU
+		elseif (data and data.eliteRanks[rank]) then
+			return CLASS_EMP
+		end
+	elseif (branch == "OTA") then
+		if (rank == "OWS") then
+			return CLASS_OWS
+		elseif (rank == "SGS") then
+			return CLASS_SGS or CLASS_OWS
+		elseif (rank == "EOW") then
+			return CLASS_EOW
+		end
+	end
+end
+
+function Schema:SyncCombineClass(target, name)
+	local client = target
+	local character = target
+
+	if (IsValid(target) and target:IsPlayer()) then
+		client = target
+		character = target:GetCharacter()
+	elseif (target and target.GetPlayer) then
+		client = target:GetPlayer()
+	end
+
+	if (!character) then
+		return
+	end
+
+	local info = self:GetCombineNameInfo(name or character:GetName())
+
+	if (!info) then
+		return
+	end
+
+	local class = self:GetCombineClassFromRank(info.branch, info.rank)
+
+	if (class and character:GetClass() != class and IsValid(client)) then
+		character:JoinClass(class)
+	end
+end
+
+function Schema:GetCitizenID(target)
+	local client = target
+	local character = target
+
+	if (IsValid(target) and target:IsPlayer()) then
+		client = target
+		character = target:GetCharacter()
+	end
+
+	if (IsValid(client)) then
+		local cid = client:GetNetVar("cid")
+
+		if (cid != nil and cid != "") then
+			return tostring(cid)
+		end
+	end
+
+	if (character and character.GetData) then
+		local cid = character:GetData("cid")
+
+		if (cid != nil and cid != "") then
+			return tostring(cid)
+		end
+	end
 end
 
 function Schema:IsConceptCombine(client)
 	if (!IsValid(client)) then return false end
 	local model = client:GetModel():lower()
 	return model:find("conceptbine_policeforce", 1, true)
+end
+
+function Schema:PlayerHasEquippedFlashlightBlocker(client)
+	if (!IsValid(client)) then
+		return false
+	end
+
+	local character = client:GetCharacter()
+	local inventory = character and character:GetInventory()
+
+	if (!inventory) then
+		return false
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (item:GetData("equip") and item.blocksFlashlight) then
+			return true, item
+		end
+	end
+
+	return false
+end
+
+function Schema:CanPlayerUseFlashlight(client)
+	if (!IsValid(client) or client:IsRagdoll()) then
+		return false
+	end
+
+	local character = client:GetCharacter()
+	local inventory = character and character:GetInventory()
+
+	if (!character or !inventory) then
+		return false
+	end
+
+	if (IsValid(client.ixScn)) then
+		return false
+	end
+
+	if (self:PlayerHasEquippedFlashlightBlocker(client)) then
+		return false
+	end
+
+	if (client:Team() == FACTION_OTA) then
+		return true
+	end
+
+	if (ix.item.list["flashlight"] == nil) then
+		return true
+	end
+
+	return inventory:GetItemCount("flashlight") > 0
+end
+
+if (SERVER) then
+	function Schema:SyncCitizenID(client, character)
+		if (!IsValid(client)) then
+			return
+		end
+
+		character = character or client:GetCharacter()
+
+		if (!character) then
+			client:SetNetVar("cid", "")
+			return
+		end
+
+		client:SetNetVar("cid", tostring(character:GetData("cid", "")))
+	end
+
+	function Schema:ForceFlashlightOff(client)
+		if (!IsValid(client)) then
+			return
+		end
+
+		if (client.GetNetVar and client:GetNetVar("flashlight", false)) then
+			client:SetNetVar("flashlight", false)
+		end
+
+		client:Flashlight(false)
+	end
+
+	function Schema:RefreshFlashlight(client)
+		if (!IsValid(client) or self:CanPlayerUseFlashlight(client)) then
+			return
+		end
+
+		self:ForceFlashlightOff(client)
+	end
 end
 
 function Schema:CanPlayerSeeCombineOverlay(client)
@@ -147,6 +641,46 @@ function Schema:CanPlayerSeeCombineOverlay(client)
 	end
 
 	return true
+end
+
+function Schema:IsCombineChatWrapped(text)
+	if (!isstring(text)) then
+		return false
+	end
+
+	text = string.Trim(text)
+
+	return text:find("^<::%s*.-%s*::>$") != nil
+end
+
+function Schema:WrapCombineChatText(text)
+	text = string.Trim(tostring(text or ""))
+
+	if (self:IsCombineChatWrapped(text)) then
+		return text
+	end
+
+	return string.format("<:: %s ::>", text)
+end
+
+function Schema:AppendCombineChatPunctuation(text)
+	if (!isstring(text)) then
+		return text
+	end
+
+	local inner = string.Trim(text):match("^<::%s*(.-)%s*::>$")
+
+	if (!inner) then
+		return text
+	end
+
+	local last = inner:sub(-1)
+
+	if (last != "." and last != "!" and last != "?" and last != "-" and last != "\"") then
+		inner = inner .. "."
+	end
+
+	return self:WrapCombineChatText(inner)
 end
 
 local function addNameColoredMessage(color, speaker, formatted)
@@ -221,7 +755,7 @@ do
 
 	function CLASS:OnChatAdd(speaker, text)
 		local name = IsValid(speaker) and speaker:Name() or "Console"
-		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
+		text = Schema:CanPlayerSeeCombineOverlay(speaker) and Schema:WrapCombineChatText(text) or text
 
 		addNameColoredMessage(self.color, speaker, L(self.format, name, text))
 	end
@@ -254,7 +788,7 @@ do
 
 	function CLASS:OnChatAdd(speaker, text)
 		local name = IsValid(speaker) and speaker:Name() or "Console"
-		text = Schema:CanPlayerSeeCombineOverlay(speaker) and string.format("<:: %s ::>", text) or text
+		text = Schema:CanPlayerSeeCombineOverlay(speaker) and Schema:WrapCombineChatText(text) or text
 
 		chat.AddText(self.color, L(self.format, name, text))
 	end

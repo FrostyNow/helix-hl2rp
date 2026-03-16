@@ -612,7 +612,13 @@ function PLUGIN:HasCivicTerminalAccess(client)
 	local character = client:GetCharacter()
 	local inventory = character and character:GetInventory()
 
-	return inventory and inventory:HasItem("cid") == true
+	if (!character or !inventory) then
+		return false
+	end
+
+	local cidItem = inventory:HasItem("cid")
+
+	return cidItem != false and cidItem != nil
 end
 
 function PLUGIN:SanitizeText(text, maxLength)

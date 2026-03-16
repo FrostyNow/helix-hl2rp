@@ -5,6 +5,7 @@ ITEM.price = 110000
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "goggles"
+ITEM.blocksFlashlight = true
 
 ITEM.pacData = {
 	[1] = {

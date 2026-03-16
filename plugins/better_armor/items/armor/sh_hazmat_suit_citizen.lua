@@ -43,3 +43,6 @@ ITEM.replacements = {
 ITEM.outfitCategory = "suit"
 ITEM.newSkin = 11
 ITEM.maxDurability = 100
+ITEM.badAirProtection = true
+ITEM.requiresGasmaskFilter = true
+ITEM.filterMaxDurability = 100

@@ -1,4 +1,4 @@
-ITEM.name = "cp_vest"
+ITEM.name = "CP Armor Vest"
 ITEM.description = "cp_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl"
 ITEM.price = 250
@@ -40,14 +40,7 @@ ITEM.noBusiness = true
 ITEM.armorAmount = 50
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}
 ITEM.resistance = true
-ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
+ITEM.hitGroups = {HITGROUP_CHEST}
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-	end
-end
+ITEM.tooltipLabelText = "securitizedItemTooltip"
+ITEM.tooltipLabelFactionColor = FACTION_MPF

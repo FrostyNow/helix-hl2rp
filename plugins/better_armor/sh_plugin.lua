@@ -7,11 +7,10 @@ ix.lang.AddTable("english", {
 	gasmaskRemoved = "You have removed your gasmask",
 	gasmaskEquipped = "You have put on your gasmask.",
 	repairToolsDesc = "Some tools for repairing armour.",
-	hatDesc = "A cap worn by the military personnel in the field when a combat helmet is not required.\n(CONSCRIPT MODELS ONLY)",
-	hazmatSuitDesc = "A military protective clothing that protects wearers from harmful environments.\n(MALE CONSCRIPT MODELS ONLY)",
+	hazmatSuitDesc = "A military protective clothing that protects wearers from harmful environments.",
 	hazmatSuitCitizenDesc = "A protective clothing that protects wearers from harmful environments.",
-	pasgtBodyArmorDesc = "A Kebler-fiber bulletproof vest that the U.S. Army adopted in 1983 to replace M69 Flak Vest.\n(CONSCRIPT MODELS ONLY)",
-	pasgtHelmetDesc = "A Kebler-fiber bulletproof helmet that the U.S. Army adopted in 1983 to replace the M1 steel helmet.\n(MALE CONSCRIPT MODELS ONLY)",
+	pasgtBodyArmorDesc = "A Kebler-fiber bulletproof vest that the U.S. Army adopted in 1983 to replace M69 Flak Vest.",
+	pasgtHelmetDesc = "A Kebler-fiber bulletproof helmet that the U.S. Army adopted in 1983 to replace the M1 steel helmet.",
 	durabilityDesc = "\n \n Durability:",
 	bulletproof = "\n \nDamage Resistance: \n  Bulletproof: ",
 	stabProof = "\n  Stab Proof: ",
@@ -21,16 +20,15 @@ ix.lang.AddTable("english", {
 	poisonResistance = "\n  Poison Resistance: ",
 	shockResistance = "\n  Shock Resistance: ",
 	cannotActionWhileSuit = "You cannot unequip, drop, or move this item while wearing a suit.",
-	["cp_vest"] = "CP Vest",
-	["cp_vest_desc"] = "A Civil Protection bulletproof vest.",
-	["cp_vest_medic"] = "CP Vest with Medic Bag",
-	["cp_vest_medic_desc"] = "A Civil Protection bulletproof vest with a red cross medic bag.",
-	["cp_vest_rebel"] = "CP Vest with Bag",
-	["cp_vest_rebel_desc"] = "A Civil Protection bulletproof vest with a backpack attached.",
-	["combat_vest_desc"] = "A combat vest with limited ballistic protection.",
-	["molle_vest_desc"] = "A ballistic combat vest equipped with MOLLE storage pouches.",
-	["overwatch_vest_desc"] = "A bulletproof vest made from the equipment of the Overwatch Transhuman Arm.",
-	["flak_jacket_desc"] = "A protective vest designed to shield against fragmentation and shrapnel.",
+	cannotRemoveSuitWithEquipment = "You must remove any extra outfit or armor pieces before removing the suit.",
+	cp_vest_desc = "A Civil Protection bulletproof vest.",
+	cp_vest_medic_desc = "A Civil Protection bulletproof vest with a red cross medic bag.",
+	cp_vest_rebel_desc = "A Civil Protection bulletproof vest with a backpack attached.",
+	cp_vest_mpf_desc = "A standard-issue Civil Protection ballistic vest sized for metropolice uniforms.",
+	combat_vest_desc = "A combat vest with limited ballistic protection.",
+	molle_vest_desc = "A ballistic combat vest equipped with MOLLE storage pouches.",
+	overwatch_vest_desc = "A bulletproof vest made from the equipment of the Overwatch Transhuman Arm.",
+	flak_jacket_desc = "A protective vest designed to shield against fragmentation and shrapnel.",
 })
 ix.lang.AddTable("korean", {
 	["Intelligence"] = "지능",
@@ -39,15 +37,13 @@ ix.lang.AddTable("korean", {
 	Repair = "수리하기",
 	["Repair Tools"] = "수리 공구",
 	repairToolsDesc = "방어구의 수리에 쓰이는 공구를 모아두었습니다.",
-	["Field Cap"] = "전투모",
-	hatDesc = "군인이 평상시에 착용하도록 만든 모자입니다.\n(징집군 모델 전용)",
 	["Hazmat Suit"] = "방호복",
-	hazmatSuitDesc = "유해한 환경으로부터 착용자를 보호하는 군용 방호복입니다.\n(남성 징집군 모델 전용)",
+	hazmatSuitDesc = "유해한 환경으로부터 착용자를 보호하는 군용 방호복입니다.",
 	hazmatSuitCitizenDesc = "유해한 환경으로부터 착용자를 보호하는 방호복입니다.",
 	["PASGT Vest"] = "PASGT 방탄복",
-	pasgtBodyArmorDesc = "1983년 미군이 M69 방편복을 대체하여 채용한 케블러 섬유 소재 방탄복입니다.\n(징집군 모델 전용)",
+	pasgtBodyArmorDesc = "1983년 미군이 M69 방편복을 대체하여 채용한 케블러 섬유 소재 방탄복입니다.",
 	["PASGT Helmet"] = "PASGT 방탄모",
-	pasgtHelmetDesc = "1983년 미군이 M1 철모를 대체하여 채용한 케블러 섬유 소재 방탄모입니다.\n(남성 징집군 모델 전용)",
+	pasgtHelmetDesc = "1983년 미군이 M1 철모를 대체하여 채용한 케블러 섬유 소재 방탄모입니다.",
 	durabilityDesc = "\n \n 내구도:",
 	bulletproof = "\n \n피해 저항: \n  방탄: ",
 	stabProof = "\n  방검: ",
@@ -57,25 +53,86 @@ ix.lang.AddTable("korean", {
 	poisonResistance = "\n  독성 저항: ",
 	shockResistance = "\n  충격 저항: ",
 	cannotActionWhileSuit = "전신 의상을 입고 있는 동안에는 이 아이템을 벗거나, 버리거나, 옮길 수 없습니다.",
-	["cp_vest"] = "시민 보호 기동대 방탄 조끼",
-	["cp_vest_desc"] = "시민 보호 기동대에게 지급되는 제식 방탄 조끼입니다.",
-	["cp_vest_medic"] = "시민 보호 기동대 방탄 조끼 (저항군 의무병)",
-	["cp_vest_medic_desc"] = "시민 보호 기동대에게 지급되는 제식 방탄 조끼에 적십자가 있는 의무병 가방을 갖췄습니다.",
-	["cp_vest_rebel"] = "시민 보호 기동대 방탄 조끼 (저항군)",
-	["cp_vest_rebel_desc"] = "시민 보호 기동대에게 지급되는 제식 방탄 조끼에 가방을 갖췄습니다.",
+	cannotRemoveSuitWithEquipment = "전신 의상을 벗으려면 먼저 추가로 착용한 의상이나 방어구를 모두 해제해야 합니다.",
+	["CP Armor Vest"] = "시민 보호 기동대 방탄 조끼",
+	cp_vest_desc = "시민 보호 기동대에게 지급되는 제식 방탄 조끼입니다.",
+	["CP Vest with Medic Bag"] = "시민 보호 기동대 방탄 조끼 (저항군 의무병)",
+	cp_vest_medic_desc = "시민 보호 기동대에게 지급되는 제식 방탄 조끼에 적십자가 있는 의무병 가방을 갖췄습니다.",
+	["CP Vest with Bag"] = "시민 보호 기동대 방탄 조끼 (저항군)",
+	cp_vest_rebel_desc = "시민 보호 기동대에게 지급되는 제식 방탄 조끼에 가방을 갖췄습니다.",
+	cp_vest_mpf_desc = "시민 보호 기동대 제복 위에 장착하도록 만들어진 제식 방탄 조끼입니다.",
 	["Combat Vest"] = "전투 조끼",
-	["combat_vest_desc"] = "제한적인 방탄 성능이 있는 전투 조끼입니다.",
+	combat_vest_desc = "제한적인 방탄 성능이 있는 전투 조끼입니다.",
 	["Combat Helmet"] = "우드랜드 방탄모",
-	["combat_helmet_desc"] = "우드랜드 위장무늬 천을 씌운 방탄모입니다.",
+	combat_helmet_desc = "우드랜드 위장무늬 천을 씌운 방탄모입니다.",
 	["Molle Vest"] = "MOLLE 방탄 조끼",
-	["molle_vest_desc"] = "7시간 전쟁 전 군인에게 지급되었던 수납 기능이 있는 방탄 전투조끼입니다.",
+	molle_vest_desc = "7시간 전쟁 전 군인에게 지급되었던 수납 기능이 있는 방탄 전투조끼입니다.",
 	["Overwatch Vest"] = "감시부대 방탄 조끼",
-	["overwatch_vest_desc"] = "감시인 신인류 부대의 제식 장비를 벗겨내서 만든 방탄 조끼입니다.",
+	overwatch_vest_desc = "감시인 신인류 부대의 제식 장비를 벗겨내서 만든 방탄 조끼입니다.",
 	["Flak Jacket"] = "방편복",
-	["flak_jacket_desc"] = "파편을 방호할 수 있는 조끼입니다.",
+	flak_jacket_desc = "파편을 방호할 수 있는 조끼입니다.",
 })
 
 ix.util.Include("cl_plugin.lua")
+
+local function GetArmorProtectionInfo(client, hitgroup, dmginfo)
+	if (!IsValid(client) or !client:IsPlayer()) then
+		return 1, false
+	end
+
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return 1, false
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory) then
+		return 1, false
+	end
+
+	local items = inventory:GetItems()
+	local bestScale = 1
+	local hitgroupProtected = false
+
+	for _, item in pairs(items) do
+		if (item:GetData("equip") != true or item.base != "base_armor" or !item.resistance) then
+			continue
+		end
+
+		if (item.hitGroups and !table.HasValue(item.hitGroups, hitgroup or 0)) then
+			continue
+		end
+
+		local durability = item:GetData("Durability", item.maxDurability)
+		local fraction = durability <= 0 and 0.5 or 1
+		local dmg = item.damage or {1, 1, 1, 1, 1, 1, 1}
+		local scale = 1
+		local validType = false
+
+		if (dmginfo:IsDamageType(DMG_BULLET)) then
+			validType = true
+			scale = dmg[1]
+		elseif (dmginfo:IsDamageType(DMG_SLASH) or dmginfo:IsDamageType(DMG_CLUB)) then
+			validType = true
+			scale = dmg[2]
+		end
+
+		if (!validType) then
+			continue
+		end
+
+		scale = scale * fraction + (1 - fraction)
+
+		if (scale < bestScale) then
+			bestScale = scale
+			hitgroupProtected = scale < 1
+		end
+	end
+
+	return bestScale, hitgroupProtected
+end
 
 function PLUGIN:EntityTakeDamage( target, dmginfo )
 	if ( target:IsPlayer() ) then
@@ -95,62 +152,40 @@ function PLUGIN:EntityTakeDamage( target, dmginfo )
 	end
 end
 
+function PLUGIN:PlayerTraceAttack(client, dmginfo, dir, trace)
+	if (!SERVER or !IsValid(client) or !client:IsPlayer()) then
+		return
+	end
+
+	if (!dmginfo:IsDamageType(DMG_BULLET)) then
+		return
+	end
+
+	local hitgroup = trace and trace.HitGroup or HITGROUP_GENERIC
+	local _, hitgroupProtected = GetArmorProtectionInfo(client, hitgroup, dmginfo)
+
+	if (!hitgroupProtected or !trace or !trace.Hit) then
+		return
+	end
+
+	local hitNormal = trace.HitNormal or (-dir)
+
+	local sparkEffect = EffectData()
+	sparkEffect:SetOrigin(trace.HitPos)
+	sparkEffect:SetNormal(hitNormal)
+	util.Effect("MetalSpark", sparkEffect, true, true)
+
+	local impactEffect = EffectData()
+	impactEffect:SetOrigin(trace.HitPos)
+	impactEffect:SetNormal(hitNormal)
+	util.Effect("StunstickImpact", impactEffect, true, true)
+end
+
 function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
-	if (!client:GetCharacter()) then return end
-	local character = client:GetCharacter()
-	if (!character:GetInventory()) then return end
-	local inventory = character:GetInventory()
-	local items = inventory:GetItems()
-	
-	local bestScale = 1
-	local hitgroupProtected = false
+	local bestScale, hitgroupProtected = GetArmorProtectionInfo(client, hitgroup, dmginfo)
 
-	for k, v in pairs(items) do
-		if (v:GetData("equip") == true and v.base == "base_armor" and v.resistance) then
-			-- Check if item covers this hitgroup
-			-- If hitGroups is nil, it covers everything (backward compatibility/suits)
-			if (v.hitGroups and !table.HasValue(v.hitGroups, hitgroup or 0)) then
-				continue
-			end
-
-			local durability = v:GetData("Durability", v.maxDurability)
-			local fraction = 1
-	
-			if (durability <= 0) then
-				fraction = 0.5
-			end
-	
-			local function GetEffectiveScale(base, frac)
-				return base * frac + (1 - frac)
-			end
-			
-			local dmg = v.damage or {1,1,1,1,1,1,1}
-			local scale = 1
-			local bValidType = false
-
-			if (dmginfo:IsDamageType(DMG_BULLET)) then
-				bValidType = true
-				scale = dmg[1]
-			elseif (dmginfo:IsDamageType(DMG_SLASH)) then
-				bValidType = true
-				scale = dmg[2]
-			elseif (dmginfo:IsDamageType(DMG_CLUB)) then
-				bValidType = true
-				scale = dmg[2] -- Treat club as slash/melee
-			end
-			
-			if (bValidType) then
-				scale = GetEffectiveScale(scale, fraction)
-				if (scale < bestScale) then
-					bestScale = scale
-					
-					-- If this item specifically reduces damage for this hit, mark it as protected
-					if (scale < 1) then
-						hitgroupProtected = true
-					end
-				end
-			end
-		end
+	if (CLIENT and hitgroupProtected and dmginfo:IsDamageType(DMG_BULLET)) then
+		return true
 	end
 
 	if (hitgroupProtected) then
@@ -241,12 +276,39 @@ local function IsWearingSuit(client)
 	return false
 end
 
-function PLUGIN:CanPlayerUnequipItem(client, item)
+local function GetOutfitCategory(item)
 	local itemTable = ix.item.list[item.uniqueID]
-	local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+	return item.outfitCategory or (itemTable and itemTable.outfitCategory)
+end
 
-	if (category != "suit" and IsWearingSuit(client)) then
-		client:NotifyLocalized("cannotActionWhileSuit")
+local function HasEquippedOutfitLayers(client, ignoreItemID)
+	if (!IsValid(client)) then return false end
+
+	local char = client:GetCharacter()
+	local inv = char and char:GetInventory()
+
+	if (!inv) then return false end
+
+	for _, v in pairs(inv:GetItems()) do
+		if (v.id == ignoreItemID or !v:GetData("equip")) then
+			continue
+		end
+
+		local category = GetOutfitCategory(v)
+
+		if (category and category != "suit") then
+			return true
+		end
+	end
+
+	return false
+end
+
+function PLUGIN:CanPlayerUnequipItem(client, item)
+	local category = GetOutfitCategory(item)
+
+	if (category == "suit" and HasEquippedOutfitLayers(client, item.id)) then
+		client:NotifyLocalized("cannotRemoveSuitWithEquipment")
 		return false
 	end
 end
@@ -255,12 +317,9 @@ function PLUGIN:CanTransferItem(item, curInv, inventory)
 	if (item:GetData("equip")) then
 		local client = item.player or item:GetOwner() or (CLIENT and LocalPlayer() or nil)
 		if (IsValid(client)) then
-			local itemTable = ix.item.list[item.uniqueID]
-			local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+			local category = GetOutfitCategory(item)
 			
-			if (category != "suit" and IsWearingSuit(client)) then
-				-- We can't easily notify here without spamming during drag, 
-				-- but item:Transfer will handle the notification if it fails via an action.
+			if (category == "suit" and HasEquippedOutfitLayers(client, item.id)) then
 				return false
 			end
 		end
@@ -279,9 +338,8 @@ function PLUGIN:CanPlayerInteractItem(client, action, item, data)
 		local itemTable = ix.item.list[itemInstance.uniqueID]
 		local category = itemInstance.outfitCategory or (itemTable and itemTable.outfitCategory)
 
-		-- Only block if the item being actioned is EQUIPPED and isn't a suit itself
-		if (category != "suit" and itemInstance:GetData("equip") and IsWearingSuit(client)) then
-			client:NotifyLocalized("cannotActionWhileSuit")
+		if (category == "suit" and itemInstance:GetData("equip") and HasEquippedOutfitLayers(client, itemInstance.id)) then
+			client:NotifyLocalized("cannotRemoveSuitWithEquipment")
 			return false
 		end
 	end

@@ -33,14 +33,13 @@ ITEM.allowedModels = {
 	"models/wichacks/tednovest.mdl",
 	"models/wichacks/vannovest.mdl",
 	"models/wichacks/vancenovest.mdl",
+	"models/models/army/female_01.mdl",
+	"models/models/army/female_02.mdl",
+	"models/models/army/female_03.mdl",
+	"models/models/army/female_04.mdl",
+	"models/models/army/female_06.mdl",
+	"models/models/army/female_07.mdl"
 }
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-	end
-end
+ITEM.tooltipLabelText = "securitizedItemTooltip"
+ITEM.tooltipLabelFactionColor = FACTION_MPF

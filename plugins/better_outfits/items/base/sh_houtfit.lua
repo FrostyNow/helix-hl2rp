@@ -33,6 +33,10 @@ local function PlayRandomSound(client, sound)
 	end
 end
 
+local function GetBadAirPlugin()
+	return ix.plugin.Get("badair")
+end
+
 --[[
 -- This will change a player's skin after changing the model. Keep in mind it starts at 0.
 ITEM.newSkin = 1
@@ -84,7 +88,7 @@ if (CLIENT) then
 		end
 	end)
 
-	function ITEM:PopulateTooltip(tooltip)
+	function ITEM:PopulateModelSupportTooltip(tooltip)
 		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
 			local warning = tooltip:AddRow("warning")
 			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
@@ -94,10 +98,55 @@ if (CLIENT) then
 			warning:SizeToContents()
 		end
 	end
+
+	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
+		labelText = labelText or self.tooltipLabelText
+
+		if (!labelText) then
+			return
+		end
+
+		labelColor = labelColor or self.tooltipLabelColor
+
+		if (!labelColor and self.tooltipLabelFactionColor) then
+			labelColor = team.GetColor(self.tooltipLabelFactionColor)
+		end
+
+		if (!labelColor) then
+			return
+		end
+
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(labelColor)
+		data:SetText(L(labelText))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+
+	function ITEM:PopulateTooltip(tooltip)
+		self:PopulateModelSupportTooltip(tooltip)
+		self:PopulateAffiliationTooltip(tooltip)
+
+		local badair = GetBadAirPlugin()
+
+		if (badair and badair:ItemRequiresGasmaskFilter(self)) then
+			local filterRow = tooltip:AddRow("filter")
+			filterRow:SetBackgroundColor(Color(70, 70, 70, 180))
+			filterRow:SetText(string.format("%s: %s", L("filterStatus"), badair:GetFilterTooltipText(self, LocalPlayer())))
+			filterRow:SetExpensiveShadow(0.5)
+			filterRow:SizeToContents()
+		end
+	end
 end
 
 function ITEM:RemoveOutfit(client)
 	local character = client:GetCharacter()
+	local outfitPlugin = ix.plugin.Get("better_outfits")
+	local badair = GetBadAirPlugin()
+
+	if (badair and badair:ItemRequiresGasmaskFilter(self) and badair:HasItemFilterInstalled(self)) then
+		badair:RemoveFilterFromItem(self, character and character:GetInventory(), client)
+	end
 
 	self:SetData("equip", false)
 
@@ -147,6 +196,14 @@ function ITEM:RemoveOutfit(client)
 		end
 	end
 
+	if (outfitPlugin) then
+		if (outfitPlugin:HasEquippedModelChangingOutfit(character)) then
+			outfitPlugin:ApplyTemporaryOutfitOverrides(client, character)
+		else
+			outfitPlugin:ClearTemporaryOutfitOverrides(character)
+		end
+	end
+
 	if (self.attribBoosts) then
 		for k, _ in pairs(self.attribBoosts) do
 			character:RemoveBoost(self.uniqueID, k)
@@ -155,6 +212,10 @@ function ITEM:RemoveOutfit(client)
 
 	for k, _ in pairs(self:GetData("outfitAttachments", {})) do
 		self:RemoveAttachment(k, client)
+	end
+
+	if (Schema and Schema.RefreshFlashlight) then
+		Schema:RefreshFlashlight(client)
 	end
 
 	self:OnUnequipped()
@@ -263,6 +324,7 @@ function ITEM:ApplyOutfit(client)
 	if (!IsValid(client)) then return end
 
 	local char = client:GetCharacter()
+	local outfitPlugin = ix.plugin.Get("better_outfits")
 	if (!char) then return end
 
 	local model = client:GetModel()
@@ -337,6 +399,14 @@ function ITEM:ApplyOutfit(client)
 		end
 	end
 
+	if (outfitPlugin) then
+		outfitPlugin:ApplyTemporaryOutfitOverrides(client, char)
+	end
+
+	if (Schema and Schema.RefreshFlashlight) then
+		Schema:RefreshFlashlight(client)
+	end
+
 	self:OnEquipped()
 end
 
@@ -372,6 +442,89 @@ ITEM.functions.Equip = {
 		if item.allowedModels and !table.HasValue(item.allowedModels, item.player:GetModel()) then return false end
 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:CanEquipOutfit() and
 			hook.Run("CanPlayerEquipItem", client, item) != false and item.invID == client:GetCharacter():GetInventory():GetID()
+	end
+}
+
+ITEM.functions.InstallFilter = {
+	name = "installFilter",
+	tip = "useTip",
+	icon = "icon16/add.png",
+	OnRun = function(item)
+		local client = item.player
+		local badair = GetBadAirPlugin()
+
+		if (!badair or !badair:ItemRequiresGasmaskFilter(item)) then
+			return false
+		end
+
+		if (badair:HasItemFilterInstalled(item)) then
+			client:NotifyLocalized("filterAlreadyInstalled")
+			return false
+		end
+
+		local inventory = client:GetCharacter():GetInventory()
+		local filterItem = badair:GetFirstAvailableFilterItem(inventory)
+
+		if (!filterItem) then
+			client:NotifyLocalized("filterNoCompatibleMask")
+			return false
+		end
+
+		if (!badair:InstallFilterOnItem(item, filterItem)) then
+			client:NotifyLocalized("filterAlreadyInstalled")
+			return false
+		end
+
+		filterItem:Remove()
+
+		client:EmitSound("weapons/usp/usp_silencer_on.wav")
+		client:NotifyLocalized("filterInstalledNotify")
+
+		return false
+	end,
+	OnCanRun = function(item)
+		local client = item.player
+		local badair = GetBadAirPlugin()
+
+		if (!badair or !badair:ItemRequiresGasmaskFilter(item) or badair:HasItemFilterInstalled(item)) then
+			return false
+		end
+
+		if (IsValid(item.entity) or !IsValid(client) or item.invID != client:GetCharacter():GetInventory():GetID()) then
+			return false
+		end
+
+		return badair:GetFirstAvailableFilterItem(client:GetCharacter():GetInventory()) != nil
+	end
+}
+
+ITEM.functions.RemoveFilter = {
+	name = "removeFilter",
+	tip = "useTip",
+	icon = "icon16/delete.png",
+	OnRun = function(item)
+		local client = item.player
+		local badair = GetBadAirPlugin()
+
+		if (!badair or !badair:ItemRequiresGasmaskFilter(item) or !badair:HasItemFilterInstalled(item)) then
+			client:NotifyLocalized("filterNotInstalled")
+			return false
+		end
+
+		local inventory = client:GetCharacter():GetInventory()
+		badair:RemoveFilterFromItem(item, inventory, client)
+
+		client:EmitSound("weapons/usp/usp_silencer_on.wav")
+		client:NotifyLocalized("filterRemovedNotify")
+
+		return false
+	end,
+	OnCanRun = function(item)
+		local client = item.player
+		local badair = GetBadAirPlugin()
+
+		return !IsValid(item.entity) and IsValid(client) and item.invID == client:GetCharacter():GetInventory():GetID()
+			and badair and badair:ItemRequiresGasmaskFilter(item) and badair:HasItemFilterInstalled(item)
 	end
 }
 

@@ -252,7 +252,7 @@ end
 function Schema:UpdateCharacterInfo(panel)
 	if (LocalPlayer():Team() == FACTION_CITIZEN) then
 		panel.cid:SetLabelText(L("citizenid"))
-		panel.cid:SetText(string.format("##%s", LocalPlayer():GetCharacter():GetData("cid") or "UNKNOWN"))
+		panel.cid:SetText(string.format("##%s", Schema:GetCitizenID(LocalPlayer()) or "UNKNOWN"))
 		panel.cid:SizeToContents()
 	end
 end

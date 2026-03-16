@@ -3,18 +3,7 @@ CLASS.faction = FACTION_OTA
 CLASS.isDefault = true
 
 function CLASS:CanSwitchTo(client)
-	local name = client:Name()
-	local bStatus = false
-
-	for k, v in ipairs({ "OWS", "SGS", }) do
-		if (Schema:IsCombineRank(name, v)) then
-			bStatus = true
-
-			break
-		end
-	end
-
-	return bStatus
+	return Schema:GetCombineRank(client:Name()) == "OWS"
 end
 
 CLASS_OWS = CLASS.index

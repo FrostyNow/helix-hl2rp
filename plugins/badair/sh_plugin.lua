@@ -11,7 +11,18 @@ ix.lang.AddTable("korean", {
 	badairExit1 = "숨 쉬기가 한결 편안해졌습니다.",
 	badairExit2 = "불쾌한 냄새가 사라지는 것 같습니다.",
 	badairExit3 = "뭔가 상쾌해진 것 같습니다.",
-	badairMaskDepleted = "방독면의 정화통이 다 되어 숨이 막혀옵니다."
+	badairMaskDepleted = "방독면의 정화통이 다 되어 숨이 막혀옵니다.",
+	filterInstalled = "정화통 장착됨",
+	filterMissing = "정화통 없음",
+	filterDepleted = "정화통 소진",
+	filterStatus = "정화통 상태",
+	filterInstalledNotify = "정화통을 장착했습니다.",
+	filterRemovedNotify = "정화통을 분리했습니다.",
+	filterAlreadyInstalled = "이미 정화통이 장착되어 있습니다.",
+	filterNotInstalled = "장착된 정화통이 없습니다.",
+	filterNoCompatibleMask = "정화통을 장착할 수 있는 방독면이 없습니다.",
+	installFilter = "정화통 장착",
+	removeFilter = "정화통 분리"
 })
 
 ix.lang.AddTable("english", {
@@ -22,7 +33,18 @@ ix.lang.AddTable("english", {
 	badairExit1 = "Breathing has become much easier.",
 	badairExit2 = "The unpleasant smell seems to have disappeared.",
 	badairExit3 = "It feels somehow refreshing.",
-	badairMaskDepleted = "The filter in your gasmask runs out, making it hard to breathe."
+	badairMaskDepleted = "The filter in your gasmask runs out, making it hard to breathe.",
+	filterInstalled = "Filter installed",
+	filterMissing = "No filter installed",
+	filterDepleted = "Filter depleted",
+	filterStatus = "Filter status",
+	filterInstalledNotify = "You installed the filter.",
+	filterRemovedNotify = "You removed the filter.",
+	filterAlreadyInstalled = "This mask already has a filter installed.",
+	filterNotInstalled = "There is no installed filter to remove.",
+	filterNoCompatibleMask = "You do not have a compatible mask for this filter.",
+	installFilter = "Install Filter",
+	removeFilter = "Remove Filter"
 })
 
 local badairEnterMessages = {
@@ -36,6 +58,266 @@ local badairExitMessages = {
 	"badairExit2",
 	"badairExit3"
 }
+
+local DEFAULT_FILTER_MAX_DURABILITY = 100
+
+function PLUGIN:ItemRequiresGasmaskFilter(item)
+	return item and item.requiresGasmaskFilter == true
+end
+
+function PLUGIN:GetItemFilterMaxDurability(item)
+	local maxDurability = item and tonumber(item.filterMaxDurability or item.maxFilterDurability) or nil
+
+	if (!maxDurability or maxDurability <= 0) then
+		maxDurability = DEFAULT_FILTER_MAX_DURABILITY
+	end
+
+	return maxDurability
+end
+
+function PLUGIN:GetItemFilterDurability(item)
+	if (!self:HasItemFilterInstalled(item)) then
+		return 0
+	end
+
+	return math.max(0, tonumber(item:GetData("FilterDurability", self:GetItemFilterMaxDurability(item))) or 0)
+end
+
+function PLUGIN:SetItemFilterDurability(item, durability)
+	if (!self:ItemRequiresGasmaskFilter(item)) then
+		return 0
+	end
+
+	local maxDurability = self:GetItemFilterMaxDurability(item)
+	local clamped = math.Clamp(tonumber(durability) or maxDurability, 0, maxDurability)
+
+	item:SetData("FilterDurability", clamped)
+
+	return clamped
+end
+
+function PLUGIN:HasItemFilterInstalled(item)
+	if (!self:ItemRequiresGasmaskFilter(item)) then
+		return false
+	end
+
+	if (item:GetData("filterInstalled") != nil) then
+		return item:GetData("filterInstalled") == true
+	end
+
+	return item:GetData("FilterDurability") != nil
+end
+
+function PLUGIN:SetItemFilterInstalled(item, installed)
+	if (!self:ItemRequiresGasmaskFilter(item)) then
+		return false
+	end
+
+	installed = installed == true
+	item:SetData("filterInstalled", installed and true or nil)
+
+	if (!installed) then
+		item:SetData("FilterDurability", nil)
+	end
+
+	return installed
+end
+
+function PLUGIN:RestoreItemFilterDurability(item)
+	self:SetItemFilterInstalled(item, true)
+	return self:SetItemFilterDurability(item, self:GetItemFilterMaxDurability(item))
+end
+
+function PLUGIN:ConsumeItemFilterDurability(item, amount)
+	if (!self:ItemRequiresGasmaskFilter(item)) then
+		return 0, 0
+	end
+
+	local before = self:GetItemFilterDurability(item)
+	local after = self:SetItemFilterDurability(item, before - math.max(tonumber(amount) or 0, 0))
+
+	return before, after
+end
+
+function PLUGIN:GetFilterTooltipText(item, client)
+	if (!self:ItemRequiresGasmaskFilter(item)) then
+		return nil
+	end
+
+	if (!self:HasItemFilterInstalled(item)) then
+		return L("filterMissing", client)
+	end
+
+	local durability = math.floor(self:GetItemFilterDurability(item))
+	local maxDurability = self:GetItemFilterMaxDurability(item)
+
+	if (durability <= 0) then
+		return string.format("%s (0 / %d)", L("filterDepleted", client), maxDurability)
+	end
+
+	return string.format("%s (%d / %d)", L("filterInstalled", client), durability, maxDurability)
+end
+
+function PLUGIN:GetFirstAvailableFilterItem(inventory)
+	if (!inventory) then
+		return nil
+	end
+
+	for _, filterItem in pairs(inventory:GetItemsByUniqueID("gasmask_filter", true) or {}) do
+		if ((tonumber(filterItem:GetData("Durability", filterItem.maxDurability or DEFAULT_FILTER_MAX_DURABILITY)) or 0) > 0) then
+			return filterItem
+		end
+	end
+
+	return nil
+end
+
+function PLUGIN:GetFilterInstallTarget(character)
+	if (!character) then
+		return nil
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory) then
+		return nil
+	end
+
+	local fallback
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (!self:ItemRequiresGasmaskFilter(item) or self:HasItemFilterInstalled(item)) then
+			continue
+		end
+
+		if (item:GetData("equip")) then
+			return item
+		end
+
+		fallback = fallback or item
+	end
+
+	return fallback
+end
+
+function PLUGIN:InstallFilterOnItem(item, filterItem)
+	if (!self:ItemRequiresGasmaskFilter(item) or !filterItem or filterItem.uniqueID != "gasmask_filter") then
+		return false
+	end
+
+	if (self:HasItemFilterInstalled(item)) then
+		return false
+	end
+
+	local durability = math.Clamp(
+		tonumber(filterItem:GetData("Durability", filterItem.maxDurability or self:GetItemFilterMaxDurability(item))) or self:GetItemFilterMaxDurability(item),
+		0,
+		self:GetItemFilterMaxDurability(item)
+	)
+
+	if (durability <= 0) then
+		return false
+	end
+
+	self:SetItemFilterInstalled(item, true)
+	self:SetItemFilterDurability(item, durability)
+
+	return true
+end
+
+function PLUGIN:RemoveFilterFromItem(item, inventory, client)
+	if (!self:HasItemFilterInstalled(item)) then
+		return false
+	end
+
+	local durability = self:GetItemFilterDurability(item)
+	self:SetItemFilterInstalled(item, false)
+
+	local data = {
+		Durability = durability
+	}
+
+	if (inventory and inventory.Add and inventory:Add("gasmask_filter", 1, data)) then
+		return true
+	end
+
+	if (IsValid(client)) then
+		ix.item.Spawn("gasmask_filter", client, nil, Angle(0, 0, 0), data)
+		return true
+	end
+
+	return false
+end
+
+function PLUGIN:CanItemProtectFromBadAir(item)
+	if (!item) then
+		return false
+	end
+
+	if (self:ItemRequiresGasmaskFilter(item) and self:GetItemFilterDurability(item) <= 0) then
+		return false
+	end
+
+	if (item.filterIgnoreItemDurability) then
+		return true
+	end
+
+	local maxDurability = tonumber(item.maxDurability)
+
+	if (maxDurability and maxDurability > 0 and item:GetData("Durability", maxDurability) <= 0) then
+		return false
+	end
+
+	return true
+end
+
+function PLUGIN:GetEquippedBadAirProtectionItem(character, predicate)
+	if (!character) then
+		return nil
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory) then
+		return nil
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (!item:GetData("equip") or !item.badAirProtection) then
+			continue
+		end
+
+		if (!predicate or predicate(item)) then
+			return item
+		end
+	end
+
+	return nil
+end
+
+function PLUGIN:TryProtectWithBadAirItem(client, item)
+	if (!IsValid(client) or !item) then
+		return false
+	end
+
+	if (!item.filterIgnoreItemDurability) then
+		local maxDurability = tonumber(item.maxDurability)
+
+		if (maxDurability and maxDurability > 0 and item:GetData("Durability", maxDurability) <= 0) then
+			return false
+		end
+	end
+
+	if (self:ItemRequiresGasmaskFilter(item)) then
+		local before, after = self:ConsumeItemFilterDurability(item, self:GetItemFilterMaxDurability(item) / 600)
+
+		if (before > 0 and after <= 0) then
+			ix.chat.Send(client, "it", L("badairMaskDepleted", client), false, {client})
+		end
+	end
+
+	return self:CanItemProtectFromBadAir(item)
+end
 
 function PLUGIN:SetupAreaProperties()
 	ix.area.AddProperty("badair", ix.type.bool, false)
@@ -65,8 +347,14 @@ if (!CLIENT) then
 									local index = client:FindBodygroupByName("mask")
 
 									if (index != -1 and client:GetBodygroup(index) >= 1) then
-										bIsProtected = true
-										bCombineProtected = true
+										local combineMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+											return item.combineMaskProtection == true
+										end)
+
+										if (combineMask) then
+											bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, combineMask)
+											bCombineProtected = true
+										end
 									end
 								else
 									bIsProtected = true
@@ -75,36 +363,12 @@ if (!CLIENT) then
 							end
 
 							if (!bCombineProtected and client:GetNetVar("gasmask") and client:GetMoveType() != MOVETYPE_NOCLIP) then
-								local inv = char:GetInventory()
-								local activeMask
-
-								if (inv) then
-									for _, item in pairs(inv:GetItems()) do
-										if (item.base == "base_armor" and item:GetData("equip") and item.gasmask) then
-											activeMask = item
-											break
-										end
-									end
-								end
+								local activeMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+									return item.gasmask == true
+								end)
 
 								if (activeMask) then
-									local dur = activeMask:GetData("Durability", activeMask.maxDurability)
-									if (dur > 0) then
-										-- 10 minutes (600 seconds) to deplete full durability. 
-										-- Calculate deduction based on max durability so any gasmask lasts ~10 mins.
-										activeMask:SetData("Durability", math.max(0, dur - (activeMask.maxDurability / 600)))
-										
-										if (activeMask:GetData("Durability") <= 0) then
-											ix.chat.Send(client, "it", L("badairMaskDepleted", client), false, {client})
-											bIsProtected = false
-										end
-									else
-										bIsProtected = false
-									end
-								end
-								
-								if (activeMask and activeMask:GetData("Durability", activeMask.maxDurability) > 0) then
-									bIsProtected = true
+									bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeMask)
 								end
 							end
 

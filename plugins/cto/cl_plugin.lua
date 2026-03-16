@@ -53,7 +53,7 @@ function PLUGIN:UpdateBiosignalLocations()
 					time = curTime,
 					isLost = false,
 					isKnockedOut = v:GetLocalVar("ragdoll"),
-					digits = string.match(v:Name(), "%d%d%d%d?%d?") or "???"
+					unitID = Schema:GetCombineUnitID(v)
 				}
 			end
 		end

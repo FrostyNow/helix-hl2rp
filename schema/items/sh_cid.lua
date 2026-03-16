@@ -24,6 +24,7 @@ ITEM.functions.Use = {
 			end
 				
 			char:SetData("cid", id)
+			Schema:SyncCitizenID(target, char)
 			itemTable:SetData("id", id)
 			itemTable:SetData("name", char:GetName())
 
@@ -71,6 +72,7 @@ ITEM.functions.Upgrade = {
 					end
 					
 					target:GetCharacter():SetData("cid", id)
+					Schema:SyncCitizenID(target, char)
 					itemTable:SetData("id", id)
 					itemTable:SetData("name", target:GetCharacter():GetName())
 
@@ -133,6 +135,7 @@ ITEM.functions.Degrade = {
 					end
 					
 					target:GetCharacter():SetData("cid", id)
+					Schema:SyncCitizenID(target, char)
 					itemTable:SetData("id", id)
 					itemTable:SetData("name", target:GetCharacter():GetName())
 

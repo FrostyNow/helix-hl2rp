@@ -180,6 +180,8 @@ local function DefineCitizenClothing()
 
 		if (CLIENT) then
 			function ITEM:PopulateTooltip(tooltip)
+				self:PopulateModelSupportTooltip(tooltip)
+
 				local labelColor = nil
 				local labelText = nil
 
@@ -192,11 +194,7 @@ local function DefineCitizenClothing()
 				end
 
 				if (labelColor and labelText) then
-					local data = tooltip:AddRow("data")
-					data:SetBackgroundColor(labelColor)
-					data:SetText(L(labelText))
-					data:SetExpensiveShadow(0.5)
-					data:SizeToContents()
+					self:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
 				end
 			end
 		end

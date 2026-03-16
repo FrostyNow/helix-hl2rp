@@ -37,7 +37,7 @@ function Schema:CanPlayerEditObjectives(client)
 	local bCanEdit = false
 	local name = client:GetCharacter():GetName()
 
-	for k, v in ipairs({"OfC", "EpU", "DvL", "SeC"}) do
+	for k, v in ipairs({"OfC", "EpU", "DvL", "SeC", "CmD"}) do
 		if (self:IsCombineRank(name, v)) then
 			bCanEdit = true
 			break

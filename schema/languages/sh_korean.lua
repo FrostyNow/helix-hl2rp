@@ -623,6 +623,7 @@ LANGUAGE = {
 	mpfScannerDesc = "콤바인 기술을 사용하는 시민 보호 기동대 스캐너입니다.",
 	["Metropolice Unit"] = "시민 보호 기동대원",
 	["Overwatch Soldier"] = "감시인 신인류 부대원",
+	["Overwatch Shotgunner"] = "감시인 신인류 부대 산탄총 사수",
 	["Resistance"] = "저항군",
 	["First Class Citizen"] = "일등 시민",
 	["Second Class Citizen"] = "이등 시민",

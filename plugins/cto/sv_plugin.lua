@@ -41,44 +41,23 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	client:SetNetVar("IsBiosignalGone", true)
 
 	local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
-	local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
+	local unitID = Schema:GetCombineUnitID(client)
 
 	-- Alert all other units.
 	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(255, 255, 255, 255))
-	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 255), digits, location)
+	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 255), unitID, location)
 
 	local soundQueue = {
 		"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
 		"npc/overwatch/radiovoice/lostbiosignalforunit.wav"
 	}
 
-	if (digits) then
-		local englishDigits = {
-			["0"] = "zero",
-			["1"] = "one",
-			["2"] = "two",
-			["3"] = "three",
-			["4"] = "four",
-			["5"] = "five",
-			["6"] = "six",
-			["7"] = "seven",
-			["8"] = "eight",
-			["9"] = "nine"
-		}
+	soundQueue[#soundQueue + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
+	soundQueue[#soundQueue + 1] = "npc/metropolice/vo/off" .. math.random(1, 4) .. ".wav"
 
-		for i = 1, string.len(digits) do
-			local voNum = englishDigits[string.sub(digits, i, i)]
-
-			soundQueue[#soundQueue + 1] = "npc/overwatch/radiovoice/" .. voNum .. ".wav"
-		end
-
-		soundQueue[#soundQueue + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
-		soundQueue[#soundQueue + 1] = "npc/metropolice/vo/off" .. math.random(1, 4) .. ".wav"
-
-		for _, player in ipairs(player.GetAll()) do
-			if (player:IsCombine() and player != client and !player:GetNetVar("IsBiosignalGone")) then
-				ix.util.EmitQueuedSounds(player, soundQueue)
-			end
+	for _, player in ipairs(player.GetAll()) do
+		if (player:IsCombine() and player != client and !player:GetNetVar("IsBiosignalGone")) then
+			ix.util.EmitQueuedSounds(player, soundQueue)
 		end
 	end
 end
@@ -99,11 +78,11 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 255)) -- Alert this unit.
 
-				local digits = string.match(client:Name(), "%d%d%d%d?%d?") or 0
+				local unitID = Schema:GetCombineUnitID(client)
 
 				-- Alert all units.
 				Schema:AddCombineDisplayMessage("@DownloadingFoundBiosignal", Color(255, 255, 255, 255))
-				Schema:AddCombineDisplayMessage("@NoncohesiveBiosignalFound", Color(0, 255, 0, 255), digits, location)
+				Schema:AddCombineDisplayMessage("@NoncohesiveBiosignalFound", Color(0, 255, 0, 255), unitID, location)
 
 				local soundQueue = {
 					"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",

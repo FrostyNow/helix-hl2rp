@@ -17,6 +17,11 @@ ITEM.eqBodyGroups = {
 	["mask back"] = 1,
 }
 ITEM.outfitCategory = "mask"
+ITEM.badAirProtection = true
+ITEM.combineMaskProtection = true
+ITEM.requiresGasmaskFilter = true
+ITEM.filterMaxDurability = 100
+ITEM.filterIgnoreItemDurability = true
 
 ITEM.allowedModels = {
 	"models/conceptbine_policeforce/rnd/male_01.mdl",
@@ -45,12 +50,5 @@ ITEM.allowedModels = {
 	"models/conceptbine_policeforce/rnd/female_24.mdl"
 }
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-	end
-end
+ITEM.tooltipLabelText = "securitizedItemTooltip"
+ITEM.tooltipLabelFactionColor = FACTION_MPF

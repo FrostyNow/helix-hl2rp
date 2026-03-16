@@ -13,6 +13,11 @@ local function turnOffIfLast(item)
 		local inventory = client:GetCharacter():GetInventory()
 
 		if (inventory and inventory:GetItemCount(item.uniqueID) <= 0) then
+			if (Schema and Schema.RefreshFlashlight) then
+				Schema:RefreshFlashlight(client)
+				return
+			end
+
 			if (client.GetNetVar and client:GetNetVar("flashlight") != nil) then
 				client:SetNetVar("flashlight", false)
 			end

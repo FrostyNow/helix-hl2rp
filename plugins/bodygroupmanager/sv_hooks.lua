@@ -26,25 +26,40 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 		return
 	end
 
+	PLUGIN:EnsureOriginalAppearance(targetCharacter, target)
+
 	local bodygroups = net.ReadTable()
 	local skin = net.ReadUInt(8)
+	local modelChangingOutfit = PLUGIN:HasEquippedModelChangingOutfit(targetCharacter)
+	local allowedGroups = PLUGIN:GetEditableBodygroupValues(targetCharacter, target, bodygroups)
+	local changedPersistentData = false
 
 	if (canEditBodygroups) then
 		local groups = {}
 
-		for k, v in pairs(bodygroups) do
+		for k, v in pairs(allowedGroups) do
 			target:SetBodygroup(tonumber(k) or 0, tonumber(v) or 0)
 			groups[tonumber(k) or 0] = tonumber(v) or 0
 		end
 
-		targetCharacter:SetData("groups", groups)
+		if (!modelChangingOutfit) then
+			PLUGIN:SetPersistentAppearance(targetCharacter, groups)
+			changedPersistentData = true
+		elseif (!table.IsEmpty(bodygroups)) then
+			client:NotifyLocalized("temporaryBodygroupChanges")
+		end
 	end
 
-	if (canEditSkin) then
+	if (canEditSkin and !modelChangingOutfit) then
 		target:SetSkin(skin)
-		targetCharacter:SetData("skin", skin)
+		PLUGIN:SetPersistentAppearance(targetCharacter, nil, skin)
+		changedPersistentData = true
+	elseif (canEditSkin and modelChangingOutfit) then
+		client:NotifyLocalized("temporaryBodygroupChanges")
 	end
 
-	targetCharacter:Save()
+	if (changedPersistentData) then
+		targetCharacter:Save()
+	end
 	ix.log.Add(client, "bodygroupEditor", target)
 end)

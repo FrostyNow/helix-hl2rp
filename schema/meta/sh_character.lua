@@ -8,7 +8,7 @@ function CHAR:IsCombine()
 	
 	if (inventory) then
 		for k, v in pairs(inventory:GetItems()) do
-			if ((v.uniqueID == "combine_soldier" or v.uniqueID == "metropolice" or v.uniqueID == "hazmat_suit_citizen") and v:GetData("equip")) then
+			if (v.uniqueID == "metropolice" and v:GetData("equip")) then
 				mimic = true
 				break
 			end

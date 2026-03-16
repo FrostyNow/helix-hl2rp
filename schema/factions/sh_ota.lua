@@ -25,22 +25,16 @@ function FACTION:OnCharacterCreated(client, character)
 end
 
 function FACTION:GetDefaultName(client)
-	return "OTA.OWS-UNKNOWN:" .. Schema:ZeroNumber(math.random(1, 999), 2), true
+	return Schema:FormatCombineName("OTA", "OWS"), true
 end
 
 function FACTION:OnTransferred(character)
-	character:SetName(self:GetDefaultName())
+	character:SetName(Schema:NormalizeCombineName(self:GetDefaultName(character:GetPlayer()), "OTA"))
 	character:SetModel(self.models[1])
 end
 
 function FACTION:OnNameChanged(client, oldValue, value)
-	local character = client:GetCharacter()
-
-	if (!Schema:IsCombineRank(oldValue, "OWS") and Schema:IsCombineRank(value, "OWS")) then
-		character:JoinClass(CLASS_OWS)
-	elseif (!Schema:IsCombineRank(oldValue, "EOW") and Schema:IsCombineRank(value, "EOW")) then
-		character:JoinClass(CLASS_EOW)
-	end
+	Schema:SyncCombineClass(client, value)
 end
 
 function FACTION:ModifyPlayerStep(client, data)

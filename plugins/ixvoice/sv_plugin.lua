@@ -128,7 +128,7 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 				end
 				
 				if (Schema:CanPlayerSeeCombineOverlay(speaker)) then
-					return string.format("<:: %s ::>", message)
+					return Schema:WrapCombineChatText(message)
 				else
 					return message
 				end
@@ -140,7 +140,7 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 				return text
 			end
 
-			return string.format("<:: %s ::>", text)
+			return Schema:WrapCombineChatText(text)
 		end
 	end
 	

@@ -1,6 +1,9 @@
 local PLUGIN = PLUGIN
 
 local FORCE_RADIO_NOISE_TEST = false
+local MASK_FILTER_DSP = 31
+local MASK_FILTER_MIN_PITCH = 92
+local MASK_FILTER_MAX_PITCH = 98
 local RADIO_FILTER_DSP = 31
 local RADIO_FILTER_MIN_PITCH = 95
 local RADIO_FILTER_MAX_PITCH = 105
@@ -21,6 +24,34 @@ end
 
 local function playVoiceSequence(entity, sounds, volume)
 	ix.util.EmitQueuedSounds(entity, sounds, nil, nil, volume)
+end
+
+local function playMaskFilteredVoice(entity, sounds, volume)
+	local delay = 0
+	local spacing = 0.1
+
+	for _, soundInfo in ipairs(sounds) do
+		local postSet, preSet = 0, 0
+		local soundPath = soundInfo
+
+		if (istable(soundInfo)) then
+			postSet = soundInfo[2] or 0
+			preSet = soundInfo[3] or 0
+			soundPath = soundInfo[1]
+		end
+
+		local length = SoundDuration(soundPath)
+		delay = delay + preSet
+
+		timer.Simple(delay, function()
+			if (IsValid(entity)) then
+				local filterPitch = math.random(MASK_FILTER_MIN_PITCH, MASK_FILTER_MAX_PITCH)
+				entity:EmitSound(soundPath, volume or 75, filterPitch, 1, CHAN_AUTO, 0, MASK_FILTER_DSP)
+			end
+		end)
+
+		delay = delay + length + postSet + spacing
+	end
 end
 
 local function playRadioFilteredVoice(entity, sounds, volume)
@@ -76,22 +107,29 @@ netstream.Hook("PlayQueuedSound", function(entity, sounds, delay, spacing, volum
 end)
 
 netstream.Hook("voicePlay", function(sounds, volume, index, isRadioTransmission, voiceClassName)
+	local loweredClass = string.lower(voiceClassName or "")
+	local shouldUseCitizenMaskFilter = loweredClass == "citizenmale" or loweredClass == "citizenfemale"
+
 	if (index) then
 		local client = Entity(index)
 
 		if (IsValid(client)) then
-			local loweredClass = string.lower(voiceClassName or "")
 			local shouldUseRadioFilter = isRadioTransmission and (
 				FORCE_RADIO_NOISE_TEST
 				or (IsValid(LocalPlayer()) and LocalPlayer():GetPos():DistToSqr(client:GetPos()) > getRadioNoiseDistanceSqr())
 			) and loweredClass != "overwatch"
+			local shouldUseMaskFilter = shouldUseCitizenMaskFilter and client:GetNetVar("gasmask", false)
 
 			if (shouldUseRadioFilter) then
 				playRadioFilteredVoice(client, sounds, volume * 0.5)
+			elseif (shouldUseMaskFilter) then
+				playMaskFilteredVoice(client, sounds, volume)
 			else
 				playVoiceSequence(client, sounds, volume)
 			end
 		end
+	elseif (shouldUseCitizenMaskFilter and LocalPlayer():GetNetVar("gasmask", false)) then
+		playMaskFilteredVoice(LocalPlayer(), sounds, volume)
 	else
 		playVoiceSequence(LocalPlayer(), sounds, volume)
 	end

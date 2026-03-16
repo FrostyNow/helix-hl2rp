@@ -5,12 +5,16 @@ PLUGIN.description = "Adds an item allowing players to toggle their flashlight."
 
 function PLUGIN:PlayerSwitchFlashlight(client, bEnabled)
 	local glowflashlight = ix.plugin.list["glowflashlight"]
-	local character = client:GetCharacter()
-	local inventory = character and character:GetInventory()
-	
+
 	if (glowflashlight) then
 		return
-	elseif ((inventory and inventory:HasItem("flashlight")) or client:IsCombine()) then
+	end
+
+	if (IsValid(client.ixScn)) then
+		return
+	end
+
+	if (Schema and Schema.CanPlayerUseFlashlight and Schema:CanPlayerUseFlashlight(client)) then
 		return true
 	end
 end

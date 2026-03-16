@@ -62,6 +62,7 @@ LANGUAGE = {
 	recipeScrapScannerBodyDesc = "Disassemble a scanner body to extract parts.",
 	recipeScrapAluminiumCanDesc = "Disassemble an aluminium can to extract parts.",
 	recipeScrapTelephoneDesc = "Disassemble a telephone to extract parts.",
+	recipeScrapGasmaskFilterDesc = "Disassemble a gasmask filter to recover some of its materials.",
 	recipeScrapTurpentineDesc = "Disassemble turpentine to extract parts.",
 	recipePlasticBottleDesc = "Break down a plastic bottle.",
 	recipePlankDesc = "Break down a wooden plank into usable scraps.",
@@ -69,6 +70,7 @@ LANGUAGE = {
 	recipeScrapEmptyBottleDesc = "Break down an empty bottle into usable glass materials.",
 	recipeScrapShotglassDesc = "Break down a shotglass.",
 	recipeScrapPlateDesc = "Break down a plate.",
+	["Scrap Gasmask Filter"] = "Scrap Gasmask Filter",
 
 	recipeScrapBucketDesc = "Disassemble a bucket.",
 	recipeScrapCafeteriaTrayDesc = "Disassemble a cafeteria tray.",
@@ -97,4 +99,3 @@ LANGUAGE = {
 	recipeTeaDesc = "Make some tea.",
 	recipeCoffeeDesc = "Make some coffee.",
 }
-

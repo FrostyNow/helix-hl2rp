@@ -71,6 +71,7 @@ function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
 
 	character:SetData("cid", id)
+	Schema:SyncCitizenID(client, character)
 
 	inventory:Add("coupon", 1)
 	inventory:Add("suitcase", 1)
