@@ -28,6 +28,9 @@ ix.lang.AddTable("korean", {
 local MODE_ALLOW_ALL = 1
 local MODE_ALLOW_CID = 2
 local MODE_ALLOW_NONE = 3
+local FORCEFIELD_LOOP_SOUND = "ambient/machines/combine_shield_loop3.wav"
+local FORCEFIELD_LOOP_VOLUME = 0.35
+local FORCEFIELD_SOUND_CHECK_INTERVAL = 0.2
 
 local MODES = {
 	{
@@ -100,6 +103,21 @@ function ENT:CreateShieldPhysics(dummyPos)
 	self:PhysicsFromMesh(meshVerts)
 end
 
+function ENT:SyncBarrierSkin(skin)
+	local resolvedSkin = math.max(0, tonumber(skin) or self:GetSkin() or 0)
+	local dummy = self.dummy
+
+	if (!IsValid(dummy) and self.GetDummy) then
+		dummy = self:GetDummy()
+	end
+
+	self:SetSkin(resolvedSkin)
+
+	if (IsValid(dummy)) then
+		dummy:SetSkin(resolvedSkin)
+	end
+end
+
 if (SERVER) then
 	function ENT:UpdateLoopSound(forceState)
 		local isPowered = forceState
@@ -108,19 +126,7 @@ if (SERVER) then
 			isPowered = self:GetMode() ~= MODE_ALLOW_ALL
 		end
 
-		if (not self.loopSound) then
-			self.loopSound = CreateSound(self, "ambient/energy/force_field_loop1.wav")
-		end
-
-		if (not self.loopSound) then
-			return
-		end
-
-		if (isPowered) then
-			self.loopSound:PlayEx(0.08, 100)
-		else
-			self.loopSound:FadeOut(0.4)
-		end
+		self.ixLastPoweredState = isPowered
 	end
 
 	function ENT:SpawnFunction(client, trace)
@@ -219,6 +225,7 @@ if (SERVER) then
 		self:SetMoveType(MOVETYPE_PUSH)
 		self:MakePhysicsObjectAShadow()
 		self:SetMode(MODE_ALLOW_ALL)
+		self:SyncBarrierSkin(self:GetSkin())
 		self.ixLastPoweredState = self:GetMode() ~= MODE_ALLOW_ALL
 		self:UpdateLoopSound(self.ixLastPoweredState)
 	end
@@ -245,11 +252,6 @@ if (SERVER) then
 	end
 
 	function ENT:OnRemove()
-		if (self.loopSound) then
-			self.loopSound:Stop()
-			self.loopSound = nil
-		end
-
 		if (self.buzzer) then
 			self.buzzer:Stop()
 			self.buzzer = nil
@@ -272,13 +274,10 @@ if (SERVER) then
 
 			if (self:GetMode() > #MODES) then
 				self:SetMode(1)
-
-				self:SetSkin(1)
-				self.dummy:SetSkin(1)
+				self:SyncBarrierSkin(1)
 				self:EmitSound("npc/turret_floor/die.wav")
 			else
-				self:SetSkin(0)
-				self.dummy:SetSkin(0)
+				self:SyncBarrierSkin(0)
 			end
 
 			self:EmitSound("buttons/combine_button5.wav", 140, 100 + (self:GetMode() - 1) * 15)
@@ -307,6 +306,41 @@ if (SERVER) then
 else
 	local SHIELD_MATERIAL = ix.util.GetMaterial("effects/combineshield/comshieldwall3")
 
+	local function StopLoopSound(self, fadeTime)
+		if (!self.loopSound) then
+			return
+		end
+
+		if (fadeTime and fadeTime > 0) then
+			self.loopSound:FadeOut(fadeTime)
+		else
+			self.loopSound:Stop()
+		end
+	end
+
+	function ENT:UpdateLoopSound()
+		local isPowered = self:GetMode() != MODE_ALLOW_ALL
+
+		if (!isPowered) then
+			StopLoopSound(self, 0.4)
+			return
+		end
+
+		if (!self.loopSound) then
+			self.loopSound = CreateSound(self, FORCEFIELD_LOOP_SOUND)
+		end
+
+		if (!self.loopSound) then
+			return
+		end
+
+		if (!self.loopSound:IsPlaying()) then
+			self.loopSound:PlayEx(0, 100)
+		end
+
+		self.loopSound:ChangeVolume(FORCEFIELD_LOOP_VOLUME, 0.25)
+	end
+
 	function ENT:Initialize()
 		local data = {}
 			data.start = self:GetPos() + self:GetRight()*-16
@@ -316,6 +350,14 @@ else
 
 		self:CreateShieldPhysics(self:WorldToLocal(trace.HitPos))
 		self:EnableCustomCollisions(true)
+		self:UpdateLoopSound()
+	end
+
+	function ENT:Think()
+		self:UpdateLoopSound()
+		self:SetNextClientThink(CurTime() + FORCEFIELD_SOUND_CHECK_INTERVAL)
+
+		return true
 	end
 
 	function ENT:Draw()
@@ -369,6 +411,11 @@ else
 			mesh.TexCoord(0, 3, 0)
 			mesh.AdvanceVertex()
 		mesh.End()
+	end
+
+	function ENT:OnRemove()
+		StopLoopSound(self)
+		self.loopSound = nil
 	end
 end
 

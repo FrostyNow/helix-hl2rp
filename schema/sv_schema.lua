@@ -152,12 +152,19 @@ end
 function Schema:LoadForceFields()
 	for _, v in ipairs(ix.data.Get("forceFields") or {}) do
 		local field = ents.Create("ix_forcefield")
+		local mode = v[3] or 1
+		local skin = v[4]
 
 		field:SetPos(v[1])
 		field:SetAngles(v[2])
-		field:SetSkin(v[4])
 		field:Spawn()
-		field:SetMode(v[3])
+		field:SetMode(mode)
+
+		if (skin == nil) then
+			skin = mode == 1 and 1 or 0
+		end
+
+		field:SyncBarrierSkin(skin)
 	end
 end
 
