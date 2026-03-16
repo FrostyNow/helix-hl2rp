@@ -38,8 +38,16 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 		local groups = {}
 
 		for k, v in pairs(allowedGroups) do
-			target:SetBodygroup(tonumber(k) or 0, tonumber(v) or 0)
-			groups[tonumber(k) or 0] = tonumber(v) or 0
+			local index = tonumber(k) or 0
+			local value = tonumber(v) or 0
+			target:SetBodygroup(index, value)
+
+			local name = target:GetBodygroupName(index)
+			if (name and name != "") then
+				groups[name] = value
+			else
+				groups[index] = value
+			end
 		end
 
 		if (!modelChangingOutfit) then
@@ -50,12 +58,15 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 		end
 	end
 
-	if (canEditSkin and !modelChangingOutfit) then
+	if (canEditSkin) then
 		target:SetSkin(skin)
-		PLUGIN:SetPersistentAppearance(targetCharacter, nil, skin)
-		changedPersistentData = true
-	elseif (canEditSkin and modelChangingOutfit) then
-		client:NotifyLocalized("temporaryBodygroupChanges")
+
+		if (!modelChangingOutfit) then
+			PLUGIN:SetPersistentAppearance(targetCharacter, nil, skin)
+			changedPersistentData = true
+		else
+			client:NotifyLocalized("temporaryBodygroupChanges")
+		end
 	end
 
 	if (changedPersistentData) then

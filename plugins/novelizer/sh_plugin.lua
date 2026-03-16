@@ -432,6 +432,12 @@ ix.lang.AddTable("english", {
 	novelizerUnequipSidearm1 = "puts %s away.",
 	novelizerUnequipSidearm2 = "settles %s back out of immediate reach.",
 	novelizerUnequipSidearm3 = "stows %s.",
+	novelizerEquipMelee1 = "grips %s tightly.",
+	novelizerEquipMelee2 = "settles %s into an easy draw.",
+	novelizerEquipMelee3 = "positions %s for quick use.",
+	novelizerUnequipMelee1 = "puts %s away.",
+	novelizerUnequipMelee2 = "settles %s back out of immediate reach.",
+	novelizerUnequipMelee3 = "stows %s.",
 	novelizerGrenadeRaise1 = "brings %s up into a throwing stance.",
 	novelizerGrenadeRaise2 = "sets %s into a ready throwing grip.",
 	novelizerGrenadeRaise3 = "cocks their arm with %s ready.",
@@ -927,6 +933,12 @@ ix.lang.AddTable("korean", {
 	novelizerUnequipSidearm1 = "%s 다시 정리해 둡니다.",
 	novelizerUnequipSidearm2 = "%s 손닿는 자리에서 치웁니다.",
 	novelizerUnequipSidearm3 = "%s 휴대 위치에 정돈합니다.",
+	novelizerEquipMelee1 = "%s 단단히 쥡니다.",
+	novelizerEquipMelee2 = "%s 편안하게 고쳐 쥡니다.",
+	novelizerEquipMelee3 = "%s 바로 쓸 수 있게 자세를 잡습니다.",
+	novelizerUnequipMelee1 = "%s 도로 치워 둡니다.",
+	novelizerUnequipMelee2 = "%s 손에서 내립니다.",
+	novelizerUnequipMelee3 = "%s 휴대 위치에 정돈합니다.",
 	novelizerGrenadeRaise1 = "%s 투척 자세로 들어 올립니다.",
 	novelizerGrenadeRaise2 = "%s 던질 준비 자세로 쥡니다.",
 	novelizerGrenadeRaise3 = "%s 투척할 태세를 잡습니다.",
@@ -1674,19 +1686,19 @@ function PLUGIN:GetEquipCategory(item)
 		return "sidearm"
 	end
 
+	if (item.isWeapon and string.lower(tostring(item.weaponCategory or "")) == "melee") then
+		return "melee"
+	end
+
 	if (item.isWeapon) then
 		return "weapon"
 	end
 
-	if (item.gasmask or uniqueID:find("gasmask", 1, true) or name:find("gasmask", 1, true)
-		or uniqueID:find("respirator", 1, true) or name:find("respirator", 1, true)) then
+	if (item.gasmask or uniqueID:find("gasmask", 1, true) or name:find("gasmask", 1, true) or uniqueID:find("cp_mask", 1, true) or name:find("CP Mask", 1, true) or uniqueID:find("respirator", 1, true) or name:find("respirator", 1, true)) then
 		return "respirator"
 	end
 
-	if (category == "mask" or category == "goggles" or uniqueID:find("mask", 1, true)
-		or uniqueID:find("facewrap", 1, true) or uniqueID:find("goggles", 1, true)
-		or uniqueID:find("visor", 1, true) or name:find("mask", 1, true)
-		or name:find("goggles", 1, true) or name:find("visor", 1, true)) then
+	if (category == "goggles" or uniqueID:find("facewrap", 1, true) or uniqueID:find("goggles", 1, true) or uniqueID:find("visor", 1, true) or name:find("goggles", 1, true) or name:find("visor", 1, true)) then
 		return "face"
 	end
 
@@ -1702,7 +1714,7 @@ function PLUGIN:GetEquipCategory(item)
 		return "head"
 	end
 
-	if (category == "kevlar" or category == "armor" or uniqueID:find("armor", 1, true)
+	if (category == "kevlar" or category == "vest" or category == "armor" or uniqueID:find("armor", 1, true)
 		or uniqueID:find("vest", 1, true) or uniqueID:find("rig", 1, true)
 		or name:find("armor", 1, true) or name:find("vest", 1, true)) then
 		return "armor"
@@ -1773,6 +1785,9 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "sidearm") then
 		return isEquip and {"novelizerEquipSidearm1", "novelizerEquipSidearm2", "novelizerEquipSidearm3"}
 			or {"novelizerUnequipSidearm1", "novelizerUnequipSidearm2", "novelizerUnequipSidearm3"}
+	elseif (category == "melee") then
+		return isEquip and {"novelizerEquipMelee1", "novelizerEquipMelee2", "novelizerEquipMelee3"}
+			or {"novelizerUnequipMelee1", "novelizerUnequipMelee2", "novelizerUnequipMelee3"}
 	elseif (category == "torso") then
 		return isEquip and {"novelizerEquipTorso1", "novelizerEquipTorso2", "novelizerEquipTorso3"}
 			or {"novelizerUnequipTorso1", "novelizerUnequipTorso2", "novelizerUnequipTorso3"}

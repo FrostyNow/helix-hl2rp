@@ -5,7 +5,7 @@ ITEM.skin = 0
 ITEM.width = 1
 ITEM.height = 1
 ITEM.price = 100
-ITEM.outfitCategory = "suit"
+ITEM.outfitCategory = "torso"
 ITEM.allowedBaseFactions = {"citizen"}
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_CONSCRIPT
@@ -65,7 +65,7 @@ function ITEM:CanEquipOutfit()
 	end
 
 	if (character:GetFaction() == FACTION_CITIZEN) then
-		return !HasEquippedOutfitLayers(character, self.id)
+		return true
 	end
 
 	return character:GetFaction() == FACTION_CONSCRIPT and faction:IsUniformCitizenDuty(character)

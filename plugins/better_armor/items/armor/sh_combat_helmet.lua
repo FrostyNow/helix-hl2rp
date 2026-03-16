@@ -4,7 +4,7 @@ ITEM.model = "models/props_junk/cardboard_box004a.mdl"
 ITEM.price = 150
 ITEM.width = 1
 ITEM.height = 1
-ITEM.outfitCategory = "headgear"
+ITEM.outfitCategory = "head"
 ITEM.eqBodyGroups = {
 	["headgear"] = 12
 }

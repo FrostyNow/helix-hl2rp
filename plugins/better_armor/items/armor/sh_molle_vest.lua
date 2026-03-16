@@ -4,7 +4,7 @@ ITEM.model = "models/tnb/items/aphelion/shirt_rebel_molle.mdl"
 ITEM.price = 250
 ITEM.width = 1
 ITEM.height = 1
-ITEM.outfitCategory = "kevlar"
+ITEM.outfitCategory = "vest"
 ITEM.eqBodyGroups = {
 	["kevlar"] = 5
 }

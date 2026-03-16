@@ -15,7 +15,7 @@ ITEM.eqBodyGroups = {
 	["mask eyes"] = 1,
 	["mask back"] = 1,
 }
-ITEM.outfitCategory = "mask"
+ITEM.outfitCategory = "face"
 ITEM.badAirProtection = true
 ITEM.combineMaskProtection = true
 ITEM.requiresGasmaskFilter = true

@@ -24,7 +24,7 @@ ITEM.eqBodyGroups = {
 	["harness"] = 1,
 	["bodyarmor"] = 1
 }
-ITEM.outfitCategory = "torso"
+ITEM.outfitCategory = "vest"
 
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 ITEM.maxDurability = 150

@@ -268,7 +268,9 @@ local function IsWearingSuit(client)
 		if (v:GetData("equip")) then
 			local itemTable = ix.item.list[v.uniqueID]
 			local category = v.outfitCategory or (itemTable and itemTable.outfitCategory)
-			if (category == "suit") then
+			
+			-- Allow conscript fatigue to not count as a blocking suit
+			if (category == "suit" and v.uniqueID != "conscript") then
 				return true
 			end
 		end
@@ -305,42 +307,10 @@ local function HasEquippedOutfitLayers(client, ignoreItemID)
 end
 
 function PLUGIN:CanPlayerUnequipItem(client, item)
-	local category = GetOutfitCategory(item)
-
-	if (category == "suit" and HasEquippedOutfitLayers(client, item.id)) then
-		client:NotifyLocalized("cannotRemoveSuitWithEquipment")
-		return false
-	end
 end
 
 function PLUGIN:CanTransferItem(item, curInv, inventory)
-	if (item:GetData("equip")) then
-		local client = item.player or item:GetOwner() or (CLIENT and LocalPlayer() or nil)
-		if (IsValid(client)) then
-			local category = GetOutfitCategory(item)
-			
-			if (category == "suit" and HasEquippedOutfitLayers(client, item.id)) then
-				return false
-			end
-		end
-	end
 end
 
 function PLUGIN:CanPlayerInteractItem(client, action, item, data)
-	if (action == "drop" or action == "EquipUn") then
-		local itemInstance = item
-		if (isnumber(item)) then
-			itemInstance = ix.item.instances[item]
-		end
-
-		if (!itemInstance) then return end
-
-		local itemTable = ix.item.list[itemInstance.uniqueID]
-		local category = itemInstance.outfitCategory or (itemTable and itemTable.outfitCategory)
-
-		if (category == "suit" and itemInstance:GetData("equip") and HasEquippedOutfitLayers(client, itemInstance.id)) then
-			client:NotifyLocalized("cannotRemoveSuitWithEquipment")
-			return false
-		end
-	end
 end

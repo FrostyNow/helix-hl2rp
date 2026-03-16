@@ -145,6 +145,18 @@ function PLUGIN:GetTemporaryOutfitSkinOverride(character)
 	return character and character:GetVar(TEMP_OUTFIT_SKIN_OVERRIDE)
 end
 
+function PLUGIN:IsModelOverridden(character)
+	if (!character) then return false end
+
+	for k, v in pairs(character:GetData()) do
+		if (isstring(k) and k:sub(1, 8) == "oldModel" and v != nil) then
+			return true
+		end
+	end
+
+	return false
+end
+
 function PLUGIN:ClearTemporaryOutfitOverrides(character)
 	if (!character) then
 		return
@@ -159,14 +171,33 @@ function PLUGIN:ReapplyBodygroupAppearance(client, character)
 		return
 	end
 
+	-- 1. Reset all bodygroups on the CURRENT model
 	for i = 0, client:GetNumBodyGroups() - 1 do
 		client:SetBodygroup(i, 0)
 	end
 
+	local currentModel = NormalizeModel(client:GetModel())
+	local isOverridden = self:IsModelOverridden(character)
 	local baseGroups = character:GetData("groups", {})
 
+	-- 2. Apply base character bodygroups
 	for key, value in pairs(baseGroups) do
-		local index = isnumber(key) and key or client:FindBodygroupByName(key)
+		local index = -1
+
+		if (isnumber(key)) then
+			-- ONLY apply numeric indices if we are on the base model (not a suit)
+			if (!isOverridden) then
+				index = key
+			else
+				-- If hijacked, try to resolve name fallback for character features (facial hair etc)
+				-- This is a heuristic: we don't know the base model here, so we hope they used names.
+				-- If they used numbers, we skip for safety.
+				continue 
+			end
+		else
+			-- ALWAYS try to find by name - this is safe across models
+			index = client:FindBodygroupByName(key)
+		end
 
 		if (index and index > -1) then
 			client:SetBodygroup(index, tonumber(value) or 0)
@@ -174,13 +205,18 @@ function PLUGIN:ReapplyBodygroupAppearance(client, character)
 	end
 
 	local inventory = character:GetInventory()
-
 	if (!inventory) then
 		return
 	end
 
+	-- 3. Re-apply bodygroups from all equipped items ONLY if compatible
 	for _, item in pairs(inventory:GetItems()) do
 		if (item:GetData("equip") and item.eqBodyGroups) then
+			-- Compatibility check: ignore item bodygroups if this item isn't meant for this model
+			if (item.allowedModels and !table.HasValue(item.allowedModels, currentModel)) then
+				continue
+			end
+
 			for bgName, bgValue in pairs(item.eqBodyGroups) do
 				local index = client:FindBodygroupByName(bgName)
 
@@ -260,8 +296,16 @@ function PLUGIN:CanPlayerEquipItem(client, item)
 	local inventory = character:GetInventory()
 
 	if (inventory) then
+		local itemCategory = item.outfitCategory or (ix.item.list[item.uniqueID] and ix.item.list[item.uniqueID].outfitCategory)
+
 		for _, equippedItem in pairs(inventory:GetItems()) do
 			if (equippedItem.id != item.id and equippedItem:GetData("equip") and IsModelChangingItem(equippedItem)) then
+				local equippedCategory = equippedItem.outfitCategory or (ix.item.list[equippedItem.uniqueID] and ix.item.list[equippedItem.uniqueID].outfitCategory)
+
+				if (itemCategory != equippedCategory) then
+					continue
+				end
+
 				client:NotifyLocalized(item.equippedNotify or "outfitAlreadyEquipped")
 				return false
 			end

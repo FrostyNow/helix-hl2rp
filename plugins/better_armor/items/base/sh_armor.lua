@@ -147,57 +147,11 @@ function ITEM:RemoveOutfit(client)
 	armorPlayer(client, client, 0)
 
 	self:SetData("equip", false)
+	self:UpdateAppearance(client)
 
-	-- Reset all bodygroups first BEFORE changing model
-	for i = 0, client:GetNumBodyGroups() - 1 do
-		client:SetBodygroup(i, 0)
-	end
-
-	if (character:GetData("oldModel" .. self.outfitCategory)) then
-		character:SetModel(character:GetData("oldModel" .. self.outfitCategory))
-		character:SetData("oldModel" .. self.outfitCategory, nil)
-	end
-
-	-- Reset all bodygroups AGAIN after changing model to clear Source Engine carry-over bugs
-	for i = 0, client:GetNumBodyGroups() - 1 do
-		client:SetBodygroup(i, 0)
-	end
-
-	if (self.newSkin) then
-		if (character:GetData("oldSkin" .. self.outfitCategory)) then
-			client:SetSkin(character:GetData("oldSkin" .. self.outfitCategory))
-			character:SetData("oldSkin" .. self.outfitCategory, nil)
-		else
-			client:SetSkin(0)
-		end
-	end
-
-	-- Apply base character bodygroups
-	local baseGroups = character:GetData("groups", {})
-	for k, v in pairs(baseGroups) do
-		local index = isnumber(k) and k or client:FindBodygroupByName(k)
-		if (index and index > -1) then
-			client:SetBodygroup(index, tonumber(v) or 0)
-		end
-	end
-
-	-- Re-apply bodygroups from all equipped items
-	for _, item in pairs(character:GetInventory():GetItems()) do
-		if (item:GetData("equip") and item.eqBodyGroups) then
-			for bgName, bgValue in pairs(item.eqBodyGroups) do
-				local index = client:FindBodygroupByName(bgName)
-				if (index > -1) then
-					client:SetBodygroup(index, bgValue)
-				end
-			end
-		end
-	end
-
-	if (outfitPlugin) then
-		if (outfitPlugin:HasEquippedModelChangingOutfit(character)) then
-			outfitPlugin:ApplyTemporaryOutfitOverrides(client, character)
-		else
-			outfitPlugin:ClearTemporaryOutfitOverrides(character)
+	if (self.attribBoosts) then
+		for k, _ in pairs(self.attribBoosts) do
+			character:RemoveBoost(self.uniqueID, k)
 		end
 	end
 
@@ -216,6 +170,105 @@ function ITEM:RemoveOutfit(client)
 	end
 
 	self:OnUnequipped()
+end
+
+function ITEM:UpdateAppearance(client)
+	if (!IsValid(client)) then return end
+	local character = client:GetCharacter()
+	if (!character) then return end
+
+	-- 1. Resolve Best Model (Priority: suit > torso > base)
+	local inventory = character:GetInventory()
+	local items = inventory and inventory:GetItems() or {}
+	local bestModelItem = nil
+	local modelPriority = {["suit"] = 1, ["torso"] = 2}
+
+	for _, item in pairs(items) do
+		if (item:GetData("equip") and (item.replacement or item.replacements or isfunction(item.OnGetReplacement))) then
+			if (!bestModelItem or (modelPriority[item.outfitCategory or ""] or 99) < (modelPriority[bestModelItem.outfitCategory or ""] or 99)) then
+				bestModelItem = item
+			end
+		end
+	end
+
+	local baseModel = character:GetData("oldModelBase", client:GetModel())
+	if (!character:GetData("oldModelBase")) then
+		character:SetData("oldModelBase", client:GetModel())
+	end
+
+	local targetModel = baseModel
+	if (bestModelItem) then
+		if (isfunction(bestModelItem.OnGetReplacement)) then
+			targetModel = bestModelItem:OnGetReplacement()
+		elseif (bestModelItem.replacement or bestModelItem.replacements) then
+			targetModel = bestModelItem.replacement or bestModelItem.replacements
+			if (istable(targetModel)) then
+				-- Handle string replacements if table
+				local result = baseModel
+				for _, v in ipairs(targetModel) do
+					if (istable(v)) then
+						result = result:gsub(v[1], v[2])
+					end
+				end
+				targetModel = result
+			end
+		end
+	end
+
+	-- 2. Apply Model and Reset Bodygroups
+	client:SetModel(targetModel)
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
+	end
+
+	-- 3. Audit Items (Visibility & Stats)
+	local currentModel = targetModel:lower():gsub("\\", "/")
+	
+	for _, item in pairs(items) do
+		if (item:GetData("equip")) then
+			-- If item is model-specific and doesn't match current visible model, 
+			-- just skip its VISUAL bodygroups, but keep it EQUIPPED (Layer Locking).
+			if (item.allowedModels and !table.HasValue(item.allowedModels, currentModel)) then
+				continue
+			end
+
+			-- Apply bodygroups if compatible
+			if (item.eqBodyGroups) then
+				for bgName, bgValue in pairs(item.eqBodyGroups) do
+					local index = client:FindBodygroupByName(bgName)
+					if (index > -1) then
+						client:SetBodygroup(index, bgValue)
+					end
+				end
+			end
+		end
+	end
+
+	-- 4. Apply Character Base Groups (Always try by name, safe for MPF facialhair)
+	local baseGroups = character:GetData("groups", {})
+	local isSuitVisible = (bestModelItem != nil)
+
+	for k, v in pairs(baseGroups) do
+		local index = -1
+		if (isnumber(k)) then
+			-- Numbers: Only apply on base character model for safety
+			if (!isSuitVisible) then index = k end 
+		else
+			-- Names: ALWAYS try to apply (MPF with facialhair will work, Hazmat will safely return -1)
+			index = client:FindBodygroupByName(k)
+		end
+
+		if (index > -1) then
+			client:SetBodygroup(index, tonumber(v) or 0)
+		end
+	end
+
+	-- 5. Skin handling
+	local targetSkin = tonumber(character:GetData("skin", 0)) or 0
+	if (bestModelItem and bestModelItem.newSkin) then
+		targetSkin = bestModelItem.newSkin
+	end
+	client:SetSkin(targetSkin)
 end
 
 -- makes another outfit depend on this outfit in terms of requiring this item to be equipped in order to equip the attachment
@@ -344,6 +397,10 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 	OnCanRun = function(item)
 		local client = item.player
 
+		if (item.allowedModels and !table.HasValue(item.allowedModels, item.player:GetModel())) then
+			return false
+		end
+
 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") == true and
 			hook.Run("CanPlayerUnequipItem", client, item) != false and item.invID == client:GetCharacter():GetInventory():GetID()
 	end
@@ -357,83 +414,14 @@ function ITEM:ApplyOutfit(client)
 	local outfitPlugin = ix.plugin.Get("better_outfits")
 	if (!char) then return end
 
-	local model = client:GetModel()
-
-	-- Reset all bodygroups first BEFORE changing model
-	for i = 0, client:GetNumBodyGroups() - 1 do
-		client:SetBodygroup(i, 0)
-	end
-
-	if (self.gasmask == true) then
-		client:SetNetVar("gasmask", true)
-	else
-		client:SetNetVar("gasmask", false)
-	end
-
-	self:UpdateResistance(client)
+	self:SetData("equip", true)
+	self:UpdateAppearance(client)
 
 	local armorAmount = self.armorAmount
 	if (self:GetData("Durability", self.maxDurability) <= 0) then
 		armorAmount = armorAmount * 0.5
 	end
 	armorPlayer(client, client, armorAmount)
-
-	if (type(self.OnGetReplacement) == "function") then
-		local replacement = self:OnGetReplacement()
-		char:SetData("oldModel" .. self.outfitCategory, char:GetData("oldModel" .. self.outfitCategory, model))
-		char:SetModel(replacement)
-	elseif (self.replacement or self.replacements) then
-		char:SetData("oldModel" .. self.outfitCategory, char:GetData("oldModel" .. self.outfitCategory, model))
-
-		if (type(self.replacements) == "table") then
-			if (#self.replacements == 2 and type(self.replacements[1]) == "string") then
-				local newModel = model:gsub(self.replacements[1], self.replacements[2])
-				char:SetModel(newModel)
-			else
-				local newModel = model
-				for _, v in ipairs(self.replacements) do
-					newModel = newModel:gsub(v[1], v[2])
-				end
-				char:SetModel(newModel)
-			end
-		else
-			local newModel = self.replacement or self.replacements
-			char:SetModel(newModel)
-		end
-	end
-
-	-- Reset all bodygroups AGAIN after changing model to clear Source Engine carry-over bugs
-	for i = 0, client:GetNumBodyGroups() - 1 do
-		client:SetBodygroup(i, 0)
-	end
-
-	if (self.newSkin) then
-		if (!char:GetData("oldSkin" .. self.outfitCategory)) then
-			char:SetData("oldSkin" .. self.outfitCategory, client:GetSkin())
-		end
-		client:SetSkin(self.newSkin)
-	end
-
-	-- Apply base character bodygroups
-	local baseGroups = char:GetData("groups", {})
-	for k, v in pairs(baseGroups) do
-		local index = isnumber(k) and k or client:FindBodygroupByName(k)
-		if (index and index > -1) then
-			client:SetBodygroup(index, tonumber(v) or 0)
-		end
-	end
-
-	-- Re-apply bodygroups from all equipped items (including this one)
-	for _, item in pairs(char:GetInventory():GetItems()) do
-		if (item:GetData("equip") and item.eqBodyGroups) then
-			for bgName, bgValue in pairs(item.eqBodyGroups) do
-				local index = client:FindBodygroupByName(bgName)
-				if (index > -1) then
-					client:SetBodygroup(index, bgValue)
-				end
-			end
-		end
-	end
 
 	if (self.attribBoosts) then
 		for k, v in pairs(self.attribBoosts) do
@@ -481,7 +469,10 @@ ITEM.functions.Equip = {
 	OnCanRun = function(item)
 		local client = item.player
 
-		if item.allowedModels and !table.HasValue(item.allowedModels, item.player:GetModel()) then return false end
+		if (item.allowedModels and !table.HasValue(item.allowedModels, item.player:GetModel())) then
+			return false
+		end
+
 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:CanEquipOutfit() and
 			hook.Run("CanPlayerEquipItem", client, item) != false and item.invID == client:GetCharacter():GetInventory():GetID()
 	end

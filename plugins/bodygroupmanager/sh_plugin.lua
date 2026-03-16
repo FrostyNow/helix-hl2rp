@@ -429,17 +429,40 @@ function PLUGIN:ApplyStoredAppearance(character, player)
 		return
 	end
 
-	local groups = self:FilterRestorableGroups(character, player, character:GetData("groups", {}))
-	local skin = tonumber(character:GetData("skin", 0)) or 0
+	-- Use the smart resolver from outfits/armors to handle complex layered redraws
+	local resolver = nil
+	local inventory = character:GetInventory()
+	
+	-- Try to find any active item that has the resolver
+	if (inventory) then
+		for _, item in pairs(inventory:GetItems()) do
+			if (item.UpdateAppearance) then
+				resolver = item
+				break
+			end
+		end
+	end
 
-	player:ResetBodygroups()
-	player:SetSkin(skin)
+	-- If no item found, look in global registered items
+	if (!resolver) then
+		resolver = ix.item.list["base_armor"] or ix.item.list["base_houtfits"]
+	end
 
-	for key, value in pairs(groups) do
-		local index = isnumber(key) and key or player:FindBodygroupByName(key)
+	if (resolver and resolver.UpdateAppearance) then
+		resolver:UpdateAppearance(player)
+	else
+		-- Final Fallback: Manual rebuild if resolver is somehow missing
+		local groups = self:FilterRestorableGroups(character, player, character:GetData("groups", {}))
+		local skin = tonumber(character:GetData("skin", 0)) or 0
 
-		if (index and index > -1) then
-			player:SetBodygroup(index, tonumber(value) or 0)
+		player:ResetBodygroups()
+		player:SetSkin(skin)
+
+		for key, value in pairs(groups) do
+			local index = isnumber(key) and key or player:FindBodygroupByName(key)
+			if (index and index > -1) then
+				player:SetBodygroup(index, tonumber(value) or 0)
+			end
 		end
 	end
 end
@@ -558,6 +581,8 @@ function PLUGIN:ClearAppearanceStorage(character)
 	character:SetData("skin", 0)
 	character:SetData(ORIGINAL_GROUPS_KEY, nil)
 	character:SetData(ORIGINAL_SKIN_KEY, nil)
+
+	character:SetData("oldModelBase", nil)
 
 	for category in pairs(GetAppearanceCategories(character)) do
 		character:SetData("oldGroups" .. category, nil)
@@ -878,14 +903,20 @@ ix.command.Add("CharSetBodygroup", {
 
 			if (!modelChangingOutfit) then
 				local groups = target:GetData("groups", {})
-				groups[index] = value
+				local name = player:GetBodygroupName(index)
+				
+				if (name and name != "") then
+					groups[name] = value
+				else
+					groups[index] = value
+				end
+				
 				PLUGIN:SetPersistentAppearance(target, groups)
 			else
 				client:NotifyLocalized("temporaryBodygroupChanges")
 			end
 
-			target:GetPlayer():SetBodygroup(index, value or 0)
-
+			player:SetBodygroup(index, value or 0)
 			ix.util.NotifyLocalized("cChangeGroups", nil, client:GetName(), target:GetName(), bodygroup, value or 0)
 		else
 			return "@invalidArg", 2

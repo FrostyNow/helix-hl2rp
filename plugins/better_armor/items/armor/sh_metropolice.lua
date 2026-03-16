@@ -17,7 +17,7 @@ ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80
 			.9, -- Explosion
 }
 ITEM.maxDurability = 150
-ITEM.outfitCategory = "suit"
+ITEM.outfitCategory = "torso"
 ITEM.pacData = {}
 ITEM.replacements = {
 	{"humans/pandafishizens", "conceptbine_policeforce/rnd"}
@@ -107,11 +107,7 @@ function ITEM:CanEquipOutfit()
 		return false
 	end
 
-	if (character:GetFaction() == FACTION_CITIZEN) then
-		return !HasEquippedOutfitLayers(character, self.id)
-	end
-
-	return character:GetFaction() == FACTION_MPF and faction:IsUniformCitizenDuty(character)
+	return (character:GetFaction() == FACTION_CITIZEN) or (character:GetFaction() == FACTION_MPF and faction:IsUniformCitizenDuty(character))
 end
 
 function ITEM:ApplyOutfit(client)
