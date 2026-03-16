@@ -225,6 +225,14 @@ if (SERVER) then
 			local restored = math.max(nextHealth - previousHealth, 0)
 
 			self.user:SetHealth(nextHealth)
+
+			if (restored > 0 and ix.plugin.list["badair"]) then
+				local toxicity = self.user:GetLocalVar("toxicity", 0)
+
+				if (toxicity > 0) then
+					self.user:SetLocalVar("toxicity", math.Clamp(toxicity - restored, 0, 100))
+				end
+			end
 			
 			local nextUsed = math.Clamp(self:GetUsed() + self.restoreCost, 0, 1)
 			local freeCharge = self:GetFreeCharge()

@@ -12,6 +12,21 @@ ITEM.bleeding = false
 ITEM.fracture = false
 ITEM.sound = nil
 
+local function ApplyToxicityRelief(target, amount)
+	if (!ix.plugin.list["badair"] or !IsValid(target)) then
+		return
+	end
+
+	local relief = math.max(0, math.floor(amount or 0))
+
+	if (relief <= 0) then
+		return
+	end
+
+	local toxicity = target:GetLocalVar("toxicity", 0)
+	target:SetLocalVar("toxicity", math.Clamp(toxicity - relief, 0, 100))
+end
+
 function ITEM:GetDescription()
 	return (L(self.description) .. L("itemMedkitDesc01") .. self.medAttr .. L("itemMedkitDesc02") .. self.healthPoint)
 end
@@ -50,6 +65,8 @@ ITEM.functions.selfheal = {
 			if itemTable.sound then
 				client:EmitSound(itemTable.sound)
 			end
+
+			ApplyToxicityRelief(client, amount)
 		else
 			client:NotifyLocalized("lackKnowledge")
 			return false
@@ -69,9 +86,19 @@ ITEM.functions.heal = {
 			data.filter = client
 		local trace = util.TraceLine(data)
 		local entity = trace.Entity
+		local corpse = IsValid(entity) and entity:IsRagdoll() and entity or nil
 
-		if (IsValid(entity) and entity:IsRagdoll()) then
-			entity = entity:GetNetVar("player", entity)
+		if (IsValid(corpse)) then
+			entity = corpse:GetNetVar("player", corpse)
+		end
+
+		if (IsValid(corpse) and IsValid(entity) and entity:IsPlayer() and !entity:Alive()) then
+			local corpsePlugin = ix.plugin.Get("persistent_corpses")
+
+			if (corpsePlugin and corpsePlugin.StartCorpseRevive) then
+				corpsePlugin:StartCorpseRevive(client, corpse, itemTable)
+				return false
+			end
 		end
 
 		-- Check if the entity is a valid door.
@@ -103,6 +130,8 @@ ITEM.functions.heal = {
 				if itemTable.sound then
 					client:EmitSound(itemTable.sound)
 				end
+
+				ApplyToxicityRelief(entity, amount)
 				
 				-- Sound is handled by individual item hooks (selfheal/heal)
 			else

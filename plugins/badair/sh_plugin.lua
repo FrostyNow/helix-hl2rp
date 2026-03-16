@@ -422,7 +422,7 @@ if (!CLIENT) then
 					end
 				else
 					if (toxicity > 0) then
-						toxicity = math.Clamp(toxicity - 2, 0, 100)
+						toxicity = math.Clamp(toxicity - 0.3, 0, 100)
 						client:SetLocalVar("toxicity", toxicity)
 					end
 				end
