@@ -8,7 +8,7 @@ local L = L or (ix and ix.lang and ix.lang.Get)
 local L2 = L -- Support both just in case a schema or other plugin expects L2
 
 PLUGIN.name = "Novelizer"
-PLUGIN.author = "Codex"
+PLUGIN.author = "Frosty"
 PLUGIN.description = "Localized automatic narrative emotes for item use, interactions, and ambient machine actions."
 
 PLUGIN.itemActionPhrasePools = PLUGIN.itemActionPhrasePools or {}
