@@ -208,6 +208,28 @@ function PLUGIN:GetBaseAppearanceFaction(character)
 	return faction
 end
 
+function PLUGIN:GetBodygroupConfig(character, player, indexOrName)
+	local faction = self:GetBaseAppearanceFaction(character)
+	if (!faction or !istable(faction.bodyGroups)) then
+		return nil
+	end
+
+	local name = isnumber(indexOrName) and IsValid(player) and player:GetBodygroupName(indexOrName) or indexOrName
+	local normalized = NormalizeBodygroupName(name)
+
+	for key, data in pairs(faction.bodyGroups) do
+		if (NormalizeBodygroupName(key) == normalized) then
+			return data
+		end
+
+		if (istable(data) and normalized == NormalizeBodygroupName(data.name)) then
+			return data
+		end
+	end
+
+	return nil
+end
+
 function PLUGIN:GetRestorableBodygroupWhitelist(character)
 	local whitelist = {}
 	local faction = self:GetBaseAppearanceFaction(character)
@@ -217,7 +239,8 @@ function PLUGIN:GetRestorableBodygroupWhitelist(character)
 	end
 
 	for key, data in pairs(faction.bodyGroups) do
-		whitelist[NormalizeBodygroupName(key)] = true
+		local normalized = NormalizeBodygroupName(key)
+		whitelist[normalized] = true
 
 		if (istable(data) and isstring(data.name)) then
 			whitelist[NormalizeBodygroupName(data.name)] = true
@@ -232,23 +255,24 @@ function PLUGIN:FilterRestorableGroups(character, player, groups)
 		return {}
 	end
 
-	local whitelist = self:GetRestorableBodygroupWhitelist(character)
-
-	if (table.IsEmpty(whitelist) or !IsValid(player)) then
+	local faction = self:GetBaseAppearanceFaction(character)
+	if (!faction or !istable(faction.bodyGroups) or !IsValid(player)) then
 		return table.Copy(groups)
-	end
-
-	local groupNames = {}
-
-	for _, bodygroup in ipairs(player:GetBodyGroups()) do
-		groupNames[bodygroup.id] = NormalizeBodygroupName(bodygroup.name)
 	end
 
 	local filtered = {}
 
 	for index, value in pairs(groups) do
-		if (isnumber(index) and whitelist[groupNames[index] or ""]) then
-			filtered[index] = tonumber(value) or 0
+		index = tonumber(index)
+		if (!index) then continue end
+
+		local config = self:GetBodygroupConfig(character, player, index)
+		if (config) then
+			local val = tonumber(value) or 0
+			local min = tonumber(config.min) or 0
+			local max = tonumber(config.max) or player:GetBodygroupCount(index) - 1
+
+			filtered[index] = math.Clamp(val, min, max)
 		end
 	end
 
@@ -256,31 +280,32 @@ function PLUGIN:FilterRestorableGroups(character, player, groups)
 end
 
 function PLUGIN:GetEditableBodygroupValues(character, player, values)
-	if (!istable(values)) then
+	if (!istable(values) or !IsValid(player)) then
 		return {}
 	end
 
-	if (!self:HasEquippedModelChangingOutfit(character) or !IsValid(player)) then
-		return table.Copy(values)
-	end
-
-	local whitelist = self:GetRestorableBodygroupWhitelist(character)
+	local isMasked = self:HasEquippedModelChangingOutfit(character)
 	local allowed = {}
-
-	if (table.IsEmpty(whitelist)) then
-		return allowed
-	end
-
-	local groupNames = {}
-
-	for _, bodygroup in ipairs(player:GetBodyGroups()) do
-		groupNames[bodygroup.id] = NormalizeBodygroupName(bodygroup.name)
-	end
 
 	for index, value in pairs(values) do
 		index = tonumber(index)
+		if (!index) then continue end
 
-		if (index and whitelist[groupNames[index] or ""]) then
+		local config = self:GetBodygroupConfig(character, player, index)
+
+		-- If wearing a model-changing outfit, only allow whitelisted groups
+		if (isMasked and !config) then
+			continue
+		end
+
+		if (config) then
+			local val = tonumber(value) or 0
+			local min = tonumber(config.min) or 0
+			local max = tonumber(config.max) or player:GetBodygroupCount(index) - 1
+
+			allowed[index] = math.Clamp(val, min, max)
+		else
+			-- If no config and not masked, allow editing as usual (default behavior)
 			allowed[index] = tonumber(value) or 0
 		end
 	end

@@ -9,8 +9,8 @@ ITEM.isStackable = true
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(Color(218, 24, 24))
-		data:SetText(L("sociocidalItemTooltip"))
+		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
+		data:SetText(L("securitizedItemTooltip"))
 		data:SetExpensiveShadow(0.5)
 		data:SizeToContents()
 	end

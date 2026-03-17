@@ -29,6 +29,8 @@ LANGUAGE = {
 	recipeManhackDesc = "Assemble some parts to craft a Manhack.",
 	recipeScannerDesc = "Assemble some parts to craft a Combine Scanner.",
 	recipeWaterDesc = "Mix somethings into a Breen's Water.",
+	recipeTurretDesc = "Assemble some parts to craft a Combine Turret.",
+	recipeResistanceTurretDesc = "Install a circuit using Combine keycard to hack a Combine Turret's target system.",
 
 	recipeBandageDesc = "Mix antiseptic and cloth to make a bandage.",
 	recipeBobbyPinDesc = "Craft bobby pins.",
@@ -52,6 +54,8 @@ LANGUAGE = {
 	recipeScrewdriverDesc = "Craft a tool for driving or removing screws by fitting a sturdy aluminum shaft into a plastic handle.",
 	recipeHammerDesc = "Craft a tool for driving nails by fitting a heavy steel head onto a wooden handle.",
 	recipeGasCanisterDesc = "Craft a canister to hold gasoline.",
+	recipeHealthKitDesc = "Craft a health kit.",
+	recipeHealthVialDesc = "Craft a health vial.",
 	
 	recipeScrapAmmoPistolDesc = "Disassemble pistol ammo to extract parts.",
 	recipeScrapGrenadeDesc = "Disassemble an HE Grenade to extract parts.",
@@ -72,7 +76,7 @@ LANGUAGE = {
 	recipeScrapEmptyBottleDesc = "Break down an empty bottle into usable glass materials.",
 	recipeScrapShotglassDesc = "Break down a shotglass.",
 	recipeScrapPlateDesc = "Break down a plate.",
-	["Scrap Gasmask Filter"] = "Scrap Gasmask Filter",
+	recipeScrapManhackPartsDesc = "Disassemble manhack parts.",
 
 	recipeScrapBucketDesc = "Disassemble a bucket.",
 	recipeScrapCafeteriaTrayDesc = "Disassemble a cafeteria tray.",
@@ -83,6 +87,13 @@ LANGUAGE = {
 	recipeScrapPotDesc = "Disassemble a pot.",
 	recipeRibDesc = "Crush a rib to get bone material.",
 	recipeSkullDesc = "Crush a skull to get bone material.",
+	recipeSpineDesc = "Crush a spine to get bone material.",
+	recipeNotepadDesc = "Disassemble a notepad.",
+	recipeCouponDesc = "Disassemble a coupon.",
+	recipeRationTokenDesc = "Disassemble a ration token.",
+	recipeAntlionGrubDesc = "Disassemble an antlion grub.",
+	recipeNewspaperDesc = "Disassemble a newspaper.",
+	recipeBookDesc = "Disassemble a book.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
@@ -103,4 +114,5 @@ LANGUAGE = {
 	recipeOnionRingsDesc = "Fry onion rings.",
 	recipeTeaDesc = "Make some tea.",
 	recipeCoffeeDesc = "Make some coffee.",
+	recipeSteakDesc = "Cook a steak from meat.",
 }

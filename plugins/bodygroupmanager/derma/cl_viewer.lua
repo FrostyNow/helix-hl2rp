@@ -203,7 +203,7 @@ function PANEL:Display(target)
 	end
 end
 
-local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, onValueSet)
+local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, onValueSet, isFixed)
 	local row = parent:Add("DPanel")
 	row:Dock(TOP)
 	row:DockMargin(0, 0, 16, 8)
@@ -230,29 +230,31 @@ local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, 
 	rightPanel:Dock(RIGHT)
 	rightPanel:SetWide(150)
 
-	local nextBtn = rightPanel:Add("DButton")
-	nextBtn:SetText(">")
-	nextBtn:SetFont("ixMediumFont")
-	nextBtn:Dock(RIGHT)
-	nextBtn:SetWide(40)
-	nextBtn.Paint = function(this, w, h)
-		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
-		surface.DrawRect(0, 0, w, h)
-	end
-		
-	-- Hold to change logic
-	nextBtn.DoClick = onNext
-	nextBtn.nextRun = 0
-	nextBtn.Think = function(this)
-		if (this:IsDown()) then
-			if (this.nextRun == 0) then
-				this.nextRun = RealTime() + 0.3
-			elseif (RealTime() >= this.nextRun) then
-				onNext()
-				this.nextRun = RealTime() + 0.1
+	if (!isFixed) then
+		local nextBtn = rightPanel:Add("DButton")
+		nextBtn:SetText(">")
+		nextBtn:SetFont("ixMediumFont")
+		nextBtn:Dock(RIGHT)
+		nextBtn:SetWide(40)
+		nextBtn.Paint = function(this, w, h)
+			surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
+			surface.DrawRect(0, 0, w, h)
+		end
+			
+		-- Hold to change logic
+		nextBtn.DoClick = onNext
+		nextBtn.nextRun = 0
+		nextBtn.Think = function(this)
+			if (this:IsDown()) then
+				if (this.nextRun == 0) then
+					this.nextRun = RealTime() + 0.3
+				elseif (RealTime() >= this.nextRun) then
+					onNext()
+					this.nextRun = RealTime() + 0.1
+				end
+			else
+				this.nextRun = 0
 			end
-		else
-			this.nextRun = 0
 		end
 	end
 	
@@ -264,6 +266,7 @@ local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, 
 	valueEntry:SetPaintBackground(false)
 	valueEntry:SetTextColor(color_white)
 	valueEntry:SetContentAlignment(5) -- Center alignment support depends on skin/font
+	valueEntry:SetEnabled(!isFixed)
 	valueEntry.value = currentValue
 		
 	valueEntry.OnEnter = function(this)
@@ -272,29 +275,31 @@ local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, 
 		end
 	end
 	
-	local prevBtn = rightPanel:Add("DButton")
-	prevBtn:SetText("<")
-	prevBtn:SetFont("ixMediumFont")
-	prevBtn:Dock(LEFT)
-	prevBtn:SetWide(40)
-	prevBtn.Paint = function(this, w, h)
-		surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
-		surface.DrawRect(0, 0, w, h)
-	end
-		
-	-- Hold to change logic
-	prevBtn.DoClick = onPrev
-	prevBtn.nextRun = 0
-	prevBtn.Think = function(this)
-		if (this:IsDown()) then
-			if (this.nextRun == 0) then
-				this.nextRun = RealTime() + 0.3
-			elseif (RealTime() >= this.nextRun) then
-				onPrev()
-				this.nextRun = RealTime() + 0.1
+	if (!isFixed) then
+		local prevBtn = rightPanel:Add("DButton")
+		prevBtn:SetText("<")
+		prevBtn:SetFont("ixMediumFont")
+		prevBtn:Dock(LEFT)
+		prevBtn:SetWide(40)
+		prevBtn.Paint = function(this, w, h)
+			surface.SetDrawColor(255, 255, 255, this:IsHovered() and 20 or 10)
+			surface.DrawRect(0, 0, w, h)
+		end
+			
+		-- Hold to change logic
+		prevBtn.DoClick = onPrev
+		prevBtn.nextRun = 0
+		prevBtn.Think = function(this)
+			if (this:IsDown()) then
+				if (this.nextRun == 0) then
+					this.nextRun = RealTime() + 0.3
+				elseif (RealTime() >= this.nextRun) then
+					onPrev()
+					this.nextRun = RealTime() + 0.1
+				end
+			else
+				this.nextRun = 0
 			end
-		else
-			this.nextRun = 0
 		end
 	end
 
@@ -309,6 +314,9 @@ function PANEL:PopulateBodygroupOptions()
 	local target = self.target
 	local isSelf = (target == client)
 	local canAdmin = ix.command.HasAccess(client, "CharEditBodygroup")
+	local faction = PLUGIN:GetBaseAppearanceFaction(character)
+	local model = target:GetModel():lower()
+	local isFemale = model:find("female") or model:find("alyx") or model:find("mossman")
 
 	local canBodygroup = canAdmin or (isSelf and character:HasFlags("b"))
 	local canSkin = canAdmin or (isSelf and character:HasFlags("s"))
@@ -346,33 +354,52 @@ function PANEL:PopulateBodygroupOptions()
 			if (v.id == 0) then continue end
 			
 			local index = v.id
-			self.bodygroupIndex[index] = CreateEditorRow(self.bodygroups, v.name:gsub("^%l", string.upper), target:GetBodygroup(index), function()
-				if (self.bodygroupIndex[index].value <= 0) then return end
+			local config = PLUGIN:GetBodygroupConfig(character, target, index)
+
+			-- If the faction has a bodyGroups table, only show groups that are in it
+			if (faction and faction.bodyGroups and !config) then
+				continue
+			end
+
+			-- Check for exclusion based on model gender
+			if (config) then
+				if (config.excludeModels == "female" and isFemale) then continue end
+				if (config.excludeModels == "male" and !isFemale) then continue end
+			end
+
+			local labelName = (config and config.name) or v.name:gsub("^%l", string.upper)
+			local min = (config and tonumber(config.min)) or 0
+			local max = (config and tonumber(config.max)) or (target:GetBodygroupCount(index) - 1)
+			local isFixed = (min == max)
+
+			self.bodygroupIndex[index] = CreateEditorRow(self.bodygroups, labelName, target:GetBodygroup(index), function()
+				if (self.bodygroupIndex[index].value <= min) then return end
 				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value - 1
 				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
 				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
 				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, self.bodygroupIndex[index].value) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end, function()
-				if (self.bodygroupIndex[index].value >= self.model.Entity:GetBodygroupCount(index) - 1) then return end
+				if (self.bodygroupIndex[index].value >= max) then return end
 				self.bodygroupIndex[index].value = self.bodygroupIndex[index].value + 1
 				self.bodygroupIndex[index]:SetText(self.bodygroupIndex[index].value)
 				self.model.Entity:SetBodygroup(index, self.bodygroupIndex[index].value)
 				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, self.bodygroupIndex[index].value) end
 				surface.PlaySound("buttons/lightswitch2.wav")
 			end, function(val)
-				val = math.Clamp(math.Round(val), 0, self.model.Entity:GetBodygroupCount(index) - 1)
+				val = math.Clamp(math.Round(val), min, max)
 				self.bodygroupIndex[index].value = val
 				self.bodygroupIndex[index]:SetText(val)
 				self.model.Entity:SetBodygroup(index, val)
 				if (IsValid(self.facePanel)) then self.facePanel.Entity:SetBodygroup(index, val) end
 				surface.PlaySound("buttons/lightswitch2.wav")
-			end)
+			end, isFixed)
 			
 			self.bodygroupIndex[index].index = index
 			self.model.Entity:SetBodygroup(index, target:GetBodygroup(index))
 		end
 	end
 end
+
 
 vgui.Register("ixBodygroupView", PANEL, "DFrame")

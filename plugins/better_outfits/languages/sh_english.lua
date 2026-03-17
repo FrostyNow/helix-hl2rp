@@ -181,4 +181,6 @@ LANGUAGE = {
 	["CP Mask"] = "CP Mask",
 	cpMaskDesc = "A standard-issue gas mask for Civil Protection units.",
 	hatDesc = "A cap worn by the military personnel in the field when a combat helmet is not required.",
+	magazinePouchesDesc = "A set of magazine pouches to attach to MOLLE system.",
+	["cannotUnequipWithUniform"] = "You cannot unequip this item while wearing a uniform.",
 }

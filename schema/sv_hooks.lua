@@ -159,6 +159,14 @@ function Schema:CharacterVarChanged(character, key, oldValue, value)
 			factionTable:OnNameChanged(client, oldValue, value)
 		end
 	end
+
+	if (key == "description" and IsValid(client)) then
+		local factionTable = ix.faction.Get(client:Team())
+
+		if (factionTable.OnDescriptionChanged) then
+			factionTable:OnDescriptionChanged(client, oldValue, value)
+		end
+	end
 end
 
 function Schema:PlayerFootstep(client, position, foot, soundName, volume)

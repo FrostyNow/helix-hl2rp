@@ -9,7 +9,7 @@ ITEM.thirst = 100
 ITEM.price = 50
 ITEM.heal = 0
 ITEM.usenum = 2
-ITEM.sound = "items/suitchargeok1.wav"
+ITEM.sound = "items/gift_pickup.wav"
 
 ITEM.functions.Eat.OnCanRun = function(item)
 	return item.player:Team() == FACTION_OTA

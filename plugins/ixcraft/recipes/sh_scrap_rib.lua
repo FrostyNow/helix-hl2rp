@@ -1,5 +1,5 @@
 RECIPE.name = "Scrap Rib"
-RECIPE.description = "recipeSkullDesc"
+RECIPE.description = "recipeRibDesc"
 RECIPE.category = "Disassemble"
 RECIPE.model = "models/gibs/hgibs_rib.mdl"
 RECIPE.requirements = {

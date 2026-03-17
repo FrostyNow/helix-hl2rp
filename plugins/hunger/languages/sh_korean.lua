@@ -102,6 +102,8 @@ LANGUAGE = {
 	itemDirtyWaterDesc = "사람이 마실 수 없을 정도로 더러운 물입니다.",
 	["Tea"] = "차",
 	itemTeaDesc = "찻나무 잎을 물에 우려낸 음료입니다.",
+	["Antlion Meat"] = "개미귀신 고기",
+	itemAntlionMeatDesc = "외계에서 넘어온 생물인 개미귀신의 고기입니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",

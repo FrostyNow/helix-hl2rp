@@ -6,6 +6,7 @@ RECIPE.requirements = {
 	["scanner_gib02"] = 1,
 }
 RECIPE.results = {
-	["comp_steel"] = 3,
+	["comp_combine_steel"] = 1,
+	["comp_steel"] = 2,
 }
 RECIPE.station = "craftingtable"

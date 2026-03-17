@@ -48,6 +48,7 @@ LANGUAGE = {
 	itemAntlionGrub = "A grub that is found in the antlion nest is in a glass vial.\nCan be used for Health Charger.",
 	itemDirtyWaterDesc = "A bottle of water so dirty that it is unfit for human consumption.",
 	itemTeaDesc = "A drink made by steeping tea tree leaves in water.",
+	itemAntlionMeatDesc = "A piece of meat from a extra-dimensional creature, Antlion.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

@@ -180,4 +180,8 @@ LANGUAGE = {
 	cpMaskDesc = "시민 보호 기동대원에게 지급되는 제식 방독면입니다.",
 	["Field Cap"] = "전투모",
 	hatDesc = "군인이 평상시에 착용하도록 만든 모자입니다.",
+	["Magazine Pouches"] = "탄창 파우치",
+	magazinePouchesDesc = "MOLLE 시스템에 부착할 수 있는 탄창 파우치입니다.",
+	["Magazine Leg Pouches"] = "허벅지 탄창 파우치",
+	["cannotUnequipWithUniform"] = "기동대 복장이나 군복을 입은 상태에서는 이 의상을 벗을 수 없습니다.",
 }

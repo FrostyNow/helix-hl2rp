@@ -1,0 +1,10 @@
+ITEM.name = "Antlion Meat"
+ITEM.model = "models/gibs/antlion_gib_small_2.mdl"
+ITEM.description = "itemAntlionMeatDesc"
+ITEM.hunger = 10
+ITEM.thirst = -5
+ITEM.price = 4
+ITEM.heal = -2
+ITEM.cookable = true
+ITEM.usenum = 2
+ITEM.sound = "interface/inv_eat_mutant_food.ogg"

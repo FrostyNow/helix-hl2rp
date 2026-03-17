@@ -1,3 +1,4 @@
+local PLUGIN = PLUGIN
 
 util.AddNetworkString("ixBodygroupView")
 util.AddNetworkString("ixBodygroupTableSet")

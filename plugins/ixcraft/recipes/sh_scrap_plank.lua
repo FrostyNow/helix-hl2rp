@@ -6,5 +6,5 @@ RECIPE.requirements = {
 	["misc_plank"] = 1
 }
 RECIPE.results = {
-	["comp_wood"] = 1
+	["comp_wood"] = 2
 }

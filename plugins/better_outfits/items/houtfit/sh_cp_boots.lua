@@ -1,6 +1,7 @@
 ITEM.name = "CP Boots"
 ITEM.description = "cpBootsDesc"
-ITEM.model = "models/tnb/items/aphelion/pants_rebel.mdl"
+ITEM.model = "models/tnb/items/aphelion/pants_citizen.mdl"
+ITEM.skin = 3
 ITEM.price = 40
 ITEM.outfitCategory = "boots"
 ITEM.eqBodyGroups = {

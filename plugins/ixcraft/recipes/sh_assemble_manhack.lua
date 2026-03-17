@@ -9,6 +9,7 @@ RECIPE.requirements = {
 	["manhack_gib03"] = 1,
 	["manhack_gib04"] = 1,
 	["manhack_gib05"] = 2,
+	["resin"] = 1,
 }
 RECIPE.results = {
 	["manhack"] = 1

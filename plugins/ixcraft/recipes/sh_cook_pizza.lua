@@ -4,8 +4,8 @@ RECIPE.category = "Food"
 RECIPE.model = "models/griim/foodpack/pepperonipizza.mdl"
 RECIPE.requirements = {
 	["flour"] = 1,
-	["cheese"] = 1,
-	["tomato"] = 1,
+	["cheese"] = {amount = 1, substitutes = {["misc_dried_spices"] = 1}},
+	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1, ["bacon"] = 1, ["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }

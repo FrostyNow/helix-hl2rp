@@ -1,4 +1,4 @@
-RECIPE.name = "Brownie"
+RECIPE.name = "Chocolate Brownie"
 RECIPE.description = "recipeBrownieDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/dead rising 2/brownie.mdl"

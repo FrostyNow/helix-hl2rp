@@ -12,6 +12,25 @@ FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.RunFootstepRight"}
 
 FACTION.canSeeWaypoints = true
+FACTION.forcedName = true
+
+FACTION.bodyGroups = {
+	["Radio"] = {
+		name = "Handheld Radio",
+		min = 1,
+		max = 1
+	},
+	["Tactic"] = {
+		name = "Magazine Pouches",
+		min = 1,
+		max = 1
+	},
+	["TacticalLegs"] = {
+		name = "Magazine Leg Pouches",
+		min = 1,
+		max = 1
+	},
+}
 
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
@@ -22,14 +41,23 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("grenade", 1)
 	inventory:Add("health_vial", 2)
 	inventory:Add("ota_supplements", 2)
+	inventory:Add("ota_pouches", 1)
+	inventory:Add("ota_legpouches", 1)
 end
 
 function FACTION:GetDefaultName(client)
-	return Schema:FormatCombineName("OTA", "OWS"), true
+	return Schema:FormatCombineName("OTA", "OWS")
 end
 
 function FACTION:OnTransferred(character)
-	character:SetName(Schema:NormalizeCombineName(self:GetDefaultName(character:GetPlayer()), "OTA"))
+	local client = character:GetPlayer()
+	local name = character:GetName()
+
+	if (!Schema:GetCombineNameInfo(name)) then
+		name = self:GetDefaultName(client)
+	end
+
+	character:SetName(Schema:NormalizeCombineName(name, "OTA"))
 	character:SetModel(self.models[1])
 end
 

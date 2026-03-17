@@ -234,6 +234,11 @@ end
 -- Hooks
 -- ============================================================
 
+-- Helper for detecting model-replacing items
+local function IsTopLayer(item)
+    return (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))
+end
+
 hook.Add("OnItemEquipped", "ixGearMenu", function(item, owner)
     if (!item or !IsValid(owner)) then return end
     item:SetData("equipTime", os.time())
@@ -292,12 +297,15 @@ net.Receive("ixGearEquipReq", function(len, client)
     
     item.player = client
     if (equipFunc.OnCanRun and equipFunc.OnCanRun(item) == false) then
-        item.player = nil return
+        item.player = nil
+        return
     end
+
     if (equipFunc.OnRun) then
         equipFunc.OnRun(item)
     else
         item:SetData("equip", true)
+        item:ApplyOutfit(client)
     end
     item.player = nil
 end)
@@ -320,8 +328,6 @@ net.Receive("ixGearUnequipReq", function(len, client)
     local character = client:GetCharacter()
     local mainInv = character and character:GetInventory()
     local targetInv = (targetInvID > 0 and ix.item.inventories[targetInvID]) or mainInv
-
-    item.targetSlot = nil
 
     if (!bDropToGround) then
         local targetX, targetY = x, y
@@ -352,13 +358,46 @@ net.Receive("ixGearUnequipReq", function(len, client)
         end
     end
 
-    if (item.functions.EquipUn and item.functions.EquipUn.OnRun) then
-        item.functions.EquipUn.OnRun(item)
+    local unequipFunc = item.functions.EquipUn
+    if (unequipFunc) then
+        -- Spoof the inventory ID so standard Helix base checks (like item.invID == mainInvID) pass
+        local oldInvID = item.invID
+        if (mainInv) then
+            item.invID = mainInv:GetID()
+        end
+
+        local bCanRun = true
+        if (unequipFunc.OnCanRun) then
+            bCanRun = unequipFunc.OnCanRun(item)
+        end
+
+        -- Immediately restore the real inventory ID
+        item.invID = oldInvID
+
+        if (bCanRun == false) then
+            item.targetSlot = nil
+            item.player = nil
+            return
+        end
+
+        if (unequipFunc.OnRun) then
+            unequipFunc.OnRun(item)
+        else
+            item:SetData("equip", false)
+            item:RemoveOutfit(client)
+        end
     else
         item:SetData("equip", false)
+        item:RemoveOutfit(client)
     end
+
+    item.targetSlot = nil
     item.player = nil
 end)
+
+-- Hierarchical Locking is now handled by the Item Bases (Agnostically)
+function PLUGIN:CanPlayerUnequipItem(client, item)
+end
 
 -- Validate transfers TO gear inventory natively (prevent drag/drop natively into gear inv)
 function PLUGIN:CanTransferItem(item, curInv, newInv)
@@ -442,4 +481,17 @@ function PLUGIN:PostPlayerLoadout(client)
 			end
 		end
 	end)
+end
+
+-- Sync Gear Menu when items are equipped or unequipped
+function PLUGIN:OnItemEquipped(item, owner)
+    if (IsValid(owner)) then
+        self:SyncGearSlots(owner)
+    end
+end
+
+function PLUGIN:OnItemUnequipped(item, owner)
+    if (IsValid(owner)) then
+        self:SyncGearSlots(owner)
+    end
 end

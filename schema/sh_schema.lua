@@ -138,6 +138,16 @@ ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_recon_h.mdl
 ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_h.mdl", "overwatch")
 ix.anim.SetModelClass("models/nemez/combine_soldiers/combine_soldier_urban_shotgunner_h.mdl", "overwatch")
 ix.anim.SetModelClass("models/armacham/security/enemy/guard_1.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldierproto.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldierproto_drt.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_super_soldierproto.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_super_soldierprotodirt.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldiersnow.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldieros.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldiergrunt.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_soldier2000.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_darkelite_soldier.mdl", "overwatch")
+ix.anim.SetModelClass("models/combine_darkelite1_soldier.mdl", "overwatch")
 
 -- Player
 ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
@@ -391,6 +401,24 @@ function Schema:GetConscriptRankData(value)
 	end
 
 	return self.conscriptRanks[1]
+end
+
+function Schema:GetConscriptRankDataFromText(text)
+	if (!isstring(text)) then
+		return nil
+	end
+
+	local lowered = string.lower(string.Trim(text))
+
+	for _, data in ipairs(self.conscriptRanks) do
+		for _, prefix in ipairs({data.ko:lower() .. ".", data.en:lower()}) do
+			if (lowered:find("^" .. prefix:gsub("%.", "%%."))) then
+				return data
+			end
+		end
+	end
+
+	return nil
 end
 
 function Schema:IsEnglishPersonalName(name)

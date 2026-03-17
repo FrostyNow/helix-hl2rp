@@ -8,6 +8,7 @@ RECIPE.requirements = {
 	["comp_plastic"] = 1,
 	["comp_steel"] = 1,
 	["comp_glass"] = 1,
+	["paper"] = 1,
 	["misc_tool_screwdriver"] = {amount = 1, preserve = true},
 }
 RECIPE.results = {

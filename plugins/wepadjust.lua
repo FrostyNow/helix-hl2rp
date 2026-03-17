@@ -28,7 +28,7 @@ function PLUGIN:InitializedPlugins()
 		swep.DamageMax = 10
 		swep.DamageMin = 8
 		swep.ForceDefaultClip = 0
-		swep.RPM = swep.RPM * 0.6
+		swep.RPM = 500
 	end
 
 	local swep = weapons.GetStored("arc9_hl2_smg1")

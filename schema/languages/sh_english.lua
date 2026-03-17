@@ -265,6 +265,9 @@ LANGUAGE = {
 	itemCoffeBeansDesc = "Coffee beans that are used to make coffee.",
 	itemCanisterDesc = "A metal gasoline canister covered in rust.",
 	itemPlateDesc = "A plain ceramic plate used for serving food.",
+	itemNewspaperDesc = "A newspaper that once contains news and articles.",
+	itemResinDesc = "A piece of material used for 3D printing objects.",
+	itemCombineSteelDesc = "A piece of exotic steel that is used to make Combine equipment.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

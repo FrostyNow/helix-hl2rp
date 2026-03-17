@@ -532,7 +532,7 @@ hook.Add("InitPostEntity", "ixHL2RPfixBodygroups", function()
 			if (key == "groups" and istable(data)) then
 				local clean = {}
 				for k, v in pairs(data) do
-					if (isnumber(k)) then
+					if (isnumber(k) or isstring(k)) then
 						clean[k] = v
 					end
 				end

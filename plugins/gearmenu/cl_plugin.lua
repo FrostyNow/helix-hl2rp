@@ -574,25 +574,22 @@ function PANEL:RefreshGearInv()
 								net.SendToServer()
 							end
 						end
-					elseif (inventoryPanel.invID and gridX and gridY) then
-						local targetInv = inventory or (inventoryPanel.GetInventory and inventoryPanel:GetInventory())
-						local bWithinBounds = false
+						elseif (inventoryPanel.invID) then
+							local inv = inventory or (inventoryPanel.GetInventory and inventoryPanel:GetInventory())
+							local dropX, dropY = gridX, gridY
 
-						if (targetInv) then
-							local invW, invH = targetInv:GetSize()
-							bWithinBounds = gridX >= 1 and gridY >= 1
-								and (gridX + item.width - 1) <= invW
-								and (gridY + item.height - 1) <= invH
-						end
+							if (inventoryPanel.GetSlotPos and (!dropX or !dropY)) then
+								dropX, dropY = inventoryPanel:GetSlotPos(gui.MouseX(), gui.MouseY())
+							end
 
-						if (bWithinBounds and targetInv:CanItemFit(gridX, gridY, item.width, item.height, item)) then
-							RequestUnequip(item.id, inventoryPanel.invID, gridX, gridY)
+							if (inv and dropX and dropY and inv:CanItemFit(dropX, dropY, item.width, item.height, item)) then
+								RequestUnequip(item.id, inventoryPanel.invID, dropX, dropY)
+							else
+								RequestUnequip(item.id)
+							end
 						else
 							RequestUnequip(item.id)
 						end
-					else
-						RequestUnequip(item.id)
-					end
 				else
 					RequestUnequip(item.id, nil, nil, nil, true)
 				end
@@ -711,16 +708,9 @@ function PANEL:RefreshGearInv()
 
 			if (invPanel and invPanel.GetInventory) then
 				local inv = invPanel:GetInventory()
-				local cursorX, cursorY = invPanel:CursorPos()
-				local iconS = invPanel.iconSize or 64
-				local dropX = math.ceil((cursorX - 4 - (this.gridW - 1) * (iconS / 2)) / iconS)
-				local dropY = math.ceil((cursorY - invPanel:GetPadding(2) - (this.gridH - 1) * (iconS / 2)) / iconS)
-				local invW, invH = inv:GetSize()
-				local bWithinBounds = dropX >= 1 and dropY >= 1
-					and (dropX + this.gridW - 1) <= invW
-					and (dropY + this.gridH - 1) <= invH
+				local dropX, dropY = invPanel:GetSlotPos(gui.MouseX(), gui.MouseY())
 
-				if (bWithinBounds and inv:CanItemFit(dropX, dropY, this.gridW, this.gridH, item)) then
+				if (inv and dropX and dropY and inv:CanItemFit(dropX, dropY, this.gridW, this.gridH, item)) then
 					RequestUnequip(item.id, inv:GetID(), dropX, dropY)
 				else
 					RequestUnequip(item.id)

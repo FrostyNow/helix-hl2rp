@@ -27,7 +27,6 @@ ITEM.eqBodyGroups = {
 	-- ["gloves"] = 1,
 	-- ["boots"] = 1,
 	["lower gear"] = 1,
-	["lower radio"] = 1,
 }
 ITEM.newSkin = 0
 
@@ -132,9 +131,11 @@ function ITEM:ApplyOutfit(client)
 		state.originalName = character:GetName()
 		state.originalModel = client:GetModel()
 		state.originalClass = character:GetClass()
+		state.originalDescription = character:GetDescription()
 	end
 
 	state.dutyName = state.dutyName or GetDefaultDutyName(client, character)
+	state.dutyDescription = state.dutyDescription or faction.description or "A metropolice unit working as Civil Protection."
 	SetUniformState(character, state)
 
 	self.baseTable.ApplyOutfit(self, client)
@@ -155,6 +156,12 @@ function ITEM:ApplyOutfit(client)
 		faction:OnNameChanged(client, "", state.dutyName)
 	end
 
+	if (character:GetDescription() != state.dutyDescription) then
+		character:SetDescription(state.dutyDescription)
+	elseif (faction.OnDescriptionChanged) then
+		faction:OnDescriptionChanged(client, "", state.dutyDescription)
+	end
+
 	RefreshFactionState(client)
 end
 
@@ -168,6 +175,7 @@ function ITEM:RemoveOutfit(client)
 	local state = character and GetUniformState(character) or {}
 	local originalName = state.originalName
 	local originalClass = state.originalClass
+	local originalDescription = state.originalDescription
 	local returnFaction = (faction and character) and faction:GetUniformReturnFaction(character) or FACTION_CITIZEN
 
 	self.baseTable.RemoveOutfit(self, client)
@@ -182,6 +190,7 @@ function ITEM:RemoveOutfit(client)
 	state.originalName = nil
 	state.originalModel = nil
 	state.originalClass = nil
+	state.originalDescription = nil
 	SetUniformState(character, state)
 
 	if (character:GetFaction() != returnFaction) then
@@ -200,6 +209,10 @@ function ITEM:RemoveOutfit(client)
 
 	if (isstring(originalName) and originalName != "" and character:GetName() != originalName) then
 		character:SetName(originalName)
+	end
+
+	if (isstring(originalDescription) and originalDescription != "" and character:GetDescription() != originalDescription) then
+		character:SetDescription(originalDescription)
 	end
 
 	RefreshFactionState(client)

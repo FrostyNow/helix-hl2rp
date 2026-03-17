@@ -1,5 +1,5 @@
 
-ITEM.name = "Combine Turret"
+ITEM.name = "Combine Sentry Gun"
 ITEM.description = "turretDesc"
 ITEM.model = Model("models/zekkirels/floor_turret_undeployed.mdl")
 ITEM.category = "Utility"

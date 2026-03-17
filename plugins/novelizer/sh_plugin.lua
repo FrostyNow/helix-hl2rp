@@ -629,7 +629,7 @@ ix.lang.AddTable("korean", {
 	novelizerWater3 = "물을 향해 손을 뻗어 더러운 물을 담습니다.",
 
 	novelizerRaise1 = "%s 겨눌 태세로 들어 올립니다.",
-	novelizerRaise2 = "%s 사격 준비 자세로 올립니다.",
+	novelizerRaise2 = "%s 전투 준비 자세로 올립니다.",
 	novelizerRaise3 = "%s 들어 올립니다.",
 	novelizerLower1 = "%s 내립니다.",
 	novelizerLower2 = "%s 편안한 자세로 내립니다.",
@@ -778,9 +778,9 @@ ix.lang.AddTable("korean", {
 	novelizerInjectionSelf1 = "%s 자기 몸에 찔러 넣습니다.",
 	novelizerInjectionSelf2 = "%s 스스로 주사합니다.",
 	novelizerInjectionSelf3 = "%s 자기 몸에 주입합니다.",
-	novelizerInjectionOther1 = "%s 앞에 선 이의 몸에 찔러 넣습니다.",
+	novelizerInjectionOther1 = "앞에 선 이의 몸에 %s 찔러 넣습니다.",
 	novelizerInjectionOther2 = "%s 상대방에게 주사합니다.",
-	novelizerInjectionOther3 = "%s 몸을 숙여 약물을 주입합니다.",
+	novelizerInjectionOther3 = "몸을 숙여 %s 주입합니다.",
 
 	novelizerFlashlightOn1 = "손전등의 스위치를 올립니다.",
 	novelizerFlashlightOn2 = "손전등 불빛을 켭니다.",

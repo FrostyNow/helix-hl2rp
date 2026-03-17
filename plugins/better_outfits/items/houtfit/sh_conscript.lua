@@ -8,7 +8,7 @@ ITEM.price = 100
 ITEM.outfitCategory = "torso"
 ITEM.allowedBaseFactions = {"citizen"}
 ITEM.tooltipLabelText = "securitizedItemTooltip"
-ITEM.tooltipLabelFactionColor = FACTION_CONSCRIPT
+ITEM.tooltipLabelFactionColor = FACTION_MPF
 
 local function GetConscriptFaction()
 	return ix.faction.indices[FACTION_CONSCRIPT]
@@ -108,10 +108,12 @@ function ITEM:ApplyOutfit(client)
 		state.originalName = faction:GetBaseName(character)
 		state.originalModel = client:GetModel()
 		state.originalClass = character:GetClass()
+		state.originalDescription = character:GetDescription()
 	end
 
 	state.dutyName = faction:GetFormattedName(character, state.originalName)
 	state.dutyModel = faction:ResolveDutyModel(character, state.originalModel)
+	state.dutyDescription = state.dutyDescription or faction.description or "A regular human citizen enlisted as a soldier to Combine Overwatch."
 	SetUniformState(character, state)
 
 	self.baseTable.ApplyOutfit(self, client)
@@ -134,6 +136,12 @@ function ITEM:ApplyOutfit(client)
 	elseif (faction.OnNameChanged) then
 		faction:OnNameChanged(client, "", state.dutyName)
 	end
+
+	if (character:GetDescription() != state.dutyDescription) then
+		character:SetDescription(state.dutyDescription)
+	elseif (faction.OnDescriptionChanged) then
+		faction:OnDescriptionChanged(client, "", state.dutyDescription)
+	end
 end
 
 function ITEM:RemoveOutfit(client)
@@ -148,6 +156,7 @@ function ITEM:RemoveOutfit(client)
 	local state = character and GetUniformState(character) or {}
 	local originalName = state.originalName
 	local originalClass = state.originalClass
+	local originalDescription = state.originalDescription
 	local returnFaction = (faction and character) and faction:GetUniformReturnFaction(character) or FACTION_CITIZEN
 
 	self.baseTable.RemoveOutfit(self, client)
@@ -161,8 +170,10 @@ function ITEM:RemoveOutfit(client)
 	state.originalName = nil
 	state.originalModel = nil
 	state.originalClass = nil
+	state.originalDescription = nil
 	state.dutyName = nil
 	state.dutyModel = nil
+	state.dutyDescription = nil
 	SetUniformState(character, state)
 
 	if (character:GetFaction() != returnFaction) then
@@ -181,5 +192,9 @@ function ITEM:RemoveOutfit(client)
 
 	if (isstring(originalName) and originalName != "" and character:GetName() != originalName) then
 		character:SetName(originalName)
+	end
+
+	if (isstring(originalDescription) and originalDescription != "" and character:GetDescription() != originalDescription) then
+		character:SetDescription(originalDescription)
 	end
 end

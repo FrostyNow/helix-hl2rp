@@ -139,9 +139,47 @@ if (CLIENT) then
 	end
 end
 
+
+
+-- Helper to check if an item is compatible with a specific model string
+function ITEM:IsCompatibleWith(model)
+	if (!model or !self.allowedModels or #self.allowedModels == 0) then return true end
+	
+	local modelLower = model:lower():gsub("\\", "/"):Trim()
+	for _, v in ipairs(self.allowedModels) do
+		if (isstring(v) and v:lower():gsub("\\", "/"):Trim() == modelLower) then
+			return true
+		end
+	end
+	return false
+end
+
+-- Top Layer Definition (Items that replace the character model)
+local function IsTopLayer(item)
+	return (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))
+end
+
 function ITEM:RemoveOutfit(client)
 	local character = client:GetCharacter()
-	local badair = GetBadAirPlugin()
+	if (!character) then return end
+
+	local inventory = character:GetInventory()
+
+	-- If we are removing a Top Layer (Uniform), revert the model and remove incompatible items in ALL character inventories
+	if (IsTopLayer(self)) then
+		local baseModel = character:GetData("oldModelBase", client:GetModel())
+		local charID = character:GetID()
+		
+		for _, inv in pairs(ix.item.inventories) do
+			if (inv.owner == charID) then
+				for _, v in pairs(inv:GetItems()) do
+					if (v.id != self.id and v:GetData("equip") and v.IsCompatibleWith and !v:IsCompatibleWith(baseModel)) then
+						v:RemoveOutfit(client)
+					end
+				end
+			end
+		end
+	end
 
 	self:SetData("equip", false)
 	self:UpdateAppearance(client) -- Centralized resolver for appearance changes
@@ -150,10 +188,6 @@ function ITEM:RemoveOutfit(client)
 		for k, _ in pairs(self.attribBoosts) do
 			character:RemoveBoost(self.uniqueID, k)
 		end
-	end
-
-	for k, _ in pairs(self:GetData("outfitAttachments", {})) do
-		self:RemoveAttachment(k, client)
 	end
 
 	if (Schema and Schema.RefreshFlashlight) then
@@ -169,18 +203,28 @@ function ITEM:UpdateAppearance(client)
 	if (!character) then return end
 
 	-- 1. Resolve Best Model (Priority: suit > torso > base)
-	local inventory = character:GetInventory()
-	local items = inventory and inventory:GetItems() or {}
+	local charID = character:GetID()
+	local items = {}
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
+	end
+
 	local bestModelItem = nil
 	local modelPriority = {["suit"] = 1, ["torso"] = 2}
 
 	for _, item in pairs(items) do
-		if (item:GetData("equip") and (item.replacement or item.replacements or isfunction(item.OnGetReplacement))) then
+		if (item:GetData("equip") and (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))) then
 			if (!bestModelItem or (modelPriority[item.outfitCategory or ""] or 99) < (modelPriority[bestModelItem.outfitCategory or ""] or 99)) then
 				bestModelItem = item
 			end
 		end
 	end
+
+	local isTopLayerVisible = (bestModelItem != nil)
 
 	local baseModel = character:GetData("oldModelBase", client:GetModel())
 	if (!character:GetData("oldModelBase")) then
@@ -214,12 +258,11 @@ function ITEM:UpdateAppearance(client)
 
 	-- 3. Audit Items (Visibility & Stats)
 	local currentModel = targetModel:lower():gsub("\\", "/")
-	
+
 	for _, item in pairs(items) do
 		if (item:GetData("equip")) then
-			-- If item is model-specific and doesn't match current visible model, 
-			-- just skip its VISUAL bodygroups, but keep it EQUIPPED (Layer Locking).
-			if (item.allowedModels and !table.HasValue(item.allowedModels, currentModel)) then
+			-- 1. Hard Compatibility check: If item is definitely NOT for this model, hide it.
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel)) then
 				continue
 			end
 
@@ -237,15 +280,26 @@ function ITEM:UpdateAppearance(client)
 
 	-- 4. Apply Character Base Groups (Always try by name, safe for MPF facialhair)
 	local baseGroups = character:GetData("groups", {})
-	local isSuitVisible = (bestModelItem != nil)
 
 	for k, v in pairs(baseGroups) do
 		local index = -1
 		if (isnumber(k)) then
 			-- Numbers: Only apply on base character model for safety
-			if (!isSuitVisible) then index = k end 
+			if (!isTopLayerVisible) then index = k end 
 		else
-			-- Names: ALWAYS try to apply (MPF with facialhair will work, Hazmat will safely return -1)
+			-- Names: ALWAYS try to apply ONLY if they are approved shared groups
+			-- We allow 'facialhair' by default, and also check if it's in the faction's shared list
+			local faction = ix.faction.Get(client:Team())
+			local isShared = (k == "facialhair")
+			
+			if (faction and faction.bodyGroups and faction.bodyGroups[k] and faction.bodyGroups[k].shared) then
+				isShared = true
+			end
+
+			if (isTopLayerVisible and !isShared) then
+				continue
+			end
+
 			index = client:FindBodygroupByName(k)
 		end
 
@@ -354,18 +408,57 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 	end,
 	OnCanRun = function(item)
 		local client = item.player or item:GetOwner()
+		if (CLIENT and !IsValid(client)) then client = LocalPlayer() end
 		if (!IsValid(client)) then return false end
 
-		if (item.allowedModels and !table.HasValue(item.allowedModels, client:GetModel())) then
-			return false
+		local char = client:GetCharacter()
+		if (!char) then return false end
+
+		-- Hierarchical Locking Logic (Agnostic):
+		local charID = char:GetID()
+		local isTopLayerEquipped = false
+		local bestModelItemID = nil
+
+		-- Scan all character's inventories for a Top Layer (Uniform/Full Suit)
+		for _, inv in pairs(ix.item.inventories) do
+			if (inv.owner == charID) then
+				for _, v in pairs(inv:GetItems()) do
+					if (v:GetData("equip") and IsTopLayer(v)) then
+						isTopLayerEquipped = true
+						bestModelItemID = v.id
+						break
+					end
+				end
+			end
+			if (isTopLayerEquipped) then break end
 		end
 
-		local char = client:GetCharacter()
-		local invID = char:GetInventory():GetID()
-		local gearInvID = char:GetData("gearInvID")
+		if (isTopLayerEquipped and item.id != bestModelItemID) then
+			local currentModel = client:GetModel() or ""
+			local isCompatible = (item.IsCompatibleWith and item:IsCompatibleWith(currentModel))
 
-		return !IsValid(item.entity) and item:GetData("equip") == true and
-			hook.Run("CanPlayerUnequipItem", client, item) != false and (item.invID == invID or (gearInvID and item.invID == gearInvID))
+			-- 1. Hard Lock: Item is incompatible with current visible model (e.g. citizen shirt on CP)
+			if (!isCompatible) then
+				if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
+				return false
+			end
+
+			-- 2. Soft Lock: Protection for Hidden Base Layers
+			-- If we have a Top Layer (Suit/Uniform) on, we lock core body clothing layers (torso, legs, suit).
+			-- This prevents stripping naked under a uniform.
+			local cat = item.outfitCategory
+			local isBaseLayer = (cat == "torso" or cat == "legs" or cat == "suit")
+
+			if (isBaseLayer) then
+				if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
+				return false
+			end
+		end
+
+		-- Standard Helix Checks + Hook
+		local invID = char:GetInventory():GetID()
+		return !IsValid(item.entity) and item:GetData("equip") != false and
+			hook.Run("CanPlayerUnequipItem", client, item) != false and item.invID == invID
 	end
 }
 
@@ -477,11 +570,8 @@ ITEM.functions.Equip = {
 		end
 
 		local char = client:GetCharacter()
-		local invID = char:GetInventory():GetID()
-		local gearInvID = char:GetData("gearInvID")
-
 		return !IsValid(item.entity) and item:GetData("equip") != true and item:CanEquipOutfit() and
-			hook.Run("CanPlayerEquipItem", client, item) != false and (item.invID == invID or (gearInvID and item.invID == gearInvID))
+			hook.Run("CanPlayerEquipItem", client, item) != false and item:GetOwner() == client
 	end
 }
 
@@ -504,15 +594,13 @@ ITEM.functions.InstallFilter = {
 		end
 
 		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
-		local filterItem = badair:GetFirstAvailableFilterItem(inventory)
-
-		-- Try gear inventory if not found in main inventory
-		if (!filterItem) then
-			local gearInvID = character:GetData("gearInvID")
-			local gearInv = gearInvID and ix.item.inventories[gearInvID]
-			if (gearInv) then
-				filterItem = badair:GetFirstAvailableFilterItem(gearInv)
+		local filterItem = nil
+		
+		-- Search all inventories associated with the character
+		for _, inv in pairs(ix.item.inventories) do
+			if (inv.owner == character:GetID()) then
+				filterItem = badair:GetFirstAvailableFilterItem(inv)
+				if (filterItem) then break end
 			end
 		end
 
@@ -531,13 +619,6 @@ ITEM.functions.InstallFilter = {
 		client:EmitSound("weapons/usp/usp_silencer_on.wav")
 		client:NotifyLocalized("filterInstalledNotify")
 
-		if (SERVER) then
-			local gearMenu = ix.plugin.Get("gearmenu")
-			if (gearMenu and gearMenu.SyncGearSlots) then
-				gearMenu:SyncGearSlots(client)
-			end
-		end
-
 		return false
 	end,
 	OnCanRun = function(item)
@@ -550,11 +631,8 @@ ITEM.functions.InstallFilter = {
 		end
 
 		local char = client:GetCharacter()
-		local invID = char:GetInventory():GetID()
-		local gearInvID = char:GetData("gearInvID")
-
-		return !IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))
-			and badair:GetFirstAvailableFilterItem(char:GetInventory()) != nil or (gearInvID and badair:GetFirstAvailableFilterItem(ix.item.inventories[gearInvID]) != nil)
+		return !IsValid(item.entity) and item:GetOwner() == client
+			and badair:GetFirstAvailableFilterItem(char:GetInventory()) != nil -- Simplified for basic canrun
 	end
 }
 
@@ -579,13 +657,6 @@ ITEM.functions.RemoveFilter = {
 		client:EmitSound("weapons/usp/usp_silencer_off.wav")
 		client:NotifyLocalized("filterRemovedNotify")
 
-		if (SERVER) then
-			local gearMenu = ix.plugin.Get("gearmenu")
-			if (gearMenu and gearMenu.SyncGearSlots) then
-				gearMenu:SyncGearSlots(client)
-			end
-		end
-
 		return false
 	end,
 	OnCanRun = function(item)
@@ -594,10 +665,7 @@ ITEM.functions.RemoveFilter = {
 
 		local badair = GetBadAirPlugin()
 		local char = client:GetCharacter()
-		local invID = char:GetInventory():GetID()
-		local gearInvID = char:GetData("gearInvID")
-
-		return !IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))
+		return !IsValid(item.entity) and item:GetOwner() == client
 			and badair and badair:ItemRequiresGasmaskFilter(item) and badair:HasItemFilterInstalled(item)
 	end
 }

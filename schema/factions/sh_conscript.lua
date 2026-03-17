@@ -203,12 +203,19 @@ function FACTION:OnTransferred(character)
 		state.originalName = baseName
 		state.dutyName = self:GetFormattedName(character, baseName)
 		state.dutyModel = model
+		state.dutyDescription = state.dutyDescription or self.description or "A regular human citizen enlisted as a soldier to Combine Overwatch."
 		self:SetUniformState(character, state)
 	end
 
 	character:SetModel(model)
 	self:SetDisplayedName(character, baseName)
 	self:AssignDefaultClass(character)
+
+	if (state.active and state.dutyDescription) then
+		character:SetDescription(state.dutyDescription)
+	else
+		character:SetDescription(self.description)
+	end
 end
 
 function FACTION:OnNameChanged(client, oldValue, value)
@@ -230,6 +237,12 @@ function FACTION:OnNameChanged(client, oldValue, value)
 	end
 
 	if (state.active) then
+		local rankData = Schema:GetConscriptRankDataFromText(value)
+
+		if (rankData) then
+			self:SetConscriptRank(character, rankData.id)
+		end
+
 		state.originalName = baseName
 		state.dutyName = self:GetFormattedName(character, baseName)
 		state.dutyModel = character:GetModel()
@@ -237,6 +250,16 @@ function FACTION:OnNameChanged(client, oldValue, value)
 	end
 
 	self:SetDisplayedName(character, baseName)
+end
+
+function FACTION:OnDescriptionChanged(client, oldValue, value)
+	local character = client:GetCharacter()
+	local state = self:GetUniformState(character)
+
+	if (state.active) then
+		state.dutyDescription = value
+		self:SetUniformState(character, state)
+	end
 end
 
 function FACTION:ModifyPlayerStep(client, data)

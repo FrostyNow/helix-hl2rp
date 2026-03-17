@@ -204,16 +204,19 @@ function PLUGIN:ReapplyBodygroupAppearance(client, character)
 		end
 	end
 
-	local inventory = character:GetInventory()
-	if (!inventory) then
-		return
+	local charID = character:GetID()
+	local items = {}
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
 	end
-
-	-- 3. Re-apply bodygroups from all equipped items ONLY if compatible
-	for _, item in pairs(inventory:GetItems()) do
+	for _, item in pairs(items) do
 		if (item:GetData("equip") and item.eqBodyGroups) then
 			-- Compatibility check: ignore item bodygroups if this item isn't meant for this model
-			if (item.allowedModels and !table.HasValue(item.allowedModels, currentModel)) then
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel)) then
 				continue
 			end
 

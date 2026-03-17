@@ -1,6 +1,6 @@
 
 ITEM.name = "Book"
-ITEM.model = Model("models/props_lab/binderblue.mdl")
+ITEM.model = Model("models/willardnetworks/misc/book.mdl")
 ITEM.description = "bookDesc"
 ITEM.price = 100
 ITEM.isStackable = true

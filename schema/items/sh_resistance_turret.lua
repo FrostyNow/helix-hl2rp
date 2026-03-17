@@ -1,5 +1,5 @@
 
-ITEM.name = "Resistance Turret"
+ITEM.name = "Resistance Sentry Gun"
 ITEM.description = "resistanceTurretDesc"
 ITEM.model = Model("models/zekkirels/floor_turret_undeployed.mdl")
 ITEM.category = "Utility"

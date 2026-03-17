@@ -128,6 +128,7 @@ FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
 
 FACTION.canSeeWaypoints = true
+FACTION.forcedName = true
 
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
@@ -161,25 +162,33 @@ function FACTION:OnCharacterCreated(client, character)
 end
 
 function FACTION:GetDefaultName(client)
-	return Schema:FormatCombineName("MPF", "RCT"), true
+	return Schema:FormatCombineName("MPF", "RCT")
 end
 
 function FACTION:OnTransferred(character)
 	local state = self:GetUniformState(character)
 	local client = character:GetPlayer()
+	local name = character:GetName()
+
+	if (!Schema:GetCombineNameInfo(name)) then
+		name = self:GetDefaultName(client)
+	end
 
 	if (state.active) then
-		state.dutyName = Schema:NormalizeCombineName(state.dutyName or self:GetDefaultName(client), "MPF")
+		state.dutyName = Schema:NormalizeCombineName(state.dutyName or name, "MPF")
 		state.dutyModel = state.dutyModel or self:ResolveDutyModel(character, state.originalModel)
+		state.dutyDescription = state.dutyDescription or self.description or "A metropolice unit working as Civil Protection."
 		self:SetUniformState(character, state)
 
 		character:SetName(state.dutyName)
 		character:SetModel(state.dutyModel)
+		character:SetDescription(state.dutyDescription)
 		return
 	end
 
-	character:SetName(self:GetDefaultName(client))
+	character:SetName(Schema:NormalizeCombineName(name, "MPF"))
 	character:SetModel(self.models[1])
+	character:SetDescription(self.description)
 end
 
 function FACTION:OnNameChanged(client, oldValue, value)
@@ -196,6 +205,16 @@ function FACTION:OnNameChanged(client, oldValue, value)
 
 	if (state.active) then
 		state.dutyModel = character:GetModel()
+		self:SetUniformState(character, state)
+	end
+end
+
+function FACTION:OnDescriptionChanged(client, oldValue, value)
+	local character = client:GetCharacter()
+	local state = self:GetUniformState(character)
+
+	if (state.active) then
+		state.dutyDescription = value
 		self:SetUniformState(character, state)
 	end
 end

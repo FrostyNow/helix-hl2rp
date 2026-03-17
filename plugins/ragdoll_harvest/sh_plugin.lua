@@ -30,7 +30,12 @@ local humanNPCClasses = {
 	npc_metropolice = true,
 	npc_monk = true,
 	npc_mossman = true,
-	npc_odessa = true
+	npc_odessa = true,
+	npc_zombie = true,
+	npc_zombie_torso = true,
+	npc_fastzombie = true,
+	npc_fastzombie_torso = true,
+	npc_poisonzombie = true,
 }
 
 local humanModelPrefixes = {
@@ -45,7 +50,7 @@ local humanModelPrefixes = {
 	"models/mossman.mdl",
 	"models/odessa.mdl",
 	"models/police.mdl",
-	"models/Humans/Group0",
+	"models/zombie/",
 }
 
 PLUGIN.harvestables = {
@@ -60,6 +65,29 @@ PLUGIN.harvestables = {
 			["models/headcrabclassic.mdl"] = true,
 			["models/headcrab.mdl"] = true,
 			["models/headcrabblack.mdl"] = true
+		}
+	},
+	antlion = {
+		item = "antlion_meat",
+		amount = {1, 2},
+		time = DEFAULT_HARVEST_TIME,
+		sound = DEFAULT_HARVEST_SOUND,
+		effect = "blood_impact_yellow_01",
+		decal = "YellowBlood",
+		models = {
+			["models/antlion.mdl"] = true,
+			["models/antlion_worker.mdl"] = true,
+		}
+	},
+	antlion_grub = {
+		item = "antlion_grub",
+		amount = {1, 1},
+		time = DEFAULT_HARVEST_TIME,
+		sound = DEFAULT_HARVEST_SOUND,
+		effect = "blood_impact_yellow_01",
+		decal = "YellowBlood",
+		models = {
+			["models/antlion_grub.mdl"] = true,
 		}
 	}
 }
@@ -80,9 +108,13 @@ PLUGIN.breakables = {
 				amount = {1, 1}
 			},
 			{
+				item = "spine",
+				amount = {1, 1}
+			},
+			{
 				item = "rib",
 				amount = {1, 2}
-			}
+			},
 		}
 	}
 }
@@ -93,6 +125,7 @@ ix.lang.AddTable("english", {
 	itemFleshDesc = "A ragged strip of flesh hacked from a ruined human corpse.",
 	itemBloodySkullDesc = "A blood-soaked human skull cracked loose from a shattered corpse.",
 	itemRibDesc = "A rib bone from a shattered corpse.",
+	itemSpineDesc = "A spine from a shattered corpse.",
 })
 
 ix.lang.AddTable("korean", {
@@ -104,6 +137,8 @@ ix.lang.AddTable("korean", {
 	itemBloodySkullDesc = "산산조각 난 시체에서 떨어져 나온 피투성이 인간 두개골입니다.",
 	["Rib"] = "갈비뼈",
 	itemRibDesc = "산산조각 시체에서 나온 갈비뼈입니다.",
+	["Spine"] = "척추",
+	itemSpineDesc = "산산조각 시체에서 나온 척추입니다.",
 })
 
 local function CopyOptions(source)
