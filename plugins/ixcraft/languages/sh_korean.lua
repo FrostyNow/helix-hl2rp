@@ -130,7 +130,6 @@ LANGUAGE = {
 	recipeScrapShotglassDesc = "유리잔을 부숩니다.",
 	["Scrap Plate"] = "접시 분해",
 	recipeScrapPlateDesc = "접시를 부숩니다.",
-
 	["Scrap Bucket"] = "양동이 분해",
 	recipeScrapBucketDesc = "양동이를 분해합니다.",
 	["Scrap Cafeteria Tray"] = "식판 분해",
@@ -145,6 +144,10 @@ LANGUAGE = {
 	recipeScrapPanDesc = "프라이팬을 분해합니다.",
 	["Scrap Pot"] = "냄비 분해",
 	recipeScrapPotDesc = "냄비를 분해합니다.",
+	["Scrap Rib"] = "갈비뼈 분해",
+	recipeRibDesc = "갈비뼈를 부수어 뼈 재료를 얻습니다.",
+	["Scrap Skull"] = "두개골 분해",
+	recipeSkullDesc = "두개골을 부수어 뼈 재료를 얻습니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",

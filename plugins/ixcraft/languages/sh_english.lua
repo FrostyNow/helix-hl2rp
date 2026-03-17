@@ -81,6 +81,9 @@ LANGUAGE = {
 	recipeScrapDriedBoxesDesc = "Disassemble a metal packaging box.",
 	recipeScrapPanDesc = "Disassemble a pan.",
 	recipeScrapPotDesc = "Disassemble a pot.",
+	recipeRibDesc = "Crush a rib to get bone material.",
+	recipeSkullDesc = "Crush a skull to get bone material.",
+	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
 	recipeFiberglassDesc = "Craft fiberglass by drawing glass into fine threads.",
