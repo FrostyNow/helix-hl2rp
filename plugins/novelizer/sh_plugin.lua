@@ -11,6 +11,8 @@ PLUGIN.name = "Novelizer"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Localized automatic narrative emotes for item use, interactions, and ambient machine actions."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 PLUGIN.itemActionPhrasePools = PLUGIN.itemActionPhrasePools or {}
 PLUGIN.entityUsePhrasePools = PLUGIN.entityUsePhrasePools or {}
 PLUGIN.itPhrasePools = PLUGIN.itPhrasePools or {}
@@ -39,6 +41,7 @@ ix.lang.AddTable("english", {
 	optdNovelizerAutoActions = "Automatically narrates your interactions, item use, and nearby machine sounds.",
 
 	novelizerSomething = "something",
+	novelizerSomeone = "the person before them",
 	novelizerObject = "object",
 	novelizerFlashlight = "flashlight",
 	novelizerDoor = "door",
@@ -146,33 +149,27 @@ ix.lang.AddTable("english", {
 	novelizerSetFreq1 = "adjusts a radio frequency.",
 	novelizerSetFreq2 = "retunes a radio channel.",
 	novelizerSetFreq3 = "dials in a new radio frequency.",
-	novelizerSearch1 = "starts patting someone down.",
+	novelizerSearch1 = "starts patting the person before them down.",
 	novelizerSearch2 = "begins a quick search.",
-	novelizerSearch3 = "checks someone over for carried items.",
+	novelizerSearch3 = "checks the individual in front of them for carried items.",
 	novelizerAmmo1 = "loads ammunition from %s.",
 	novelizerAmmo2 = "feeds rounds in from %s.",
 	novelizerAmmo3 = "tops up on ammunition with %s.",
 	novelizerBattery1 = "uses %s to top up their suit reserves.",
 	novelizerBattery2 = "plugs %s into their suit's power system.",
 	novelizerBattery3 = "feeds power from %s into their equipment.",
-	novelizerMedSelf1 = "applies %s to treat their own injuries.",
-	novelizerMedSelf2 = "uses %s on themselves.",
-	novelizerMedSelf3 = "works %s over their wounds.",
-	novelizerMedOther1 = "uses %s to tend to someone else's injuries.",
-	novelizerMedOther2 = "applies %s to another person's wounds.",
-	novelizerMedOther3 = "leans in with %s to treat someone.",
 	novelizerBandageSelf1 = "wraps %s around their own injuries.",
 	novelizerBandageSelf2 = "binds themselves up with %s.",
 	novelizerBandageSelf3 = "winds %s tight over a wound.",
-	novelizerBandageOther1 = "wraps %s around someone else's wounds.",
-	novelizerBandageOther2 = "binds another person's injuries with %s.",
-	novelizerBandageOther3 = "leans in to dress someone's wounds with %s.",
+	novelizerBandageOther1 = "wraps %s around the wounds of the person before them.",
+	novelizerBandageOther2 = "binds the injuries of the individual in front of them with %s.",
+	novelizerBandageOther3 = "leans in to dress the wounds of the figure before them with %s.",
 	novelizerAedSelf1 = "presses %s into place and triggers a harsh shock.",
 	novelizerAedSelf2 = "fumbles %s into position and discharges it.",
 	novelizerAedSelf3 = "braces and sets off %s against their body.",
-	novelizerAedOther1 = "plants %s against someone and fires a defibrillating shock.",
-	novelizerAedOther2 = "sets %s on another person's chest and discharges it.",
-	novelizerAedOther3 = "leans over with %s and sends a violent jolt through someone.",
+	novelizerAedOther1 = "plants %s against the person before them and fires a defibrillating shock.",
+	novelizerAedOther2 = "sets %s on the chest of the individual in front of them and discharges it.",
+	novelizerAedOther3 = "leans over with %s and sends a violent jolt through the subject.",
 
 	novelizerEquipHead1 = "settles %s over their head.",
 	novelizerEquipHead2 = "pulls %s on over their hair.",
@@ -294,7 +291,7 @@ ix.lang.AddTable("english", {
 	novelizerMachineSuit3 = "activates the charger and starts taking power from it.",
 
 	novelizerMachineRation1 = "presents themselves to %s and works its controls.",
-	novelizerMachineRation2 = "keys an authorization sequence into %s.",
+	novelizerMachineRation2 = "slides their CID into %s's intake slot.",
 	novelizerMachineRation3 = "operates %s with practiced motions.",
 	novelizerMachineDigitalClock1 = "changes the mode on %s.",
 	novelizerMachineDigitalClock2 = "waves a hand through %s's holographic controls.",
@@ -370,6 +367,24 @@ ix.lang.AddTable("english", {
 	novelizerApply1 = "takes out %s and holds it up for inspection.",
 	novelizerApply2 = "produces %s and presents it.",
 	novelizerApply3 = "pulls out %s to show their identification.",
+	novelizerDropMoney1 = "picks out some %s and drops it to the ground.",
+	novelizerDropMoney2 = "takes some %s and sets it down.",
+	novelizerDropMoney3 = "sets down some %s.",
+	novelizerGiveMoney1 = "hands over some %s.",
+	novelizerGiveMoney2 = "passes some %s.",
+	novelizerGiveMoney3 = "gives some %s.",
+	novelizerMedSelf1 = "opens %s to check their own injuries.",
+	novelizerMedSelf2 = "unfolds %s and begins self-treatment.",
+	novelizerMedSelf3 = "takes out %s to treat their wounds.",
+	novelizerMedOther1 = "opens %s to check the injuries of the person before them.",
+	novelizerMedOther2 = "unfolds %s to treat the wounds of the individual in front of them.",
+	novelizerMedOther3 = "leans in with %s to tend to the figure before them.",
+	novelizerInjectionSelf1 = "stabs %s into their own body.",
+	novelizerInjectionSelf2 = "injects themselves with %s.",
+	novelizerInjectionSelf3 = "administers %s to themselves.",
+	novelizerInjectionOther1 = "stabs %s into the body of the person before them.",
+	novelizerInjectionOther2 = "injects the individual in front of them with %s.",
+	novelizerInjectionOther3 = "leans in to administer %s to the subject.",
 	novelizerRead1 = "reads %s.",
 	novelizerRead2 = "unfolds %s and reads through it.",
 	novelizerRead3 = "looks over %s for a moment.",
@@ -534,6 +549,7 @@ ix.lang.AddTable("korean", {
 	optdNovelizerAutoActions = "상호작용, 물건 사용, 주변 기계음 묘사를 자동으로 현지화해 출력합니다.",
 
 	novelizerSomething = "무언가",
+	novelizerSomeone = "상대방",
 	novelizerObject = "물건",
 	novelizerFlashlight = "손전등",
 	novelizerDoor = "문",
@@ -641,19 +657,19 @@ ix.lang.AddTable("korean", {
 	novelizerSetFreq1 = "무전 주파수를 조정합니다.",
 	novelizerSetFreq2 = "무전 채널을 다시 맞춥니다.",
 	novelizerSetFreq3 = "새 무전 주파수를 입력합니다.",
-	novelizerSearch1 = "몸을 수색하기 시작합니다.",
+	novelizerSearch1 = "앞에 선 이의 몸을 수색하기 시작합니다.",
 	novelizerSearch2 = "짧게 소지품 수색을 시작합니다.",
-	novelizerSearch3 = "지닌 물건이 있는지 몸을 확인합니다.",
+	novelizerSearch3 = "지닌 물건이 있는지 상대의 몸을 확인합니다.",
 	novelizerBandageSelf1 = "%s 자기 상처에 감아 둡니다.",
 	novelizerBandageSelf2 = "%s 자기 몸의 상처에 둘러 묶습니다.",
 	novelizerBandageSelf3 = "%s 상처 부위에 단단히 감습니다.",
-	novelizerBandageOther1 = "%s 다른 사람 상처에 감아 줍니다.",
-	novelizerBandageOther2 = "%s 타인의 부상 부위를 감아 처치합니다.",
+	novelizerBandageOther1 = "%s 상대의 상처에 감아 줍니다.",
+	novelizerBandageOther2 = "%s 상대의 부상 부위를 감아 처치합니다.",
 	novelizerBandageOther3 = "%s 상처를 감아 고정해줍니다.",
 	novelizerAedSelf1 = "%s 몸에 대고 거친 충격을 가합니다.",
 	novelizerAedSelf2 = "%s 자기 몸에 붙여 방전을 일으킵니다.",
 	novelizerAedSelf3 = "%s 몸에 밀착시킨 채 충격을 보냅니다.",
-	novelizerAedOther1 = "%s 다른 사람 몸에 대고 제세동 충격을 가합니다.",
+	novelizerAedOther1 = "%s 제세동 충격을 가합니다.",
 	novelizerAedOther2 = "%s 흉부에 붙여 방전시킵니다.",
 	novelizerAedOther3 = "%s 몸을 숙여 강한 전기 충격을 보냅니다.",
 
@@ -751,14 +767,14 @@ ix.lang.AddTable("korean", {
 	novelizerMedSelf1 = "%s 열어 자기 상처를 살핍니다.",
 	novelizerMedSelf2 = "%s 펼쳐 스스로 응급 처치를 시작합니다.",
 	novelizerMedSelf3 = "%s 꺼내 상처를 처치합니다.",
-	novelizerMedOther1 = "%s 열어 다른 사람 상처를 살핍니다.",
-	novelizerMedOther2 = "%s 펼쳐 타인의 부상을 처치합니다.",
+	novelizerMedOther1 = "%s 열어 앞에 선 이의 상처를 살핍니다.",
+	novelizerMedOther2 = "%s 펼쳐 상대방의 부상을 처치합니다.",
 	novelizerMedOther3 = "%s 꺼내 치료하려 몸을 숙입니다.",
 	novelizerInjectionSelf1 = "%s 자기 몸에 찔러 넣습니다.",
 	novelizerInjectionSelf2 = "%s 스스로 주사합니다.",
 	novelizerInjectionSelf3 = "%s 자기 몸에 주입합니다.",
-	novelizerInjectionOther1 = "%s 다른 사람 몸에 찔러 넣습니다.",
-	novelizerInjectionOther2 = "%s 타인에게 주사합니다.",
+	novelizerInjectionOther1 = "%s 앞에 선 이의 몸에 찔러 넣습니다.",
+	novelizerInjectionOther2 = "%s 상대방에게 주사합니다.",
 	novelizerInjectionOther3 = "%s 몸을 숙여 약물을 주입합니다.",
 
 	novelizerFlashlightOn1 = "손전등의 스위치를 올립니다.",
@@ -871,6 +887,12 @@ ix.lang.AddTable("korean", {
 	novelizerApply1 = "%s 꺼내 보입니다.",
 	novelizerApply2 = "%s 손에 들어 제시합니다.",
 	novelizerApply3 = "%s 신분을 확인시키듯 내밉니다.",
+	novelizerDropMoney1 = "%s 꺼내 바닥에 내려놓습니다.",
+	novelizerDropMoney2 = "%s 바닥에 내려둡니다.",
+	novelizerDropMoney3 = "%s 바닥에 내려놓습니다.",
+	novelizerGiveMoney1 = "%s 건네줍니다.",
+	novelizerGiveMoney2 = "%s 줍니다.",
+	novelizerGiveMoney3 = "%s 전해줍니다.",
 	novelizerRead1 = "%s 읽습니다.",
 	novelizerRead2 = "%s 펼쳐 읽어 봅니다.",
 	novelizerRead3 = "%s 잠시 훑어 읽습니다.",
@@ -1062,7 +1084,7 @@ local function GetNovelMeRange()
 end
 
 local function GetNovelItRange()
-	return ix.config.Get("chatRange", 280) * DEFAULT_RANGE_MULTIPLIER
+	return GetChatRange()
 end
 
 local function CopyArray(source)
@@ -1478,6 +1500,11 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	end
 
 	local className = entity:GetClass()
+	
+	if (className == "ix_money") then
+		local plural = ix.currency.plural or "tokens"
+		return plural, plural
+	end
 
 	if (className == "prop_ragdoll") then
 		local owner = entity.GetNetVar and entity:GetNetVar("player") or nil
@@ -1709,7 +1736,7 @@ function PLUGIN:GetEquipCategory(item)
 		return "respirator"
 	end
 
-	if (category == "goggles" or uniqueID:find("facewrap", 1, true) or uniqueID:find("goggles", 1, true) or uniqueID:find("visor", 1, true) or name:find("goggles", 1, true) or name:find("visor", 1, true)) then
+	if (category == "face" or category == "goggles" or uniqueID:find("facewrap", 1, true) or uniqueID:find("goggles", 1, true) or uniqueID:find("visor", 1, true) or name:find("goggles", 1, true) or name:find("visor", 1, true)) then
 		return "face"
 	end
 
@@ -1809,8 +1836,7 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 		return isEquip and {"novelizerEquipBag1", "novelizerEquipBag2", "novelizerEquipBag3"}
 			or {"novelizerUnequipBag1", "novelizerUnequipBag2", "novelizerUnequipBag3"}
 	elseif (category == "suitcase") then
-		return isEquip and {"novelizerEquipSuitcase1", "novelizerEquipSuitcase2", "novelizerEquipSuitcase3"}
-			or {"novelizerUnequipSuitcase1", "novelizerUnequipSuitcase2", "novelizerUnequipSuitcase3"}
+		return nil
 	end
 
 	return isEquip and {"novelizerEquip1", "novelizerEquip2", "novelizerEquip3"}
@@ -2300,6 +2326,20 @@ function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 	}
 end
 
+function PLUGIN:GetCharacterSubject(client)
+	if (not IsValid(client)) then
+		return BuildArgument(L("novelizerSomeone"), "object")
+	end
+
+	local name = hook.Run("GetCharacterName", client, "me") or client:Name()
+	return BuildArgument(name, "object")
+end
+
+function PLUGIN:GetMoneySubject()
+	local plural = ix.currency.plural or "tokens"
+	return BuildArgument(plural, "object")
+end
+
 function PLUGIN:GetItArguments(entity, key, phraseKey)
 	if (phraseKey == "novelizerItVending1" or phraseKey == "novelizerItVending2") then
 		return {
@@ -2593,7 +2633,9 @@ function PLUGIN:PatchEquipmentAction(itemTable, action)
 		end
 
 		if (action == "Equip" and item:GetData("equip") == true) then
-			if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
+			local pool = self:GetEquipPhrasePool(item, action)
+
+			if (pool and self:SendNovelMe(client, table.Random(pool), {
 				self:GetItemSubject(item)
 			}, {
 				actionKey = "equip_" .. self:GetEquipCategory(item)
@@ -2604,7 +2646,9 @@ function PLUGIN:PatchEquipmentAction(itemTable, action)
 				}
 			end
 		elseif (action == "EquipUn" and item:GetData("equip") ~= true) then
-			if (self:SendNovelMe(client, table.Random(self:GetEquipPhrasePool(item, action)), {
+			local pool = self:GetEquipPhrasePool(item, action)
+
+			if (pool and self:SendNovelMe(client, table.Random(pool), {
 				self:GetItemSubject(item)
 			}, {
 				actionKey = "unequip_" .. self:GetEquipCategory(item)
@@ -2820,6 +2864,11 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 	self.classPatternPhrasePools = {}
 	self.entityUsePhrasePools = {}
 
+	self:RegisterEntityUsePhrases("ix_money", {
+		"novelizerTake1",
+		"novelizerTake2",
+		"novelizerTake3"
+	})
 	self:RegisterEntityUsePhrases("ix_vendingmachine", {
 		"novelizerMachineVending1",
 		"novelizerMachineVending2",
@@ -2965,16 +3014,6 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerCraft2",
 		"novelizerCraft3"
 	})
-	self:RegisterEntityUsePhrases("ix_station_workbench", {
-		"novelizerCraft1",
-		"novelizerCraft2",
-		"novelizerCraft3"
-	})
-	self:RegisterEntityUsePhrases("ix_station_craftingtable", {
-		"novelizerCraft1",
-		"novelizerCraft2",
-		"novelizerCraft3"
-	})
 	self:RegisterEntityUsePhrases("ix_stove", {
 		"novelizerCook1",
 		"novelizerCook2",
@@ -3092,6 +3131,20 @@ function PLUGIN:PatchCommandActions()
 		"novelizerSearch2",
 		"novelizerSearch3"
 	})
+	self:PatchCommand("DropMoney", {
+		"novelizerDropMoney1",
+		"novelizerDropMoney2",
+		"novelizerDropMoney3"
+	}, function(client, amount)
+		return { self:GetMoneySubject() }
+	end)
+	self:PatchCommand("GiveMoney", {
+		"novelizerGiveMoney1",
+		"novelizerGiveMoney2",
+		"novelizerGiveMoney3"
+	}, function(client, target, amount)
+		return { self:GetMoneySubject() }
+	end)
 end
 
 function PLUGIN:PatchToggleRaiseCommand()
@@ -3183,14 +3236,14 @@ function PLUGIN:ResolveCraftStationSubject(client, recipeTable)
 	end
 
 	if (IsValid(entity)) then
-		return self:GetEntitySubject(entity), entity
+		return self:GetBareEntitySubject(entity), entity
 	end
 
 	if (category == "food") then
-		return BuildArgument("stove", "object", "novelizerStove"), nil
+		return BuildArgument("stove", false, "novelizerStove"), nil
 	end
 
-	return BuildArgument("workbench", "object", "novelizerWorkbench"), nil
+	return BuildArgument("workbench", false, "novelizerWorkbench"), nil
 end
 
 function PLUGIN:PatchLootSearch()
@@ -3276,8 +3329,18 @@ function PLUGIN:PatchCraftingActions()
 
 		local phrasePool = self:GetRecipePhrasePool(recipeTable)
 		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local chosenPhrase = table.Random(phrasePool)
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
+		-- Dynamic particle handling for Korean
+		if (GetLanguage() == "korean" and IsValid(stationEntity)) then
+			if (chosenPhrase == "novelizerCook2") then
+				stationSubject = self:GetEntitySubjectWithParticle(stationEntity, "possessive")
+			elseif (chosenPhrase == "novelizerCraft3") then
+				stationSubject = self:GetEntitySubjectWithParticle(stationEntity, "location")
+			end
+		end
+
+		self:SendNovelMe(client, chosenPhrase, {
 			stationSubject
 		}, {
 			actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
@@ -3292,6 +3355,31 @@ function PLUGIN:PatchCraftingActions()
 				cooldown = 4
 			})
 		end
+	end)
+
+	hook.Add("CraftRecipeStarted", "ixNovelizerCraftingActionsStart", function(client, recipeTable)
+		if (not self:CanAutoNarrate(client) or not recipeTable) then
+			return
+		end
+
+		local phrasePool = self:GetRecipePhrasePool(recipeTable)
+		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local chosenPhrase = table.Random(phrasePool)
+
+		-- Dynamic particle handling for Korean
+		if (GetLanguage() == "korean" and IsValid(stationEntity)) then
+			if (chosenPhrase == "novelizerCook2") then
+				stationSubject = self:GetEntitySubjectWithParticle(stationEntity, "possessive")
+			elseif (chosenPhrase == "novelizerCraft3") then
+				stationSubject = self:GetEntitySubjectWithParticle(stationEntity, "location")
+			end
+		end
+
+		self:SendNovelMe(client, chosenPhrase, {
+			stationSubject
+		}, {
+			actionKey = "craft_start"
+		})
 	end)
 end
 
@@ -4168,7 +4256,11 @@ function PLUGIN:InitializedConfig()
 				return false
 			end
 
-			local range = data and data.range or GetNovelMeRange()
+			local range = (data and tonumber(data.range)) or GetNovelMeRange()
+			if (not range or range <= 0) then
+				range = ix.config.Get("chatRange", 280)
+			end
+
 			return listener:GetPos():DistToSqr(speaker:GetPos()) <= (range * range)
 		end,
 		OnChatAdd = function(self, speaker, text, anonymous, data)
@@ -4357,7 +4449,7 @@ if (CLIENT) then
 	function PLUGIN:LoadFonts(font, genericFont)
 		surface.CreateFont("ixNovelizer3DText", {
 			font = genericFont,
-			size = 48,
+			size = 38,
 			weight = 700,
 			extended = true
 		})
