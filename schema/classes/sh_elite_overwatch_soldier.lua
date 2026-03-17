@@ -17,7 +17,7 @@ function CLASS:OnSet(client)
 			if (bodygroupPlugin) then
 				local player = character:GetPlayer()
 
-				player:SetSkin(1)
+				player:SetSkin(0)
 				bodygroupPlugin:SetPersistentAppearance(character, nil, 1)
 			end
 		end
