@@ -377,7 +377,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 			end
 		end
 
-		local backDir = Angle(0, wantedAng, 0):Forward() * -10
+		local backDir = Angle(0, wantedAng, 0):Forward() * -15
 		return Sit(ply, EyeTrace.HitPos + backDir - Vector(0, 0, 23), ang, ent, EyeTrace.PhysicsBone or 0)
 	end
 
@@ -500,7 +500,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 		if ang_smallest_hori and distsang[infront].Hit and distsang[infront].Distance > 14 and smallest_hori <= 16 then
 			local hori = distsang[ang_smallest_hori].HorizontalTrace
 			ang.yaw = (hori.HitNormal:Angle().yaw - 90)
-			local backDir = hori.HitNormal * 10
+			local backDir = hori.HitNormal * 15
 			return Sit(ply, EyeTrace.HitPos + backDir - Vector(0, 0, 23), ang, (not EyeTrace.HitWorld) and EyeTrace.Entity, EyeTrace.PhysicsBone or 0)
 		else
 			table.sort(dists, function(a,b) return b.Distance < a.Distance end)
@@ -520,7 +520,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 			table.sort(wants,function(a,b) return b.cost > a.cost end)
 			if #wants == 0 then return end
 			ang.yaw = (wants[1].ang - 90)
-			local backDir = Angle(0, wants[1].ang, 0):Forward() * -10
+			local backDir = Angle(0, wants[1].ang, 0):Forward() * -15
 			return Sit(ply, EyeTrace.HitPos + backDir - Vector(0, 0, 23), ang, (not EyeTrace.HitWorld) and EyeTrace.Entity, EyeTrace.PhysicsBone or 0)
 		end
 

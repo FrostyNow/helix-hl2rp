@@ -1,8 +1,7 @@
-ITEM.name = "Overwatch Standard Issue\n(Pulse-Rifle)"
+ITEM.name = "Pulse-Rifle"
 ITEM.description = "ar2Desc"
 ITEM.model = "models/weapons/w_irifle.mdl"
-ITEM.class = "arc9_hla_irifle"
-ITEM.gearSlot = {"weapon1", "weapon2", "weapon3", "weapon4"}
+ITEM.class = "weapon_ar2"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
 ITEM.width = 4
 ITEM.price = 1450
@@ -14,74 +13,76 @@ ITEM.iconCam = {
 	pos	= Vector(0, 200, 0)
 }
 
-ITEM.lock = 1
+-- HL2 vanilla ar2 does not really have genetic lock system. Only in Alyx does.
 
-ITEM.functions.Equip = {
-	name = "Equip",
-	tip = "equipTip",
-	icon = "icon16/tick.png",
-	OnRun = function(item)
-		local client = item.player
+-- ITEM.lock = 1
 
-		if (!client:IsCombine() and item:GetData("locked", true)) then
-			client:NotifyLocalized("needComkey")
-			return false
-		else
-			item:Equip(client)
-			return false
-		end
-	end,
-	OnCanRun = function(item)
-		local client = item.player
+-- ITEM.functions.Equip = {
+-- 	name = "Equip",
+-- 	tip = "equipTip",
+-- 	icon = "icon16/tick.png",
+-- 	OnRun = function(item)
+-- 		local client = item.player
 
-		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and
-			hook.Run("CanPlayerEquipItem", client, item) != false
-	end
-}
+-- 		if (!client:IsCombine() and item:GetData("locked", true)) then
+-- 			client:NotifyLocalized("needComkey")
+-- 			return false
+-- 		else
+-- 			item:Equip(client)
+-- 			return false
+-- 		end
+-- 	end,
+-- 	OnCanRun = function(item)
+-- 		local client = item.player
 
-ITEM.functions.Unlock = {
-	icon = "icon16/key_go.png",
-	OnRun = function(item)
-		local client = item.player
-		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
-		local hasItem = inventory:HasItem("comkey")
+-- 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and
+-- 			hook.Run("CanPlayerEquipItem", client, item) != false
+-- 	end
+-- }
 
-		if (item:GetData("locked", true)) then
-			if (client:IsCombine() or hasItem) then
-				item:SetData("locked", false)
-				client:EmitSound("weapons/ar2/ar2_reload_push.wav")
-				return false
-			else
-				client:NotifyLocalized("needComkey")
-				return false
-			end
-		else
-			client:NotifyLocalized("unknownError")
-			return false
-		end
-	end,
-	OnCanRun = function(item)
-		local client = item.player
+-- ITEM.functions.Unlock = {
+-- 	icon = "icon16/key_go.png",
+-- 	OnRun = function(item)
+-- 		local client = item.player
+-- 		local character = client:GetCharacter()
+-- 		local inventory = character:GetInventory()
+-- 		local hasItem = inventory:HasItem("comkey")
 
-		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:GetData("locked", true) == true
-	end
-}
+-- 		if (item:GetData("locked", true)) then
+-- 			if (client:IsCombine() or hasItem) then
+-- 				item:SetData("locked", false)
+-- 				client:EmitSound("weapons/ar2/ar2_reload_push.wav")
+-- 				return false
+-- 			else
+-- 				client:NotifyLocalized("needComkey")
+-- 				return false
+-- 			end
+-- 		else
+-- 			client:NotifyLocalized("unknownError")
+-- 			return false
+-- 		end
+-- 	end,
+-- 	OnCanRun = function(item)
+-- 		local client = item.player
 
-if (CLIENT) then
-	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
+-- 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:GetData("locked", true) == true
+-- 	end
+-- }
 
-		if (!LocalPlayer():IsCombine() and self:GetData("locked", true)) then
-			local lockedData = tooltip:AddRow("lockedData")
-			lockedData:SetBackgroundColor(Color(49, 62, 71))
-			lockedData:SetText(L("itemLockedTooltip"))
-			lockedData:SetExpensiveShadow(0.5)
-			lockedData:SizeToContents()
-		end
-	end
-end
+-- if (CLIENT) then
+-- 	function ITEM:PopulateTooltip(tooltip)
+-- 		local data = tooltip:AddRow("data")
+-- 		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
+-- 		data:SetText(L("securitizedItemTooltip"))
+-- 		data:SetExpensiveShadow(0.5)
+-- 		data:SizeToContents()
+
+-- 		if (!LocalPlayer():IsCombine() and self:GetData("locked", true)) then
+-- 			local lockedData = tooltip:AddRow("lockedData")
+-- 			lockedData:SetBackgroundColor(Color(49, 62, 71))
+-- 			lockedData:SetText(L("itemLockedTooltip"))
+-- 			lockedData:SetExpensiveShadow(0.5)
+-- 			lockedData:SizeToContents()
+-- 		end
+-- 	end
+-- end
