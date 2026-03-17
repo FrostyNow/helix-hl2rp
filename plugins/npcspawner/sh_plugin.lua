@@ -2,6 +2,8 @@ PLUGIN.name = "NPC Spawner"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Advanced NPC Spawner system."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.lang.AddTable("english", {
     npcSpawnerGlobalLimitDesc = "Maximum NPC spawn limit for the entire server.",
     optNpcSpawnerESP = "NPC Spawner ESP",

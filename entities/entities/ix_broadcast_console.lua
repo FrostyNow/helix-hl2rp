@@ -11,6 +11,8 @@ ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 ENT.RenderGroup = RENDERGROUP_BOTH
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 if (SERVER) then
 	function ENT:SpawnFunction(client, trace)
 		local console = ents.Create("ix_broadcast_console")

@@ -4,6 +4,8 @@ PLUGIN.name = "Damage Debug"
 PLUGIN.author = "Frosty"
 PLUGIN.desc = "For debugging purpose."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 if SERVER then
 	concommand.Add("ix_debug_damage_hooks", function(ply, cmd, args)
 		if IsValid(ply) and not ply:IsSuperAdmin() then return end

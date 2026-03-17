@@ -4,6 +4,8 @@ PLUGIN.name = "Interactive Computers"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds interactive computer terminals with DOS-style journal storage."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 PLUGIN.defaultModel = "models/props_lab/monitor02.mdl"
 PLUGIN.allowedModels = {
 	["models/props_lab/monitor02.mdl"] = true,

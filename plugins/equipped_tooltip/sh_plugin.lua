@@ -3,6 +3,8 @@ PLUGIN.name = "Equipped Items Tooltip"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays equipped items in the player info tooltip."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 -- Register character variable to sync equipped items to clients
 ix.char.RegisterVar("equippedItems", {
 	field = "equipped_items",

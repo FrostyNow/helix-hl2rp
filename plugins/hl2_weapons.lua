@@ -3,6 +3,8 @@ PLUGIN.name = "HL2 Weapon Tweaks"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Override hl2 weapons."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.config.Add("npcDamageMultiplier", 0.5, "Multiplies how much damage NPCs deal.", nil, {
 	data = {min = 0, max = 2, decimal = 1},
 	category = "HL2 Weapon Tweaks"

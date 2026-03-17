@@ -2,6 +2,8 @@ PLUGIN.name = "Disable Context Menu"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Disables context menu."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.config.Add("disableContext", true, "Whether or not context menu is enabled.", nil, {
 	category = "appearance"
 })

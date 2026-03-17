@@ -4,6 +4,8 @@ PLUGIN.name = "Quick Acts"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Quick menu for act command"
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.util.Include("cl_plugin.lua")
 
 ix.lang.AddTable("english", {

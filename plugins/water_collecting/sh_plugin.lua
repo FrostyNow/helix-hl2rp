@@ -3,6 +3,8 @@ PLUGIN.name = "Water Collecting"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Allows players to collect dirty water from water sources and sinks."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.lang.AddTable("english", {
 	collectingWater = "Collecting water...",
 	waterTooFar = "You are too far away from the water source.",

@@ -5,6 +5,8 @@ PLUGIN.name = "Observer Spawns"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays spawn points while in observer mode."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.lang.AddTable("english", {
 	optObserverSpawnpointESP = "Show Spawnpoint ESP",
 	optdObserverSpawnpointESP = "Shows the names and locations of each faction spawnpoint in the server.",

@@ -4,6 +4,8 @@ PLUGIN.name = "Ragdoll Harvest"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Lets players harvest usable meat from specific NPC ragdolls."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 local HARVEST_OPTION_KEY = "harvestCorpse"
 local HARVEST_ACTION_KEY = "@harvestingCorpse"
 local DEFAULT_HARVEST_TIME = 6

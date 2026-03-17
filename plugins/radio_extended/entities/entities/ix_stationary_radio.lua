@@ -7,6 +7,8 @@ ENT.AdminOnly = true
 ENT.Category = "Helix"
 ENT.RenderGroup = RENDERGROUP_BOTH
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 if (SERVER) then
 	function ENT:Initialize()
 		self:SetModel("models/props_lab/citizenradio.mdl")

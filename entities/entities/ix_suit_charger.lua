@@ -9,6 +9,8 @@ ENT.Category = "HL2 RP"
 ENT.RenderGroup = RENDERGROUP_BOTH
 ENT.PopulateEntityInfo = true
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ENT.denySound = Sound("items/suitchargeno1.wav")
 ENT.useSound = Sound("items/suitchargeok1.wav")
 ENT.chargeSound = "items/suitcharge1.wav"

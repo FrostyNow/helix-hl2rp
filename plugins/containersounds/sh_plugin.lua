@@ -2,6 +2,8 @@ PLUGIN.name = "Container Sounds"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds open and close sounds to storage containers."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 local metalOpenSounds = {
 	"items/ammocrate_open.wav",
 	"doors/door_metal_medium_open1.wav"

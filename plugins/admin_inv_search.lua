@@ -5,6 +5,8 @@ PLUGIN.name = "Admin PlayerInfo"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Allows admins to view player inventories and information."
 
+-- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+
 ix.lang.AddTable("english", {
 	cmdAdminSearch = "Search and manipulate a character's inventory.",
 	adminSearchNoChar = "This character does not have a valid inventory.",
