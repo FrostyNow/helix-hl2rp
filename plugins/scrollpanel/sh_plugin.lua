@@ -4,7 +4,12 @@ PLUGIN.name = "Scroll Panel"
 PLUGIN.description = "Allows admins to place scrollable text panels on surfaces."
 PLUGIN.author = "Frosty"
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 ix.lang.AddTable("english", {
 	scrollPanelAddDesc = "Place a scrollable text panel on the surface you're looking at.",

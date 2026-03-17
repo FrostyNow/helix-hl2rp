@@ -4,7 +4,12 @@ PLUGIN.name = "Webview In Help Tabs"
 PLUGIN.author = "Frosty"
 PLUGIN.desc = "Adds custom websites view to help tabs."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 ix.config.Add("collectionsURL", "https://steamcommunity.com/sharedfiles/filedetails/?id=389031629", "The URL for the collections tab in help menu.", nil, {
 	category = "general"

@@ -4,7 +4,12 @@ PLUGIN.name = "Damage Debug"
 PLUGIN.author = "Frosty"
 PLUGIN.desc = "For debugging purpose."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 if SERVER then
 	concommand.Add("ix_debug_damage_hooks", function(ply, cmd, args)

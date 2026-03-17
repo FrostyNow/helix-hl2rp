@@ -4,7 +4,12 @@ PLUGIN.name = "Floating Chat"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays chat messages above players' heads."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 ix.lang.AddTable("english", {
 	cmdTestChat = "Sends a message to yourself to test floating chat.",

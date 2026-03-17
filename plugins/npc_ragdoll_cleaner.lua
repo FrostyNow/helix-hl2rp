@@ -3,7 +3,12 @@ PLUGIN.name = "NPC Ragdoll Cleaner"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Automatically removes the oldest NPC ragdolls when the limit is exceeded."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 ix.config.Add("maxNPCRagdolls", 40, "The maximum number of NPC ragdolls to keep. Player ragdolls are excluded.", nil, {
 	data = {min = 1, max = 100},

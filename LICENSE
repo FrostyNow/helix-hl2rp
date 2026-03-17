@@ -1,3 +1,14 @@
+# License
+
+This project consists of multiple components with different licenses. Please read carefully to understand the terms applied to specific parts of this repository.
+
+## 1. Modifications and Independent Creations
+Unless otherwise stated in the individual file headers, all modifications to the original MIT-licensed project and all independent, newly created files by Frosty are licensed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)**.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/.
+
+## 2. Original Base Project
+The original framework and base code are licensed under the MIT License.
+
 MIT License
 
 Copyright (c) 2018 Alexander Grist-Hucker, Igor Radovanovic
@@ -19,3 +30,8 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## 3. Third-Party Files and Modules
+Certain standalone files, scripts, and modules within this repository retain their original creator's licenses (including GPLv3, CC BY-SA 4.0, Apache 2.0, and others). These specific files are distributed under their respective terms and are excluded from the CC BY-NC-SA 4.0 license applied to the rest of the project. 
+
+Please refer to the header comments within each individual file for its specific copyright notice and license.

@@ -4,7 +4,12 @@ PLUGIN.name = "Ragdoll Harvest"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Lets players harvest usable meat from specific NPC ragdolls."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 local HARVEST_OPTION_KEY = "harvestCorpse"
 local HARVEST_ACTION_KEY = "@harvestingCorpse"

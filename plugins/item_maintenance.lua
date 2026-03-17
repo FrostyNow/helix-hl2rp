@@ -5,7 +5,12 @@ PLUGIN.name = "Clear Redundant Items"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Add a concommand to remove non-existent items from character database."
 
--- Licensed under CC BY-NC-SA 4.0 (https://creativecommons.org/licenses/by-nc-sa/4.0/)
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 concommand.Add("ix_clear_redundant_items", function(ply, cmd, args)
 	if (IsValid(ply) and !ply:IsSuperAdmin()) then
