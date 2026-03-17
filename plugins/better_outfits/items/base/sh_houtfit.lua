@@ -88,17 +88,6 @@ if (CLIENT) then
 		end
 	end)
 
-	function ITEM:PopulateModelSupportTooltip(tooltip)
-		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
-			local warning = tooltip:AddRow("warning")
-			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
-			warning:SetText(L("modelNotSupported"))
-			warning:SetFont("DermaDefault")
-			warning:SetExpensiveShadow(1, color_black)
-			warning:SizeToContents()
-		end
-	end
-
 	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
 		labelText = labelText or self.tooltipLabelText
 
@@ -137,6 +126,17 @@ if (CLIENT) then
 			filterRow:SizeToContents()
 		end
 	end
+
+	function ITEM:PopulateModelSupportTooltip(tooltip)
+		if (self.allowedModels and !table.HasValue(self.allowedModels, LocalPlayer():GetModel())) then
+			local warning = tooltip:AddRow("warning")
+			warning:SetBackgroundColor(derma.GetColor("Error", tooltip))
+			warning:SetText(L("modelNotSupported"))
+			warning:SetFont("DermaDefault")
+			warning:SetExpensiveShadow(1, color_black)
+			warning:SizeToContents()
+		end
+	end
 end
 
 
@@ -159,9 +159,34 @@ local function IsTopLayer(item)
 	return (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))
 end
 
+local function GetAppearanceStack(character)
+	return character:GetData("appearanceStack", {})
+end
+
+local function AddToAppearanceStack(character, itemID)
+	local stack = GetAppearanceStack(character)
+	for i, id in ipairs(stack) do
+		if (id == itemID) then table.remove(stack, i) break end
+	end
+	table.insert(stack, itemID)
+	character:SetData("appearanceStack", stack)
+end
+
+local function RemoveFromAppearanceStack(character, itemID)
+	local stack = GetAppearanceStack(character)
+	for i, id in ipairs(stack) do
+		if (id == itemID) then table.remove(stack, i) break end
+	end
+	character:SetData("appearanceStack", stack)
+end
+
 function ITEM:RemoveOutfit(client)
 	local character = client:GetCharacter()
 	if (!character) then return end
+
+	if (IsTopLayer(self)) then
+		RemoveFromAppearanceStack(character, self.id)
+	end
 
 	local inventory = character:GetInventory()
 
@@ -202,7 +227,7 @@ function ITEM:UpdateAppearance(client)
 	local character = client:GetCharacter()
 	if (!character) then return end
 
-	-- 1. Resolve Best Model (Priority: suit > torso > base)
+	-- 1. Resolve Best Model (Dynamic Stack)
 	local charID = character:GetID()
 	local items = {}
 	for _, inv in pairs(ix.item.inventories) do
@@ -213,15 +238,37 @@ function ITEM:UpdateAppearance(client)
 		end
 	end
 
+	local stack = GetAppearanceStack(character)
 	local bestModelItem = nil
-	local modelPriority = {["suit"] = 1, ["torso"] = 2}
+	local highestStackIndex = -1
+	local stackChanged = false
 
 	for _, item in pairs(items) do
-		if (item:GetData("equip") and (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))) then
-			if (!bestModelItem or (modelPriority[item.outfitCategory or ""] or 99) < (modelPriority[bestModelItem.outfitCategory or ""] or 99)) then
+		if (item:GetData("equip") and IsTopLayer(item)) then
+			local stackIndex = -1
+			for i, id in ipairs(stack) do
+				if (id == item.id) then
+					stackIndex = i
+					break
+				end
+			end
+			
+			-- Migration: If equipped but not in stack, add to bottom
+			if (stackIndex == -1) then
+				table.insert(stack, 1, item.id)
+				stackIndex = 1
+				stackChanged = true
+			end
+
+			if (stackIndex > highestStackIndex) then
+				highestStackIndex = stackIndex
 				bestModelItem = item
 			end
 		end
+	end
+
+	if (stackChanged) then
+		character:SetData("appearanceStack", stack)
 	end
 
 	local isTopLayerVisible = (bestModelItem != nil)
@@ -414,44 +461,64 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 		local char = client:GetCharacter()
 		if (!char) then return false end
 
-		-- Hierarchical Locking Logic (Agnostic):
+		-- Hierarchical Locking Logic (Dynamic Stack):
 		local charID = char:GetID()
-		local isTopLayerEquipped = false
-		local bestModelItemID = nil
-
-		-- Scan all character's inventories for a Top Layer (Uniform/Full Suit)
+		local items = {}
 		for _, inv in pairs(ix.item.inventories) do
 			if (inv.owner == charID) then
 				for _, v in pairs(inv:GetItems()) do
-					if (v:GetData("equip") and IsTopLayer(v)) then
-						isTopLayerEquipped = true
-						bestModelItemID = v.id
-						break
-					end
+					table.insert(items, v)
 				end
 			end
-			if (isTopLayerEquipped) then break end
 		end
 
-		if (isTopLayerEquipped and item.id != bestModelItemID) then
+		local stack = char:GetData("appearanceStack", {})
+		local bestModelItem = nil
+		local highestStackIndex = -1
+
+		for _, v in pairs(items) do
+			if (v:GetData("equip") and IsTopLayer(v)) then
+				local stackIndex = -1
+				for i, id in ipairs(stack) do if (id == v.id) then stackIndex = i break end end
+				if (stackIndex > highestStackIndex) then
+					highestStackIndex = stackIndex
+					bestModelItem = v
+				end
+			end
+		end
+
+		if (bestModelItem and item.id != bestModelItem.id) then
 			local currentModel = client:GetModel() or ""
 			local isCompatible = (item.IsCompatibleWith and item:IsCompatibleWith(currentModel))
 
-			-- 1. Hard Lock: Item is incompatible with current visible model (e.g. citizen shirt on CP)
+			-- 1. Hard Lock: Incompatibility
 			if (!isCompatible) then
 				if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
 				return false
 			end
 
-			-- 2. Soft Lock: Protection for Hidden Base Layers
-			-- If we have a Top Layer (Suit/Uniform) on, we lock core body clothing layers (torso, legs, suit).
-			-- This prevents stripping naked under a uniform.
-			local cat = item.outfitCategory
-			local isBaseLayer = (cat == "torso" or cat == "legs" or cat == "suit")
+			-- 2. Layer Lock: Last-In-First-Out for items without allowedModels
+			local bHasAllowedModels = (item.allowedModels and #item.allowedModels > 0)
+			if (IsTopLayer(item) and !bHasAllowedModels) then
+				local itemIndex = -1
+				for i, id in ipairs(stack) do if (id == item.id) then itemIndex = i break end end
+				
+				local isOverridden = false
+				for i = itemIndex + 1, #stack do
+					local higherID = stack[i]
+					for _, v in pairs(items) do
+						if (v.id == higherID and v:GetData("equip") and IsTopLayer(v)) then
+							isOverridden = true
+							break
+						end
+					end
+					if (isOverridden) then break end
+				end
 
-			if (isBaseLayer) then
-				if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
-				return false
+				if (isOverridden) then
+					if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
+					return false
+				end
 			end
 		end
 
@@ -469,6 +536,10 @@ function ITEM:ApplyOutfit(client)
 	local char = client:GetCharacter()
 	local outfitPlugin = ix.plugin.Get("better_outfits")
 	if (!char) then return end
+
+	if (IsTopLayer(self)) then
+		AddToAppearanceStack(char, self.id)
+	end
 
 	local model = client:GetModel()
 
@@ -545,13 +616,9 @@ ITEM.functions.Equip = {
 		local items = char:GetInventory():GetItems()
 
 		for _, v in pairs(items) do
-			if (v.id != item.id) then
-				local itemTable = ix.item.instances[v.id]
-
-				if (itemTable.pacData and v.outfitCategory == item.outfitCategory and itemTable:GetData("equip")) then
-					client:NotifyLocalized(item.equippedNotify or "outfitAlreadyEquipped")
-					return false
-				end
+			if (v.id != item.id and v:GetData("equip") and v.outfitCategory == item.outfitCategory) then
+				client:NotifyLocalized(item.equippedNotify or "outfitAlreadyEquipped")
+				return false
 			end
 		end
 

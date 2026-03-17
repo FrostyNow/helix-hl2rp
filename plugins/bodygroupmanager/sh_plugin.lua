@@ -608,6 +608,7 @@ function PLUGIN:ClearAppearanceStorage(character)
 	character:SetData(ORIGINAL_SKIN_KEY, nil)
 
 	character:SetData("oldModelBase", nil)
+	character:SetData("appearanceStack", nil)
 
 	for category in pairs(GetAppearanceCategories(character)) do
 		character:SetData("oldGroups" .. category, nil)
