@@ -26,6 +26,10 @@ ITEM.eqBodyGroups = {
 }
 ITEM.outfitCategory = "vest"
 
+ITEM.isBag = true
+ITEM.invWidth = 2
+ITEM.invHeight = 2
+
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 ITEM.maxDurability = 150
 ITEM.allowedModels = {

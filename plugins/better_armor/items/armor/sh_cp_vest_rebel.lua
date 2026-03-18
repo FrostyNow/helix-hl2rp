@@ -37,6 +37,10 @@ ITEM.allowedModels = {
 }
 ITEM.noBusiness = true
 
+ITEM.isBag = true
+ITEM.invWidth = 2
+ITEM.invHeight = 1
+
 ITEM.armorAmount = 50
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}
 ITEM.resistance = true
