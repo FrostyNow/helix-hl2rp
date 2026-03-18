@@ -97,8 +97,9 @@ function PANEL:PaintBackground(width, height)
 
 	local alpha = self.currentBackgroundAlpha
 
-	-- Always show recipe availability state, not only the green or environment-blocked case.
-	if (self.recipeTable) then
+	-- 재료 부족으로만 불가능한 경우엔 호버 시에만 빨간색 표시.
+	-- 제작 가능(초록) 이거나 환경 차단(스테이션 없음)인 경우엔 항상 표시.
+	if (self.canCraft or self.environmentBlocked) then
 		alpha = math.max(alpha, 100)
 	end
 
@@ -367,7 +368,7 @@ net.Receive("ixStationOpen", function()
 	end
 
 	local frame = vgui.Create("DFrame")
-	frame:SetSize(ScrW() * 0.6, ScrH() * 0.6)
+	frame:SetSize(ScrW() * 0.78, ScrH() * 0.78)
 	frame:Center()
 	frame:MakePopup()
 

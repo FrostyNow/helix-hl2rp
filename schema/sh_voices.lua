@@ -688,7 +688,7 @@ Schema.voices.Add("CitizenMale", "ㄱㄷ2", "기다려주세요.", "vo/npc/male0
 Schema.voices.Add("CitizenMale", "스트라이더", "스트라이더!", "vo/npc/male01/strider.wav")
 Schema.voices.Add("CitizenMale", "ㅌㅌ2", {{"뛰어요!", "vo/npc/male01/strider_run.wav"}, {"뛰어요!", "vo/episode_1/npc/male01/cit_runforit.wav"}})
 Schema.voices.Add("CitizenMale", "엄호", "엄호해요!", "vo/npc/male01/takecover02.wav")
-Schema.voices.Add("CitizenMale", "괜찮은데", "이거 괜찮은데?", "vo/npc/male01/thislldonicely02.wav")
+Schema.voices.Add("CitizenMale", "괜찮은데", "이거 괜찮은데?", "vo/npc/male01/thislldonicely01.wav")
 Schema.voices.Add("CitizenMale", "저기", "저기!", "vo/npc/male01/upthere01.wav")
 Schema.voices.Add("CitizenMale", "허튼소리", "허튼 소리하지 마.", "vo/npc/male01/vanswer01.wav")
 Schema.voices.Add("CitizenMale", "보르티ㅗ", "젠장할, 보르티곤트.", "vo/npc/male01/vanswer02.wav")

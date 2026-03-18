@@ -14,6 +14,30 @@ ITEM.sound = "npc/barnacle/barnacle_gulp2.wav"
 ITEM.isDrink = false
 
 if (CLIENT) then
+	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
+		labelText = labelText or self.tooltipLabelText
+
+		if (!labelText) then
+			return
+		end
+
+		labelColor = labelColor or self.tooltipLabelColor
+
+		if (!labelColor and self.tooltipLabelFactionColor) then
+			labelColor = team.GetColor(self.tooltipLabelFactionColor)
+		end
+
+		if (!labelColor) then
+			return
+		end
+
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(labelColor)
+		data:SetText(L(labelText))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+
 	function ITEM:PopulateTooltip(tooltip)
 		local usenum = self:GetData("usenum", self.usenum)
 		if (usenum) then
@@ -40,6 +64,9 @@ if (CLIENT) then
 			row:SetText(L("statusLabel", cookTable[cooklevel] or cookTable[0]))
 			row:SetBackgroundColor(Color(200, 100, 0))
 		end
+
+		
+		self:PopulateAffiliationTooltip(tooltip)
 	end
 end
 
@@ -134,7 +161,15 @@ ITEM.functions.Eat = {
 
 		return true
 	end,
-	icon = "icon16/cup.png"
+	icon = "icon16/cup.png",
+	OnCanRun = function(item)
+		local client = item.player
+		local character = client:GetCharacter()
+		local enabled = !Schema:IsCombineRank(client:Name(), "SCN")
+		if (FACTION_OTA and client:Team() == FACTION_OTA and item.uniqueID != "ota_supplements") then enabled = false end
+
+		return enabled
+	end
 }
 
 ITEM.functions.Cook = {

@@ -193,7 +193,7 @@ function PLUGIN:PopulateStationTooltip(tooltip, station)
 	-- Show "Press E to use" hint
 	local useHint = tooltip:AddRow("useHint")
 	useHint:SetText(L("StationUseHint"))
-	useHint:SetTextColor(Color(150, 200, 150))
+	useHint:SetBackgroundColor(Color(85, 127, 242, 50))
 	useHint:SizeToContents()
 
 	if (station.PopulateTooltip) then

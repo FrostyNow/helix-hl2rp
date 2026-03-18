@@ -109,12 +109,12 @@ PLUGIN.randomLoot.common = {
 	["misc_plate"] = 2,
 	["newspaper"] = 3,
 	["resin"] = 1,
-	["combine_steel"] = 2,
+	["comp_combine_steel"] = 2,
 }
 
 PLUGIN.randomLoot.rare = {
 	["resin"] = 5,
-	["combine_steel"] = 5,
+	["comp_combine_steel"] = 5,
 	["antlion_grub"] = 1,
 	["gin"] = 2,
 	["whiskey"] = 2,

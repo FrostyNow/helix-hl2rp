@@ -377,8 +377,7 @@ function META.Sit(ply, EyeTrace, ang, parent, parentbone, func, exit, wantedAng)
 			end
 		end
 
-		local backDir = Angle(0, wantedAng, 0):Forward() * -15
-		return Sit(ply, EyeTrace.HitPos + backDir - Vector(0, 0, 23), ang, ent, EyeTrace.PhysicsBone or 0)
+		return Sit(ply, EyeTrace.HitPos - Vector(0, 0, 23), ang, ent, EyeTrace.PhysicsBone or 0)
 	end
 
 	if ix.config.Get("sittingCanSitOnPlayers", true) then -- Sitting on SITTING Players

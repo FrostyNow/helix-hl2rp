@@ -5,7 +5,7 @@ RECIPE.category = "Weapons"
 RECIPE.model = "models/willardnetworks/skills/weaponparts.mdl"
 RECIPE.station = {"craftingtable", "workbench"}
 RECIPE.requirements = {
-	["comp_steel"] = {amount = 8, substitutes = {["scrap_combine_steel"] = 4}},
+	["comp_steel"] = {amount = 8, substitutes = {["comp_combine_steel"] = 4}},
 	["resin"] = 15,
 }
 RECIPE.results = {

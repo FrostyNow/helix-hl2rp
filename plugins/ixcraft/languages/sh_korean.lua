@@ -25,7 +25,7 @@ LANGUAGE = {
 
 	["Workbench"] = "작업대",
 	stationWorkbenchDesc = "다양한 물건을 만들 수 있는 작업대입니다.",
-	["StationUseHint"] = "E키를 눌러 제작을 시작하세요.",
+	["StationUseHint"] = "사용 키를 눌러 제작을 시작하세요.",
 	["Crafting Table"] = "제작대",
 	stationCraftingTableDesc = "다양한 물건을 만들거나 분해할 수 있는 제작대입니다.",
 

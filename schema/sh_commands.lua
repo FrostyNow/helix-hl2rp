@@ -492,10 +492,19 @@ ix.command.Add("Heal", {
 		ix.type.player
 	},
 	OnRun = function(self, client, target)
-		if target:IsPlayer() and target:GetCharacter() and target:Alive() then
+		if (target:IsPlayer() and target:GetCharacter() and target:Alive()) then
 			target:SetHealth(target:GetMaxHealth() or 100)
+
+			if (ix.plugin.list["hunger"]) then
+				target:SetHunger(100)
+				target:SetThirst(100)
+			end
+
+			if (ix.plugin.list["badair"]) then
+				target:SetLocalVar("toxicity", 0)
+			end
+
 			client:NotifyLocalized("targetHealed", target:GetName())
-			-- target:SetArmor(target:GetMaxArmor() or 100)
 		else
 			client:NotifyLocalized("unknownError")
 		end

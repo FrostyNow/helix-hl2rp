@@ -104,6 +104,7 @@ if SERVER then
 					
 					if prevChar then
 						local access = self.DOORS_ACCESS_BUFFER[ k ]
+						door.ixAccess = door.ixAccess or {}
 
 						if access then
 							for k, v in next, access do
@@ -111,9 +112,9 @@ if SERVER then
 									door.ixAccess[ k ] = v
 								end
 							end
-
-							door.ixAccess[ ply ] = DOOR_OWNER
 						end
+
+						door.ixAccess[ ply ] = DOOR_OWNER
 					else
 						door.ixAccess = {
 							[ ply ] = DOOR_OWNER

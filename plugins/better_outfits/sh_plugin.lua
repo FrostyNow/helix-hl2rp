@@ -216,7 +216,9 @@ function PLUGIN:ReapplyBodygroupAppearance(client, character)
 	for _, item in pairs(items) do
 		if (item:GetData("equip") and item.eqBodyGroups) then
 			-- Compatibility check: ignore item bodygroups if this item isn't meant for this model
-			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel)) then
+			-- NOTE: We also check IsModelChangingItem because if an item changed the model itself, 
+			-- it should be allowed to apply its own bodygroups to the result.
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !IsModelChangingItem(item)) then
 				continue
 			end
 

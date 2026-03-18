@@ -270,7 +270,6 @@ if SERVER then
 
 		if (char) then
 			local bIsCombine = false
-			if (FACTION_OTA and client:Team() == FACTION_OTA) then bIsCombine = true end
 			if (Schema:IsCombineRank(client:Name(), "SCN")) then bIsCombine = true end
 			if (ix.plugin.list["scanner"] and client.ixScn) then bIsCombine = true end
 			
@@ -307,7 +306,7 @@ if SERVER then
 
 	function playerMeta:TickThirst(amount)
 		local char = self:GetCharacter()
-		local enabled = self:Team() != FACTION_OTA and !Schema:IsCombineRank(self:Name(), "SCN")
+		local enabled = !Schema:IsCombineRank(self:Name(), "SCN")
 
 		if (char and enabled) then
 			char:SetData("thirst", char:GetData("thirst", 100) - amount)
@@ -322,7 +321,7 @@ if SERVER then
 
 	function playerMeta:TickHunger(amount)
 		local char = self:GetCharacter()
-		local enabled = self:Team() != FACTION_OTA and !Schema:IsCombineRank(self:Name(), "SCN")
+		local enabled = !Schema:IsCombineRank(self:Name(), "SCN")
 
 		if (char and enabled) then
 			char:SetData("hunger", char:GetData("hunger", 100) - amount)

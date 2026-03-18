@@ -40,13 +40,7 @@ ITEM.allowedModels = {
 	"models/wichacks/sandro.mdl",
 	"models/wichacks/ted.mdl",
 	"models/wichacks/van.mdl",
-	"models/wichacks/vance.mdl",
-	"models/models/army/female_01.mdl",
-	"models/models/army/female_02.mdl",
-	"models/models/army/female_03.mdl",
-	"models/models/army/female_04.mdl",
-	"models/models/army/female_06.mdl",
-	"models/models/army/female_07.mdl"
+	"models/wichacks/vance.mdl"
 }
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"

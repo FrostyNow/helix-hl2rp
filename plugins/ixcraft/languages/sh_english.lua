@@ -24,7 +24,7 @@ LANGUAGE = {
 
 	stationWorkbenchDesc = "A workbench used for crafting.",
 	stationCraftingTableDesc = "A crafting table used for crafting and scraping.",
-	["StationUseHint"] = "Press E to open crafting.",
+	["StationUseHint"] = "Press use key to open crafting.",
 
 	recipeManhackDesc = "Assemble some parts to craft a Manhack.",
 	recipeScannerDesc = "Assemble some parts to craft a Combine Scanner.",

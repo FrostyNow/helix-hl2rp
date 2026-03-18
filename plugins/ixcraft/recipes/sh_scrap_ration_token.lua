@@ -1,7 +1,7 @@
 RECIPE.name = "Scrap Ration Token"
 RECIPE.description = "recipeRationTokenDesc"
 RECIPE.category = "Disassemble"
-RECIPE.model = "models/synapse/props/ration_token.mdl"
+RECIPE.model = "models/synapse/props/ration_coupon.mdl"
 RECIPE.requirements = {
 	["ration_token"] = 1
 }

@@ -825,7 +825,7 @@ function Schema:CanPlayerUseFlashlight(client)
 		return true
 	end
 
-	return inventory:GetItemCount("flashlight") > 0
+	return inventory:HasItem("flashlight")
 end
 
 if (SERVER) then
