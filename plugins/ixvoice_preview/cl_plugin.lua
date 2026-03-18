@@ -135,15 +135,11 @@ function PANEL:SetVisible(bValue, bForce)
 end
 
 function PANEL:Update(text)
-	local originalText = text
-
-	-- Ensure case-insensitivity depending on voice keys, usually they are lower in storage
-	text = string.lower(text)
-	
 	local classes = Schema.voices.GetClass(LocalPlayer())
 	
 	self.voiceIndex = 0 
 	self.voices = {}
+	self.prefixNeeded = ""
 
 	for _, v in ipairs(self.voicePanels) do
 		v:Remove()
@@ -151,17 +147,44 @@ function PANEL:Update(text)
 
 	self.voicePanels = {}
 
-	local i = 1
-	local bSelected 
+	local function findMatches(search)
+		local results = {}
+		local searchLower = string.lower(search)
+
+		for _, class in ipairs(classes) do
+			local stored = Schema.voices.stored[string.lower(class)]
+			if (stored) then
+				for key, info in pairs(stored) do
+					if (string.StartsWith(string.lower(key), searchLower)) then
+						table.insert(results, {key = key, info = info})
+					end
+				end
+			end
+		end
+		return results
+	end
 
 	-- Collect matches finding voices that start with the text
-	local matches = {}
-	for _, class in ipairs(classes) do
-		local stored = Schema.voices.stored[string.lower(class)]
-		if (stored) then
-			for key, info in pairs(stored) do
-				if (string.StartsWith(string.lower(key), text)) then
-					table.insert(matches, {key = key, info = info})
+	local matches = findMatches(text)
+
+	-- If no matches for full text, try finding matches for the last segment (chaining)
+	if (#matches == 0) then
+		local lastSpace = 0
+		for i = 1, #text do
+			if (text:sub(i, i) == " ") then
+				lastSpace = i
+			end
+		end
+
+		if (lastSpace > 0) then
+			local prefix = text:sub(1, lastSpace)
+			local remaining = text:sub(lastSpace + 1)
+
+			if (remaining != "") then
+				local segmentMatches = findMatches(remaining)
+				if (#segmentMatches > 0) then
+					matches = segmentMatches
+					self.prefixNeeded = prefix
 				end
 			end
 		end
@@ -172,11 +195,15 @@ function PANEL:Update(text)
 		return a.key < b.key
 	end)
 
+	local i = 1
+	local bSelected 
+	local textLower = string.lower(text:sub(#self.prefixNeeded + 1))
+
 	for _, v in ipairs(matches) do
 		local panel = self:Add("ixVoiceAutocompleteEntry")
 		panel:SetVoice(v.key, v.info)
 
-		if (!bSelected and string.lower(v.key) == text) then
+		if (!bSelected and string.lower(v.key) == textLower) then
 			panel:SetHighlighted(true)
 			self.voiceIndex = i
 			bSelected = true
@@ -209,7 +236,7 @@ function PANEL:SelectNext()
 		end
 	end
 
-	return self.voices[self.voiceIndex].key .. " "
+	return (self.prefixNeeded or "") .. self.voices[self.voiceIndex].key
 end
 
 function PANEL:Paint(width, height)
@@ -228,24 +255,14 @@ local function PatchChatboxEntry(chatbox)
 	chatbox.entry.OnKeyCodeTyped = function(self, key)
 		if (key == KEY_TAB) then
 			if (IsValid(chatbox.voiceAutocomplete) and chatbox.voiceAutocomplete:IsOpen() and #chatbox.voiceAutocomplete:GetVoices() > 0) then
-				local newText = chatbox.voiceAutocomplete:SelectNext()
-				
-				-- If they had a chat class prefix at the start, append it back
-				local oldText = self:GetText()
-				local start, _, command = oldText:find("^(/(%S+)%s+)")
-                
-                -- Support OOC too if needed but OOC is //
-                if (!start) then
-                    start, _, command = oldText:find("^((//|/w|/y|/me|/it)%s+)")
-                end
+				local newKey = chatbox.voiceAutocomplete:SelectNext()
+				local prefix = chatbox.voicePrefix or ""
 
-				if (start == 1) then
-					newText = command .. newText
-				end
+				local newText = prefix .. newKey
 
 				self:SetText(newText)
 				-- Ensure caret is correctly placed
-				if utf8 and utf8.len then
+				if (utf8 and utf8.len) then
 					self:SetCaretPos(utf8.len(newText) or string.len(newText))
 				else
 					self:SetCaretPos(string.len(newText))
@@ -285,29 +302,22 @@ function PLUGIN:ChatTextChanged(text)
 	end
 
 	local matchText = text
+	local prefix = ""
 
-	-- If starts with "/", ignore normal autocomplete commands except class prefix
-    if (text:sub(1, 1) == "/") then
-        -- We only care if the first word is a valid chat class prefix for IC/w/y/radio
-        local start, _, command = text:find("^(/(%w+)%s+)")
-        if (start == 1) then
-            matchText = text:sub(string.len(command) + 1)
-        else
-            -- Probably typing a command, so hide our voice autocomplete
-            if (voiceAutocomplete:IsVisible()) then
-                voiceAutocomplete:SetVisible(false)
-            end
-            return
-        end
-    end
+	-- Handle chat prefixes (e.g. /w, /y, //)
+	local start, _, command = text:find("^((//|/%w+)%s+)")
+	if (start == 1) then
+		prefix = command
+		matchText = text:sub(#command + 1)
+	elseif (text:sub(1, 1) == "/") then
+		-- If it's a command but hasn't reached a space yet, don't show voice autocomplete
+		if (voiceAutocomplete:IsVisible()) then
+			voiceAutocomplete:SetVisible(false)
+		end
+		return
+	end
 
-    -- Support //
-    if (text:sub(1, 2) == "//") then
-        if (voiceAutocomplete:IsVisible()) then
-            voiceAutocomplete:SetVisible(false)
-        end
-        return
-    end
+	ix.gui.chat.voicePrefix = prefix
 
 	matchText = string.TrimLeft(matchText)
 	if (matchText == "") then

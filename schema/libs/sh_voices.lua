@@ -41,6 +41,7 @@ function Schema.voices.AddClass(class, condition)
 end
 
 function Schema.voices.GetVoiceList(class, text, delay)
+	text = string.Trim(tostring(text))
 	local info = Schema.voices.stored[class]
 
 	if !info then
