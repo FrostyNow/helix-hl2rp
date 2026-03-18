@@ -56,6 +56,7 @@ LANGUAGE = {
 	recipeGasCanisterDesc = "Craft a canister to hold gasoline.",
 	recipeHealthKitDesc = "Craft a health kit.",
 	recipeHealthVialDesc = "Craft a health vial.",
+	recipeGunPartsDesc = "Process weapon parts to make them usable.",
 	
 	recipeScrapAmmoPistolDesc = "Disassemble pistol ammo to extract parts.",
 	recipeScrapGrenadeDesc = "Disassemble an HE Grenade to extract parts.",
@@ -77,7 +78,6 @@ LANGUAGE = {
 	recipeScrapShotglassDesc = "Break down a shotglass.",
 	recipeScrapPlateDesc = "Break down a plate.",
 	recipeScrapManhackPartsDesc = "Disassemble manhack parts.",
-
 	recipeScrapBucketDesc = "Disassemble a bucket.",
 	recipeScrapCafeteriaTrayDesc = "Disassemble a cafeteria tray.",
 	recipeScrapCoffeePotDesc = "Disassemble a coffee pot.",
@@ -94,6 +94,9 @@ LANGUAGE = {
 	recipeAntlionGrubDesc = "Disassemble an antlion grub.",
 	recipeNewspaperDesc = "Disassemble a newspaper.",
 	recipeBookDesc = "Disassemble a book.",
+	recipeScrapBottleDesc = "Disassemble a glass bottle.",
+	recipeScrapBottleShardDesc = "Disassemble a bottle shard.",
+	recipeScrapCombineSteelDesc = "Recycle a Combine steel chunk into generic steel pieces.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
