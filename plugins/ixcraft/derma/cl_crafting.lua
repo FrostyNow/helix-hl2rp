@@ -97,8 +97,6 @@ function PANEL:PaintBackground(width, height)
 
 	local alpha = self.currentBackgroundAlpha
 
-	-- 재료 부족으로만 불가능한 경우엔 호버 시에만 빨간색 표시.
-	-- 제작 가능(초록) 이거나 환경 차단(스테이션 없음)인 경우엔 항상 표시.
 	if (self.canCraft or self.environmentBlocked) then
 		alpha = math.max(alpha, 100)
 	end
@@ -334,6 +332,10 @@ function PANEL:LoadRecipes(category, search)
 	end
 end
 
+function PANEL:OnAppear()
+	self:RefreshRecipes()
+end
+
 function PANEL:OnRemove()
 	-- Clear station context when closing crafting panel
 	LocalPlayer().ixCurrentStation = nil
@@ -402,5 +404,11 @@ net.Receive("ixCraftRefresh", function()
 				break
 			end
 		end
+	end
+end)
+
+hook.Add("PostMenuOpened", "ixCraftingRefresh", function()
+	if (IsValid(ix.gui.crafting)) then
+		ix.gui.crafting:RefreshRecipes()
 	end
 end)

@@ -81,7 +81,7 @@ if (SERVER) then
 	util.AddNetworkString("ixCraftRefresh")
 
 	local function RefreshCraftingMenu(client)
-		timer.Simple(0.2, function()
+		timer.Simple(0.05, function()
 			if (!IsValid(client)) then
 				return
 			end
