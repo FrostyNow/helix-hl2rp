@@ -1,34 +1,18 @@
 ITEM.name = "Metropolice Uniform"
 ITEM.description = "itemMetropoliceDesc"
--- ITEM.category = "Outfit"
 ITEM.model = "models/props_c17/SuitCase_Passenger_Physics.mdl"
 ITEM.price = 375
 ITEM.width = 1
 ITEM.height = 1
--- ITEM.gasmask = false -- Mask handling should come from dedicated metrocop bodygroup items
--- ITEM.resistance = true -- This will activate the protection bellow
--- ITEM.damage = { -- It is scaled; so 100 damage * 0.8 will makes the damage be 80.
--- 			.9, -- Bullets
--- 			.9, -- Slash
--- 			.9, -- Shock
--- 			.9, -- Burn
--- 			.7, -- Radiation
--- 			.7, -- Acid
--- 			.9, -- Explosion
--- }
--- ITEM.maxDurability = 150
 ITEM.outfitCategory = "torso"
--- ITEM.pacData = {}
 ITEM.replacements = {
 	{"humans/pandafishizens", "conceptbine_policeforce/rnd"}
 }
 ITEM.eqBodyGroups = {
-	-- ["vest"] = 1,
-	-- ["gloves"] = 1,
-	-- ["boots"] = 1,
-	["lower gear"] = 1,
+	["lower gear"] = 1
 }
 ITEM.newSkin = 0
+ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 
 local function GetMPFFaction()
 	return ix.faction.indices[FACTION_MPF]
@@ -69,29 +53,6 @@ local function RefreshFactionState(client)
 
 	client:SetRunSpeed(client:IsCombine() and runSpeed * 1.1 or runSpeed)
 	client:SetCanZoom(character and (client:IsCombine() or client:IsAdmin() or (inventory and inventory:HasItem("binoculars"))))
-end
-
-local function HasEquippedOutfitLayers(character, ignoreItemID)
-	local inventory = character and character:GetInventory()
-
-	if (!inventory) then
-		return false
-	end
-
-	for _, item in pairs(inventory:GetItems()) do
-		if (item.id == ignoreItemID or !item:GetData("equip")) then
-			continue
-		end
-
-		local itemTable = ix.item.list[item.uniqueID]
-		local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
-
-		if (category and category != "suit") then
-			return true
-		end
-	end
-
-	return false
 end
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"

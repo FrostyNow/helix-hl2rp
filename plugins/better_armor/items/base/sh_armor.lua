@@ -586,7 +586,7 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 
 			-- 1. Hard Lock: Incompatibility
 			if (!isCompatible) then
-				if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
+				if (SERVER) then client:NotifyLocalized("cannotUnequipUnderarmor") end
 				return false
 			end
 
@@ -609,7 +609,7 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 				end
 
 				if (isOverridden) then
-					if (SERVER) then client:NotifyLocalized("cannotUnequipWithUniform") end
+					if (SERVER) then client:NotifyLocalized("cannotUnequipUnderarmor") end
 					return false
 				end
 			end

@@ -321,4 +321,13 @@ LANGUAGE = {
 	broadcastConsoleUse = "Type /Broadcast to make an announcement.",
 
 	modelNotSupported = "Your model is not supported by this item.",
+
+	cmdPromote = "Promote a character to the next rank.",
+	cmdDemote = "Demote a character to the previous rank.",
+	promotedTo = "You have been promoted to %s.",
+	demotedTo = "You have been demoted to %s.",
+	promotedTarget = "You have promoted %s to %s.",
+	demotedTarget = "You have demoted %s to %s.",
+	cantPromoteFurther = "Cannot promote any further.",
+	cantDemoteFurther = "Cannot demote any further.",
 }

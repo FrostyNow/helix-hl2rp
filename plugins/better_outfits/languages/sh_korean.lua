@@ -1,5 +1,7 @@
 LANGUAGE = {
-	["outfitUnsupportedBaseIdentity"] = "이 모델 교체 의상은 해당 캐릭터의 기본 체형과 호환되지 않습니다.",
+	outfitUnsupportedBaseIdentity = "이 모델 교체 의상은 해당 캐릭터의 기본 체형과 호환되지 않습니다.",
+	cannotUnequipUnderarmor = "다른 의상을 위에 입고 있는 상태에서는 이 아이템을 장착해제할 수 없습니다.",
+
 	["short_sleeve_top"] = "반팔 시민 유니폼 상의",
 	["short_sleeve_top_desc"] = "파란색 반팔 시민 유니폼 상의입니다.",
 	["cwu_uniform_top"] = "CWU 유니폼 상의",
@@ -183,5 +185,4 @@ LANGUAGE = {
 	["Magazine Pouches"] = "탄창 파우치",
 	magazinePouchesDesc = "MOLLE 시스템에 부착할 수 있는 탄창 파우치입니다.",
 	["Magazine Leg Pouches"] = "허벅지 탄창 파우치",
-	["cannotUnequipWithUniform"] = "기동대 복장이나 군복을 입은 상태에서는 이 의상을 벗을 수 없습니다.",
 }

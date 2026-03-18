@@ -207,7 +207,8 @@ Schema.combineNameData = Schema.combineNameData or {
 			DvL = true,
 			SeC = true,
 			CmD = true
-		}
+		},
+		orderedRanks = {"RCT", "05", "04", "03", "02", "01", "EpU", "OfC", "DvL", "SeC", "CmD"}
 	},
 	OTA = {
 		defaultRank = "OWS",
@@ -217,7 +218,8 @@ Schema.combineNameData = Schema.combineNameData or {
 			"LEADER", "FLASH", "RANGER", "HUNTER", "BLADE", "HAMMER", "SWEEPER", "SWIFT",
 			"FIST", "SWORD", "SAVAGE", "TRACKER", "SLASH", "RAZOR", "STAB", "SPEAR",
 			"STRIKER", "DAGGER"
-		}
+		},
+		orderedRanks = {"OWS", "SGS", "EOW"}
 	}
 }
 
@@ -350,28 +352,76 @@ end
 
 Schema.conscriptRanks = Schema.conscriptRanks or {
 	{
+		id = "basic",
+		ko = "훈련병",
+		en = "Pvt.",
+		aliases = {"pvt", "훈련병"}
+	},
+	{
 		id = "private",
 		ko = "이병",
-		en = "Pvt.",
-		aliases = {"private", "pvt", "e-byeong", "이병"}
+		en = "Pv2.",
+		aliases = {"secondclass", "pv2", "이병"}
 	},
 	{
 		id = "firstclass",
 		ko = "일병",
 		en = "Pfc.",
-		aliases = {"firstclass", "pfc", "il-byeong", "일병"}
-	},
-	{
-		id = "senior",
-		ko = "상병",
-		en = "Lcpl.",
-		aliases = {"senior", "lcpl", "lancecorporal", "sang-byeong", "상병"}
+		aliases = {"pfc", "lcpl", "lancecorporal", "일병"}
 	},
 	{
 		id = "corporal",
-		ko = "병장",
+		ko = "상병",
 		en = "Cpl.",
-		aliases = {"corporal", "cpl", "byeong-jang", "병장"}
+		aliases = {"cpl", "상병"}
+	},
+	{
+		id = "sergeant",
+		ko = "병장",
+		en = "Sgt.",
+		aliases = {"sgt", "병장"}
+	},
+	{
+		id = "staffsergeant",
+		ko = "하사",
+		en = "SSG.",
+		aliases = {"ssgt", "하사"}
+	},
+	{
+		id = "seniorsergeant",
+		ko = "중사",
+		en = "SFC.",
+		aliases = {"sfc", "중사"}
+	},
+	{
+		id = "mastersergeant",
+		ko = "상사",
+		en = "MSG.",
+		aliases = {"msgt", "상사"}
+	},
+	{
+		id = "sergeantmajor",
+		ko = "원사",
+		en = "SGM.",
+		aliases = {"sgm", "원사"}
+	},
+	{
+		id = "2ndlt",
+		ko = "소위",
+		en = "2Lt.",
+		aliases = {"2lt", "2nd lt", "소위"}
+	},
+	{
+		id = "1stlt",
+		ko = "중위",
+		en = "1Lt.",
+		aliases = {"1lt", "1st lt", "중위"}
+	},
+	{
+		id = "capt",
+		ko = "대위",
+		en = "Capt.",
+		aliases = {"cpt", "captain", "대위"}
 	}
 }
 
@@ -408,14 +458,12 @@ function Schema:GetConscriptRankDataFromText(text)
 		return nil
 	end
 
-	local lowered = string.lower(string.Trim(text))
+	local trimmed = string.Trim(text)
+	local firstWord = trimmed:match("^([^%.]+%.?)")
 
-	for _, data in ipairs(self.conscriptRanks) do
-		for _, prefix in ipairs({data.ko:lower() .. ".", data.en:lower()}) do
-			if (lowered:find("^" .. prefix:gsub("%.", "%%."))) then
-				return data
-			end
-		end
+	if (firstWord) then
+		local key = string.lower(string.Trim(firstWord:gsub("%.", "")))
+		return self.conscriptRankLookup[key]
 	end
 
 	return nil
@@ -432,7 +480,8 @@ function Schema:IsEnglishPersonalName(name)
 		return false
 	end
 
-	return name:find("[A-Za-z]") != nil and name:find("^[A-Za-z%s%-%.'`]+$") != nil
+	-- Added quotes and parentheses commonly used in RP names
+	return name:find("[A-Za-z]") != nil and name:find("^[A-Za-z%s%-%.'`\"%(%)]+$") != nil
 end
 
 function Schema:ExtractConscriptBaseName(text)
@@ -441,18 +490,16 @@ function Schema:ExtractConscriptBaseName(text)
 	end
 
 	local trimmed = string.Trim(text)
-	local lowered = string.lower(trimmed)
+	local firstWord = trimmed:match("^([^%.]+%.?)")
 
-	for _, data in ipairs(self.conscriptRanks) do
-		for _, prefix in ipairs({data.ko .. ".", data.en}) do
-			local prefixLength = #prefix
+	if (firstWord) then
+		local rankData = self:GetConscriptRankDataFromText(firstWord)
 
-			if (lowered:sub(1, prefixLength) == string.lower(prefix)) then
-				local remaining = string.Trim(trimmed:sub(prefixLength + 1))
+		if (rankData) then
+			local result = string.Trim(trimmed:sub(#firstWord + 1))
 
-				if (remaining != "") then
-					return remaining
-				end
+			if (result != "") then
+				return result
 			end
 		end
 	end
@@ -465,14 +512,180 @@ function Schema:FormatConscriptName(baseName, rank)
 	baseName = self:ExtractConscriptBaseName(baseName or "")
 
 	if (baseName == "") then
-		return self:IsEnglishPersonalName(baseName) and rankData.en or rankData.ko
+		-- Default to the Rank Name if it's the only thing present.
+		-- We use rankData.en as a safe default for internal name storage unless it looks like Korean.
+		return rankData.en
 	end
 
 	if (self:IsEnglishPersonalName(baseName)) then
+		-- English names use a space after the rank (which usually includes a dot)
 		return string.format("%s %s", rankData.en, baseName)
 	end
 
+	-- Korean names use a dot and space after the rank
 	return string.format("%s. %s", rankData.ko, baseName)
+end
+
+function Schema:CanPromote(client)
+	if (client:IsAdmin()) then return true end
+
+	local character = client:GetCharacter()
+	if (!character) then return false end
+
+	local faction = client:Team()
+
+	if (faction == FACTION_ADMIN) then return true end
+
+	if (faction == FACTION_MPF) then
+		local rank = self:GetCombineRank(client:Name())
+		if (rank and self.combineNameData.MPF.eliteRanks[rank]) then
+			return true
+		end
+	end
+
+	if (faction == FACTION_OTA) then
+		local rank = self:GetCombineRank(client:Name())
+		if (rank == "EOW") then
+			return true
+		end
+	end
+
+	if (faction == FACTION_CONSCRIPT) then
+		local rank = character:GetData("conscriptRank")
+		if (rank == "2ndlt" or rank == "1stlt" or rank == "capt") then
+			return true
+		end
+	end
+
+	return false
+end
+
+function Schema:Promote(targetChar, client)
+	local faction = targetChar:GetFaction()
+
+	if (faction == FACTION_MPF or faction == FACTION_OTA) then
+		local branch = (faction == FACTION_MPF) and "MPF" or "OTA"
+		local data = self.combineNameData[branch]
+		local info = self:GetCombineNameInfo(targetChar:GetName())
+
+		if (info) then
+			local currentRank = info.rank
+			local index = 0
+
+			for k, v in ipairs(data.orderedRanks) do
+				if (v == currentRank) then
+					index = k
+					break
+				end
+			end
+
+			if (index > 0 and index < #data.orderedRanks) then
+				local newRank = data.orderedRanks[index + 1]
+				local newName = self:FormatCombineName(branch, newRank, info.callsign, info.number)
+
+				targetChar:SetName(newName)
+				self:SyncCombineClass(targetChar, newName)
+				return true, newRank
+			end
+		end
+	elseif (faction == FACTION_CONSCRIPT) then
+		local currentRank = targetChar:GetData("conscriptRank") or self:GetDefaultConscriptRank()
+		local index = 0
+
+		for k, v in ipairs(self.conscriptRanks) do
+			if (v.id == currentRank) then
+				index = k
+				break
+			end
+		end
+
+		if (index > 0 and index < #self.conscriptRanks) then
+			local rankData = self.conscriptRanks[index + 1]
+			local conscriptFaction = ix.faction.indices[FACTION_CONSCRIPT]
+
+			if (conscriptFaction) then
+				conscriptFaction:SetConscriptRank(targetChar, rankData.id)
+				conscriptFaction:SetDisplayedName(targetChar, conscriptFaction:GetBaseName(targetChar))
+
+				local player = targetChar:GetPlayer()
+				if (IsValid(player)) then
+					local state = conscriptFaction:GetUniformState(targetChar)
+					if (state.active) then
+						state.dutyName = conscriptFaction:GetFormattedName(targetChar, state.originalName)
+						conscriptFaction:SetUniformState(targetChar, state)
+					end
+				end
+
+				return true, rankData.ko
+			end
+		end
+	end
+
+	return false
+end
+
+function Schema:Demote(targetChar, client)
+	local faction = targetChar:GetFaction()
+
+	if (faction == FACTION_MPF or faction == FACTION_OTA) then
+		local branch = (faction == FACTION_MPF) and "MPF" or "OTA"
+		local data = self.combineNameData[branch]
+		local info = self:GetCombineNameInfo(targetChar:GetName())
+
+		if (info) then
+			local currentRank = info.rank
+			local index = 0
+
+			for k, v in ipairs(data.orderedRanks) do
+				if (v == currentRank) then
+					index = k
+					break
+				end
+			end
+
+			if (index > 1) then
+				local newRank = data.orderedRanks[index - 1]
+				local newName = self:FormatCombineName(branch, newRank, info.callsign, info.number)
+
+				targetChar:SetName(newName)
+				self:SyncCombineClass(targetChar, newName)
+				return true, newRank
+			end
+		end
+	elseif (faction == FACTION_CONSCRIPT) then
+		local currentRank = targetChar:GetData("conscriptRank") or self:GetDefaultConscriptRank()
+		local index = 0
+
+		for k, v in ipairs(self.conscriptRanks) do
+			if (v.id == currentRank) then
+				index = k
+				break
+			end
+		end
+
+		if (index > 1) then
+			local rankData = self.conscriptRanks[index - 1]
+			local conscriptFaction = ix.faction.indices[FACTION_CONSCRIPT]
+
+			if (conscriptFaction) then
+				conscriptFaction:SetConscriptRank(targetChar, rankData.id)
+				conscriptFaction:SetDisplayedName(targetChar, conscriptFaction:GetBaseName(targetChar))
+
+				local player = targetChar:GetPlayer()
+				if (IsValid(player)) then
+					local state = conscriptFaction:GetUniformState(targetChar)
+					if (state.active) then
+						state.dutyName = conscriptFaction:GetFormattedName(targetChar, state.originalName)
+						conscriptFaction:SetUniformState(targetChar, state)
+					end
+				end
+
+				return true, rankData.ko
+			end
+		end
+	end
+
+	return false
 end
 
 function Schema:GetCombineClassFromRank(branch, rank)

@@ -649,11 +649,11 @@ function PANEL:RefreshGearInv()
 				RequestUnequip(item.id)
 			end):SetIcon("icon16/cross.png")
 			if (item.isWeapon and (tonumber(item:GetData("equipTime", 0)) or 0) > 0 and item.class != "weapon_physgun" and item.class != "gmod_tool") then
-				menu:AddOption("Move Up", function()
+				menu:AddOption(L("moveUp"), function()
 					RequestGearReorder(item.id, -1)
 				end):SetIcon("icon16/arrow_up.png")
 
-				menu:AddOption("Move Down", function()
+				menu:AddOption(L("moveDown"), function()
 					RequestGearReorder(item.id, 1)
 				end):SetIcon("icon16/arrow_down.png")
 			end

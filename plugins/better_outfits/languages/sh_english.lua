@@ -1,5 +1,7 @@
 LANGUAGE = {
-	["outfitUnsupportedBaseIdentity"] = "This model-changing outfit is not compatible with the character's base body type.",
+	outfitUnsupportedBaseIdentity = "This model-changing outfit is not compatible with the character's base body type.",
+	cannotUnequipUnderarmor = "You cannot unequip this item while wearing another clothing over that.",
+
 	["short_sleeve_top"] = "Short-Sleeve Citizen Uniform Top",
 	["short_sleeve_top_desc"] = "A Blue Short-Sleeve Citizen Uniform Top.",
 	["cwu_uniform_top"] = "CWU Uniform Top",
@@ -182,5 +184,4 @@ LANGUAGE = {
 	cpMaskDesc = "A standard-issue gas mask for Civil Protection units.",
 	hatDesc = "A cap worn by the military personnel in the field when a combat helmet is not required.",
 	magazinePouchesDesc = "A set of magazine pouches to attach to MOLLE system.",
-	["cannotUnequipWithUniform"] = "You cannot unequip this item while wearing a uniform.",
 }

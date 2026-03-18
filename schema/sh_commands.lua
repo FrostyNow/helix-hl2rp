@@ -212,6 +212,50 @@ do
 	ix.command.Add("CharSearch", COMMAND)
 end
 
+ix.command.Add("Promote", {
+	description = "@cmdPromote",
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		if (!Schema:CanPromote(client)) then
+			return "@notAllowed"
+		end
+
+		local success, newRank = Schema:Promote(target, client)
+
+		if (success) then
+			local targetPlayer = target:GetPlayer()
+			if (IsValid(targetPlayer)) then
+				targetPlayer:NotifyLocalized("promotedTo", newRank)
+			end
+			client:NotifyLocalized("promotedTarget", target:GetName(), newRank)
+		else
+			return "@cantPromoteFurther"
+		end
+	end
+})
+
+ix.command.Add("Demote", {
+	description = "@cmdDemote",
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		if (!Schema:CanPromote(client)) then
+			return "@notAllowed"
+		end
+
+		local success, newRank = Schema:Demote(target, client)
+
+		if (success) then
+			local targetPlayer = target:GetPlayer()
+			if (IsValid(targetPlayer)) then
+				targetPlayer:NotifyLocalized("demotedTo", newRank)
+			end
+			client:NotifyLocalized("demotedTarget", target:GetName(), newRank)
+		else
+			return "@cantDemoteFurther"
+		end
+	end
+})
+
 ix.command.Add("CharSpawn", {
 	description = "@cmdCharSpawn",
 	adminOnly = true,
@@ -302,6 +346,50 @@ ix.command.Add("Revive", {
 	end
 })
 
+ix.command.Add("Promote", {
+	description = "@cmdPromote",
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		if (!Schema:CanPromote(client)) then
+			return "@notAllowed"
+		end
+
+		local success, newRank = Schema:Promote(target, client)
+
+		if (success) then
+			local targetPlayer = target:GetPlayer()
+			if (IsValid(targetPlayer)) then
+				targetPlayer:NotifyLocalized("promotedTo", newRank)
+			end
+			client:NotifyLocalized("promotedTarget", target:GetName(), newRank)
+		else
+			return "@cantPromoteFurther"
+		end
+	end
+})
+
+ix.command.Add("Demote", {
+	description = "@cmdDemote",
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		if (!Schema:CanPromote(client)) then
+			return "@notAllowed"
+		end
+
+		local success, newRank = Schema:Demote(target, client)
+
+		if (success) then
+			local targetPlayer = target:GetPlayer()
+			if (IsValid(targetPlayer)) then
+				targetPlayer:NotifyLocalized("demotedTo", newRank)
+			end
+			client:NotifyLocalized("demotedTarget", target:GetName(), newRank)
+		else
+			return "@cantDemoteFurther"
+		end
+	end
+})
+
 ix.command.Add("CharSetName", {
 	description = "@cmdCharSetName",
 	adminOnly = true,
@@ -325,56 +413,6 @@ ix.command.Add("CharSetName", {
 
 		-- intentionally skip character var length validation for admin-set values
 		target:SetName(name)
-	end
-})
-
-ix.command.Add("CharSetConscriptRank", {
-	description = "Sets a character's conscript rank.",
-	adminOnly = true,
-	arguments = {
-		ix.type.character,
-		ix.type.text
-	},
-	syntax = "<character> <rank>",
-	OnRun = function(self, client, target, rank)
-		local faction = ix.faction.indices[FACTION_CONSCRIPT]
-		local normalizedRank = isstring(rank) and string.Trim(string.lower(rank:gsub("%.$", ""))) or ""
-		local rankData
-		local targetClient
-
-		if (!faction) then
-			return "Conscript faction is not available."
-		end
-
-		rankData = Schema.conscriptRankLookup[normalizedRank]
-
-		if (!rankData) then
-			return "Invalid conscript rank. Use one of: 이병, 일병, 상병, 병장, pvt, pfc, lcpl, cpl."
-		end
-
-		faction:SetConscriptRank(target, rankData.id)
-		targetClient = target:GetPlayer()
-
-		if (target:GetFaction() == FACTION_CONSCRIPT) then
-			faction:SetDisplayedName(target, faction:GetBaseName(target))
-
-			if (IsValid(targetClient)) then
-				local state = faction:GetUniformState(target)
-
-				if (state.active) then
-					state.dutyName = faction:GetFormattedName(target, state.originalName)
-					faction:SetUniformState(target, state)
-				end
-			end
-		end
-
-		if (client) then
-			client:Notify(string.format("%s's conscript rank has been set to %s.", target:GetName(), rankData.ko))
-		end
-
-		if (IsValid(targetClient) and targetClient != client) then
-			targetClient:Notify(string.format("Your conscript rank has been set to %s.", rankData.ko))
-		end
 	end
 })
 

@@ -120,6 +120,11 @@ FACTION.bodyGroups = {
 		min = 0,
 		max = 8,
 		excludeModels = "female"
+	},
+	["lower gear"] = {
+		name = "cp_belt",
+		min = 1,
+		max = 1
 	}
 }
 
@@ -137,18 +142,16 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("smg1ammo", 2)
 	inventory:Add("pistol", 1)
 	inventory:Add("pistolammo", 2)
-	inventory:Add("health_vial", 1)
+	inventory:Add("health_vial", 2)
 	inventory:Add("stunstick", 1)
+	inventory:Add("cp_vest_mpf", 1)
 	inventory:Add("cp_mask", 1)
+	inventory:Add("handheld_radio", 1)
 
 	local groups = character:GetData("groups", {})
 
 	for k, v in pairs({
-		["vest"] = 1,
-		["gloves"] = 1,
-		["boots"] = 1,
-		["lower gear"] = 1,
-		["lower radio"] = 1,
+		["lower gear"] = 1
 	}) do
 		local index = client:FindBodygroupByName(k)
 

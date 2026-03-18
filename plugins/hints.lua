@@ -51,6 +51,10 @@ ix.lang.AddTable("english", {
 	hintVortessence = "Vortigaunts can communicate with each other using the /ve command.",
 	hintCurfew = "Every day from 12 AM to 6 AM, a curfew is in effect.",
 	hintApply = "If CP demands to see your Citizen ID, you must use the /apply command.",
+	hintOverwatch = "The Combine's rule over Earth is carried out through a complex system of military, security, and administrative forces known as the Overwatch.",
+	hintWorkers = "Not just simple labor, public services and facility management are handled by the Civil Worker's Union.",
+	hintLabour = "Citizens have a duty to work, and you will be compensated for your labor.",
+	hintConscript = "The Civil Defense are the lowest rank of the Overwatch, serving as auxiliary forces for low-intensity combat such as pest control and civil security.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -93,6 +97,10 @@ ix.lang.AddTable("korean", {
 	hintVortessence = "보르티곤트는 /ve 명령어로 서로 정신 연결이 가능하다고 합니다.",
 	hintCurfew = "매일 오전 12시부터 오전 6시까지는 통행 금지령이 내려집니다.",
 	hintApply = "보호 기동대원이 시민증 제시를 요구하면 /apply 해야 합니다.",
+	hintOverwatch = "콤바인의 지구 통치는 감시인이라는 군사, 치안, 행정의 복합 체계를 통해 이루어집니다.",
+	hintWorkers = "단순 육체 노동이 아닌, 공공 서비스나 시설 관리는 시민 노동 조합이 담당합니다.",
+	hintLabour = "시민들은 노동의 의무가 있으며, 노동에 참여하면 대가가 지급됩니다.",
+	hintConscript = "민방위는 감시 부대의 가장 말단에 있는 보조군의 역할로, 해수 구제 등의 강도 낮은 전투와 민간 치안 유지를 담당합니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -143,6 +151,10 @@ ix.hints.Register("hintLaundry")
 ix.hints.Register("hintItemClass")
 ix.hints.Register("hintDirtyWater")
 ix.hints.Register("hintCID")
+ix.hints.Register("hintOverwatch")
+ix.hints.Register("hintWorkers")
+ix.hints.Register("hintLabour")
+ix.hints.Register("hintConscript")
 
 if (ix.plugin.Get("hunger")) then
 	ix.hints.Register("hintCook")

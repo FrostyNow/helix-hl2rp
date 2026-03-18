@@ -570,8 +570,8 @@ LANGUAGE = {
 	itemBeanieDesc = "머리를 따뜻하게 보호해 줍니다.",
 	["Short Sleeved Shirt"] = "짧은 소매 시민 유니폼 셔츠",
 	itemCitizenTorso2Desc = "시민 유니폼 셔츠의 긴 소매를 짧게 줄였습니다.",
-	["Conscript Fatigue"] = "징집군 군복",
-	itemConscriptFatigueDesc = "징집군에게 보급되는 올리브색 군복입니다.",
+	["Conscript Fatigue"] = "민방위 군복",
+	itemConscriptFatigueDesc = "민방위에게 보급되는 올리브색 군복입니다.",
 	["CWU Uniform Pants"] = "시민 노동 조합 유니폼 바지",
 	itemCWULegsDesc = "시민 노동 조합원임을 상징하는 밝은 색상의 유니폼 바지입니다.",
 	["CWU Uniform Shirt"] = "시민 노동 조합 유니폼 셔츠",
@@ -660,4 +660,13 @@ LANGUAGE = {
 	broadcastConsoleUse = "/Broadcast 명령어를 입력하여 방송을 할 수 있습니다.",
 
 	modelNotSupported = "현재 캐릭터의 모델이 지원하지 않는 착용품입니다.",
+
+	cmdPromote = "캐릭터를 다음 계급으로 진급시킵니다.",
+	cmdDemote = "캐릭터를 이전 계급으로 강등시킵니다.",
+	promotedTo = "당신은 %s(으)로 진급되었습니다.",
+	demotedTo = "당신은 %s(으)로 강등되었습니다.",
+	promotedTarget = "%s님을 %s(으)로 진급시켰습니다.",
+	demotedTarget = "%s님을 %s(으)로 강등시켰습니다.",
+	cantPromoteFurther = "더 이상 진급시킬 수 없습니다.",
+	cantDemoteFurther = "더 이상 강등시킬 수 없습니다.",
 }

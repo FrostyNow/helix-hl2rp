@@ -6,7 +6,7 @@ ITEM.width = 1
 ITEM.height = 1
 ITEM.price = 100
 ITEM.outfitCategory = "torso"
-ITEM.allowedBaseFactions = {"citizen"}
+ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
 
@@ -30,29 +30,6 @@ local function SetUniformState(character, state)
 	if (faction and character) then
 		faction:SetUniformState(character, state)
 	end
-end
-
-local function HasEquippedOutfitLayers(character, ignoreItemID)
-	local inventory = character and character:GetInventory()
-
-	if (!inventory) then
-		return false
-	end
-
-	for _, item in pairs(inventory:GetItems()) do
-		if (item.id == ignoreItemID or !item:GetData("equip")) then
-			continue
-		end
-
-		local itemTable = ix.item.list[item.uniqueID]
-		local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
-
-		if (category and category != "suit") then
-			return true
-		end
-	end
-
-	return false
 end
 
 function ITEM:CanEquipOutfit()

@@ -19,8 +19,6 @@ ix.lang.AddTable("english", {
 	radiationResistance = "\n  Radiation Resistance: ",
 	poisonResistance = "\n  Poison Resistance: ",
 	shockResistance = "\n  Shock Resistance: ",
-	cannotActionWhileSuit = "You cannot unequip, drop, or move this item while wearing a suit.",
-	cannotRemoveSuitWithEquipment = "You must remove any extra outfit or armor pieces before removing the suit.",
 	cp_vest_desc = "A Civil Protection bulletproof vest.",
 	cp_vest_medic_desc = "A Civil Protection bulletproof vest with a red cross medic bag.",
 	cp_vest_rebel_desc = "A Civil Protection bulletproof vest with a backpack attached.",
@@ -52,8 +50,6 @@ ix.lang.AddTable("korean", {
 	radiationResistance = "\n  방사선 피폭 저항: ",
 	poisonResistance = "\n  독성 저항: ",
 	shockResistance = "\n  충격 저항: ",
-	cannotActionWhileSuit = "전신 의상을 입고 있는 동안에는 이 아이템을 벗거나, 버리거나, 옮길 수 없습니다.",
-	cannotRemoveSuitWithEquipment = "전신 의상을 벗으려면 먼저 추가로 착용한 의상이나 방어구를 모두 해제해야 합니다.",
 	["CP Armor Vest"] = "시민 보호 기동대 방탄 조끼",
 	cp_vest_desc = "시민 보호 기동대에게 지급되는 제식 방탄 조끼입니다.",
 	["CP Vest with Medic Bag"] = "시민 보호 기동대 방탄 조끼 (저항군 의무병)",
@@ -257,53 +253,98 @@ end
 -- 	end
 -- })
 
-local function IsWearingSuit(client)
-	if (!IsValid(client)) then return false end
-	local char = client:GetCharacter()
-	if (!char) then return false end
-	local inv = char:GetInventory()
-	if (!inv) then return false end
+local DEFAULT_ALLOWED_BASE_MODEL_CLASSES = {
+	citizen_female = true,
+	citizen_male = true,
+	metrocop = true
+}
 
-	for _, v in pairs(inv:GetItems()) do
-		if (v:GetData("equip")) then
-			local itemTable = ix.item.list[v.uniqueID]
-			local category = v.outfitCategory or (itemTable and itemTable.outfitCategory)
-			
-			-- Allow conscript fatigue to not count as a blocking suit
-			if (category == "suit" and v.uniqueID != "conscript") then
-				return true
+local function NormalizeModel(model)
+	return isstring(model) and model:gsub("\\", "/"):lower() or ""
+end
+
+local function BuildLookup(values, normalizeKey)
+	if (!istable(values)) then
+		return nil
+	end
+
+	local lookup = {}
+	local hasValues = false
+
+	for key, value in pairs(values) do
+		if (isnumber(key)) then
+			local normalized = normalizeKey and normalizeKey(value) or value
+
+			if (normalized != nil) then
+				lookup[normalized] = true
+				hasValues = true
+			end
+		elseif (value) then
+			local normalized = normalizeKey and normalizeKey(key) or key
+
+			if (normalized != nil) then
+				lookup[normalized] = true
+				hasValues = true
 			end
 		end
 	end
-	return false
+
+	return hasValues and lookup or nil
 end
 
-local function GetOutfitCategory(item)
-	local itemTable = ix.item.list[item.uniqueID]
-	return item.outfitCategory or (itemTable and itemTable.outfitCategory)
-end
-
-local function HasEquippedOutfitLayers(client, ignoreItemID)
-	if (!IsValid(client)) then return false end
-
-	local char = client:GetCharacter()
-	local inv = char and char:GetInventory()
-
-	if (!inv) then return false end
-
-	for _, v in pairs(inv:GetItems()) do
-		if (v.id == ignoreItemID or !v:GetData("equip")) then
-			continue
-		end
-
-		local category = GetOutfitCategory(v)
-
-		if (category and category != "suit") then
-			return true
-		end
+local function GetBaseAppearanceContext(character)
+	if (!character) then
+		return nil
 	end
 
-	return false
+	local factionID = character:GetFaction()
+	local model = NormalizeModel(character:GetModel())
+	local faction = ix.faction.indices[factionID]
+	local factionUniqueID = faction and faction.uniqueID or nil
+
+	if (faction and faction.IsUniformCitizenDuty and faction.GetUniformReturnFaction and faction:IsUniformCitizenDuty(character)) then
+		local state = faction:GetUniformState(character)
+		local returnFaction = faction:GetUniformReturnFaction(character)
+
+		factionID = returnFaction or factionID
+		faction = ix.faction.indices[factionID]
+		factionUniqueID = faction and faction.uniqueID or factionUniqueID
+		model = NormalizeModel(state.originalModel or model)
+	end
+
+	return {
+		faction = factionID,
+		factionUniqueID = factionUniqueID,
+		model = model,
+		modelClass = ix.anim.GetModelClass(model)
+	}
+end
+
+local function IsModelChangingItem(item)
+	local itemTable = ix.item.list[item.uniqueID]
+	local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+
+	return category == "suit"
+		or category == "model"
+		or item.replacement != nil
+		or item.replacements != nil
+		or (itemTable and (itemTable.replacement != nil or itemTable.replacements != nil))
+		or isfunction(item.OnGetReplacement)
+		or (itemTable and isfunction(itemTable.OnGetReplacement))
+end
+
+local function GetAllowedBaseModelClasses(item)
+	return BuildLookup(item.allowedBaseModelClasses, function(value)
+		return isstring(value) and value:lower() or nil
+	end)
+end
+
+local function GetAllowedBaseFactions(item)
+	return BuildLookup(item.allowedBaseFactions)
+end
+
+local function GetAllowedBaseModels(item)
+	return BuildLookup(item.allowedBaseModels, NormalizeModel)
 end
 
 function PLUGIN:CanPlayerUnequipItem(client, item)
@@ -313,4 +354,74 @@ function PLUGIN:CanTransferItem(item, curInv, inventory)
 end
 
 function PLUGIN:CanPlayerInteractItem(client, action, item, data)
+end
+
+function PLUGIN:CanPlayerEquipItem(client, item)
+	if (!IsValid(client) or !item or !IsModelChangingItem(item)) then
+		return
+	end
+
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
+	local inventory = character:GetInventory()
+
+	if (inventory) then
+		local itemCategory = item.outfitCategory or (ix.item.list[item.uniqueID] and ix.item.list[item.uniqueID].outfitCategory)
+
+		for _, equippedItem in pairs(inventory:GetItems()) do
+			if (equippedItem.id != item.id and equippedItem:GetData("equip") and IsModelChangingItem(equippedItem)) then
+				local equippedCategory = equippedItem.outfitCategory or (ix.item.list[equippedItem.uniqueID] and ix.item.list[equippedItem.uniqueID].outfitCategory)
+
+				if (itemCategory != equippedCategory) then
+					continue
+				end
+
+				client:NotifyLocalized(item.equippedNotify or "outfitAlreadyEquipped")
+				return false
+			end
+		end
+	end
+
+	if (item.ignoreBaseModelGuard or item.allowAnyBaseModel) then
+		return
+	end
+
+	local context = GetBaseAppearanceContext(character)
+
+	if (!context) then
+		return false
+	end
+
+	local allowedBaseModels = GetAllowedBaseModels(item)
+
+	if (allowedBaseModels) then
+		if (!allowedBaseModels[context.model]) then
+			client:NotifyLocalized("outfitUnsupportedBaseIdentity")
+			return false
+		end
+
+		return
+	end
+
+	local allowedBaseFactions = GetAllowedBaseFactions(item)
+
+	if (allowedBaseFactions) then
+		if (!allowedBaseFactions[context.faction] and !allowedBaseFactions[context.factionUniqueID]) then
+			client:NotifyLocalized("outfitUnsupportedBaseIdentity")
+			return false
+		end
+
+		return
+	end
+
+	local allowedBaseModelClasses = GetAllowedBaseModelClasses(item) or DEFAULT_ALLOWED_BASE_MODEL_CLASSES
+
+	if (!allowedBaseModelClasses[context.modelClass]) then
+		client:NotifyLocalized("outfitUnsupportedBaseIdentity")
+		return false
+	end
 end

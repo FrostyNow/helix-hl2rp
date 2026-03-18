@@ -2600,12 +2600,12 @@ function PLUGIN:PatchItemAction(itemTable, action)
 
 	itemTable.ixNovelizerPatchedActions[action] = true
 
-	itemTable:PostHook(action, function(item)
+	itemTable:PostHook(action, function(item, result)
 		local client = item.player
 		local narratedAction = self:GetNarratedConsumeAction(item, action)
 		local phrasePool = self:ResolveItemPhrasePool(item, action, client)
 
-		if (not self:CanAutoNarrate(client) or not istable(phrasePool) or #phrasePool == 0) then
+		if (not self:CanAutoNarrate(client) or result == false or not istable(phrasePool) or #phrasePool == 0) then
 			return
 		end
 
@@ -2633,7 +2633,7 @@ function PLUGIN:PatchEquipmentAction(itemTable, action)
 	itemTable:PostHook(action, function(item, result)
 		local client = item.player or item:GetOwner()
 
-		if (not self:CanAutoNarrate(client)) then
+		if (not self:CanAutoNarrate(client) or result == false) then
 			return
 		end
 
@@ -2680,10 +2680,10 @@ function PLUGIN:PatchDirectItemAction(itemTable, action, phrasePool)
 
 	itemTable.ixNovelizerPatchedActions[action] = true
 
-	itemTable:PostHook(action, function(item)
+	itemTable:PostHook(action, function(item, result)
 		local client = item.player or item:GetOwner()
 
-		if (not self:CanAutoNarrate(client)) then
+		if (not self:CanAutoNarrate(client) or result == false) then
 			return
 		end
 
@@ -4877,11 +4877,13 @@ function PLUGIN:KeyPress(client, key)
 		return
 	end
 
+	-- Ensure we only narrate if the weapon actually needs reloading and we have ammo.
 	if (key == IN_RELOAD and self:IsNarratableWeapon(weapon)) then
 		local maxClip = weapon:GetMaxClip1()
 		local clip = weapon:Clip1()
+		local ammoCount = client:GetAmmoCount(weapon:GetPrimaryAmmoType())
 
-		if (maxClip > 0 and clip >= 0 and clip < maxClip and self:PassNamedCooldown(client, "reload", 1.4)) then
+		if (maxClip > 0 and clip >= 0 and clip < maxClip and ammoCount > 0 and self:PassNamedCooldown(client, "reload", 1.4)) then
 			self:SendNovelMe(client, table.Random({
 				"novelizerReload1",
 				"novelizerReload2",
