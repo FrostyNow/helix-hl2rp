@@ -166,6 +166,7 @@ game.AddAmmoType({name = "12 Gauge", dmgtype = DMG_BUCKSHOT, tracer = TRACER_LIN
 game.AddAmmoType({name = ".357 Magnum", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
 game.AddAmmoType({name = "7.62x25mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
 game.AddAmmoType({name = "Flares", dmgtype = DMG_BURN, tracer = TRACER_NONE})
+game.AddAmmoType({name = "20x28mm grenade", dmgtype = DMG_BLAST, tracer = TRACER_NONE})
 
 ix.ammo.Register("5.56x45mm")
 ix.ammo.Register("7.62x51mm")
@@ -178,7 +179,7 @@ ix.ammo.Register("12 Gauge")
 ix.ammo.Register(".357 Magnum")
 ix.ammo.Register("7.62x25mm")
 ix.ammo.Register("Flares")
-ix.ammo.Register("PanzerFaust3 Rocket")
+ix.ammo.Register("20x28mm grenade")
 
 function Schema:ZeroNumber(number, length)
 	local amount = math.max(0, length - string.len(number))

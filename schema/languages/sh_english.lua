@@ -129,6 +129,7 @@ LANGUAGE = {
 	shotgunammoDesc = "A Box of %s Shotgun Shells",
 	smg1ammoDesc = "A Box that contains %s of SMG Ammo.",
 	smg1grenadeammoDesc = "A grenade for SMG.",
+	oicwgrenadeammoDesc = "A grenade for OICW.",
 	sniperammoDesc = "A Box that contains %s of Sniper Rifle Ammo",
 	item545AmmoDesc = "An Ammo Box that contains %s of 5.45×39mm M74 Rifle Rounds.",
 	item556AmmoDesc = "An Ammo Box that contains %s of 5.56×45mm NATO Rifle Rounds.",

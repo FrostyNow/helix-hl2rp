@@ -1,11 +1,11 @@
-ITEM.name = "12.7mm HEI Round"
+ITEM.name = "HEAB Round"
 ITEM.model = "models/Items/AR2_Grenade.mdl"
-ITEM.ammo = "smg1_grenade" -- type of the ammo
+ITEM.ammo = "20x28mm grenade" -- type of the ammo
 ITEM.ammoAmount = 1 -- amount of the ammo
-ITEM.description = "smg1grenadeammoDesc"
-ITEM.classes = {CLASS_EMP, CLASS_OWS, CLASS_MPU, CLASS_REBEL}
+ITEM.description = "oicwgrenadeammoDesc"
+ITEM.classes = {CLASS_EMP, CLASS_OWS, CLASS_MPU}
 ITEM.factions = {FACTION_CONSCRIPT}
-ITEM.price = 30
+ITEM.price = 60
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
