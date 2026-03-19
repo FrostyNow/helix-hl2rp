@@ -179,6 +179,10 @@ LANGUAGE = {
 	recipeScrapBottleShardDesc = "유리병 파편을 분해합니다.",
 	["Recycle Combine Steel"] = "콤바인 강철 재활용",
 	recipeScrapCombineSteelDesc = "콤바인 강철을 일반 강철 조각으로 재활용합니다.",
+	["Scrap Tea Cup"] = "찻잔 분해",
+	recipeScrapTeaCupDesc = "찻잔을 분해합니다.",
+	["Scrap Coffee Cup"] = "커피잔 분해",
+	recipeScrapCoffeeCupDesc = "커피잔을 분해합니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",

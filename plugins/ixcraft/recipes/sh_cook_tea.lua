@@ -1,12 +1,12 @@
 RECIPE.name = "Tea"
 RECIPE.description = "recipeTeaDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/synapse/misc_props/synapse_misc_tall_metal_box.mdl"
+RECIPE.model = "models/tea/teacup.mdl"
 RECIPE.requirements = {
 	["misc_dried_tea"] = 1,
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1}},
 	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}},
-	["misc_coffeecup"] = 1
+	["tea_cup"] = 1
 }
 RECIPE.results = {
 	["tea"] = 1

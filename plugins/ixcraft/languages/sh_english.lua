@@ -97,6 +97,8 @@ LANGUAGE = {
 	recipeScrapBottleDesc = "Disassemble a glass bottle.",
 	recipeScrapBottleShardDesc = "Disassemble a bottle shard.",
 	recipeScrapCombineSteelDesc = "Recycle a Combine steel chunk into generic steel pieces.",
+	recipeScrapTeaCupDesc = "Disassemble a tea cup.",
+	recipeScrapCoffeeCupDesc = "Disassemble a coffee cup.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",

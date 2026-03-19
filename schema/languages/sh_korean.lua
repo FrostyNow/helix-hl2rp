@@ -566,6 +566,8 @@ LANGUAGE = {
 	itemResinDesc = "3D 프린터로 물건을 만드는 데 쓰이는 재료입니다.",
 	["Combine Steel"] = "콤바인 강철",
 	itemCombineSteelDesc = "콤바인 장비를 만드는 데 사용되는 특이한 강철 조각입니다.",
+	["Tea Cup"] = "찻잔",
+	itemTeaCupDesc = "차를 마시기 좋은 찻잔입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

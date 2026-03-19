@@ -1,10 +1,10 @@
 ITEM.name = "Tea"
-ITEM.model = "models/mosi/fallout4/props/junk/coffeecup.mdl"
+ITEM.model = "models/tea/teacup.mdl"
 ITEM.description = "itemTeaDesc"
 ITEM.skin = 1
 ITEM.thirst = 25
 ITEM.price = 20
 ITEM.heal = 5
 ITEM.sound = "interface/inv_drink_tea.ogg"
-ITEM.empty = "misc_coffeecup"
+ITEM.empty = "tea_empty"
 ITEM.isDrink = true
