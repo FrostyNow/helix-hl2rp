@@ -1,6 +1,21 @@
 local PLUGIN = PLUGIN
 
-local MELEE_WEAPONS = {
+local MELEE_DAMAGE_OVERRIDES = {
+	["weapon_hl2axe"] = {8, 10},
+	["weapon_hl2bottle"] = {5, 8},
+	["weapon_hl2brokenbottle"] = {5, 8},
+	["weapon_hl2hook"] = {8, 15},
+	["weapon_hl2pan"] = {4, 7},
+	["weapon_hl2pickaxe"] = {8, 15},
+	["weapon_hl2pipe"] = {4, 7},
+	["weapon_hl2pot"] = {4, 7},
+	["weapon_hl2shovel"] = {5, 8}
+}
+
+local STRENGTH_MELEE_WEAPONS = {
+	["ix_hands"] = true,
+	["ix_stunstick"] = true,
+	["weapon_crowbar"] = true,
 	["weapon_hl2axe"] = true,
 	["weapon_hl2bottle"] = true,
 	["weapon_hl2brokenbottle"] = true,
@@ -185,22 +200,46 @@ function PLUGIN:InitializedPlugins()
 	end
 end
 
+local function GetMeleeClass(attacker, inflictor)
+	if (IsValid(inflictor) and inflictor ~= attacker) then
+		return inflictor:GetClass()
+	end
+
+	if (IsValid(attacker) and attacker:IsPlayer()) then
+		local weapon = attacker:GetActiveWeapon()
+
+		if (IsValid(weapon)) then
+			return weapon:GetClass()
+		end
+	end
+end
+
 function PLUGIN:EntityTakeDamage(entity, dmgInfo)
 	local attacker = dmgInfo:GetAttacker()
 	local inflictor = dmgInfo:GetInflictor()
 
 	if (IsValid(attacker) and attacker:IsPlayer() and IsValid(inflictor)) then
-		local class = inflictor:GetClass()
+		local class = GetMeleeClass(attacker, inflictor)
 
-		if (MELEE_WEAPONS[class]) then
-			local character = attacker:GetCharacter()
+		if (!class) then
+			return
+		end
 
-			if (character) then
-				local strength = character:GetAttribute("str", 0)
-				local multiplier = ix.config.Get("strengthMeleeMultiplier", 0.3)
+		local damageOverride = MELEE_DAMAGE_OVERRIDES[class]
+		local character = attacker:GetCharacter()
+		local bonusDamage = 0
 
-				dmgInfo:SetDamage(dmgInfo:GetDamage() + (strength * multiplier))
-			end
+		if (character and STRENGTH_MELEE_WEAPONS[class]) then
+			local strength = character:GetAttribute("str", 0)
+			local multiplier = ix.config.Get("strengthMeleeMultiplier", 0.3)
+
+			bonusDamage = strength * multiplier
+		end
+
+		if (damageOverride) then
+			dmgInfo:SetDamage(math.Rand(damageOverride[1], damageOverride[2]) + bonusDamage)
+		elseif (bonusDamage > 0) then
+			dmgInfo:SetDamage(dmgInfo:GetDamage() + bonusDamage)
 		end
 	end
 end
