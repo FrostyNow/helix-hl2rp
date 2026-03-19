@@ -573,10 +573,50 @@ end)
 
 ix.command.Add("HUDReset", {
 	description = "@cmdHUDReset",
+	OnCanRun = function(self, client)
+		return Schema:CanPlayerSeeCombineOverlay(client)
+	end,
 	OnRun = function(self, client)
-		-- We need to tell the client to clear their cookies
 		netstream.Start(client, "ixHUDReset")
 		return "@hudResetMessage"
 	end
 })
 
+ix.command.Add("NightVision", {
+	alias = "NV",
+	description = "@cmdNightVision",
+	arguments = bit.bor(ix.type.string, ix.type.optional),
+	OnCanRun = function(self, client)
+		return Schema:CanPlayerSeeCombineOverlay(client) and client:Team() == FACTION_OTA
+	end,
+	OnRun = function(self, client, mode)
+		mode = (mode and mode:lower() == "ir") and "ir" or "nv"
+		local currentMode = client:GetLocalVar("nv_mode", "off")
+
+		if (mode == "ir") then
+			if (currentMode == "ir") then
+				client:SetLocalVar("nv_mode", "off")
+				netstream.Start(client, "ixFLIRToggle", false)
+			else
+				if (currentMode == "nv") then
+					netstream.Start(client, "ixNVToggle", false)
+				end
+
+				client:SetLocalVar("nv_mode", "ir")
+				netstream.Start(client, "ixFLIRToggle", true)
+			end
+		else
+			if (currentMode == "nv") then
+				client:SetLocalVar("nv_mode", "off")
+				netstream.Start(client, "ixNVToggle", false)
+			else
+				if (currentMode == "ir") then
+					netstream.Start(client, "ixFLIRToggle", false)
+				end
+
+				client:SetLocalVar("nv_mode", "nv")
+				netstream.Start(client, "ixNVToggle", true)
+			end
+		end
+	end
+})

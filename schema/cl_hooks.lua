@@ -149,10 +149,6 @@ local COLOR_BLACK_WHITE = {
 local combineOverlay = ix.util.GetMaterial("effects/combine_binocoverlay")
 local cinematicOverlay = ix.util.GetMaterial("nco/cinover")
 
--- Concept models that should have their head scaled based on the mask bodygroup
--- No longer needed as it's handled by Schema:IsConceptCombine
-
-
 function Schema:ApplyMaskScale(v)
 	if (!IsValid(v)) then return end
 
@@ -174,7 +170,6 @@ function Schema:ApplyMaskScale(v)
 
 	v:ManipulateBoneScale(headBone, Vector(1, 1, 1))
 end
--- local scannerFirstPerson = false
 
 function Schema:RenderScreenspaceEffects()
 	local colorModify = {}

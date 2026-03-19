@@ -34,6 +34,7 @@ ITEM.pacData = {
 
 local function OnEquipped(item)
 	if (item:GetData("equip")) then
+		item.player:SetLocalVar("nv_mode", "nv")
 		netstream.Start(item.player, "ixNVToggle", true)
 		item.player:ScreenFade(1, Color(255, 255, 255, 100), .4, 0)
 	end
@@ -41,6 +42,7 @@ end
 
 local function OnUnequipped(item)
 	if (!item:GetData("equip")) then
+		item.player:SetLocalVar("nv_mode", "off")
 		netstream.Start(item.player, "ixNVToggle", false)
 		item.player:ScreenFade(1, Color(255, 255, 255, 100), .4, 0)
 	end
