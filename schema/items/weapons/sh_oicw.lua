@@ -1,6 +1,6 @@
 ITEM.name = "XM29 OICW"
 ITEM.description = "oicwDesc"
-ITEM.class = "weapon_rtbr_oicw"
+ITEM.class = "arc9_rtb_oicw"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
 ITEM.price = 1750
