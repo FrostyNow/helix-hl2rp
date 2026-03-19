@@ -570,3 +570,13 @@ concommand.Add("ix_dev_ammo", function()
 		print(ammo) -- Prints the ID to console
 	end
 end)
+
+ix.command.Add("HUDReset", {
+	description = "@cmdHUDReset",
+	OnRun = function(self, client)
+		-- We need to tell the client to clear their cookies
+		netstream.Start(client, "ixHUDReset")
+		return "@hudResetMessage"
+	end
+})
+

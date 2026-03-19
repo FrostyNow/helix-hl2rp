@@ -671,4 +671,6 @@ LANGUAGE = {
 	demotedTarget = "%s님을 %s(으)로 강등시켰습니다.",
 	cantPromoteFurther = "더 이상 진급시킬 수 없습니다.",
 	cantDemoteFurther = "더 이상 강등시킬 수 없습니다.",
+	cmdHUDReset = "콤바인 HUD의 위치를 기본값으로 초기화합니다.",
+	hudResetMessage = "HUD의 위치가 초기화되었습니다.",
 }

@@ -106,7 +106,10 @@ function PLUGIN:HUDPaint()
 
 		local socioColor = self.sociostatusColors[self.socioStatus] or color_white
 
-		local info = {x = ScrW() - 8, y = 8}
+		local info = {
+			x = cookie.GetNumber("ixHUD_cto_X", (ScrW() - 148) / ScrW()) * ScrW() + 140,
+			y = cookie.GetNumber("ixHUD_cto_Y", 8 / ScrH()) * ScrH()
+		}
 
 		if (self.socioStatus == "BLACK") then
 			local tsin = TimedSin(1, 0, 255, 0)
@@ -322,3 +325,23 @@ function PLUGIN:HUDPaint()
 		end
 	end
 end
+
+function PLUGIN:OnContextMenuOpen()
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
+		ix.gui.locators = ix.gui.locators or {}
+		
+		-- CTO Stats Locator
+		local cto_locator = vgui.Create("ixHUDLocator")
+		cto_locator:Setup("cto", "CTO Units Info", ScrW() - 148, 8)
+		table.insert(ix.gui.locators, cto_locator)
+	end
+end
+
+hook.Add("ixHUDReset", "ixCTOReset", function()
+	local elements = {"cto"}
+	for _, v in ipairs(elements) do
+		cookie.Set("ixHUD_" .. v .. "_X", nil)
+		cookie.Set("ixHUD_" .. v .. "_Y", nil)
+	end
+end)
+

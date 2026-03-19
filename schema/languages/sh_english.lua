@@ -331,4 +331,6 @@ LANGUAGE = {
 	demotedTarget = "You have demoted %s to %s.",
 	cantPromoteFurther = "Cannot promote any further.",
 	cantDemoteFurther = "Cannot demote any further.",
+	cmdHUDReset = "Reset your Combine HUD positions to defaults.",
+	hudResetMessage = "Your HUD positions have been reset.",
 }

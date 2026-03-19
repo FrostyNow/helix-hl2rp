@@ -109,7 +109,8 @@ function CombHUD()
 			end
 			
 			--main square 1 (unit info)
-			local ux, uy = ScrW() - 310, 40
+			local ux = cookie.GetNumber("ixHUD_cp_unit_X", (ScrW() - 310) / ScrW()) * ScrW()
+			local uy = cookie.GetNumber("ixHUD_cp_unit_Y", 40 / ScrH()) * ScrH()
 
 			surface.SetDrawColor(0, 0, 0, 175)
 			surface.DrawRect(ux, uy, 300, 180)
@@ -167,28 +168,31 @@ local function CombineCompass()
 
 	local ang = LocalPlayer():EyeAngles()
 	local width = ScrW() * .23
+	local x = cookie.GetNumber("ixHUD_compass_X", (ScrW() / 2 - (width / 2) - 16) / ScrW()) * ScrW()
+	local y = cookie.GetNumber("ixHUD_compass_Y", 30 / ScrH()) * ScrH()
+
 	local m = 1
 	local spacing = (width * m) / 360
 	local lines = width / spacing
 	local rang = math.Round(ang.y)
 
 	surface.SetDrawColor(0, 0, 0, 175)
-	surface.DrawRect(ScrW() / 2 - (width / 2) - 16, 30, width + 32, 35)
+	surface.DrawRect(x, y, width + 32, 35)
 	surface.SetDrawColor(17, 136, 247, 150)
-	surface.DrawOutlinedRect(ScrW() / 2 - (width / 2) - 16, 30, width + 32, 35)
+	surface.DrawOutlinedRect(x, y, width + 32, 35)
 
-	draw.SimpleText(ang, "BudgetLabel", ScrW() / 2, 50, color_white, TEXT_ALIGN_CENTER)
+	draw.SimpleText(ang, "BudgetLabel", x + (width + 32) / 2, y + 20, color_white, TEXT_ALIGN_CENTER)
 
 	surface.SetDrawColor(17, 136, 247, 255)
-	surface.DrawRect(ScrW() / 2 - (width / 2) - 8, 46, width + 16, 1)
+	surface.DrawRect(x + 8, y + 16, width + 16, 1)
 
 	for i = (rang - (lines / 2)) % 360, ((rang - (lines / 2)) % 360) + lines do
-		local x = (ScrW() / 2 + (width / 2)) - ((i - ang.y - 180) % 360) * spacing
+		local x2 = (x + (width + 32) / 2) - ((i - ang.y - 180) % 360) * spacing
 
 		if i % 30 == 0 and i > 0 then
 			local text = direction[360 - (i % 360)] and direction[360 - (i % 360)] or 360 - (i % 360)
 
-			draw.SimpleText(text, "BudgetLabel", x, 30, color_white, TEXT_ALIGN_CENTER)
+			draw.SimpleText(text, "BudgetLabel", x2, y, color_white, TEXT_ALIGN_CENTER)
 		end
 	end
 
@@ -233,3 +237,29 @@ hook.Add("CanDrawAmmoHUD", "CHUD_HideBaseAmmo", function(weapon)
 		return false
 	end
 end)
+
+hook.Add("OnContextMenuOpen", "ixCPOverlayLocators", function()
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
+		local compass_w = ScrW() * .23
+		ix.gui.locators = ix.gui.locators or {}
+		
+		-- Compass Locator
+		local compass_locator = vgui.Create("ixHUDLocator")
+		compass_locator:Setup("compass", "Combine Compass", ScrW() / 2 - (compass_w / 2) - 16, 30)
+		table.insert(ix.gui.locators, compass_locator)
+		
+		-- CP Unit info Locator
+		local cp_unit_locator = vgui.Create("ixHUDLocator")
+		cp_unit_locator:Setup("cp_unit", "Unit Bio-Signals (CP)", ScrW() - 310, 40)
+		table.insert(ix.gui.locators, cp_unit_locator)
+	end
+end)
+
+hook.Add("ixHUDReset", "ixCPOverlayReset", function()
+	local elements = {"compass", "cp_unit"}
+	for _, v in ipairs(elements) do
+		cookie.Set("ixHUD_" .. v .. "_X", nil)
+		cookie.Set("ixHUD_" .. v .. "_Y", nil)
+	end
+end)
+

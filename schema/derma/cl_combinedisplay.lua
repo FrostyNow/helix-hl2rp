@@ -14,7 +14,12 @@ function PANEL:Init()
 	self:SetMaxLines(6)
 	self:SetFont("BudgetLabel")
 
-	self:SetPos(6, 6)
+	-- Default position
+	local defaultY = ix.gui.bars:GetTall() + 4
+	local x = cookie.GetNumber("ixHUD_msg_X", 6 / ScrW()) * ScrW()
+	local y = cookie.GetNumber("ixHUD_msg_Y", defaultY / ScrH()) * ScrH()
+
+	self:SetPos(x, y)
 	self:SetSize(ScrW(), self.maxLines * 20)
 	self:ParentToHUD()
 
@@ -55,10 +60,14 @@ function PANEL:RemoveLine(id)
 end
 
 function PANEL:Think()
-	local x, _ = self:GetPos()
-	local y = ix.gui.bars:GetTall()
+	-- Do not update position if we are in HUD editing mode (managed by locator)
+	if (ix.hudEditing) then return end
 
-	self:SetPos(x, y + 4)
+	local defaultY = ix.gui.bars:GetTall() + 4
+	local x = cookie.GetNumber("ixHUD_msg_X", 6 / ScrW()) * ScrW()
+	local y = cookie.GetNumber("ixHUD_msg_Y", defaultY / ScrH()) * ScrH()
+
+	self:SetPos(x, y)
 end
 
 function PANEL:Paint(width, height)

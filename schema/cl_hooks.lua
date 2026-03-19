@@ -103,6 +103,33 @@ function Schema:Think()
 	end
 end
 
+function Schema:OnContextMenuOpen()
+	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
+		ix.hudEditing = true
+		
+		-- Spawn Locators for adjustable HUD elements
+		local bars_h = (ix.gui.bars and IsValid(ix.gui.bars)) and ix.gui.bars:GetTall() or 0
+		
+		ix.gui.locators = ix.gui.locators or {}
+		
+		-- Message Box Locator
+		local msg_locator = vgui.Create("ixHUDLocator")
+		msg_locator:Setup("msg", "Combine Messages", 6, bars_h + 4)
+		table.insert(ix.gui.locators, msg_locator)
+	end
+end
+
+function Schema:OnContextMenuClose()
+	ix.hudEditing = false
+	if (ix.gui.locators) then
+		for _, v in ipairs(ix.gui.locators) do
+			if (IsValid(v)) then v:Remove() end
+		end
+		ix.gui.locators = nil
+	end
+end
+
+
 -- function Schema:PlayerFootstep(client, position, foot, soundName, volume)
 -- 	return true
 -- end
@@ -412,11 +439,23 @@ function Schema:PopulateHelpMenu(tabs)
 	end
 end
 
+netstream.Hook("ixHUDReset", function()
+	local elements = {"msg"}
+	for _, v in ipairs(elements) do
+		cookie.Set("ixHUD_" .. v .. "_X", nil)
+		cookie.Set("ixHUD_" .. v .. "_Y", nil)
+	end
+	
+	ix.util.Notify("Your HUD layout has been reset to defaults.")
+	hook.Run("ixHUDReset")
+end)
+
 netstream.Hook("CombineDisplayMessage", function(text, color, arguments)
 	if (IsValid(ix.gui.combine)) then
 		ix.gui.combine:AddLine(text, color, nil, unpack(arguments))
 	end
 end)
+
 
 netstream.Hook("PlaySound", function(sound)
 	surface.PlaySound(sound)

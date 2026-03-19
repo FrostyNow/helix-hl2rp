@@ -13,8 +13,25 @@ ix.config.Add("disableContext", true, "Whether or not context menu is enabled.",
 	category = "appearance"
 })
 
-if ix.config.Get("disableContext", true) then
-	function PLUGIN:ContextMenuOpen()
-		return LocalPlayer():IsAdmin()
+local allowedWeapons = {
+	["gmod_tool"] = true,
+	["weapon_physgun"] = true
+}
+
+function PLUGIN:ContextMenuOpen()
+	if (LocalPlayer():IsAdmin()) then
+		return true
+	end
+
+	if (ix.config.Get("disableContext", true)) then
+		local weapon = LocalPlayer():GetActiveWeapon()
+
+		if (IsValid(weapon) and allowedWeapons[weapon:GetClass()]) then
+			return true
+		end
+
+		if (LocalPlayer():IsWepRaised()) then
+			return false
+		end
 	end
 end
