@@ -34,8 +34,14 @@ ix.command.Add("NightVision", {
 		end
 
 		client:SetLocalVar("nv_mode", mode)
-		netstream.Start(client, "ixNVToggle", mode == "nv")
-		netstream.Start(client, "ixFLIRToggle", mode == "ir")
+
+		if (mode == "nv") then
+			netstream.Start(client, "ixNVToggle", true)
+		elseif (mode == "ir") then
+			netstream.Start(client, "ixFLIRToggle", true)
+		else
+			netstream.Start(client, "ixNVToggle", false)
+		end
 	end
 })
 
@@ -235,6 +241,24 @@ local function setNightVisionState(enabled, nightType)
 		NV_Status = false
 		CurScale = 0
 		removeOurEffects()
+
+		local defaultColorMod = {
+			["$pp_colour_addr"] = 0,
+			["$pp_colour_addg"] = 0,
+			["$pp_colour_addb"] = 0,
+			["$pp_colour_brightness"] = 0,
+			["$pp_colour_contrast"] = 1,
+			["$pp_colour_colour"] = 1,
+			["$pp_colour_mulr"] = 0,
+			["$pp_colour_mulg"] = 0,
+			["$pp_colour_mulb"] = 0
+		}
+
+		hook.Add("RenderScreenspaceEffects", "ixNV_ClearColor", function()
+			DrawColorModify(defaultColorMod)
+			hook.Remove("RenderScreenspaceEffects", "ixNV_ClearColor")
+		end)
+
 		return
 	end
 
