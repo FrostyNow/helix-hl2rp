@@ -2711,46 +2711,6 @@ function PLUGIN:PlayerSay(client, text)
 	end
 end
 
-do
-	local COMMAND = {}
-	COMMAND.arguments = ix.type.text
-	COMMAND.adminOnly = true
-	COMMAND.description = "Test radio messages with different states (recognized/unrecognized, near/far, normal/yell/whisper)"
-
-	function COMMAND:OnRun(client, message)
-		if (!message or message == "") then
-			message = "Testing radio transmission formatting and colors."
-		end
-		
-		client:ChatPrint("--- 1. Recognized, Near, Normal ---")
-		ix.chat.Send(client, "radio", message, false, {client}, {freq="100.0", chan="1"})
-		
-		client:ChatPrint("--- 2. Unrecognized, Near, Normal ---")
-		ix.chat.Send(client, "radio", message, true, {client}, {freq="100.0", chan="1"})
-		
-		client:ChatPrint("--- 3. Recognized, Near, Yell ---")
-		ix.chat.Send(client, "radio_yell", message, false, {client}, {freq="100.0", chan="1"})
-		
-		client:ChatPrint("--- 4. Unrecognized, Near, Whisper ---")
-		ix.chat.Send(client, "radio_whisper", message, true, {client}, {freq="100.0", chan="1"})
-		
-		client:ChatPrint("--- 5. Recognized, Far, Normal (Eavesdrop) ---")
-		ix.chat.Send(client, "radio_eavesdrop", message, false, {client}, {freq="100.0", chan="1", quiet=true})
-		
-		client:ChatPrint("--- 6. Unrecognized, Far, Normal (Eavesdrop) ---")
-		ix.chat.Send(client, "radio_eavesdrop", message, true, {client}, {freq="100.0", chan="1", quiet=true})
-		
-		client:ChatPrint("--- 7. Recognized, Far, Yell (Eavesdrop) ---")
-		ix.chat.Send(client, "radio_eavesdrop_yell", message, false, {client}, {freq="100.0", chan="1", quiet=true})
-
-		client:ChatPrint("--- 8. Unrecognized, Far, Whisper (Eavesdrop) ---")
-		ix.chat.Send(client, "radio_eavesdrop_whisper", message, true, {client}, {freq="100.0", chan="1", quiet=true})
-
-		client:ChatPrint("--- END OF RADIO TEST ---")
-	end
-	ix.command.Add("radiotest", COMMAND)
-end
-
 if (SERVER) then
 	function PLUGIN:SaveData()
 		local data = {}
