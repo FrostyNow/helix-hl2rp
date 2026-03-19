@@ -76,7 +76,8 @@ function PLUGIN:InitializedPlugins()
 		swep.DamageMin = 6
 		swep.Ammo = "5.56x45mm"
 		swep.ForceDefaultClip = 0
-		swep.UBGLAmmo = "oicw_grenade"
+		swep.UBGLAmmo = "20x28mm grenade"
+		swep.Secondary.DefaultClip = 0
 	end
 
 	// VJ
