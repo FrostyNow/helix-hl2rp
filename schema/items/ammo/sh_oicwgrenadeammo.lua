@@ -1,4 +1,4 @@
-ITEM.name = "HEAB Round"
+ITEM.name = "20mm HEAB Round"
 ITEM.model = "models/Items/AR2_Grenade.mdl"
 ITEM.ammo = "20x28mm grenade" -- type of the ammo
 ITEM.ammoAmount = 1 -- amount of the ammo
