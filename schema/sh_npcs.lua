@@ -19,6 +19,9 @@ Schema.npcClassLists.combine = {
 	["npc_turret_ground"] = true,
 	["npc_combine_camera"] = true,
 	["combine_mine"] = true,
+	["mbn_apc_manager"] = true,
+	["hl2van_apcdriver_playermade"] = true,
+
 	["npc_vj_hlvr_suppressor"] = true,
 	["npc_vj_hlvr_captain"] = true,
 	["npc_vj_hlvr_heavy"] = true,
