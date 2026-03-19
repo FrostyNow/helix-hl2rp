@@ -11,6 +11,10 @@ FACTION.isDefault = false
 FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.RunFootstepRight"}
 
+FACTION.attPoints = 20
+FACTION.invWidth = 10
+FACTION.invHeight = 7
+
 FACTION.canSeeWaypoints = true
 FACTION.forcedName = true
 
@@ -34,6 +38,10 @@ FACTION.bodyGroups = {
 
 function FACTION:OnCharacterCreated(client, character)
 	local inventory = character:GetInventory()
+
+	if (inventory) then
+		inventory:SetSize(self.invWidth, self.invHeight)
+	end
 
 	inventory:Add("smg1", 1)
 	inventory:Add("smg1ammo", 4)

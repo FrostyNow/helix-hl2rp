@@ -400,3 +400,15 @@ if (CLIENT) then
 		end
 	end
 end
+
+function Schema:GetDefaultAttributePoints(client, payload)
+	local faction = payload.faction
+	local factionTable = ix.faction.indices[faction]
+
+	if (factionTable and factionTable.attPoints) then
+		return factionTable.attPoints
+	end
+
+    return
+end
+

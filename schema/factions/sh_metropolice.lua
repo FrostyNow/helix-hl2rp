@@ -45,10 +45,6 @@ end
 
 local UNIFORM_STATE_KEY = "mpfUniformState"
 local DEFAULT_CITIZEN_FACTION = "citizen"
-local dutyModelFallbacks = {
-	["models/humans/pandafishizens/male_12.mdl"] = "models/conceptbine_policeforce/rnd/male_11.mdl",
-	["models/humans/pandafishizens/female_17.mdl"] = "models/conceptbine_policeforce/rnd/female_17.mdl"
-}
 
 local function NormalizeModel(model)
 	return isstring(model) and model:gsub("\\", "/"):lower() or ""
@@ -87,11 +83,6 @@ end
 function FACTION:ResolveDutyModel(character, citizenModel)
 	local state = self:GetUniformState(character)
 	local sourceModel = NormalizeModel(citizenModel or state.originalModel or character:GetModel())
-	local mappedModel = dutyModelFallbacks[sourceModel]
-
-	if (mappedModel and table.HasValue(self.models, mappedModel)) then
-		return mappedModel
-	end
 
 	if (sourceModel:find("conceptbine_policeforce/rnd", 1, true) and table.HasValue(self.models, sourceModel)) then
 		return sourceModel
