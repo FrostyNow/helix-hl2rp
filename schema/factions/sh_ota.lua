@@ -12,8 +12,8 @@ FACTION.isGloballyRecognized = true
 FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.RunFootstepRight"}
 
 FACTION.attPoints = 20
-FACTION.invWidth = 10
-FACTION.invHeight = 7
+FACTION.invWidth = 7
+FACTION.invHeight = 5
 
 FACTION.canSeeWaypoints = true
 FACTION.forcedName = true
