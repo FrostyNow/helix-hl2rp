@@ -3,6 +3,6 @@ ITEM.model = "models/dead rising 2/hotdog.mdl"
 ITEM.description = "itemHotdogDesc"
 ITEM.hunger = 30
 ITEM.thirst = -10
-ITEM.price = 15
+ITEM.price = 35
 ITEM.heal = 10
 ITEM.cookable = true

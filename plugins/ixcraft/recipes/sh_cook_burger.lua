@@ -5,7 +5,7 @@ RECIPE.model = "models/dead rising 2/burger.mdl"
 RECIPE.requirements = {
 	["bread"] = 1,
 	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
-	["cheese"] = {amount = 1, substitutes = {["misc_dried_spices"] = 1}},
+	["cheese_slice"] = {amount = 1, substitutes = {["misc_dried_spices"] = 1}},
 	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }

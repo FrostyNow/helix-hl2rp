@@ -2,7 +2,7 @@ ITEM.name = "Rum"
 ITEM.description = "itemRumDesc"
 ITEM.model = "models/mosi/fallout4/props/alcohol/rum.mdl"
 ITEM.thirst = 25
-ITEM.price = 25
+ITEM.price = 60
 ITEM.empty = "glass_bottle_generic"
 ITEM.strength = 2
 

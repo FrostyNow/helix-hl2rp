@@ -3,6 +3,6 @@ ITEM.model = "models/griim/foodpack/egg.mdl"
 ITEM.description = "itemFriedEggDesc"
 ITEM.hunger = 20
 ITEM.thirst = -10
-ITEM.price = 10
+ITEM.price = 20
 ITEM.heal = 10
 ITEM.cookable = true

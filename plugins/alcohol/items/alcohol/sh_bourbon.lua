@@ -2,7 +2,7 @@ ITEM.name = "Bourbon"
 ITEM.description = "itemBourbonDesc"
 ITEM.model = "models/mosi/fallout4/props/alcohol/bourbon.mdl"
 ITEM.thirst = 25
-ITEM.price = 25
+ITEM.price = 60
 ITEM.empty = "glass_bottle_generic"
 ITEM.strength = 2
 

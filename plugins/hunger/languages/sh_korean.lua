@@ -39,6 +39,7 @@ LANGUAGE = {
 	["Bleach"] = "표백제",
 	itemBleachDesc = "더러움을 닦아내는 데 종종 쓰입니다.",
 	["Cheese"] = "치즈",
+	["Truckle"] = "치즈",
 	itemCheeseDesc = "우유를 굳게 하여 발효시켜 만든 특유의 풍미가 강한 유제품입니다.",
 	["Canned Fish"] = "생선 통조림",
 	itemFishDesc = "이름 모를 작은 생선 여러 마리가 통조림 안에 들어 있습니다.",

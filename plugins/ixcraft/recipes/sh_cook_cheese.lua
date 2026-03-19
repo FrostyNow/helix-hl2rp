@@ -1,9 +1,9 @@
-RECIPE.name = "Cheese"
+RECIPE.name = "Truckle"
 RECIPE.description = "recipeCheeseDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/bioshockinfinite/pound_cheese.mdl"
 RECIPE.requirements = {
-	["milk"] = 1,
+	["milk"] = 2,
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {

@@ -10,16 +10,16 @@ ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 
 ix.lang.AddTable("english", {
-	vendingCoffee = "COFFEE - ₮10",
+	vendingCoffee = "COFFEE - ₮30",
 })
 ix.lang.AddTable("korean", {
-	vendingCoffee = "커피 - ₮10",
+	vendingCoffee = "커피 - ₮30",
 })
 
 ENT.MaxRenderDistance = math.pow(256, 2)
 ENT.MaxStock = 20
 ENT.Items = {
-	{"vendingCoffee", "coffee", 10}
+	{"vendingCoffee", "coffee", 30}
 }
 
 function ENT:GetStock(id)

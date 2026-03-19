@@ -10,21 +10,21 @@ ENT.PhysgunDisable = true
 ENT.bNoPersist = true
 
 ix.lang.AddTable("english", {
-	vendingWater = "WATER - ₮5",
-	vendingFizzy = "FIZZY - ₮15",
+	vendingWater = "WATER - ₮15",
+	vendingFizzy = "FIZZY - ₮20",
 	vendingBeer = "BEER - ₮35"
 })
 ix.lang.AddTable("korean", {
-	vendingWater = "물 - ₮5",
-	vendingFizzy = "탄산 - ₮15",
+	vendingWater = "물 - ₮15",
+	vendingFizzy = "탄산 - ₮20",
 	vendingBeer = "맥주 - ₮35"
 })
 
 ENT.MaxRenderDistance = math.pow(256, 2)
 ENT.MaxStock = 20
 ENT.Items = {
-	{"vendingWater", "water", 5},
-	{"vendingFizzy", "water_sparkling", 15},
+	{"vendingWater", "water", 15},
+	{"vendingFizzy", "water_sparkling", 20},
 	{"vendingBeer", "water_special", 35}
 }
 

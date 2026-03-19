@@ -5,7 +5,7 @@ ITEM.skin = 2
 ITEM.force = 5
 ITEM.thirst = 35
 ITEM.usenum = 1
-ITEM.price = 8
+ITEM.price = 35
 ITEM.empty = "water_empty"
 
 ITEM:Hook("Eat", function(item)
