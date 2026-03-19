@@ -15,7 +15,7 @@ local HARVEST_OPTION_KEY = "harvestCorpse"
 local HARVEST_ACTION_KEY = "@harvestingCorpse"
 local DEFAULT_HARVEST_TIME = 6
 local DEFAULT_HARVEST_SOUND = "physics/body/body_medium_break3.wav"
-local HUMAN_BREAK_DAMAGE = 500
+local HUMAN_BREAK_DAMAGE = 300
 local HUMAN_BREAK_SOUND = "physics/body/body_medium_break2.wav"
 
 local humanNPCClasses = {
@@ -228,7 +228,6 @@ end
 function PLUGIN:IsMarkedPlayerCorpse(entity)
 	return IsValid(entity) and entity:GetClass() == "prop_ragdoll" and (
 		entity:GetNetVar("player") != nil
-		or entity:GetNetVar("ixPlayerOwner") != nil
 		or entity:GetNetVar("ixInventory") != nil
 		or entity:GetNetVar("ixPlayerName") != nil
 	)
@@ -239,27 +238,15 @@ function PLUGIN:IsBreakablePlayerCorpse(entity)
 		return false
 	end
 
-	-- 도축 중인 시체는 보호합니다.
 	if (entity:GetNetVar("ixHarvestBusy", false)) then
 		return false
 	end
 
-	-- 1. 우리 플러그인이 관리하는 최신 시체 소유권 확인
-	local owner = entity:GetNetVar("ixPlayerOwner")
-	if (IsValid(owner)) then
-		return false -- 보호함
+	local player = entity:GetNetVar("player")
+	if (IsValid(player) and player:IsPlayer() and player:Alive()) then
+		return false
 	end
 
-	-- 2. (백업용) 다른 플러그인이 설정한 player 넷바 확인
-	local altOwner = entity:GetNetVar("player")
-	if (IsValid(altOwner)) then
-		-- 만약 Persistent Corpses가 넷바를 안 지웠더라도, 엔진 레벨 체크로 이중 보호
-		if (altOwner:GetRagdollEntity() == entity or altOwner.ixRagdoll == entity) then
-			return false
-		end
-	end
-
-	-- 주인이 없거나 서버를 나갔거나, 더 이상 최신 시체가 아니면 터짐
 	return true
 end
 
@@ -314,19 +301,6 @@ if (SERVER) then
 
 		if (!isPlayer and !isNPC) then
 			return
-		end
-
-		-- 플레이어 시체인 경우 최신 시체 관리
-		if (isPlayer) then
-			-- 이 플레이어의 기존 시체들에서 소유권(보호권)을 제거합니다.
-			for _, v in ipairs(ents.FindByClass("prop_ragdoll")) do
-				if (v:GetNetVar("ixPlayerOwner") == owner) then
-					v:SetNetVar("ixPlayerOwner", nil)
-				end
-			end
-
-			-- 새 시체에 소유권을 부여합니다.
-			ragdoll:SetNetVar("ixPlayerOwner", owner)
 		end
 
 		local harvestID = self:GetHarvestID(owner, ragdoll)
@@ -427,7 +401,6 @@ if (SERVER) then
 			return
 		end
 
-		-- 도축 중(로딩바)인 시체는 데미지로 터지지 않도록 보호합니다.
 		if (entity:GetNetVar("ixHarvestBusy", false)) then
 			return
 		end
@@ -437,12 +410,7 @@ if (SERVER) then
 		if (!breakData) then
 			if (self:IsBreakablePlayerCorpse(entity)) then
 				breakData = self.breakables.human
-			elseif (self:IsMarkedPlayerCorpse(entity)) then
-				return
 			end
-		elseif (self:IsMarkedPlayerCorpse(entity) and !self:IsBreakablePlayerCorpse(entity)) then
-			-- 플레이어 시체이면서 최신/보호 대상인 경우, breakData가 있더라도 터지지 않게 보호
-			return
 		end
 
 		if (!breakData or entity:GetNetVar("ixCorpseDestroyed", false)) then

@@ -278,6 +278,11 @@ if (SERVER) then
 			return
 		end
 
+		entity.ixPlayerName = client:GetName()
+		entity:SetNetVar("ixPlayerName", client:GetName())
+		entity:SetNetVar("player", client)
+		entity.ShowPlayerInteraction = true
+
 		if (client:IsAdmin()) then
 			return
 		end
@@ -289,11 +294,7 @@ if (SERVER) then
 			inventory.vars.isCorpseInventory = true
 
 			entity.ixInventory = invID
-			entity.ixPlayerName = client:GetName()
 			entity:SetNetVar("ixInventory", invID)
-			entity:SetNetVar("ixPlayerName", client:GetName())
-			entity:SetNetVar("player", client)
-			entity.ShowPlayerInteraction = true
 
 			function entity:OnOptionSelected(activator, option, data)
 			end
