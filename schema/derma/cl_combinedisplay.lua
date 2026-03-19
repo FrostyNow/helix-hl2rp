@@ -1,5 +1,10 @@
 
 local PANEL = {}
+local DEFAULT_BACKGROUND = Color(0, 0, 0, 175)
+local DEFAULT_TEXT_COLOR = Color(255, 255, 255)
+local LINE_PADDING_X = 8
+local LINE_PADDING_Y = 3
+local LINE_SPACING = 2
 
 AccessorFunc(PANEL, "font", "Font", FORCE_STRING)
 AccessorFunc(PANEL, "maxLines", "MaxLines", FORCE_NUMBER)
@@ -15,12 +20,12 @@ function PANEL:Init()
 	self:SetFont("BudgetLabel")
 
 	-- Default position
-	local defaultY = ix.gui.bars:GetTall() + 4
+	local defaultY = (IsValid(ix.gui.bars) and ix.gui.bars:GetTall() or 0) + 4
 	local x = cookie.GetNumber("ixHUD_msg_X", 6 / ScrW()) * ScrW()
 	local y = cookie.GetNumber("ixHUD_msg_Y", defaultY / ScrH()) * ScrH()
 
 	self:SetPos(x, y)
-	self:SetSize(ScrW(), self.maxLines * 20)
+	self:SetSize(ScrW(), self.maxLines * (draw.GetFontHeight(self.font) + (LINE_PADDING_Y * 2) + LINE_SPACING))
 	self:ParentToHUD()
 
 	ix.gui.combine = self
@@ -42,10 +47,12 @@ function PANEL:AddLine(text, color, expireTime, ...)
 	end
 
 	local index = #self.lines + 1
+	local background = color or DEFAULT_BACKGROUND
 
 	self.lines[index] = {
 		text = "<:: " .. text,
-		color = color or color_white,
+		background = Color(background.r, background.g, background.b, background.a or DEFAULT_BACKGROUND.a),
+		textColor = DEFAULT_TEXT_COLOR,
 		expireTime = (expireTime != 0 and (CurTime() + (expireTime or 10)) or 0),
 		character = 1
 	}
@@ -60,10 +67,7 @@ function PANEL:RemoveLine(id)
 end
 
 function PANEL:Think()
-	-- Do not update position if we are in HUD editing mode (managed by locator)
-	if (ix.hudEditing) then return end
-
-	local defaultY = ix.gui.bars:GetTall() + 4
+	local defaultY = (IsValid(ix.gui.bars) and ix.gui.bars:GetTall() or 0) + 4
 	local x = cookie.GetNumber("ixHUD_msg_X", 6 / ScrW()) * ScrW()
 	local y = cookie.GetNumber("ixHUD_msg_Y", defaultY / ScrH()) * ScrH()
 
@@ -71,22 +75,6 @@ function PANEL:Think()
 end
 
 function PANEL:Paint(width, height)
-	local vbob = ix.plugin.Get("newviewbob")
-	local matrix
-	if (vbob and vbob.bobData) then
-		local data = vbob.bobData
-		local w, h = ScrW(), ScrH()
-		local px, py = self:GetPos()
-		matrix = Matrix()
-
-		matrix:Translate(Vector(w / 2 - px, h / 2 - py))
-		matrix:Rotate(Angle(0, data.roll, 0))
-		matrix:Translate(Vector(-(w / 2 - px), -(h / 2 - py)))
-		matrix:Translate(Vector(data.right * 5, -data.up * 5 + data.pitch * 2))
-		
-		cam.PushModelMatrix(matrix)
-	end
-
 	local textHeight = draw.GetFontHeight(self.font)
 	local y = 0
 
@@ -102,15 +90,18 @@ function PANEL:Paint(width, height)
 			info.character = info.character + 1
 		end
 
-		surface.SetTextColor(info.color)
-		surface.SetTextPos(0, y)
-		surface.DrawText(info.text:sub(1, info.character))
+		local visibleText = info.text:sub(1, info.character)
+		local textWidth = surface.GetTextSize(visibleText)
+		local boxHeight = textHeight + (LINE_PADDING_Y * 2)
 
-		y = y + textHeight
-	end
+		surface.SetDrawColor(info.background)
+		surface.DrawRect(0, y, textWidth + (LINE_PADDING_X * 2), boxHeight)
 
-	if (matrix) then
-		cam.PopModelMatrix()
+		surface.SetTextColor(info.textColor)
+		surface.SetTextPos(LINE_PADDING_X, y + LINE_PADDING_Y)
+		surface.DrawText(visibleText)
+
+		y = y + boxHeight + LINE_SPACING
 	end
 
 	surface.SetDrawColor(Color(0, 0, 0, 255))

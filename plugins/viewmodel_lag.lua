@@ -67,8 +67,6 @@ if (CLIENT) then
 	end
 
 	local function calcViewModelLag(vm, origin, angles, originalAngles)
-		local originalOrigin = Vector(origin.x, origin.y, origin.z)
-		local originalAngle = Angle(angles.x, angles.y, angles.z)
 		local lagScale = 1.5
 
 		vm.ixLastFacing = vm.ixLastFacing or angles:Forward()
@@ -103,28 +101,67 @@ if (CLIENT) then
 		vectorMA(origin, -pitch * 0.03, right, origin)
 		vectorMA(origin, -pitch * 0.02, up, origin)
 
-		return origin, angles, originalOrigin, originalAngle
+		return origin, angles
 	end
 
+	local function getLoweredBlend(client)
+		if (client.ixRaisedFraction == nil) then
+			return client:IsWepRaised() and 0 or 1
+		end
+
+		return math.Clamp(client.ixRaisedFraction, 0, 1)
+	end
+
+	local isCalculating = false
+
 	function PLUGIN:CalcViewModelView(weapon, vm, oldPos, oldAng, pos, ang)
-		if (!ix.option.Get("viewmodelLagEnabled", true)) then
+		if (isCalculating) then
 			return
 		end
 
-		if (!IsValid(vm) or shouldSkipWeapon(weapon)) then
+		isCalculating = true
+		local hookedPos, hookedAng = hook.Run("CalcViewModelView", weapon, vm, oldPos, oldAng, pos, ang)
+		isCalculating = false
+
+		pos = hookedPos or pos
+		ang = hookedAng or ang
+
+		if (!ix.option.Get("viewmodelLagEnabled", true) or !IsValid(vm) or shouldSkipWeapon(weapon)) then
 			if (IsValid(vm)) then
 				vm.ixLastFacing = ang:Forward()
 			end
 
-			return
+			return pos, ang
 		end
+
+		local client = LocalPlayer()
+
+		if (!IsValid(client)) then
+			return pos, ang
+		end
+
+		local loweredBlend = getLoweredBlend(client)
+		local raiseBlend = 1 - loweredBlend
 
 		if (weapon.GetIronSights and weapon:GetIronSights()) then
 			vm.ixLastFacing = ang:Forward()
-			return
+			return pos, ang
 		end
 
-		local newPos, newAng = calcViewModelLag(vm, pos, ang, oldAng)
-		return newPos, newAng
+		if (raiseBlend <= 0) then
+			vm.ixLastFacing = ang:Forward()
+			return pos, ang
+		end
+
+		local basePos = Vector(pos.x, pos.y, pos.z)
+		local baseAng = Angle(ang.x, ang.y, ang.z)
+		local lagPos, lagAng = calcViewModelLag(vm, pos, ang, baseAng)
+
+		if (raiseBlend < 1) then
+			lagPos = LerpVector(raiseBlend, basePos, lagPos)
+			lagAng = LerpAngle(raiseBlend, baseAng, lagAng)
+		end
+
+		return lagPos, lagAng
 	end
 end

@@ -144,7 +144,7 @@ function Schema:PlayerLoadedCharacter(client, character, oldCharacter)
 	self:RefreshFlashlight(client)
 
 	if (faction == FACTION_CITIZEN) then
-		self:AddCombineDisplayMessage("@cCitizenLoaded", Color(255, 100, 255, 255))
+		self:AddCombineDisplayMessage("@cCitizenLoaded", Color(255, 100, 255, 45))
 	elseif (client:IsCombine()) then
 		client:AddCombineDisplayMessage("@cCombineLoaded")
 	end
@@ -251,10 +251,10 @@ function Schema:PlayerHurt(client, attacker, health, damage)
 				text = "cDamageSevere"
 			end
 
-			client:AddCombineDisplayMessage("@cTrauma", Color(255, 0, 0, 255), L(text, client))
+			client:AddCombineDisplayMessage("@cTrauma", Color(255, 0, 0, 45), L(text, client))
 
 			if (health < 25) then
-				client:AddCombineDisplayMessage("@cDroppingVitals", Color(255, 0, 0, 255))
+				client:AddCombineDisplayMessage("@cDroppingVitals", Color(255, 0, 0, 45))
 			end
 
 			client.ixTraumaCooldown = CurTime() + 15
@@ -283,11 +283,11 @@ function Schema:PlayerHurt(client, attacker, health, damage)
 end
 
 function Schema:PlayerStaminaLost(client)
-	client:AddCombineDisplayMessage("@cStaminaLost", Color(255, 255, 0, 255))
+	client:AddCombineDisplayMessage("@cStaminaLost", Color(255, 255, 0, 45))
 end
 
 function Schema:PlayerStaminaGained(client)
-	client:AddCombineDisplayMessage("@cStaminaGained", Color(0, 255, 0, 255))
+	client:AddCombineDisplayMessage("@cStaminaGained", Color(0, 255, 0, 45))
 end
 
 defaultPainSounds = {
@@ -353,31 +353,31 @@ function Schema:GetPlayerPainSound(client)
 	end
 end
 
-function Schema:PlayerDeath(client, inflicter, attacker)
-	if (client:IsCombine()) then
-		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+-- function Schema:PlayerDeath(client, inflicter, attacker)
+-- 	if (client:IsCombine()) then
+-- 		local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
 
-		self:AddCombineDisplayMessage("@cLostBiosignal")
-		self:AddCombineDisplayMessage("@cLostBiosignalLocation", Color(255, 0, 0, 255), location)
+-- 		self:AddCombineDisplayMessage("@cLostBiosignal")
+-- 		self:AddCombineDisplayMessage("@cLostBiosignalLocation", Color(255, 0, 0, 255), location)
 
-		local sounds = {"npc/overwatch/radiovoice/on1.wav", "npc/overwatch/radiovoice/lostbiosignalforunit.wav"}
-		local chance = math.random(1, 7)
+-- 		local sounds = {"npc/overwatch/radiovoice/on1.wav", "npc/overwatch/radiovoice/lostbiosignalforunit.wav"}
+-- 		local chance = math.random(1, 7)
 
-		if (chance == 2) then
-			sounds[#sounds + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
-		elseif (chance == 3) then
-			sounds[#sounds + 1] = "npc/overwatch/radiovoice/reinforcementteamscode3.wav"
-		end
+-- 		if (chance == 2) then
+-- 			sounds[#sounds + 1] = "npc/overwatch/radiovoice/remainingunitscontain.wav"
+-- 		elseif (chance == 3) then
+-- 			sounds[#sounds + 1] = "npc/overwatch/radiovoice/reinforcementteamscode3.wav"
+-- 		end
 
-		sounds[#sounds + 1] = "npc/overwatch/radiovoice/off4.wav"
+-- 		sounds[#sounds + 1] = "npc/overwatch/radiovoice/off4.wav"
 
-		for _, player in ipairs(player.GetAll()) do
-			if (player:IsCombine()) then
-				ix.util.EmitQueuedSounds(player, sounds, 2, nil, player == client and 100 or 80)
-			end
-		end
-	end
-end
+-- 		for _, player in ipairs(player.GetAll()) do
+-- 			if (player:IsCombine()) then
+-- 				ix.util.EmitQueuedSounds(player, sounds, 2, nil, player == client and 100 or 80)
+-- 			end
+-- 		end
+-- 	end
+-- end
 
 function Schema:GetPlayerDeathSound(client)
 	if (client:IsCombine()) then

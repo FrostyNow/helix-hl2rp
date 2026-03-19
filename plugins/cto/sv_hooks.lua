@@ -38,6 +38,10 @@ function PLUGIN:Tick()
 								violations[#violations + 1] = self.VIOLATION_FALLEN_OVER
 							end
 
+							if (client:IsWepRaised()) then
+								violations[#violations + 1] = self.VIOLATION_RAISED_WEAPON
+							end
+
 							if (#violations > 0) then
 								if (!client:IsCombine() and !client:GetNetVar("IsBiosignalGone")) then
 									data[client] = violations

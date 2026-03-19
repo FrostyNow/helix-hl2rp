@@ -16,9 +16,14 @@ function CLASS:OnSet(client)
 
 			if (bodygroupPlugin) then
 				local player = character:GetPlayer()
+				local savedSkin = character:GetData("skin")
+				local skin = savedSkin == nil and 1 or (tonumber(savedSkin) or 1)
 
-				player:SetSkin(0)
-				bodygroupPlugin:SetPersistentAppearance(character, nil, 1)
+				player:SetSkin(skin)
+
+				if (savedSkin == nil) then
+					bodygroupPlugin:SetPersistentAppearance(character, nil, skin)
+				end
 			end
 		end
 	end

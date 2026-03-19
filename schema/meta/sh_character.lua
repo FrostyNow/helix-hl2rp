@@ -6,7 +6,7 @@ function CHAR:IsCombine()
 	local inventory = self:GetInventory()
 	local mimic = false
 	
-	if (inventory) then
+	if (istable(inventory) and inventory.GetItems) then
 		for k, v in pairs(inventory:GetItems()) do
 			if (v.uniqueID == "metropolice" and v:GetData("equip")) then
 				mimic = true

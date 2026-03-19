@@ -13,6 +13,7 @@ ix.util.Include("sv_plugin.lua")
 ix.lang.AddTable("english", {
 	["Camera Terminal"] = "Camera Terminal",
 	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
+	["Raised Weapon"] = "Raised Weapon",
 	MovementViolation = "Movement violation(s) sighted by C-i%s...",
 	NoBiosignalNote = "Note: Your character currently has no biosignal.",
 	DownloadingTrauma = "Downloading trauma packet...",
@@ -63,9 +64,10 @@ ix.lang.AddTable("korean", {
 	["Jumping"] = "점프",
 	["Ducking"] = "앉기",
 	["Laying"] = "드러누움",
+	["Raised Weapon"] = "무기 준비",
 	["Within Sights"] = "명 시야에 들어옴",
 	["Violations Within Sights"] = "시야 내 위반 행위 포착",
-	["Possible Violation"] = "발생 가능 위반 행위",
+	["Possible Violation"] = "위반 행위 의심",
 	MovementViolation = "C-i%s에 의해 위반 행위(들) 포착...",
 	NoBiosignalNote = "알림: 당신의 캐릭터는 현재 생체 신호가 두절되었습니다.",
 	DownloadingTrauma = "신체 손상 패킷 내려받는 중...",
@@ -97,6 +99,7 @@ ix.lang.AddTable("korean", {
 	cameraDisabled = "C-i%s 비활성화 중...",
 	cameraAlreadyDisabled = "카메라가 이미 비활성화되어 있습니다!",
 	cameraDisableDesc = "콤바인 카메라를 원격으로 비활성화합니다. ID는 HUD에 표시되어 있습니다.",
+	socioStatusUpdated = "경고! 사회 기조가 %s(으)로 갱신되었습니다!",
 })
 
 PLUGIN.sociostatusColors = {
@@ -118,6 +121,7 @@ PLUGIN.VIOLATION_RUNNING = 0
 PLUGIN.VIOLATION_JUMPING = 1
 PLUGIN.VIOLATION_CROUCHING = 2
 PLUGIN.VIOLATION_FALLEN_OVER = 3
+PLUGIN.VIOLATION_RAISED_WEAPON = 4
 
 -- Camera controlling enums.
 PLUGIN.CAMERA_VIEW = 0

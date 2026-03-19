@@ -99,12 +99,30 @@ local function GetAllowedBaseModels(item)
 	return BuildLookup(item.allowedBaseModels, NormalizeModel)
 end
 
+local function ResolveCharacterInventory(character)
+	if (!character or !character.GetInventory) then
+		return nil
+	end
+
+	local inventory = character:GetInventory()
+
+	if (isnumber(inventory)) then
+		inventory = ix.item.inventories[inventory] or ix.inventory.Get(inventory)
+	end
+
+	if (!istable(inventory) or !inventory.GetItems) then
+		return nil
+	end
+
+	return inventory
+end
+
 function PLUGIN:HasEquippedModelChangingOutfit(character)
 	if (!character) then
 		return false
 	end
 
-	local inventory = character:GetInventory()
+	local inventory = ResolveCharacterInventory(character)
 
 	if (!inventory) then
 		return false
@@ -239,7 +257,7 @@ function PLUGIN:GetExpectedAppearanceSkin(character, client)
 	end
 
 	local skin = tonumber(character:GetData("skin", IsValid(client) and client:GetSkin() or 0)) or 0
-	local inventory = character:GetInventory()
+	local inventory = ResolveCharacterInventory(character)
 
 	if (!inventory) then
 		return skin
@@ -266,6 +284,11 @@ function PLUGIN:ApplyTemporaryOutfitOverrides(client, character)
 		return false
 	end
 
+	if (!self:HasEquippedModelChangingOutfit(character)) then
+		self:ClearTemporaryOutfitOverrides(character)
+		return false
+	end
+
 	local model = self:GetTemporaryOutfitModelOverride(character)
 	local skin = self:GetTemporaryOutfitSkinOverride(character)
 	local changed = false
@@ -281,7 +304,8 @@ function PLUGIN:ApplyTemporaryOutfitOverrides(client, character)
 		client:SetSkin(math.max(tonumber(skin) or 0, 0))
 		changed = true
 	elseif (changed) then
-		client:SetSkin(self:GetExpectedAppearanceSkin(character, client))
+		local expectedSkin = self:GetExpectedAppearanceSkin(character, client)
+		client:SetSkin(expectedSkin)
 	end
 
 	return changed
@@ -298,7 +322,7 @@ function PLUGIN:CanPlayerEquipItem(client, item)
 		return false
 	end
 
-	local inventory = character:GetInventory()
+	local inventory = ResolveCharacterInventory(character)
 
 	if (inventory) then
 		local itemCategory = item.outfitCategory or (ix.item.list[item.uniqueID] and ix.item.list[item.uniqueID].outfitCategory)
@@ -362,7 +386,7 @@ function PLUGIN:CharacterVarChanged(character, key, oldValue, value)
 		local client = character:GetPlayer()
 
 		if (IsValid(client)) then
-			local inventory = character:GetInventory()
+			local inventory = ResolveCharacterInventory(character)
 
 			if (inventory) then
 				local items = inventory:GetItems()

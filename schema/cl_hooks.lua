@@ -103,33 +103,6 @@ function Schema:Think()
 	end
 end
 
-function Schema:OnContextMenuOpen()
-	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
-		ix.hudEditing = true
-		
-		-- Spawn Locators for adjustable HUD elements
-		local bars_h = (ix.gui.bars and IsValid(ix.gui.bars)) and ix.gui.bars:GetTall() or 0
-		
-		ix.gui.locators = ix.gui.locators or {}
-		
-		-- Message Box Locator
-		local msg_locator = vgui.Create("ixHUDLocator")
-		msg_locator:Setup("msg", "Combine Messages", 6, bars_h + 4)
-		table.insert(ix.gui.locators, msg_locator)
-	end
-end
-
-function Schema:OnContextMenuClose()
-	ix.hudEditing = false
-	if (ix.gui.locators) then
-		for _, v in ipairs(ix.gui.locators) do
-			if (IsValid(v)) then v:Remove() end
-		end
-		ix.gui.locators = nil
-	end
-end
-
-
 -- function Schema:PlayerFootstep(client, position, foot, soundName, volume)
 -- 	return true
 -- end
@@ -441,7 +414,6 @@ netstream.Hook("ixHUDReset", function()
 		cookie.Set("ixHUD_" .. v .. "_Y", nil)
 	end
 	
-	ix.util.Notify("Your HUD layout has been reset to defaults.")
 	hook.Run("ixHUDReset")
 end)
 
@@ -476,48 +448,7 @@ netstream.Hook("ViewObjectives", function(data)
 	vgui.Create("ixViewObjectives"):Populate(data)
 end)
 
-local sndOn = Sound( "items/nvg_on.wav" )
-local sndOff = Sound( "items/nvg_off.wav" )
 
-netstream.Hook("ixNVToggle", function(bool)
-	if not LocalPlayer():Alive() then
-		return
-	end
-
-	NV_Status = bool
-	NV_NIGHTTYPE = 1
-		
-	if bool then		
-		CurScale = 0.2
-		surface.PlaySound( sndOn )
-		hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
-		hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)	
-	else
-		surface.PlaySound( sndOff )
-		hook.Remove("RenderScreenspaceEffects", "NV_FX")
-		hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
-	end
-end)
-
-netstream.Hook("ixFLIRToggle", function(bool)
-	if not LocalPlayer():Alive() then
-		return
-	end
-		
-	NV_Status = bool
-	NV_NIGHTTYPE = 2
-		
-	if bool then		
-		CurScale = 0.2
-		surface.PlaySound( sndOn )
-		hook.Add("RenderScreenspaceEffects", "NV_FX", NV_FX)
-		hook.Add("PostDrawViewModel", "NV_PostDrawViewModel", NV_PostDrawViewModel)
-	else
-		surface.PlaySound( sndOff )
-		hook.Remove("RenderScreenspaceEffects", "NV_FX")
-		hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
-	end
-end)
 
 
 function Schema:PrePlayerDraw(v)

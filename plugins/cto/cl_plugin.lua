@@ -86,6 +86,14 @@ net.Receive("CombineRequestSignal", function()
 	end
 end)
 
+net.Receive("ixCTOPlayLocalSoundQueue", function()
+	local soundQueue = net.ReadTable()
+
+	if (istable(soundQueue)) then
+		ix.util.EmitQueuedSounds(LocalPlayer(), soundQueue)
+	end
+end)
+
 net.Receive("UpdateBiosignalCameraData", function()
 	local data = net.ReadTable()
 	local newCameraData = {}

@@ -14,6 +14,7 @@ FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.R
 FACTION.attPoints = 20
 FACTION.invWidth = 7
 FACTION.invHeight = 5
+FACTION.inventoryType = "main_ota"
 
 FACTION.canSeeWaypoints = true
 FACTION.forcedName = true
@@ -36,11 +37,44 @@ FACTION.bodyGroups = {
 	},
 }
 
-function FACTION:OnCharacterCreated(client, character)
+ix.inventory.Register(FACTION.inventoryType, FACTION.invWidth, FACTION.invHeight)
+
+local function ApplyMainInventoryLayout(character, width, height, client)
+	if (!character) then
+		return nil
+	end
+
 	local inventory = character:GetInventory()
 
-	if (inventory) then
-		inventory:SetSize(self.invWidth, self.invHeight)
+	if (isnumber(inventory)) then
+		inventory = ix.item.inventories[inventory] or ix.inventory.Get(inventory)
+	end
+
+	if (!istable(inventory) or !inventory.SetSize or !inventory.GetID) then
+		return nil
+	end
+
+	inventory:SetSize(width, height)
+	inventory.vars = inventory.vars or {}
+	inventory.vars.isBag = nil
+
+	local query = mysql:Update("ix_inventories")
+		query:Update("inventory_type", "NULL")
+		query:Where("inventory_id", inventory:GetID())
+	query:Execute()
+
+	if (IsValid(client)) then
+		inventory:Sync(client)
+	end
+
+	return inventory
+end
+
+function FACTION:OnCharacterCreated(client, character)
+	local inventory = ApplyMainInventoryLayout(character, self.invWidth, self.invHeight, client)
+
+	if (!inventory) then
+		return
 	end
 
 	inventory:Add("smg1", 1)
@@ -67,10 +101,22 @@ function FACTION:OnTransferred(character)
 
 	character:SetName(Schema:NormalizeCombineName(name, "OTA"))
 	character:SetModel(self.models[1])
+
+	ApplyMainInventoryLayout(character, self.invWidth, self.invHeight, client)
 end
 
 function FACTION:OnNameChanged(client, oldValue, value)
 	Schema:SyncCombineClass(client, value)
+end
+
+function FACTION:OnSpawn(client)
+	local character = IsValid(client) and client:GetCharacter()
+
+	if (!character) then
+		return
+	end
+
+	ApplyMainInventoryLayout(character, self.invWidth, self.invHeight, client)
 end
 
 function FACTION:ModifyPlayerStep(client, data)

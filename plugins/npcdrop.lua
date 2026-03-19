@@ -70,6 +70,32 @@ function PLUGIN:OnNPCKilled(entity)
 			ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))
 		end
 	end
+	if (class == "npc_combine_s") then
+		rand = math.random(1, 10)
+		if rand > 6 then
+			ix.item.Spawn("smg1ammo", entity:GetPos() + Vector(0, 0, 8))
+		elseif rand > 9 then
+			ix.item.Spawn("smg1", entity:GetPos() + Vector(0, 0, 8))
+		end
+	end
+	if (class == "npc_metropolice") then
+		rand = math.random(1, 10)
+		if rand > 6 then
+			ix.item.Spawn("pistolammo", entity:GetPos() + Vector(0, 0, 8))
+		elseif rand > 9 then
+			ix.item.Spawn("pistol", entity:GetPos() + Vector(0, 0, 8))
+		end
+	end
+	if (class == "npc_cscanner") then
+		if rand == 1 then
+			ix.item.Spawn("comp_combine_steel", entity:GetPos() + Vector(0, 0, 8))
+		end
+	end
+	if (class == "npc_turret_floor") then
+		if rand == 1 then
+			ix.item.Spawn("comp_combine_steel", entity:GetPos() + Vector(0, 0, 8))
+		end
+	end
 	-- if (class == "npc_headcrab") then
 	-- 	if rand == 1 or rand == 2 then
 	-- 		ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))

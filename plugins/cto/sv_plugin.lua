@@ -9,6 +9,21 @@ PLUGIN.socioStatus = PLUGIN.socioStatus or "GREEN"
 util.AddNetworkString("UpdateBiosignalCameraData")
 util.AddNetworkString("RecalculateHUDObjectives")
 util.AddNetworkString("CombineRequestSignal")
+util.AddNetworkString("ixCTOPlayLocalSoundQueue")
+
+function PLUGIN:PlayRestrictedSoundQueue(client, soundQueue)
+	if (!IsValid(client)) then
+		return
+	end
+
+	if (client:Team() == FACTION_OTA) then
+		net.Start("ixCTOPlayLocalSoundQueue")
+			net.WriteTable(soundQueue)
+		net.Send(client)
+	else
+		ix.util.EmitQueuedSounds(client, soundQueue)
+	end
+end
 
 function PLUGIN:SafelyPrepareCamera(combineCamera)
 	if (!IsValid(self.outputEntity)) then
@@ -44,8 +59,8 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	local unitID = Schema:GetCombineUnitID(client)
 
 	-- Alert all other units.
-	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(255, 255, 255, 255))
-	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 255), unitID, location)
+	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(0, 180, 255, 45))
+	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 45), unitID, location)
 
 	local soundQueue = {
 		"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -57,7 +72,7 @@ function PLUGIN:DoPostBiosignalLoss(client)
 
 	for _, player in ipairs(player.GetAll()) do
 		if (player:IsCombine() and player != client and !player:GetNetVar("IsBiosignalGone")) then
-			ix.util.EmitQueuedSounds(player, soundQueue)
+			self:PlayRestrictedSoundQueue(player, soundQueue)
 		end
 	end
 end
@@ -76,13 +91,13 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 				local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
 
-				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 45)) -- Alert this unit.
 
 				local unitID = Schema:GetCombineUnitID(client)
 
 				-- Alert all units.
-				Schema:AddCombineDisplayMessage("@DownloadingFoundBiosignal", Color(255, 255, 255, 255))
-				Schema:AddCombineDisplayMessage("@NoncohesiveBiosignalFound", Color(0, 255, 0, 255), unitID, location)
+				Schema:AddCombineDisplayMessage("@DownloadingFoundBiosignal", Color(0, 180, 255, 45))
+				Schema:AddCombineDisplayMessage("@NoncohesiveBiosignalFound", Color(0, 255, 0, 45), unitID, location)
 
 				local soundQueue = {
 					"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
@@ -92,11 +107,11 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 
 				for _, player in ipairs(player.GetAll()) do
 					if (player:IsCombine() and !player:GetNetVar("IsBiosignalGone")) then
-						ix.util.EmitQueuedSounds(player, soundQueue)
+						self:PlayRestrictedSoundQueue(player, soundQueue)
 					end
 				end
 			else
-				client:AddCombineDisplayMessage("@ErrorShuttingDown", Color(255, 0, 0, 255)) -- Alert this unit.
+				client:AddCombineDisplayMessage("@ErrorShuttingDown", Color(255, 0, 0, 45)) -- Alert this unit.
 
 				self:DoPostBiosignalLoss(client)
 			end
@@ -129,5 +144,5 @@ function PLUGIN:DispatchRequestSignal(client, text)
 		net.WriteString(text)
 	net.Send(players)
 
-	Schema:AddCombineDisplayMessage("@AssistanceRequestRecv", Color(175, 125, 100, 255))
+	Schema:AddCombineDisplayMessage("@AssistanceRequestRecv", Color(175, 125, 100, 45))
 end

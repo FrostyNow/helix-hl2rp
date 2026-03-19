@@ -777,6 +777,10 @@ function Schema:IsConceptCombine(client)
 	return model:find("conceptbine_policeforce", 1, true)
 end
 
+local function IsUsableInventory(inventory)
+	return istable(inventory) and inventory.GetItems and inventory.HasItem
+end
+
 function Schema:PlayerHasEquippedFlashlightBlocker(client)
 	if (!IsValid(client)) then
 		return false
@@ -785,7 +789,7 @@ function Schema:PlayerHasEquippedFlashlightBlocker(client)
 	local character = client:GetCharacter()
 	local inventory = character and character:GetInventory()
 
-	if (!inventory) then
+	if (!IsUsableInventory(inventory)) then
 		return false
 	end
 
@@ -806,7 +810,7 @@ function Schema:CanPlayerUseFlashlight(client)
 	local character = client:GetCharacter()
 	local inventory = character and character:GetInventory()
 
-	if (!character or !inventory) then
+	if (!character or !IsUsableInventory(inventory)) then
 		return false
 	end
 
@@ -982,11 +986,21 @@ do
 
 	function CLASS:CanHear(speaker, listener)
 		local character = listener:GetCharacter()
-		local inventory = character:GetInventory()
+		local inventory = character and character:GetInventory()
 		local bHasRadio = false
 
+		if (!character or !IsUsableInventory(inventory)) then
+			return false
+		end
+
+		local speakerCharacter = IsValid(speaker) and speaker:GetCharacter() or nil
+
+		if (!speakerCharacter) then
+			return false
+		end
+
 		for k, v in pairs(inventory:GetItemsByUniqueID("handheld_radio", true)) do
-			if (v:GetData("enabled", false) and speaker:GetCharacter():GetData("frequency") == character:GetData("frequency")) then
+			if (v:GetData("enabled", false) and speakerCharacter:GetData("frequency") == character:GetData("frequency")) then
 				bHasRadio = true
 				break
 			end

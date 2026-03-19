@@ -208,6 +208,10 @@ local function IsTopLayer(item)
 	return (item.replacement != nil or item.replacements != nil or isfunction(item.OnGetReplacement))
 end
 
+local function ShouldPersistOutfitSkin(item)
+	return item and item.newSkin != nil and IsTopLayer(item)
+end
+
 local function GetAppearanceStack(character)
 	return character:GetData("appearanceStack", {})
 end
@@ -264,14 +268,12 @@ function ITEM:RemoveOutfit(client)
 		end
 	end
 
-	if (self.newSkin) then
+	if (ShouldPersistOutfitSkin(self)) then
 		local oldSkin = character:GetData("oldSkin" .. self.outfitCategory)
 
-		if (oldSkin) then
+		if (oldSkin != nil) then
 			character:SetData("skin", oldSkin)
 			character:SetData("oldSkin" .. self.outfitCategory, nil)
-		else
-			character:SetData("skin", 0)
 		end
 	end
 
@@ -474,11 +476,21 @@ function ITEM:UpdateAppearance(client)
 	end
 
 	-- 5. Skin handling
-	local targetSkin = tonumber(character:GetData("skin", 0)) or 0
+	local targetSkin
+
 	if (topSkinItem and topSkinItem.newSkin != nil) then
-		targetSkin = topSkinItem.newSkin
+		targetSkin = tonumber(topSkinItem.newSkin) or 0
+	else
+		local savedSkin = character:GetData("skin")
+
+		if (savedSkin != nil) then
+			targetSkin = tonumber(savedSkin) or 0
+		end
 	end
-	client:SetSkin(targetSkin)
+
+	if (targetSkin != nil) then
+		client:SetSkin(targetSkin)
+	end
 end
 
 -- makes another outfit depend on this outfit in terms of requiring this item to be equipped in order to equip the attachment

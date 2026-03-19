@@ -23,37 +23,18 @@ local weps = { -- this table is for the weapons printnames, to be shown correctl
 	["arc9_hla_irifle"] = L("Standard Issue Pulse Rifle"),
 	["arc9_hl2_pistol"] = L("9mm Pistol"),
 	["arc9_hl2_smg1"] = L("Submachine Gun"),
-	["weapon_rtbr_flaregun"] = L("Flare Gun"),
+	["arc9_rtb_oicw"] = "OICW",
+	["weapon_rtbr_frag"] = L("Grenade"),
 	["weapon_rtbr_oicw"] = "OICW",
+	["weapon_rtbr_flaregun"] = L("Flare Gun"),
 }
 
-local function GetViewBobMatrix()
-	local vbob = ix.plugin.Get("newviewbob")
-	if (vbob and vbob.bobData) then
-		local data = vbob.bobData
-		local w, h = ScrW(), ScrH()
-		local matrix = Matrix()
-
-		matrix:Translate(Vector(w / 2, h / 2))
-		matrix:Rotate(Angle(0, data.roll, 0))
-		matrix:Translate(Vector(-w / 2, -h / 2))
-		
-		-- Apply translation (shaking and slight pitch tilt for depth)
-		matrix:Translate(Vector(data.right * 5, -data.up * 5 + data.pitch * 2))
-		
-		return matrix
-	end
-end
 
 function CombHUD()
 	if !LocalPlayer():IsValid() or !LocalPlayer():Alive() then return end 
 	if !LocalPlayer():GetCharacter() then return end
 
 	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
-		local matrix = GetViewBobMatrix()
-		if (matrix) then
-			cam.PushModelMatrix(matrix)
-		end
 
 		local tsin = TimedSin(.68, 200, 255, 0)
 		local area = LocalPlayer():GetAreaName()
@@ -114,15 +95,11 @@ function CombHUD()
 
 			surface.SetDrawColor(0, 0, 0, 175)
 			surface.DrawRect(ux, uy, 300, 180)
-			surface.SetDrawColor(17, 136, 247, 255)
-			surface.DrawOutlinedRect(ux, uy, 300, 180)
 			draw.SimpleText(lA, "BudgetLabel", ux + 10, uy + 10, tcolor)
 			draw.SimpleText("<:: "..L"LOCAL UNIT: "..LocalPlayer():Name(), "BudgetLabel", ux + 10, uy + 30, Color(255, 255, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_LEFT)
 			draw.SimpleText("<:: "..L"ASSET HEALTH: "..LocalPlayer():Health(), "BudgetLabel", ux + 10, uy + 50, hpCol)
 			draw.SimpleText("<:: "..L"ASSET ARMOR: "..LocalPlayer():Armor(), "BudgetLabel", ux + 10, uy + 70, armCol)
 			draw.SimpleText("<:: "..L"ASSET TOKENS: "..money, "BudgetLabel", ux + 10, uy + 90)
-			surface.SetDrawColor(17, 136, 247, 255)
-			surface.DrawRect(ux + 2, uy + 115, 296, 1)
 			draw.SimpleText("<:: "..L"BIOSIGNAL ZONE: "..L(area), "BudgetLabel", ux + 10, uy + 130)
 			draw.SimpleText("<:: "..L"BIOSIGNAL GRID: "..grid, "BudgetLabel", ux + 10, uy + 150)
 
@@ -133,17 +110,12 @@ function CombHUD()
 
 				surface.SetDrawColor(0, 0, 0, 175)
 				surface.DrawRect(x, y, 300, 55)
-				surface.SetDrawColor(17, 136, 247, 150)
-				surface.DrawOutlinedRect(x, y, 300, 55)
 				draw.SimpleText(L"ARM: "..Arm, "BudgetLabel", x + 10, y + 10)
 				draw.SimpleText("[ "..clip.." / "..clipMax.." ]", "BudgetLabel", x + 10, y + 30)
 				draw.SimpleText("[ "..count.." ]", "BudgetLabel", x + 80, y + 30)
 			end
 		end
 
-		if (matrix) then
-			cam.PopModelMatrix()
-		end
 	end
 end 
 local direction = {
@@ -161,44 +133,38 @@ local direction = {
 local function CombineCompass()
 	if !Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then return end
 	
-	local matrix = GetViewBobMatrix()
-	if (matrix) then
-		cam.PushModelMatrix(matrix)
-	end
 
 	local ang = LocalPlayer():EyeAngles()
 	local width = ScrW() * .23
+	
 	local x = cookie.GetNumber("ixHUD_compass_X", (ScrW() / 2 - (width / 2) - 16) / ScrW()) * ScrW()
 	local y = cookie.GetNumber("ixHUD_compass_Y", 30 / ScrH()) * ScrH()
 
-	local m = 1
-	local spacing = (width * m) / 360
-	local lines = width / spacing
-	local rang = math.Round(ang.y)
+	local visibleDegrees = 180 -- Visible field of view in compass
+	local spacing = width / visibleDegrees
+	local centerPos = x + (width + 32) / 2
+	local heading = math.Round(ang.y % 360)
 
 	surface.SetDrawColor(0, 0, 0, 175)
 	surface.DrawRect(x, y, width + 32, 35)
-	surface.SetDrawColor(17, 136, 247, 150)
-	surface.DrawOutlinedRect(x, y, width + 32, 35)
+	-- Current heading number
+	draw.SimpleText(math.Round(ang.y), "BudgetLabel", centerPos, y + 18, color_white, TEXT_ALIGN_CENTER)
 
-	draw.SimpleText(ang, "BudgetLabel", x + (width + 32) / 2, y + 20, color_white, TEXT_ALIGN_CENTER)
+	-- Ticks and Labels
+	for i = 0, 359, 15 do
+		local diff = math.NormalizeAngle(i - ang.y)
+		
+		if (math.abs(diff) < visibleDegrees / 2) then
+			local tickX = centerPos + diff * spacing
+			
+			if (i % 30 == 0) then
+				local text = direction[i] and direction[i] or tostring(i)
+				draw.SimpleText(text, "BudgetLabel", tickX, y + 2, color_white, TEXT_ALIGN_CENTER)
+			end
 
-	surface.SetDrawColor(17, 136, 247, 255)
-	surface.DrawRect(x + 8, y + 16, width + 16, 1)
-
-	for i = (rang - (lines / 2)) % 360, ((rang - (lines / 2)) % 360) + lines do
-		local x2 = (x + (width + 32) / 2) - ((i - ang.y - 180) % 360) * spacing
-
-		if i % 30 == 0 and i > 0 then
-			local text = direction[360 - (i % 360)] and direction[360 - (i % 360)] or 360 - (i % 360)
-
-			draw.SimpleText(text, "BudgetLabel", x2, y, color_white, TEXT_ALIGN_CENTER)
 		end
 	end
 
-	if (matrix) then
-		cam.PopModelMatrix()
-	end
 end
 hook.Add("HUDPaint", "CHUD", CombHUD)
 hook.Add("HUDPaint", "CComp", CombineCompass)
@@ -235,23 +201,6 @@ end)
 hook.Add("CanDrawAmmoHUD", "CHUD_HideBaseAmmo", function(weapon)
 	if Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) then
 		return false
-	end
-end)
-
-hook.Add("OnContextMenuOpen", "ixCPOverlayLocators", function()
-	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
-		local compass_w = ScrW() * .23
-		ix.gui.locators = ix.gui.locators or {}
-		
-		-- Compass Locator
-		local compass_locator = vgui.Create("ixHUDLocator")
-		compass_locator:Setup("compass", "Combine Compass", ScrW() / 2 - (compass_w / 2) - 16, 30)
-		table.insert(ix.gui.locators, compass_locator)
-		
-		-- CP Unit info Locator
-		local cp_unit_locator = vgui.Create("ixHUDLocator")
-		cp_unit_locator:Setup("cp_unit", "Unit Bio-Signals (CP)", ScrW() - 310, 40)
-		table.insert(ix.gui.locators, cp_unit_locator)
 	end
 end)
 

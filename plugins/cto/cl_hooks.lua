@@ -1,5 +1,5 @@
-
 -- Running on tick to avoid some HUD conflicts.
+
 function PLUGIN:Tick()
 	local client = LocalPlayer()
 
@@ -69,20 +69,6 @@ function PLUGIN:HUDPaint()
 	local client = LocalPlayer()
 
 	if (Schema:CanPlayerSeeCombineOverlay(client)) then
-		local vbob = ix.plugin.Get("newviewbob")
-		local matrix
-		if (vbob and vbob.bobData) then
-			local data = vbob.bobData
-			local w, h = ScrW(), ScrH()
-			matrix = Matrix()
-
-			matrix:Translate(Vector(w / 2, h / 2))
-			matrix:Rotate(Angle(0, data.roll, 0))
-			matrix:Translate(Vector(-w / 2, -h / 2))
-			matrix:Translate(Vector(data.right * 5, -data.up * 5 + data.pitch * 2))
-			
-			cam.PushModelMatrix(matrix)
-		end
 
 		local colorRed = Color(255, 0, 0, 255)
 		local colorObject = Color(150, 150, 200, 255)
@@ -224,6 +210,8 @@ function PLUGIN:HUDPaint()
 								violations[#violations + 1] = "<:: 1x" .. L("Ducking") .. " ::>"
 							elseif (vio == self.VIOLATION_FALLEN_OVER) then
 								violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"
+							elseif (vio == self.VIOLATION_RAISED_WEAPON) then
+								violations[#violations + 1] = "<:: 1x" .. L("Raised Weapon") .. " ::>"
 							end
 						end
 					end
@@ -307,6 +295,7 @@ function PLUGIN:HUDPaint()
 					if (!v:OnGround() and client:WaterLevel() <= 0) then violations[#violations + 1] = "<:: 1x" .. L("Jumping") .. " ::>" end
 					if (v:Crouching()) then violations[#violations + 1] = "<:: 1x" .. L("Ducking") .. " ::>" end
 					if (v:GetLocalVar("ragdoll")) then violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"	end
+					if (v:IsWepRaised()) then violations[#violations + 1] = "<:: 1x" .. L("Raised Weapon") .. " ::>" end
 
 					if (#violations > 0) then
 						draw.SimpleText("<:: " .. L("Possible Violation") .. " ::>", "BudgetLabel", toScreen.x, toScreen.y, colorRed, 1, 1)
@@ -320,20 +309,6 @@ function PLUGIN:HUDPaint()
 			end
 		end
 
-		if (matrix) then
-			cam.PopModelMatrix()
-		end
-	end
-end
-
-function PLUGIN:OnContextMenuOpen()
-	if (Schema:CanPlayerSeeCombineOverlay(LocalPlayer())) then
-		ix.gui.locators = ix.gui.locators or {}
-		
-		-- CTO Stats Locator
-		local cto_locator = vgui.Create("ixHUDLocator")
-		cto_locator:Setup("cto", "CTO Units Info", ScrW() - 148, 8)
-		table.insert(ix.gui.locators, cto_locator)
 	end
 end
 
