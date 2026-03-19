@@ -96,10 +96,11 @@ function Schema:PostPlayerLoadout(client)
 		elseif (client:Team() == FACTION_MPF) then
 			client:SetMaxHealth(40)
 			client:SetHealth(40)
-			client:SetMaxArmor(100)
-			client:SetArmor(self:IsCombineRank(client:Name(), "RCT") and 50 or 100)
+			client:SetMaxArmor(0)
+			client:SetArmor(0)
 		else
-			client:SetArmor(100)
+			client:SetMaxArmor(0)
+			client:SetArmor(0)
 		end
 
 		client:SetRunSpeed(runSpeed * 1.1)
@@ -116,6 +117,8 @@ function Schema:PostPlayerLoadout(client)
 		local int = client:GetCharacter():GetAttribute("int", 0)
 		client:SetMaxHealth(100)
 		client:SetHealth(100)
+		client:SetMaxArmor(0)
+		client:SetArmor(0)
 		client:GetCharacter():SetAttrib("str", math.Clamp(str + 3, 0, 10))
 		client:GetCharacter():SetAttrib("end", math.Clamp(endurance + 3, 0, 10))
 		client:GetCharacter():SetAttrib("stm", math.Clamp(stm + 3, 0, 10))
@@ -123,6 +126,8 @@ function Schema:PostPlayerLoadout(client)
 	else
 		client:SetMaxHealth(40)
 		client:SetHealth(40)
+		client:SetMaxArmor(0)
+		client:SetArmor(0)
 	end
 end
 

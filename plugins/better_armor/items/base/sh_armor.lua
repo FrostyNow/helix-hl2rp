@@ -104,13 +104,7 @@ function ITEM:GetDescription()
 end
 
 
-local function armorPlayer(client, target, amount)
-	hook.Run("OnPlayerArmor", client, target, amount)
-
-	if (client:Alive() and target:Alive()) then
-		target:SetArmor(amount)
-	end
-end
+-- Removed armorPlayer helper as armor is now managed via MaxArmor aggregation in UpdateResistance
 -- Inventory drawing
 if (CLIENT) then
 	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
@@ -281,11 +275,18 @@ function ITEM:RemoveOutfit(client)
 		end
 	end
 
+	if (SERVER) then
+		character:SetData("currentArmor", client:Armor())
+	end
+
 	client:SetNetVar("gasmask", false)
-	armorPlayer(client, client, 0)
 
 	self:SetData("equip", false)
-	self:UpdateAppearance(client) -- Centralized resolver for appearance changes
+	self:UpdateAppearance(client)
+
+	if (self.UpdateResistance) then
+		self:UpdateResistance(client)
+	end
 
 	if (self.attribBoosts) then
 		for k, _ in pairs(self.attribBoosts) do
@@ -515,19 +516,24 @@ function ITEM:UpdateResistance(client)
 	local anyResistance = false
 	local anyGasmask = false
 
+	local totalArmorAmount = 0
+
 	for _, item in pairs(items) do
-		if (item:GetData("equip") and item.base == "base_armor") then
+		if (item:GetData("equip") and (item.base == "base_armor" or item.uniqueID == "base_armor")) then
 			if (item.gasmask) then anyGasmask = true end
+
+			local durability = item:GetData("Durability", item.maxDurability)
+			local fraction = 1
+
+			if (durability <= 0) then
+				fraction = 0.5
+			end
+
+			local armorVal = item.armorAmount or 0
+			totalArmorAmount = totalArmorAmount + (armorVal * fraction)
 
 			if (item.resistance) then
 				anyResistance = true
-
-				local durability = item:GetData("Durability", item.maxDurability)
-				local fraction = 1
-
-				if (durability <= 0) then
-					fraction = 0.5
-				end
 
 				local function GetEffectiveScale(base, frac)
 					return base * frac + (1 - frac)
@@ -543,6 +549,16 @@ function ITEM:UpdateResistance(client)
 				end
 			end
 		end
+	end
+
+	if (SERVER) then
+		local baseMaxArmor = 0
+		if (client:Team() == FACTION_OTA) then
+			baseMaxArmor = 255
+		end
+
+		local newMaxArmor = math.min(255, baseMaxArmor + totalArmorAmount)
+		client:SetMaxArmor(newMaxArmor)
 	end
 
 	if (anyResistance) then
@@ -569,6 +585,7 @@ end
 
 function ITEM:OnInstanced(invID, x, y)
 	self:SetData("Durability", self.maxDurability)
+	self:SetData("isFirstEquip", true)
 
 	if (self.isBag) then
 		local inventory = ix.item.inventories[invID]
@@ -588,14 +605,7 @@ end
 
 ITEM:Hook("drop", function(item)
 	local client = item:GetOwner()
-	if (item:GetData("equip")) then
-		if (IsValid(client)) then
-			PlayRandomSound(client, item.unequipSound)
-		end
-
 		item:RemoveOutfit(client)
-		armorPlayer(client, client, 0)
-	end
 end)
 
 ITEM.functions.View = {
@@ -651,8 +661,6 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 		if (IsValid(client)) then
 			PlayRandomSound(client, item.unequipSound)
 		end
-
-		armorPlayer(item.player, item.player, 0)
 
 		item:RemoveOutfit(item.player)
 
@@ -751,11 +759,25 @@ function ITEM:ApplyOutfit(client)
 	self:SetData("equip", true)
 	self:UpdateAppearance(client)
 
-	local armorAmount = self.armorAmount
-	if (self:GetData("Durability", self.maxDurability) <= 0) then
-		armorAmount = armorAmount * 0.5
+	if (self.UpdateResistance) then
+		self:UpdateResistance(client)
 	end
-	armorPlayer(client, client, armorAmount)
+
+	if (SERVER) then
+		local savedArmor = char:GetData("currentArmor", 0)
+
+		if (self:GetData("isFirstEquip")) then
+			local bonus = self.armorAmount
+			local dur = self:GetData("Durability", self.maxDurability)
+			if (dur <= 0) then bonus = bonus * 0.5 end
+
+			client:SetArmor(math.min(client:GetMaxArmor(), client:Armor() + bonus))
+			self:SetData("isFirstEquip", nil)
+			char:SetData("currentArmor", client:Armor())
+		elseif (savedArmor > 0) then
+			client:SetArmor(math.min(client:GetMaxArmor(), savedArmor))
+		end
+	end
 
 	if (self.attribBoosts) then
 		for k, v in pairs(self.attribBoosts) do

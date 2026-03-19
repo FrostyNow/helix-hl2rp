@@ -37,7 +37,7 @@ ITEM.allowedModels = {
 }
 ITEM.noBusiness = true
 
-ITEM.armorAmount = 40
+-- ITEM.armorAmount = 40
 ITEM.damage = {.8, .8, .8, .8, .8, .8, .8}
 ITEM.resistance = true
 ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}

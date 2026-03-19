@@ -13,15 +13,12 @@ ITEM.functions.Use = {
 	OnRun = function(item)
 		local client = item.player
 
-		if client:Team() == FACTION_OTA then
-			client:SetArmor(math.Clamp(client:Armor() + 15, 0, 255))
-		else
-			client:SetArmor(math.Clamp(client:Armor() + 15, 0, 100))
-		end
+		client:SetArmor(math.Clamp(client:Armor() + 15, 0, client:GetMaxArmor() or 255))
 		client:EmitSound("items/battery_pickup.wav")
 	end,
 	OnCanRun = function(item)
-		return item.player:IsCombine()
+		local client = item.player
+		return client:IsAlive() and (client:IsCombine() or client:GetMaxArmor() > 0) and client:Armor() < (client:GetMaxArmor() or 255)
 	end
 }
 
