@@ -62,6 +62,22 @@ function PANEL:Think()
 end
 
 function PANEL:Paint(width, height)
+	local vbob = ix.plugin.Get("newviewbob")
+	local matrix
+	if (vbob and vbob.bobData) then
+		local data = vbob.bobData
+		local w, h = ScrW(), ScrH()
+		local px, py = self:GetPos()
+		matrix = Matrix()
+
+		matrix:Translate(Vector(w / 2 - px, h / 2 - py))
+		matrix:Rotate(Angle(0, data.roll, 0))
+		matrix:Translate(Vector(-(w / 2 - px), -(h / 2 - py)))
+		matrix:Translate(Vector(data.right * 5, -data.up * 5 + data.pitch * 2))
+		
+		cam.PushModelMatrix(matrix)
+	end
+
 	local textHeight = draw.GetFontHeight(self.font)
 	local y = 0
 
@@ -82,6 +98,10 @@ function PANEL:Paint(width, height)
 		surface.DrawText(info.text:sub(1, info.character))
 
 		y = y + textHeight
+	end
+
+	if (matrix) then
+		cam.PopModelMatrix()
 	end
 
 	surface.SetDrawColor(Color(0, 0, 0, 255))

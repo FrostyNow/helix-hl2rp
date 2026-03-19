@@ -69,6 +69,21 @@ function PLUGIN:HUDPaint()
 	local client = LocalPlayer()
 
 	if (Schema:CanPlayerSeeCombineOverlay(client)) then
+		local vbob = ix.plugin.Get("newviewbob")
+		local matrix
+		if (vbob and vbob.bobData) then
+			local data = vbob.bobData
+			local w, h = ScrW(), ScrH()
+			matrix = Matrix()
+
+			matrix:Translate(Vector(w / 2, h / 2))
+			matrix:Rotate(Angle(0, data.roll, 0))
+			matrix:Translate(Vector(-w / 2, -h / 2))
+			matrix:Translate(Vector(data.right * 5, -data.up * 5 + data.pitch * 2))
+			
+			cam.PushModelMatrix(matrix)
+		end
+
 		local colorRed = Color(255, 0, 0, 255)
 		local colorObject = Color(150, 150, 200, 255)
 		local fontHeight = draw.GetFontHeight("BudgetLabel")
@@ -300,6 +315,10 @@ function PLUGIN:HUDPaint()
 					end
 				end
 			end
+		end
+
+		if (matrix) then
+			cam.PopModelMatrix()
 		end
 	end
 end

@@ -83,8 +83,12 @@ if CLIENT then
 		LastCalcViewBob = SysTime()
 
 		ldist = math.max(ldist, MinimumFocus)
-		pos:Add(up * math.sin((time + 0.5) * rate_up) * scale_up * intensity * -7)
-		pos:Add(ri * math.sin((time + 0.5) * rate_right) * scale_right * intensity * -7)
+
+		local up_bob = math.sin((time + 0.5) * rate_up) * scale_up * intensity * -7
+		local ri_bob = math.sin((time + 0.5) * rate_right) * scale_right * intensity * -7
+
+		pos:Add(up * up_bob)
+		pos:Add(ri * ri_bob)
 
 		local walkSpeed = ply:GetVelocity():Length()
 		local bobbingOffset = math.sin(CurTime() * BobbingSpeed * customBobbingSpeed) * BobbingAmount
@@ -119,8 +123,17 @@ if CLIENT then
 			customBobbingSpeed = 1.4
 		end
 
-		ang.r = ang.r + rollAngle + rollOffset
+		local finalRoll = rollAngle + rollOffset
+		ang.r = ang.r + finalRoll
 		ang.p = ang.p + pitchOffset
+
+		-- Expose bobbing data for other plugins (like HUD)
+		PLUGIN.bobData = {
+			roll = finalRoll,
+			pitch = pitchOffset,
+			up = up_bob,
+			right = ri_bob
+		}
 
 		return pos, ang
 	end
