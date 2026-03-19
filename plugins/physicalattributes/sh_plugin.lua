@@ -241,10 +241,8 @@ if (SERVER) then
 		-- 	dmgInfo:SetDamage(math.Clamp(dmgInfo:GetDamage(), minDamage, maxDamage))
 		-- end
 
-		if (inflictor:GetClass() == "ix_stunstick") then
-			local strength = entity:GetCharacter():GetAttribute("str", 0)
-			dmgInfo:SetDamage(dmgInfo:GetDamage() + (strength * ix.config.Get("strengthMeleeMultiplier", 0.3)))
-		end
+		-- Stunstick melee scaling is handled in plugins/wepadjust.lua so the
+		-- attacker's strength is applied once, consistently with other melee weapons.
 	end
 
 	--[[
