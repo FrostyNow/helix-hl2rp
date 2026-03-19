@@ -2,6 +2,13 @@ PLUGIN.name = "Any timers"
 PLUGIN.author = "Junk"
 PLUGIN.description = ""
 
+ix.lang.AddTable("english", {
+	cmdTimerCreate = "Creates a countdown timer with custom text.",
+})
+ix.lang.AddTable("korean", {
+	cmdTimerCreate = "사용자 지정 문구와 함께 카운트다운 타이머를 생성합니다.",
+})
+
 if CLIENT then
     local text, time
     local function getFomatted(time)
@@ -44,8 +51,8 @@ if CLIENT then
 end
 
 ix.command.Add("timerCreate", {
-    description = "Creates a countdown timer with custom text.",
-    superAdminOnly = true,
+    description = "@cmdTimerCreate",
+    adminOnly = true,
     arguments = {
         ix.type.string,
         ix.type.number
