@@ -401,14 +401,29 @@ if (CLIENT) then
 	end
 end
 
-function Schema:GetDefaultAttributePoints(client, payload)
-	local faction = payload.faction
-	local factionTable = ix.faction.indices[faction]
+function Schema:CanPlayerCreateCharacter(client, payload)
+	if (IsValid(client) and istable(payload) and payload.faction) then
+		client.ixPendingCharFaction = payload.faction
+	end
+end
+
+function Schema:GetDefaultAttributePoints(client, payloadOrCount)
+	local faction
+
+	if (istable(payloadOrCount)) then
+		faction = payloadOrCount.faction
+
+		if (IsValid(client) and faction) then
+			client.ixPendingCharFaction = faction
+		end
+	elseif (IsValid(client)) then
+		faction = client.ixPendingCharFaction
+	end
+
+	local factionTable = faction and ix.faction.indices[faction]
 
 	if (factionTable and factionTable.attPoints) then
 		return factionTable.attPoints
 	end
-
-    return
 end
 
