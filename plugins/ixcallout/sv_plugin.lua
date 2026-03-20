@@ -17,27 +17,27 @@ local COMBINE_TEMPLATE_SETS = {
 			sounds = {
 				"npc/combine_soldier/vo/extractoraway.wav"
 			},
-			suffix = "수류탄 준비."
+			suffix = "수류탄 준비!"
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/extractorislive.wav"
 			},
-			suffix = "수류탄 투척."
+			suffix = "수류탄 투척!"
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/flush.wav",
 				"npc/combine_soldier/vo/sharpzone.wav"
 			},
-			suffix = "플러시. 이동 구역."
+			suffix = "플러시! 이동 구역!"
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/extractoraway.wav",
 				"npc/combine_soldier/vo/sharpzone.wav"
 			},
-			suffix = "수류탄 준비. 이동 구역."
+			suffix = "수류탄 준비! 이동 구역!"
 		},
 		{
 			sounds = {
@@ -51,7 +51,7 @@ local COMBINE_TEMPLATE_SETS = {
 				"npc/combine_soldier/vo/flash.wav",
 				"npc/combine_soldier/vo/flash.wav"
 			},
-			suffix = "육, 오, 사, 삼, 이, 일. 플래시, 플래시, 플래시."
+			suffix = "6, 5, 4, 3, 2, 1. 플래시, 플래시, 플래시."
 		}
 	},
 	danger = {
@@ -71,7 +71,7 @@ local COMBINE_TEMPLATE_SETS = {
 			sounds = {
 				"npc/combine_soldier/vo/ripcordripcord.wav"
 			},
-			text = "립코드! 립코드!"
+			text = "분산! 분산해라!"
 		}
 	},
 	lastSquad = {
@@ -79,14 +79,14 @@ local COMBINE_TEMPLATE_SETS = {
 			sounds = {
 				"npc/combine_soldier/vo/overwatchrequestreserveactivation.wav"
 			},
-			text = "감시인, 예비 병력 활성화를 요청한다."
+			text = "지원군 출동 요청한다!"
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/overwatch.wav",
 				"npc/combine_soldier/vo/sectorisnotsecure.wav"
 			},
-			text = "감시인, 구역 미확보다."
+			text = "보고한다, 구역 미확보."
 		},
 		{
 			sounds = {
@@ -96,37 +96,37 @@ local COMBINE_TEMPLATE_SETS = {
 				"npc/combine_soldier/vo/outbreak.wav"
 			},
 			usesSector = true,
-			suffix = "확산. 확산. 확산."
+			suffix = "구역, 확산. 확산. 확산."
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/isfinalteamunitbackup.wav"
 			},
-			suffix = "최종 분대원이다. 지원 바란다."
+			suffix = "최종 팀이다. 증원 바란다."
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/overwatchteamisdown.wav"
 			},
-			text = "감시인, 분대가 쓰러졌다."
+			text = "팀은 전멸됐다. 구역이 통제권 밖이다."
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/overwatchsectoroverrun.wav"
 			},
-			text = "감시인, 구역이 돌파당했다."
+			text = "구역이 넘어갔다, 반복한다 구역이 넘어갔다!"
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/overwatchrequestskyshield.wav"
 			},
-			text = "감시인, 스카이쉴드 요청."
+			text = "스카이쉴드 요청한다."
 		},
 		{
 			sounds = {
 				"npc/combine_soldier/vo/overwatchrequestwinder.wav"
 			},
-			text = "감시인, 와인더 요청."
+			text = "와인더 출동 요청한다."
 		}
 	}
 }
@@ -169,23 +169,23 @@ local COMBINE_CALLSIGN_KEYS = {
 local COMBINE_MAN_DOWN_VARIANTS = {
 	{
 		sounds = {"npc/combine_soldier/vo/onedown.wav"},
-		suffix = "쓰러졌다."
+		suffix = "사상자 발생!"
 	},
 	{
 		sounds = {"npc/combine_soldier/vo/onedutyvacated.wav"},
-		suffix = "이탈했다."
+		suffix = "한 자리 비었다."
 	},
 	{
 		sounds = {"npc/combine_soldier/vo/heavyresistance.wav"},
-		suffix = "근처 저항이 거세다."
+		suffix = "저항이 거세다. 지시사항 바란다."
 	},
 	{
 		sounds = {"npc/combine_soldier/vo/overwatchrequestreinforcement.wav"},
-		suffix = "증원을 요청한다."
+		suffix = "증원병력 요청한다."
 	},
 	{
 		sounds = {"npc/combine_soldier/vo/onedown.wav", "npc/combine_soldier/vo/hardenthatposition.wav"},
-		suffix = "쓰러졌다. 현 위치를 사수하라."
+		suffix = "사상자 발생! 위치 사수하라!"
 	}
 }
 
@@ -424,6 +424,21 @@ function PLUGIN:GetCombineDesignationParts(client)
 	}, numberSounds, info
 end
 
+function PLUGIN:FormatCombineDesignation(callsignText, number)
+	callsignText = string.Trim(tostring(callsignText or ""))
+	callsignText = string.TrimRight(callsignText, ".")
+
+	if (callsignText == "") then
+		return number and tostring(number) .. "." or ""
+	end
+
+	if (number == nil) then
+		return callsignText
+	end
+
+	return string.format("%s-%s.", callsignText, tostring(number))
+end
+
 function PLUGIN:BuildTemplateEvent(client, templateName, context)
 	local templates = COMBINE_TEMPLATE_SETS[templateName]
 
@@ -445,16 +460,16 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		sequence[#sequence + 1] = callsignPart.sound
 	end
 
-	if (callsignPart and callsignPart.text and callsignPart.text != "") then
-		parts[#parts + 1] = string.Trim(callsignPart.text)
-	end
-
 	for _, soundPath in ipairs(numberSounds or {}) do
 		sequence[#sequence + 1] = soundPath
 	end
 
-	if (info and info.number) then
-		parts[#parts + 1] = tostring(info.number)
+	if (callsignPart and callsignPart.text and callsignPart.text != "" and info and info.number) then
+		parts[#parts + 1] = self:FormatCombineDesignation(callsignPart.text, info.number)
+	elseif (callsignPart and callsignPart.text and callsignPart.text != "") then
+		parts[#parts + 1] = string.Trim(callsignPart.text)
+	elseif (info and info.number) then
+		parts[#parts + 1] = tostring(info.number) .. "."
 	end
 
 	for _, soundPath in ipairs(variant.sounds or {}) do
@@ -550,7 +565,6 @@ function PLUGIN:GetActiveRadioState(client)
 				end
 
 				return {
-					item = radio,
 					freq = frequency,
 					chan = character:GetData("channel", "1"),
 					broadcast = radio:GetData("broadcast", false),
@@ -575,7 +589,6 @@ function PLUGIN:GetActiveRadioState(client)
 		end
 
 		return {
-			item = enabledRadio,
 			freq = frequency,
 			chan = character:GetData("channel", "1"),
 			broadcast = false,
@@ -616,22 +629,29 @@ function PLUGIN:SendChatForVoice(client, text, radioData)
 		return false
 	end
 
-	local wrappedText = Schema:WrapCombineChatText(text)
-
 	if (radioData) then
-		local eavesdropData = {
+		local chatData = {
+			freq = radioData.freq,
+			chan = radioData.chan,
+			broadcast = radioData.broadcast == true,
+			walkie = radioData.walkie == true,
+			lrange = radioData.lrange == true,
 			quiet = radioData.quiet == true,
-			walkie = radioData.walkie == true
+			callsign = radioData.callsign
+		}
+		local eavesdropData = {
+			quiet = chatData.quiet,
+			walkie = chatData.walkie
 		}
 
-		ix.chat.Send(client, "radio", wrappedText, false, nil, radioData)
-		ix.chat.Send(client, "radio_eavesdrop", wrappedText, false, nil, eavesdropData)
+		ix.chat.Send(client, "radio", text, false, nil, chatData)
+		ix.chat.Send(client, "radio_eavesdrop", text, false, nil, eavesdropData)
 
 		return true, true
 	end
 
 	if (self:HasNearbyCombineICListener(client)) then
-		ix.chat.Send(client, "ic", wrappedText)
+		ix.chat.Send(client, "ic", text)
 
 		return true, false
 	end
@@ -744,16 +764,16 @@ function PLUGIN:BuildManDownSequence(target)
 		sequence[#sequence + 1] = callsignSound
 	end
 
-	if (callsignText and callsignText != "") then
-		parts[#parts + 1] = string.Trim(callsignText)
-	end
-
 	if (numberSound) then
 		sequence[#sequence + 1] = numberSound
 	end
 
-	if (info.number) then
-		parts[#parts + 1] = tostring(info.number)
+	if (callsignText and callsignText != "" and info.number) then
+		parts[#parts + 1] = self:FormatCombineDesignation(callsignText, info.number)
+	elseif (callsignText and callsignText != "") then
+		parts[#parts + 1] = string.Trim(callsignText)
+	elseif (info.number) then
+		parts[#parts + 1] = tostring(info.number) .. "."
 	end
 
 	for _, soundPath in ipairs(variant.sounds or {}) do
