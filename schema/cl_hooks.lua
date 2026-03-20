@@ -87,9 +87,8 @@ function Schema:CanPlayerJoinClass(client, class, info)
 	return client:IsAdmin()
 end
 
-function Schema:CharacterLoaded(character)
-	-- Creation is now handled by the Think hook for dynamic mask support
-end
+-- function Schema:CharacterLoaded(character)
+-- end
 
 function Schema:Think()
 	local client = LocalPlayer()
@@ -524,17 +523,6 @@ hook.Add("InitPostEntity", "ixHL2RPModelHeadScale", function()
 		end
 	end
 end)
-
--- Safe wrapper for SetBodygroup to prevent crashes
-local function SafeSetBodygroup(entity, bodygroups)
-	if (!IsValid(entity) or !istable(bodygroups)) then return end
-		
-	for k, v in pairs(bodygroups) do
-		if (isnumber(k)) then
-			entity:SetBodygroup(k, v)
-		end
-	end
-end
 
 function Schema:OnCharacterMenuCreated(panel)
 	-- Sanitize character data (Fix for corrupted characters preventing deletion)
