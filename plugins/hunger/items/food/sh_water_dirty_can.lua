@@ -2,6 +2,7 @@ ITEM.name = "Dirty Water"
 ITEM.model = "models/hls/alyxports/popcan01a_hls.mdl"
 ITEM.skin = 3
 ITEM.description = "itemDirtyWaterDesc"
+ITEM.class = nil
 ITEM.thirst = 25
 ITEM.hunger = -100
 ITEM.empty = "empty_can"

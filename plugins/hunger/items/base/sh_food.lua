@@ -4,6 +4,7 @@ ITEM.model = "models/props_lab/bindergraylabel01b.mdl"
 ITEM.width = 1
 ITEM.height = 1
 ITEM.category = "Food"
+ITEM.class = {CLASS_CWU}
 ITEM.hunger = 0
 ITEM.thirst = 0
 ITEM.radiation = 0

@@ -1,6 +1,7 @@
 ITEM.name = "Breen's Water"
 ITEM.model = "models/hls/alyxports/popcan01a_hls.mdl"
 ITEM.description = "itemWaterDesc"
+ITEM.class = nil
 ITEM.thirst = 15
 ITEM.price = 15
 ITEM.empty = "water_empty"

@@ -1,6 +1,7 @@
 ITEM.name = "Coke"
 ITEM.model = "models/hls/can_1.mdl"
 ITEM.description = "itemCokeDesc"
+ITEM.class = nil
 ITEM.thirst = 25
 ITEM.price = 20
 ITEM.empty = "water_empty"
