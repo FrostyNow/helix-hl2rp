@@ -3,7 +3,7 @@ FACTION.description = "A regular human citizen enlisted as a soldier to Combine 
 FACTION.color = Color(77, 93, 83, 255)
 FACTION.pay = 7
 FACTION.isDefault = false
-FACTION.isGloballyRecognized = true
+FACTION.isGloballyRecognized = false
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
 FACTION.canSeeWaypoints = true
 FACTION.models = {}
