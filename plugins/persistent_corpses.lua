@@ -609,4 +609,10 @@ if (SERVER) then
 			end
 		end
 	end
+
+	--  No salary while dead or ragdolled
+	function PLUGIN:CanPlayerEarnSalary(client, faction)
+		if not client:IsAlive() then return false
+		if client:IsRagdoll() then return false
+	end
 end
