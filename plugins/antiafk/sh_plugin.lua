@@ -8,7 +8,7 @@ This plugin is licensed under the Creative Commons Attribution-ShareAlike 4.0 In
 To view a copy of this license, visit http://creativecommons.org/licenses/by-sa/4.0/
 ]]
 
--- ix.util.Include("cl_hooks.lua")
+ix.util.Include("cl_hooks.lua")
 ix.util.Include("sh_configs.lua")
 ix.util.Include("sv_plugin.lua")
 ix.util.Include("sv_hooks.lua")
