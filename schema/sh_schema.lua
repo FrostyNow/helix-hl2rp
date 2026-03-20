@@ -220,6 +220,11 @@ Schema.combineNameData = Schema.combineNameData or {
 			"FIST", "SWORD", "SAVAGE", "TRACKER", "SLASH", "RAZOR", "STAB", "SPEAR",
 			"STRIKER", "DAGGER"
 		},
+		randomCallsigns = {
+			"FLASH", "RANGER", "HUNTER", "BLADE", "HAMMER", "SWEEPER", "SWIFT",
+			"FIST", "SWORD", "SAVAGE", "TRACKER", "SLASH", "RAZOR", "STAB", "SPEAR",
+			"STRIKER", "DAGGER"
+		},
 		orderedRanks = {"OWS", "SGS", "EOW"}
 	}
 }
@@ -304,7 +309,7 @@ function Schema:FormatCombineName(branch, rank, callsign, number)
 	end
 
 	rank = rank or data.defaultRank
-	callsign = string.upper(callsign or table.Random(data.callsigns) or "UNKNOWN")
+	callsign = string.upper(callsign or table.Random(data.randomCallsigns or data.callsigns) or "UNKNOWN")
 	number = math.Clamp(math.floor(tonumber(number) or math.random(1, 9)), 1, 9)
 
 	if (branch == "MPF") then
