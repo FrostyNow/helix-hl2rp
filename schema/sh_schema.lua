@@ -21,10 +21,10 @@ ix.util.Include("meta/sh_player.lua")
 ix.util.Include("meta/sv_player.lua")
 ix.util.Include("meta/sh_character.lua")
 
-ix.flag.Add("v", "Access to light blackmarket goods.")
-ix.flag.Add("V", "Access to heavy blackmarket goods.")
 ix.flag.Add("b", "Access to edit your own bodygroups.")
 ix.flag.Add("s", "Access to edit your own skin.")
+ix.flag.Add("C", "Access to equip gears to transfer to Conscript faction.")
+ix.flag.Add("M", "Access to equip gears to transfer to Metropolice faction.")
 
 -- Metrocop
 ix.anim.SetModelClass("models/eliteghostcp.mdl", "metrocop")

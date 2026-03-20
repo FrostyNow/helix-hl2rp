@@ -10,6 +10,25 @@ ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
 
+ITEM.functions.Equip.OnCanRun = function(item)
+	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then
+		return false
+	end
+
+	local char = item.player:GetCharacter()
+	if (!char) then return false end
+
+	local allowed = false
+
+	if (char:HasFlags("C")) then
+		allowed = true
+	elseif (item.player:IsAdmin()) then
+		allowed = true
+	end
+
+	return allowed
+end
+
 local function GetConscriptFaction()
 	return ix.faction.indices[FACTION_CONSCRIPT]
 end

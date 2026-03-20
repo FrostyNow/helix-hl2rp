@@ -14,6 +14,25 @@ ITEM.eqBodyGroups = {
 ITEM.newSkin = 0
 ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 
+ITEM.functions.Equip.OnCanRun = function(item)
+	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then
+		return false
+	end
+
+	local char = item.player:GetCharacter()
+	if (!char) then return false end
+
+	local allowed = false
+
+	if (char:HasFlags("M")) then
+		allowed = true
+	elseif (item.player:IsAdmin()) then
+		allowed = true
+	end
+
+	return allowed
+end
+
 local function GetMPFFaction()
 	return ix.faction.indices[FACTION_MPF]
 end
