@@ -187,6 +187,22 @@ function PLUGIN:CanCombineIdentifyTarget(target)
 	return self:PlayerHasCID(target) != false
 end
 
+function PLUGIN:CanFlagTargetForViolation(target)
+	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
+		return false
+	end
+
+	if (target:IsCombine()) then
+		return false
+	end
+
+	if (self.weaponViolationFactionWhitelist[target:Team()]) then
+		return false
+	end
+
+	return self:CanCombineIdentifyTarget(target)
+end
+
 function PLUGIN:IsVisibleWeaponViolation(target)
 	if (!IsValid(target) or !target:IsPlayer()) then
 		return false

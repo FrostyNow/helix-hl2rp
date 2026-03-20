@@ -6,7 +6,7 @@ RECIPE.station = "craftingtable"
 RECIPE.requirements = {
 	["hide"] = 1,
 	["misc_dried_tea"] = 1,
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1}},
+	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineralwater"] = 1}},
 	["bucket"] = {amount = 1, preserve = true}
 }
 RECIPE.results = {

@@ -155,6 +155,17 @@ function Schema:CharacterVarChanged(character, key, oldValue, value)
 
 	if (key == "faction" and IsValid(client)) then
 		self:RefreshFlashlight(client)
+		client:SetupHands()
+
+		timer.Simple(0, function()
+			if (IsValid(client) and client:GetCharacter() == character) then
+				hook.Run("UpdateAllRelations")
+			end
+		end)
+	end
+
+	if (key == "model" and IsValid(client)) then
+		client:SetupHands()
 	end
 
 	if (key == "name" and IsValid(client)) then
@@ -535,6 +546,12 @@ function Schema:CanPlayerUseCharacter(client, character)
 	if (client:IsRestricted()) then
 		client:NotifyLocalized("cantChangeCharTied")
 		return false
+	end
+
+	local faction = ix.faction.indices[character:GetFaction()]
+
+	if (faction and faction.IsUniformCitizenDuty and faction:IsUniformCitizenDuty(character)) then
+		return true
 	end
 end
 

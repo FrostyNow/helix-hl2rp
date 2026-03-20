@@ -1,7 +1,7 @@
 ITEM.name = "Antlion Meat"
 ITEM.model = "models/gibs/antlion_gib_small_2.mdl"
 ITEM.description = "itemAntlionMeatDesc"
-ITEM.class = nil
+ITEM.classes = nil
 ITEM.hunger = 10
 ITEM.thirst = -5
 ITEM.price = 4

@@ -33,6 +33,32 @@ local function PlayRandomSound(client, sound)
 	end
 end
 
+local function LogOutfitStateIssue(item, action, detail, client)
+	if (!SERVER) then
+		return
+	end
+
+	local owner = IsValid(client) and client or item:GetOwner()
+	local ownerName = IsValid(owner) and owner:Name() or "unknown"
+	local steamID = IsValid(owner) and owner:SteamID64() or "unknown"
+	local character = IsValid(owner) and owner:GetCharacter() or nil
+	local charID = character and character:GetID() or "unknown"
+
+	ErrorNoHalt(string.format(
+		"[ixhl2rp][houtfit-state] action=%s item=%s(%s:%s) inv=%s equip=%s owner=%s steam=%s char=%s detail=%s\n",
+		tostring(action),
+		tostring(item.name or item.uniqueID or "unknown"),
+		tostring(item.uniqueID or "unknown"),
+		tostring(item.id or "unknown"),
+		tostring(item.invID),
+		tostring(item:GetData("equip")),
+		tostring(ownerName),
+		tostring(steamID),
+		tostring(charID),
+		tostring(detail or "n/a")
+	))
+end
+
 local function NormalizeModel(model)
 	return isstring(model) and model:gsub("\\", "/"):lower() or ""
 end
@@ -488,18 +514,6 @@ function ITEM:RemoveAttachment(id, client)
 	self:SetData("outfitAttachments", attachments)
 end
 
-ITEM:Hook("drop", function(item)
-	if (item:GetData("equip")) then
-		local client = item:GetOwner()
-
-		if (IsValid(client)) then
-			PlayRandomSound(client, item.unequipSound)
-		end
-
-		item:RemoveOutfit(client)
-	end
-end)
-
 ITEM.functions.View = {
 	icon = "icon16/briefcase.png",
 	OnClick = function(item)
@@ -644,6 +658,8 @@ function ITEM:ApplyOutfit(client)
 		AddToAppearanceStack(char, self.id)
 	end
 
+	self:SetData("equip", true)
+
 	local model = client:GetModel()
 
 	-- Reset all bodygroups first BEFORE changing model
@@ -737,7 +753,6 @@ ITEM.functions.Equip = {
 		end
 
 		PlayRandomSound(client, item.equipSound)
-		item:SetData("equip", true)
 		item:ApplyOutfit(client)
 
 		if (IsTopLayer(item)) then
@@ -860,7 +875,7 @@ ITEM.functions.RemoveFilter = {
 }
 
 function ITEM:CanTransfer(oldInventory, newInventory)
-	if (self:GetData("equip")) then
+	if (newInventory and self:GetData("equip")) then
 		return false
 	end
 
@@ -1032,6 +1047,19 @@ end
 
 ITEM.postHooks = ITEM.postHooks or {}
 ITEM.postHooks.drop = function(item, result)
+	if (result == false and item:GetData("equip")) then
+		LogOutfitStateIssue(item, "drop_failed", "drop action returned false while item remained equipped", item.player)
+	elseif (item:GetData("equip") and item.invID == 0) then
+		local client = item.player or item:GetOwner()
+
+		if (IsValid(client)) then
+			PlayRandomSound(client, item.unequipSound)
+			item:RemoveOutfit(client)
+		else
+			LogOutfitStateIssue(item, "drop_finalize", "equipped item reached world inventory without valid owner", client)
+		end
+	end
+
 	if (item.isBag) then
 		local index = item:GetData("id")
 

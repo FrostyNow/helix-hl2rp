@@ -2,6 +2,13 @@ PLUGIN.name = "Night Vision - Helix"
 PLUGIN.author = "Black Tea | Modified by Frosty"
 PLUGIN.description = "Standalone night vision implementation for Helix."
 
+ix.lang.AddTable("english", {
+	cmdNightVision = "Toggles the night vision",
+})
+ix.lang.AddTable("korean", {
+	cmdNightVision = "야간 투시를 전환합니다.",
+})
+
 if (SERVER) then
 	resource.AddWorkshop("224378049")
 
@@ -95,18 +102,18 @@ local IsMade = false
 local ply, Brightness, IlluminationArea, ISIBSensitivity, dlight, trace, BlurIntensity, GenInProgress
 local tr = {}
 
-local Color_Brightness = 0.8
-local Color_Contrast = 1.1
-local Color_AddGreen = -0.35
-local Color_MultiplyGreen = 0.028
+local Color_Brightness = 0.58
+local Color_Contrast = 1.45
+local Color_AddGreen = 0.08
+local Color_MultiplyGreen = 0.08
 
 local Bloom_Darken = 0.75
 local Bloom_Multiply = 1
 
 local Color_Tab = {
-	["$pp_colour_addr"] = -1,
+	["$pp_colour_addr"] = -0.18,
 	["$pp_colour_addg"] = Color_AddGreen,
-	["$pp_colour_addb"] = -1,
+	["$pp_colour_addb"] = -0.18,
 	["$pp_colour_brightness"] = Color_Brightness,
 	["$pp_colour_contrast"] = Color_Contrast,
 	["$pp_colour_colour"] = 0,
@@ -116,11 +123,11 @@ local Color_Tab = {
 }
 
 local Clr_FLIR = {
-	["$pp_colour_addr"] = 0,
-	["$pp_colour_addg"] = 0,
-	["$pp_colour_addb"] = 0,
-	["$pp_colour_brightness"] = -0.65,
-	["$pp_colour_contrast"] = 2.2,
+	["$pp_colour_addr"] = 0.12,
+	["$pp_colour_addg"] = 0.12,
+	["$pp_colour_addb"] = 0.12,
+	["$pp_colour_brightness"] = 0.18,
+	["$pp_colour_contrast"] = 1.55,
 	["$pp_colour_colour"] = 0,
 	["$pp_colour_mulr"] = 0,
 	["$pp_colour_mulg"] = 0,
@@ -131,8 +138,8 @@ local Clr_FLIR_Ents = {
 	["$pp_colour_addr"] = 0,
 	["$pp_colour_addg"] = 0,
 	["$pp_colour_addb"] = 0,
-	["$pp_colour_brightness"] = 0.6,
-	["$pp_colour_contrast"] = 1,
+	["$pp_colour_brightness"] = 0.24,
+	["$pp_colour_contrast"] = 1.2,
 	["$pp_colour_colour"] = 0,
 	["$pp_colour_mulr"] = 0,
 	["$pp_colour_mulg"] = 0,
@@ -290,15 +297,15 @@ local function setNightVisionState(enabled, nightType)
 					DrawBloom(Bloom_Darken, Bloom_Multiply, 9, 9, 1, 1, 1, 1, 1)
 				end
 
-				CLR(255, 255, 255, 255)
+				CLR(155, 220, 155, 64)
 				text(AlphaPass)
 
-				for i = 1, GetConVarNumber("nv_fx_alphapass") do
+				for i = 1, 1 do
 					trect(0, 0, w, h)
 				end
 
 				text(Line)
-				CLR(25, 50, 25, 255)
+				CLR(20, 64, 20, 64)
 				trect(0, 0, w, h)
 
 				if (GetConVarNumber("nv_fx_noise_status") > 0 and GrainTable.cur and GrainTable[GrainTable.cur]) then
@@ -444,19 +451,19 @@ local function setNightVisionState(enabled, nightType)
 				dlight.r = 125 * Brightness
 				dlight.g = 255 * Brightness
 				dlight.b = 125 * Brightness
-				dlight.Brightness = 1
+				dlight.Brightness = 1.25
 
 				if (GetConVarNumber("nv_isib_status") < 1) then
-					dlight.Size = IlluminationArea * CurScale
-					dlight.Decay = IlluminationArea * CurScale
+					dlight.Size = IlluminationArea * CurScale * 1.2
+					dlight.Decay = IlluminationArea * CurScale * 1.2
 				else
 					if (aim > 0) then
 						clr = Length((render.ComputeLighting(trace.HitPos, Vector(0, 0, -1)) - render.ComputeDynamicLighting(trace.HitPos, Vector(0, 0, -1)))) * 33
 					end
 
 					ISIBIntensity = Lerp(FT * 10, ISIBIntensity, clr * ISIBSensitivity)
-					dlight.Size = math.Clamp((IlluminationArea * CurScale) / ISIBIntensity, 0, IlluminationArea)
-					dlight.Decay = math.Clamp((IlluminationArea * CurScale) / ISIBIntensity, 0, IlluminationArea)
+					dlight.Size = math.Clamp((IlluminationArea * CurScale * 1.2) / ISIBIntensity, 0, IlluminationArea * 1.2)
+					dlight.Decay = math.Clamp((IlluminationArea * CurScale * 1.2) / ISIBIntensity, 0, IlluminationArea * 1.2)
 				end
 
 				dlight.DieTime = CT + FT * 3

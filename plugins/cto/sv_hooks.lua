@@ -19,6 +19,8 @@ function PLUGIN:Tick()
 					else
 						if (!self:CanCombineIdentifyTarget(client) or camPos:Distance(client:GetPos()) > 450 or !combineCamera:IsLineOfSightClear(client)) then
 							data[client] = nil
+						elseif (!self:CanFlagTargetForViolation(client)) then
+							data[client] = nil
 						elseif (#data[client] < 1) then
 							local violations = {}
 							local walkSpeed = ix.config.Get("walkSpeed")
@@ -51,14 +53,12 @@ function PLUGIN:Tick()
 							end
 
 							if (#violations > 0) then
-								if (!client:IsCombine()) then
-									data[client] = violations
+								data[client] = violations
 
-									combineCamera:Fire("SetIdle")
-									combineCamera:Fire("SetAngry")
+								combineCamera:Fire("SetIdle")
+								combineCamera:Fire("SetAngry")
 
-									Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
-								end
+								Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
 							end
 						end
 					end

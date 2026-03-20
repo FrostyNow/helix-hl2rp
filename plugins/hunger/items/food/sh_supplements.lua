@@ -1,7 +1,7 @@
 ITEM.name = "Gelatinated Calorie Paste"
 ITEM.model = Model("models/hls/alyxports/ration_box.mdl")
 ITEM.description = "supplementsDesc"
-ITEM.class = nil
+ITEM.classes = nil
 ITEM.hunger = 15
 ITEM.thirst = 15
 ITEM.price = 5

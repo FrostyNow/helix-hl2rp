@@ -49,7 +49,7 @@ ix.lang.AddTable("korean", {
 	voiceMenuDispatchUnavailable = "현재 디스패치로 전송할 수 없습니다.",
 	voiceMenuInfoFavorites = "별표를 클릭해 즐겨찾는 항목을 저장합니다. 클라이언트에 저장되며 해당 음성을 재생할 수 있는 경우에만 표시됩니다.",
 	voiceMenuInfoBreencast = "브린 박사의 방송입니다. 브로드캐스트 채널 전용입니다.",
-	voiceMenuInfoDispatch = "감시인 디스패치 방송입니다. 디스패치 채널 전용입니다.",
+	voiceMenuInfoDispatch = "감시인 확성기입니다. 디스패치 채널 전용입니다.",
 	voiceMenuInfoOverwatch = "감시인 무전입니다. 라디오 채널 전용입니다.",
 	voiceMenuInfoDefault = "항목을 선택하면 일반/라디오 채널을 선택하실 수 있습니다.",
 	voiceMenuBindUpdated = "음성 메뉴 바인드를 %s(으)로 설정했습니다.",

@@ -272,7 +272,7 @@ function PLUGIN:HUDPaint()
 		-- Draw movement violations.
 		if (!client:GetNetVar("IsBiosignalGone", false)) then
 			for _, v in pairs(player.GetAll()) do
-				if (v != client and self:CanCombineIdentifyTarget(v) and beholderEyePos:Distance(v:GetPos()) <= maximumDistance and v:GetMoveType() != MOVETYPE_NOCLIP) then
+				if (v != client and self:CanFlagTargetForViolation(v) and beholderEyePos:Distance(v:GetPos()) <= maximumDistance and v:GetMoveType() != MOVETYPE_NOCLIP) then
 					local physBone = v:LookupBone("ValveBiped.Bip01_Head1")
 					local position = nil
 

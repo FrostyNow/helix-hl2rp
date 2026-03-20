@@ -51,6 +51,20 @@ local function SetUniformState(character, state)
 	end
 end
 
+local function FinalizeUniformChange(client)
+	if (!IsValid(client)) then
+		return
+	end
+
+	client:SetupHands()
+
+	timer.Simple(0, function()
+		if (IsValid(client) and client:GetCharacter()) then
+			hook.Run("UpdateAllRelations")
+		end
+	end)
+end
+
 function ITEM:CanEquipOutfit()
 	local client = self.player or self:GetOwner()
 	local character = IsValid(client) and client:GetCharacter()
@@ -138,6 +152,8 @@ function ITEM:ApplyOutfit(client)
 	elseif (faction.OnDescriptionChanged) then
 		faction:OnDescriptionChanged(client, "", state.dutyDescription)
 	end
+
+	FinalizeUniformChange(client)
 end
 
 function ITEM:RemoveOutfit(client)
@@ -158,6 +174,7 @@ function ITEM:RemoveOutfit(client)
 	self.baseTable.RemoveOutfit(self, client)
 
 	if (!character or !faction or !state.active) then
+		FinalizeUniformChange(client)
 		return
 	end
 
@@ -176,14 +193,16 @@ function ITEM:RemoveOutfit(client)
 		character:SetFaction(returnFaction)
 	end
 
-	character:KickClass()
-
 	if (isnumber(originalClass)) then
 		local classData = ix.class.list[originalClass]
 
 		if (classData and classData.faction == returnFaction) then
-			character:SetClass(originalClass)
+			character:JoinClass(originalClass)
+		else
+			character:KickClass()
 		end
+	else
+		character:KickClass()
 	end
 
 	if (isstring(originalName) and originalName != "" and character:GetName() != originalName) then
@@ -193,4 +212,6 @@ function ITEM:RemoveOutfit(client)
 	if (isstring(originalDescription) and originalDescription != "" and character:GetDescription() != originalDescription) then
 		character:SetDescription(originalDescription)
 	end
+
+	FinalizeUniformChange(client)
 end

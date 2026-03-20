@@ -6,7 +6,7 @@ PLUGIN.description = "Adds a spawn-menu tab with all registered items listed by 
 
 CAMI.RegisterPrivilege({
 	Name = "Helix - Item Menu",
-	MinAccess = "superadmin"
+	MinAccess = "admin"
 })
 
 ix.lang.AddTable("english", {

@@ -1,10 +1,73 @@
 
 function Schema:CanPlayerUseBusiness(client, uniqueID)
-	if (client:IsAdmin()) then
-		return true
-	else
+	if (!ix.config.Get("allowBusiness", true)) then
 		return false
 	end
+
+	local character = IsValid(client) and client:GetCharacter()
+	local itemTable = ix.item.list[uniqueID]
+
+	if (!character or !itemTable) then
+		return false
+	end
+
+	if (itemTable.noBusiness) then
+		return false
+	end
+
+	if (client:IsAdmin()) then
+		return true
+	end
+
+	local hasExplicitRestriction = itemTable.factions or itemTable.classes or itemTable.flag
+
+	if (!hasExplicitRestriction) then
+		return false
+	end
+
+	if (itemTable.factions) then
+		local allowed = false
+
+		if (istable(itemTable.factions)) then
+			for _, factionID in pairs(itemTable.factions) do
+				if (client:Team() == factionID) then
+					allowed = true
+					break
+				end
+			end
+		else
+			allowed = client:Team() == itemTable.factions
+		end
+
+		if (!allowed) then
+			return false
+		end
+	end
+
+	if (itemTable.classes) then
+		local allowed = false
+
+		if (istable(itemTable.classes)) then
+			for _, classID in pairs(itemTable.classes) do
+				if (character:GetClass() == classID) then
+					allowed = true
+					break
+				end
+			end
+		else
+			allowed = character:GetClass() == itemTable.classes
+		end
+
+		if (!allowed) then
+			return false
+		end
+	end
+
+	if (itemTable.flag and !character:HasFlags(itemTable.flag)) then
+		return false
+	end
+
+	return true
 end
 
 -- called when the client wants to view the combine data for the given target

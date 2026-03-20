@@ -211,4 +211,6 @@ LANGUAGE = {
 	recipeTeaDesc = "차를 끓입니다.",
 	recipeCoffeeDesc = "커피를 끓입니다.",
 	recipeSteakDesc = "고기로 스테이크를 요리합니다.",
+	recipeNoodlesDesc = "국수를 요리합니다.",
+	recipeChineseTakeoutDesc = "중국 음식을 요리합니다.",
 }

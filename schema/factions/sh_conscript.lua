@@ -1,7 +1,7 @@
 FACTION.name = "Conscript"
 FACTION.description = "A regular human citizen enlisted as a soldier to Combine Overwatch."
 FACTION.color = Color(77, 93, 83, 255)
-FACTION.pay = 7
+FACTION.pay = 15
 FACTION.isDefault = false
 FACTION.isGloballyRecognized = false
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
@@ -158,7 +158,13 @@ end
 
 function FACTION:AssignDefaultClass(character)
 	if (CLASS_CONSCRIPT and character:GetClass() != CLASS_CONSCRIPT) then
-		character:SetClass(CLASS_CONSCRIPT)
+		local client = character:GetPlayer()
+
+		if (IsValid(client)) then
+			character:JoinClass(CLASS_CONSCRIPT)
+		else
+			character:SetClass(CLASS_CONSCRIPT)
+		end
 	end
 end
 
@@ -180,6 +186,9 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("health_vial", 1)
 	inventory:Add("flashlight", 1)
 	inventory:Add("stunstick", 1)
+	inventory:Add("comkey", 1)
+	inventory:Add("bag", 1)
+	inventory:Add("zip_tie", 2)
 
 	character:SetModel(self:ResolveDutyModel(character, character:GetModel()))
 	self:SetDisplayedName(character, character:GetName())

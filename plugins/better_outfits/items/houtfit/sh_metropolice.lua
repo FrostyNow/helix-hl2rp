@@ -74,6 +74,21 @@ local function RefreshFactionState(client)
 	client:SetCanZoom(character and (client:IsCombine() or client:IsAdmin() or (inventory and inventory:HasItem("binoculars"))))
 end
 
+local function FinalizeUniformChange(client)
+	if (!IsValid(client)) then
+		return
+	end
+
+	RefreshFactionState(client)
+	client:SetupHands()
+
+	timer.Simple(0, function()
+		if (IsValid(client) and client:GetCharacter()) then
+			hook.Run("UpdateAllRelations")
+		end
+	end)
+end
+
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
 
@@ -142,7 +157,7 @@ function ITEM:ApplyOutfit(client)
 		faction:OnDescriptionChanged(client, "", state.dutyDescription)
 	end
 
-	RefreshFactionState(client)
+	FinalizeUniformChange(client)
 end
 
 function ITEM:RemoveOutfit(client)
@@ -161,7 +176,7 @@ function ITEM:RemoveOutfit(client)
 	self.baseTable.RemoveOutfit(self, client)
 
 	if (!character or !faction or !state.active) then
-		RefreshFactionState(client)
+		FinalizeUniformChange(client)
 		return
 	end
 
@@ -177,14 +192,16 @@ function ITEM:RemoveOutfit(client)
 		character:SetFaction(returnFaction)
 	end
 
-	character:KickClass()
-
 	if (isnumber(originalClass)) then
 		local classData = ix.class.list[originalClass]
 
 		if (classData and classData.faction == returnFaction) then
-			character:SetClass(originalClass)
+			character:JoinClass(originalClass)
+		else
+			character:KickClass()
 		end
+	else
+		character:KickClass()
 	end
 
 	if (isstring(originalName) and originalName != "" and character:GetName() != originalName) then
@@ -195,7 +212,7 @@ function ITEM:RemoveOutfit(client)
 		character:SetDescription(originalDescription)
 	end
 
-	RefreshFactionState(client)
+	FinalizeUniformChange(client)
 end
 
 /*

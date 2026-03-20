@@ -17,6 +17,7 @@ local weps = { -- this table is for the weapons printnames, to be shown correctl
 	["#HL2_Pistol"] = L("9mm Pistol"),
 	["#HL2_Pulse_Rifle"] = L("Standard Issue Pulse Rifle"),
 	["Stunstick"] = L("Stunstick"),
+	["ix_stunstick"] = L("Stunstick"),
 	["#HL2_SMG1"] = L("Submachine Gun"),
 	["#HL2_357Handgun"] = L(".357 Revolver"),
 	["#HL2_Grenade"] = L("Grenade"),

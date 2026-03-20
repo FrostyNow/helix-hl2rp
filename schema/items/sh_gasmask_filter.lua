@@ -6,6 +6,7 @@ ITEM.height = 1
 ITEM.category = "Utility"
 ITEM.isStackable = true
 ITEM.maxDurability = 100
+ITEM.price = 60
 
 -- function ITEM:GetDescription()
 -- 	return string.format("%s\n \n%s: %d / %d", L(self.description), L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)

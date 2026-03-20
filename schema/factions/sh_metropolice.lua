@@ -2,7 +2,7 @@
 FACTION.name = "Metropolice Force"
 FACTION.description = "A metropolice unit working as Civil Protection."
 FACTION.color = Color(43, 64, 116)
-FACTION.pay = 10
+FACTION.pay = 30
 -- FACTION.models = {"models/dpfilms/metropolice/hdpolice.mdl"}
 -- FACTION.weapons = {"ix_stunstick"}
 FACTION.models = {}
@@ -137,7 +137,11 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("stunstick", 1)
 	inventory:Add("cp_vest_mpf", 1)
 	inventory:Add("cp_mask", 1)
+	inventory:Add("gasmask_filter", 1)
 	inventory:Add("handheld_radio", 1)
+	inventory:Add("bag", 1)
+	inventory:Add("flashlight", 1)
+	inventory:Add("zip_tie", 2)
 
 	local groups = character:GetData("groups", {})
 

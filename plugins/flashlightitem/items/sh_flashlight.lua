@@ -5,6 +5,7 @@ ITEM.width = 1
 ITEM.height = 1
 ITEM.description = "itemFlashlightDesc"
 ITEM.category = "Utility"
+ITEM.price = 60
 
 local function turnOffIfLast(item)
 	local client = item:GetOwner()

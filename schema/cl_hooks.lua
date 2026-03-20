@@ -1,4 +1,41 @@
 
+local function HasEquippedCPMask(character)
+	local inventory = character and character:GetInventory()
+
+	if (!inventory or !inventory.GetItems) then
+		return false
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (!item:GetData("equip")) then
+			continue
+		end
+
+		local uniqueID = isstring(item.uniqueID) and item.uniqueID:lower() or ""
+
+		if (uniqueID:find("cp_mask", 1, true) or item.combineMaskProtection == true) then
+			return true
+		end
+	end
+
+	return false
+end
+
+local function ShouldRenderMasklessMetrocopAsAnonymous(viewer, client)
+	if (!IsValid(viewer) or !IsValid(client) or viewer == client or viewer:IsCombine() or client:Team() != FACTION_MPF) then
+		return false
+	end
+
+	local character = client:GetCharacter()
+	local faction = character and ix.faction.indices[character:GetFaction()]
+
+	if (!character or !faction or !faction.IsUniformCitizenDuty or !faction:IsUniformCitizenDuty(character)) then
+		return false
+	end
+
+	return !HasEquippedCPMask(character)
+end
+
 function Schema:PopulateCharacterInfo(client, character, tooltip)
 	if (client:IsRestricted()) then
 		local panel = tooltip:AddRowAfter("name", "ziptie")
@@ -19,44 +56,165 @@ function Schema:PopulateCharacterInfo(client, character, tooltip)
 end
 
 do
-	local function HasEquippedCPMask(character)
-		local inventory = character and character:GetInventory()
-
-		if (!inventory or !inventory.GetItems) then
+	local function ShouldUseDynamicScoreboardIcon(client)
+		if (!IsValid(client)) then
 			return false
 		end
 
-		for _, item in pairs(inventory:GetItems()) do
-			if (!item:GetData("equip")) then
-				continue
-			end
+		if (client:GetNetVar("gasmask", false)) then
+			return true
+		end
 
-			local uniqueID = isstring(item.uniqueID) and item.uniqueID:lower() or ""
+		if (Schema:IsConceptCombine(client)) then
+			local maskIndex = client:FindBodygroupByName("mask")
 
-			if (uniqueID:find("cp_mask", 1, true)) then
-				return true
-			end
+			return maskIndex != -1 and client:GetBodygroup(maskIndex) >= 1
 		end
 
 		return false
 	end
 
+	local function ParseScoreboardBodygroups(bodygroups)
+		if (!isstring(bodygroups) or bodygroups == "") then
+			return bodygroups
+		end
+
+		local indexed = {}
+
+		for i = 1, bodygroups:len() do
+			local value = tonumber(bodygroups[i]) or 0
+
+			if (value > 0) then
+				indexed[i - 1] = value
+			end
+		end
+
+		return indexed
+	end
+
+	local function PatchScoreboardDynamicRenderer(icon)
+		if (!IsValid(icon) or !IsValid(icon.ixDynamicRenderer) or icon.ixDynamicRenderer.ixSchemaMaskScalePatch) then
+			return
+		end
+
+		local renderer = icon.ixDynamicRenderer
+		local originalLayout = renderer.LayoutEntity
+		local originalSetHidden = renderer.SetHidden
+
+		renderer.ixSchemaMaskScalePatch = true
+
+		local function ApplyAnonymousRenderState(panel, hidden)
+			if (!IsValid(panel)) then
+				return
+			end
+
+			if (hidden) then
+				panel:SetAmbientLight(color_black)
+				panel:SetColor(Color(0, 0, 0))
+
+				for i = 0, 5 do
+					panel:SetDirectionalLight(i, color_black)
+				end
+
+				return
+			end
+
+			if (panel.ixAdminAnonymousView) then
+				panel:SetAmbientLight(Color(18, 18, 18))
+				panel:SetColor(Color(95, 95, 95))
+
+				for i = 0, 5 do
+					if (i == 1 or i == 5) then
+						panel:SetDirectionalLight(i, Color(85, 85, 85))
+					else
+						panel:SetDirectionalLight(i, Color(60, 60, 60))
+					end
+				end
+
+				return
+			end
+
+			panel:SetAmbientLight(Color(20, 20, 20))
+			panel:SetColor(color_white)
+			panel:SetAlpha(255)
+
+			for i = 0, 5 do
+				if (i == 1 or i == 5) then
+					panel:SetDirectionalLight(i, Color(155, 155, 155))
+				else
+					panel:SetDirectionalLight(i, Color(255, 255, 255))
+				end
+			end
+		end
+
+		renderer.LayoutEntity = function(panel, entity)
+			if (originalLayout) then
+				originalLayout(panel, entity)
+			end
+
+			Schema:ApplyMaskScale(entity, icon.ixClient)
+			ApplyAnonymousRenderState(panel, panel.ixAnonymousHidden == true)
+		end
+
+		renderer.SetHidden = function(panel, hidden)
+			hidden = tobool(hidden)
+			panel.ixAnonymousHidden = hidden
+			panel.ixAdminAnonymousView = !hidden and IsValid(icon) and icon.bHidden and IsValid(LocalPlayer()) and LocalPlayer():IsAdmin()
+
+			if (originalSetHidden) then
+				originalSetHidden(panel, hidden)
+			end
+
+			ApplyAnonymousRenderState(panel, hidden)
+		end
+	end
+
 	local function ShouldHideScoreboardIcon(client)
-		if (!IsValid(client) or client:Team() != FACTION_MPF) then
-			return false
-		end
-
-		local character = client:GetCharacter()
-		local faction = character and ix.faction.indices[character:GetFaction()]
-
-		if (!character or !faction or !faction.IsUniformCitizenDuty or !faction:IsUniformCitizenDuty(character)) then
-			return false
-		end
-
-		return !HasEquippedCPMask(character)
+		return ShouldRenderMasklessMetrocopAsAnonymous(LocalPlayer(), client)
 	end
 
 	local scoreboardRow = vgui.GetControlTable("ixScoreboardRow")
+	local scoreboardIcon = vgui.GetControlTable("ixScoreboardIcon")
+	local panelMeta = FindMetaTable("Panel")
+
+	if (scoreboardIcon and panelMeta and panelMeta.GetSkin and !scoreboardIcon.ixSchemaModelSkinPatch) then
+		scoreboardIcon.ixSchemaModelSkinPatch = true
+
+		function scoreboardIcon:GetModelSkin()
+			return self.ixModelSkin or 0
+		end
+
+		local originalSetModel = scoreboardIcon.SetModel
+		local originalSetDynamicRenderer = scoreboardIcon.SetDynamicRenderer
+
+		function scoreboardIcon:SetModel(model, skin, bodygroups)
+			self.ixModelSkin = tonumber(skin) or 0
+
+			if (ShouldUseDynamicScoreboardIcon(self.ixClient)) then
+				return self:SetDynamicRenderer(model, self.ixModelSkin, ParseScoreboardBodygroups(bodygroups), self:GetBodygroupSignature())
+			end
+
+			return originalSetModel(self, model, self.ixModelSkin, bodygroups)
+		end
+
+		function scoreboardIcon:SetDynamicRenderer(model, skin, bodygroups, signature)
+			self.ixModelSkin = tonumber(skin) or 0
+			local originalGetSkin = self.GetSkin
+			self.GetSkin = panelMeta.GetSkin
+
+			local ok, result = pcall(originalSetDynamicRenderer, self, model, self.ixModelSkin, bodygroups, signature)
+
+			self.GetSkin = originalGetSkin
+
+			if (!ok) then
+				error(result)
+			end
+
+			PatchScoreboardDynamicRenderer(self)
+
+			return result
+		end
+	end
 
 	if (scoreboardRow and !scoreboardRow.ixSchemaMaskedIconPatch) then
 		scoreboardRow.ixSchemaMaskedIconPatch = true
@@ -64,12 +222,47 @@ do
 		local originalUpdate = scoreboardRow.Update
 
 		function scoreboardRow:Update(...)
+			if (IsValid(self.icon)) then
+				self.icon.ixClient = self.player
+			end
+
 			originalUpdate(self, ...)
 
 			if (IsValid(self.icon) and ShouldHideScoreboardIcon(self.player)) then
 				self.icon:SetHidden(true)
 			end
+
+			if (ShouldRenderMasklessMetrocopAsAnonymous(LocalPlayer(), self.player)) then
+				self:SetZPos(2)
+
+				if (IsValid(self.description) and self.description:GetText() != L"noRecog") then
+					self.description:SetText(L"noRecog")
+					self.description:SizeToContents()
+				end
+
+				if (IsValid(self.realNameHint)) then
+					self.realNameHint:SetVisible(false)
+				end
+
+				if (IsValid(self.realDescriptionHint)) then
+					self.realDescriptionHint:SetVisible(false)
+				end
+			end
+
+			if (IsValid(self.icon)) then
+				PatchScoreboardDynamicRenderer(self.icon)
+
+				if (self.icon.ixUseDynamicRenderer and IsValid(self.icon.ixDynamicRenderer) and IsValid(self.icon.ixDynamicRenderer.Entity)) then
+					Schema:ApplyMaskScale(self.icon.ixDynamicRenderer.Entity, self.player)
+				end
+			end
 		end
+	end
+end
+
+function Schema:GetCharacterDescription(client)
+	if (ShouldRenderMasklessMetrocopAsAnonymous(LocalPlayer(), client)) then
+		return L"noRecog"
 	end
 end
 
@@ -176,7 +369,7 @@ local COLOR_BLACK_WHITE = {
 local combineOverlay = ix.util.GetMaterial("effects/combine_binocoverlay")
 local cinematicOverlay = ix.util.GetMaterial("nco/cinover")
 
-function Schema:ApplyMaskScale(v)
+function Schema:ApplyMaskScale(v, client)
 	if (!IsValid(v)) then return end
 
 	local headBone = v:LookupBone("ValveBiped.Bip01_Head1")
@@ -184,6 +377,8 @@ function Schema:ApplyMaskScale(v)
 	if (!headBone) then
 		return
 	end
+
+	local sourceClient = IsValid(client) and client or (v:IsPlayer() and v or nil)
 
 	if (Schema:IsConceptCombine(v)) then
 		local maskIndex = v:FindBodygroupByName("mask")
@@ -193,6 +388,11 @@ function Schema:ApplyMaskScale(v)
 			v:ManipulateBoneScale(headBone, Vector(scale, scale, scale))
 			return
 		end
+	end
+
+	if (IsValid(sourceClient) and sourceClient:GetNetVar("gasmask", false)) then
+		v:ManipulateBoneScale(headBone, Vector(0.93, 0.93, 0.93))
+		return
 	end
 
 	v:ManipulateBoneScale(headBone, Vector(1, 1, 1))
@@ -307,7 +507,7 @@ function Schema:UpdateCharacterInfo(panel)
 end
 
 function Schema:BuildBusinessMenu(panel)
-	return LocalPlayer():IsAdmin()
+	return ix.config.Get("allowBusiness", true)
 end
 
 function Schema:PopulateHelpMenu(tabs)

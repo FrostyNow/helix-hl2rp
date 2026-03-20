@@ -1,15 +1,15 @@
-RECIPE.name = "Tea"
-RECIPE.description = "recipeTeaDesc"
+RECIPE.name = "Noodles"
+RECIPE.description = "recipeNoodlesDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/tea/teacup.mdl"
+RECIPE.model = "models/mosi/fallout4/props/food/noodles.mdl"
 RECIPE.requirements = {
-	["misc_dried_tea"] = 1,
+	["flour"] = 1,
+	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1, ["bacon"] = 1, ["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineralwater"] = 1}},
-	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}},
-	["tea_cup"] = 1
+	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {
-	["tea"] = 1
+	["noodles"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

@@ -125,4 +125,6 @@ LANGUAGE = {
 	recipeTeaDesc = "Make some tea.",
 	recipeCoffeeDesc = "Make some coffee.",
 	recipeSteakDesc = "Cook a steak from meat.",
+	recipeNoodlesDesc = "Cook noodles.",
+	recipeChineseTakeoutDesc = "Cook Chinese takeout.",
 }

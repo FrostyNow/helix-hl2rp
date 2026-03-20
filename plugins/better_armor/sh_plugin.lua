@@ -534,7 +534,7 @@ function PLUGIN:GetCharacterPreviewAppearance(character, entity)
 
 	for _, item in ipairs(items) do
 		if (item:GetData("equip") and item.eqBodyGroups) then
-			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !item:IsCompatibleWith(baseModel) and !IsModelChangingItem(item)) then
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !IsModelChangingItem(item)) then
 				continue
 			end
 

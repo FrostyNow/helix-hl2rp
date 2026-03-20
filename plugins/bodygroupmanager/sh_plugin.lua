@@ -95,6 +95,7 @@ end
 
 local ORIGINAL_GROUPS_KEY = "originalAppearanceGroups"
 local ORIGINAL_SKIN_KEY = "originalAppearanceSkin"
+local ORIGINAL_MODEL_KEY = "originalAppearanceModel"
 
 local function NormalizeBodygroupName(name)
 	if (!isstring(name)) then
@@ -106,6 +107,10 @@ end
 
 local function NormalizeModelPath(model)
 	return isstring(model) and model:gsub("\\", "/"):lower() or ""
+end
+
+local function IsValidModelPath(model)
+	return isstring(model) and NormalizeModelPath(model) != ""
 end
 
 local function IsFemaleModel(model)
@@ -151,6 +156,47 @@ local function ResolveOriginalSkin(character, player)
 	end
 
 	return tonumber(fallbackOldSkin) or skin
+end
+
+local function ResolveUniformOriginalModel(character)
+	if (!character) then
+		return nil
+	end
+
+	local faction = ix.faction.indices[character:GetFaction()]
+
+	if (!faction or !faction.IsUniformCitizenDuty or !faction.GetUniformState or !faction:IsUniformCitizenDuty(character)) then
+		return nil
+	end
+
+	local state = faction:GetUniformState(character)
+	local model = state and state.originalModel or nil
+
+	return IsValidModelPath(model) and model or nil
+end
+
+local function ResolveLiveBaseModel(character, player)
+	local uniformModel = ResolveUniformOriginalModel(character)
+
+	if (uniformModel) then
+		return uniformModel
+	end
+
+	local currentModel = IsValid(player) and player:GetModel() or nil
+
+	if (IsValidModelPath(currentModel)) then
+		return currentModel
+	end
+
+	currentModel = character and character:GetModel() or nil
+
+	if (IsValidModelPath(currentModel)) then
+		return currentModel
+	end
+
+	local oldModelBase = character and character:GetData("oldModelBase") or nil
+
+	return IsValidModelPath(oldModelBase) and oldModelBase or nil
 end
 
 function PLUGIN:HasEquippedSuit(character)
@@ -347,6 +393,27 @@ function PLUGIN:SetPersistentAppearance(character, groups, skin)
 	end
 end
 
+function PLUGIN:EnsureOriginalModel(character, player)
+	if (CLIENT or !character) then
+		return nil
+	end
+
+	local storedModel = character:GetData(ORIGINAL_MODEL_KEY)
+
+	if (IsValidModelPath(storedModel)) then
+		return storedModel
+	end
+
+	local model = ResolveLiveBaseModel(character, player)
+
+	if (IsValidModelPath(model)) then
+		character:SetData(ORIGINAL_MODEL_KEY, model)
+		return model
+	end
+
+	return nil
+end
+
 function PLUGIN:EnsureOriginalAppearance(character, player)
 	if (CLIENT or !character) then
 		return
@@ -365,6 +432,8 @@ function PLUGIN:EnsureOriginalAppearance(character, player)
 		character:SetData(ORIGINAL_SKIN_KEY, ResolveOriginalSkin(character, player))
 	end
 
+	self:EnsureOriginalModel(character, player)
+
 	return true
 end
 
@@ -377,6 +446,16 @@ function PLUGIN:GetOriginalAppearance(character, player)
 	local skin = tonumber(character:GetData(ORIGINAL_SKIN_KEY, IsValid(player) and player:GetSkin() or 0)) or 0
 
 	return istable(groups) and table.Copy(groups) or {}, skin
+end
+
+function PLUGIN:GetOriginalModel(character, player)
+	local storedModel = character and character:GetData(ORIGINAL_MODEL_KEY) or nil
+
+	if (IsValidModelPath(storedModel)) then
+		return storedModel
+	end
+
+	return self:EnsureOriginalModel(character, player)
 end
 
 local function GetAppearanceCategory(item)
@@ -541,12 +620,19 @@ function PLUGIN:ApplyResolvedAppearance(character, player)
 end
 
 function PLUGIN:GetResetModel(character, player)
+	local storedModel = self:GetOriginalModel(character, player)
+
+	if (IsValidModelPath(storedModel)) then
+		return storedModel
+	end
+
+	local currentModel = ResolveLiveBaseModel(character, player)
+	local normalizedCurrentModel = NormalizeModelPath(currentModel)
 	local faction = self:GetBaseAppearanceFaction(character)
-	local currentModel = NormalizeModelPath(character and character:GetModel() or "")
-	local wantsFemale = IsFemaleModel(currentModel)
+	local wantsFemale = IsFemaleModel(normalizedCurrentModel)
 
 	if (!faction) then
-		return currentModel
+		return normalizedCurrentModel
 	end
 
 	if (istable(faction.genderModels)) then
@@ -584,7 +670,7 @@ function PLUGIN:GetResetModel(character, player)
 		return faction.models[1]
 	end
 
-	return currentModel
+	return normalizedCurrentModel
 end
 
 function PLUGIN:ResetCharacterModel(target, client)
@@ -596,21 +682,21 @@ function PLUGIN:ResetCharacterModel(target, client)
 	end
 
 	local outfitsPlugin = GetAppearancePlugin()
+	local model = self:GetResetModel(target, player)
 
 	if (outfitsPlugin) then
 		outfitsPlugin:SetTemporaryOutfitModelOverride(target, nil)
 	end
 
+	if (IsValidModelPath(model)) then
+		target:SetData(ORIGINAL_MODEL_KEY, model)
+		target:SetData("oldModelBase", model)
+	end
+
 	if (!self:HasEquippedModelChangingOutfit(target)) then
-		local model = self:GetResetModel(target, player)
-
-		if (isstring(model) and model != "") then
-			target:SetData("oldModelBase", model)
-
-			if (NormalizeModelPath(player:GetModel()) != NormalizeModelPath(model)) then
-				target:SetModel(model)
-				player:SetupHands()
-			end
+		if (IsValidModelPath(model) and NormalizeModelPath(player:GetModel()) != NormalizeModelPath(model)) then
+			target:SetModel(model)
+			player:SetupHands()
 		end
 	end
 
@@ -653,9 +739,15 @@ function PLUGIN:ResetCharacterFullAppearance(target, client)
 	end
 
 	local outfitsPlugin = GetAppearancePlugin()
+	local model = self:GetResetModel(target, player)
 
 	if (outfitsPlugin) then
 		outfitsPlugin:ClearTemporaryOutfitOverrides(target)
+	end
+
+	if (IsValidModelPath(model)) then
+		target:SetData(ORIGINAL_MODEL_KEY, model)
+		target:SetData("oldModelBase", model)
 	end
 
 	player:ResetBodygroups()
@@ -676,6 +768,7 @@ function PLUGIN:ClearAppearanceStorage(character)
 	character:SetData("skin", 0)
 	character:SetData(ORIGINAL_GROUPS_KEY, nil)
 	character:SetData(ORIGINAL_SKIN_KEY, nil)
+	character:SetData(ORIGINAL_MODEL_KEY, nil)
 
 	character:SetData("oldModelBase", nil)
 	character:SetData("appearanceStack", nil)
@@ -706,6 +799,7 @@ function PLUGIN:ResetCharacterAppearance(target, client, forceClear)
 	end
 
 	local hadOriginalAppearance = (target:GetData(ORIGINAL_GROUPS_KEY) != nil and target:GetData(ORIGINAL_SKIN_KEY) != nil)
+	local originalModel = self:GetResetModel(target, player)
 
 	self:StripEquippedAppearanceItems(target, player)
 
@@ -717,6 +811,16 @@ function PLUGIN:ResetCharacterAppearance(target, client, forceClear)
 
 	player:ResetBodygroups()
 	player:SetSkin(0)
+
+	if (IsValidModelPath(originalModel)) then
+		target:SetData(ORIGINAL_MODEL_KEY, originalModel)
+		target:SetData("oldModelBase", originalModel)
+
+		if (NormalizeModelPath(player:GetModel()) != NormalizeModelPath(originalModel)) then
+			target:SetModel(originalModel)
+			player:SetupHands()
+		end
+	end
 
 	if (!self:RestoreOriginalAppearance(target, player)) then
 		player:SetSkin(tonumber(target:GetData("skin", player:GetSkin())) or 0)
@@ -750,6 +854,7 @@ function PLUGIN:ForceResetCharacterAppearance(target, client)
 	target:SetData("skin", tonumber(originalSkin) or 0)
 	target:SetData(ORIGINAL_GROUPS_KEY, table.Copy(originalGroups or {}))
 	target:SetData(ORIGINAL_SKIN_KEY, tonumber(originalSkin) or 0)
+	target:SetData(ORIGINAL_MODEL_KEY, model)
 	target:SetData("oldModelBase", model)
 
 	if (outfitsPlugin) then
@@ -818,6 +923,19 @@ end
 
 function PLUGIN:CharacterLoaded(character)
 	self:EnsureOriginalAppearance(character, character:GetPlayer())
+end
+
+function PLUGIN:CharacterVarChanged(character, key, oldValue, value)
+	if (key != "model" or !character or !IsValidModelPath(value)) then
+		return
+	end
+
+	if (self:HasEquippedModelChangingOutfit(character)) then
+		return
+	end
+
+	character:SetData(ORIGINAL_MODEL_KEY, value)
+	character:SetData("oldModelBase", value)
 end
 
 ix.command.Add("CharEditBodygroup", {

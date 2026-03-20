@@ -1,7 +1,7 @@
 ITEM.name = "Dirty Water"
 ITEM.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
 ITEM.description = "itemDirtyWaterDesc"
-ITEM.class = nil
+ITEM.classes = nil
 ITEM.thirst = 25
 ITEM.hunger = -100
 ITEM.price = 5

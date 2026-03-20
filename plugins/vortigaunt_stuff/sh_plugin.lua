@@ -1,3 +1,5 @@
+local PLUGIN = PLUGIN
+
 PLUGIN.name = "Vortigaunt Faction"
 PLUGIN.author = "JohnyReaper | Voicelines: sQubany | Modified by Frosty"
 PLUGIN.description = "Adds some features for vortigaunts."
@@ -397,13 +399,13 @@ if SERVER then
 			allowedWeapons[weapon] = true
 
 			if (!client:HasWeapon(weapon)) then
-				character:GiveWeapon(weapon)
+				client:Give(weapon)
 			end
 		end
 
 		for _, weapon in ipairs(VORTIGAUNT_WEAPONS) do
 			if (!allowedWeapons[weapon] and client:HasWeapon(weapon)) then
-				character:TakeWeapon(weapon)
+				client:StripWeapon(weapon)
 			end
 		end
 	end
@@ -694,32 +696,32 @@ if SERVER then
 		client:NotifyLocalized("vortClassManualDisabled")
 		return false
 	end
+end
 
-	do
-		local COMMAND = {}
-		COMMAND.description = "@vortFreeCommandDesc"
-		COMMAND.adminOnly = true
-		COMMAND.arguments = {
-			ix.type.player,
-			ix.type.bool
-		}
-		COMMAND.alias = {"vortfree"}
+do
+	local COMMAND = {}
+	COMMAND.description = "@vortFreeCommandDesc"
+	COMMAND.adminOnly = true
+	COMMAND.arguments = {
+		ix.type.player,
+		ix.type.bool
+	}
+	COMMAND.alias = {"vortfree"}
 
-		function COMMAND:OnRun(client, target, shouldBeFree)
-			local character = IsValid(target) and target:GetCharacter()
+	function COMMAND:OnRun(client, target, shouldBeFree)
+		local character = IsValid(target) and target:GetCharacter()
 
-			if (!character or !character:IsVortigaunt()) then
-				client:NotifyLocalized("vortTargetNotVort")
-				return
-			end
-
-			PLUGIN:SetVortigauntEnslaved(character, !shouldBeFree, target)
-			client:NotifyLocalized("vortFreeSet", target:GetName(), L(shouldBeFree and "Vortigaunt" or "Enslaved Vortigaunt"))
-			target:NotifyLocalized("vortFreeSetTarget", L(shouldBeFree and "Vortigaunt" or "Enslaved Vortigaunt"))
+		if (!character or !character:IsVortigaunt()) then
+			client:NotifyLocalized("vortTargetNotVort")
+			return
 		end
 
-		ix.command.Add("VortFree", COMMAND)
+		PLUGIN:SetVortigauntEnslaved(character, !shouldBeFree, target)
+		client:NotifyLocalized("vortFreeSet", target:GetName(), L(shouldBeFree and "Vortigaunt" or "Enslaved Vortigaunt"))
+		target:NotifyLocalized("vortFreeSetTarget", L(shouldBeFree and "Vortigaunt" or "Enslaved Vortigaunt"))
 	end
+
+	ix.command.Add("VortFree", COMMAND)
 end
 
 if CLIENT then
