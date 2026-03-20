@@ -68,6 +68,12 @@ end
 function PLUGIN:HUDPaint()
 	local client = LocalPlayer()
 
+	if (IsValid(client) and client:GetNetVar("IsBiosignalGone", false)) then
+		self.biosignalLocations = {}
+		self.cameraData = {}
+		self.requestLocations = {}
+	end
+
 	if (Schema:CanPlayerSeeCombineOverlay(client)) then
 
 		local colorRed = Color(255, 0, 0, 255)
@@ -211,7 +217,11 @@ function PLUGIN:HUDPaint()
 							elseif (vio == self.VIOLATION_FALLEN_OVER) then
 								violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"
 							elseif (vio == self.VIOLATION_RAISED_WEAPON) then
-								violations[#violations + 1] = "<:: 1x" .. L("Raised Weapon") .. " ::>"
+								violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Weapon Possession") .. " ::>"
+							elseif (vio == self.VIOLATION_MISSING_CID) then
+								violations[#violations + 1] = "<:: 1x" .. L("Missing CID") .. " ::>"
+							elseif (vio == self.VIOLATION_SUSPECTED_VIOLENCE) then
+								violations[#violations + 1] = "<:: 1x" .. L("Suspected Violent Act") .. " ::>"
 							end
 						end
 					end
@@ -260,49 +270,52 @@ function PLUGIN:HUDPaint()
 		end
 
 		-- Draw movement violations.
-		for _, v in pairs(player.GetAll()) do
-			if (v:GetCharacter() and (!v:IsCombine() or v:GetNetVar("IsBiosignalGone", false)) and beholderEyePos:Distance(v:GetPos()) <= maximumDistance and v:GetMoveType() != MOVETYPE_NOCLIP) then
-				local physBone = v:LookupBone("ValveBiped.Bip01_Head1")
-				local position = nil
+		if (!client:GetNetVar("IsBiosignalGone", false)) then
+			for _, v in pairs(player.GetAll()) do
+				if (v != client and self:CanCombineIdentifyTarget(v) and beholderEyePos:Distance(v:GetPos()) <= maximumDistance and v:GetMoveType() != MOVETYPE_NOCLIP) then
+					local physBone = v:LookupBone("ValveBiped.Bip01_Head1")
+					local position = nil
 
-				if (physBone) then
-					local bonePosition = v:GetBonePosition(physBone)
+					if (physBone) then
+						local bonePosition = v:GetBonePosition(physBone)
 
-					if (bonePosition) then
-						position = bonePosition + Vector(0, 0, 16)
-					end
-				else
-					position = v:GetPos() + Vector(0, 0, 80)
-				end
-
-				local toScreen = position:ToScreen()
-
-				if (toScreen.visible and beholder:IsLineOfSightClear(v)) then
-					local showDetail = (Vector(toScreen.x, toScreen.y):Distance(halfScrVector) <= lowDetailBox)
-					local CID = Schema:GetCitizenID(v) or "UNKNOWN"
-					
-					if (ix.config.Get("useTagSystem") and beholderEyePos:Distance(v:GetPos()) <= (maximumDistance / 6) and !v:GetCharacter():GetData("IsCIDTagGone") and CID != "") then
-						local text = "<:: c#" .. CID .. " ::>"
-						local color = team.GetColor(v:Team()) or color_white
-
-						draw.SimpleText(showDetail and text or lowDetailText, "BudgetLabel", toScreen.x, toScreen.y, color, 1, 1)
-						toScreen.y = toScreen.y + fontHeight
+						if (bonePosition) then
+							position = bonePosition + Vector(0, 0, 16)
+						end
+					else
+						position = v:GetPos() + Vector(0, 0, 80)
 					end
 
-					local violations = {}
+					local toScreen = position:ToScreen()
 
-					if (v:IsRunning()) then violations[#violations + 1] = "<:: 1x" .. L("Running") .. " ::>" end
-					if (!v:OnGround() and client:WaterLevel() <= 0) then violations[#violations + 1] = "<:: 1x" .. L("Jumping") .. " ::>" end
-					if (v:Crouching()) then violations[#violations + 1] = "<:: 1x" .. L("Ducking") .. " ::>" end
-					if (v:GetLocalVar("ragdoll")) then violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"	end
-					if (v:IsWepRaised()) then violations[#violations + 1] = "<:: 1x" .. L("Raised Weapon") .. " ::>" end
+					if (toScreen.visible and beholder:IsLineOfSightClear(v)) then
+						local showDetail = (Vector(toScreen.x, toScreen.y):Distance(halfScrVector) <= lowDetailBox)
+						local CID = Schema:GetCitizenID(v) or "UNKNOWN"
+						
+						if (!v:IsCombine() and ix.config.Get("useTagSystem") and beholderEyePos:Distance(v:GetPos()) <= (maximumDistance / 6) and !v:GetCharacter():GetData("IsCIDTagGone") and CID != "") then
+							local text = "<:: c#" .. CID .. " ::>"
+							local color = team.GetColor(v:Team()) or color_white
 
-					if (#violations > 0) then
-						draw.SimpleText("<:: " .. L("Possible Violation") .. " ::>", "BudgetLabel", toScreen.x, toScreen.y, colorRed, 1, 1)
-
-						for i, violation in ipairs(violations) do
+							draw.SimpleText(showDetail and text or lowDetailText, "BudgetLabel", toScreen.x, toScreen.y, color, 1, 1)
 							toScreen.y = toScreen.y + fontHeight
-							draw.SimpleText(showDetail and violation or lowDetailText, "BudgetLabel", toScreen.x, toScreen.y, color_white, 1, 1)
+						end
+
+						local violations = {}
+
+						if (v:IsRunning()) then violations[#violations + 1] = "<:: 1x" .. L("Running") .. " ::>" end
+						if (!v:OnGround() and client:WaterLevel() <= 0) then violations[#violations + 1] = "<:: 1x" .. L("Jumping") .. " ::>" end
+						if (v:Crouching()) then violations[#violations + 1] = "<:: 1x" .. L("Ducking") .. " ::>" end
+						if (v:GetLocalVar("ragdoll")) then violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"	end
+						if (self:IsSuspectedViolentAct(v)) then violations[#violations + 1] = "<:: 1x" .. L("Suspected Violent Act") .. " ::>" end
+						if (self:IsVisibleWeaponViolation(v)) then violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Weapon Possession") .. " ::>" end
+
+						if (#violations > 0) then
+							draw.SimpleText("<:: " .. L("Possible Violation") .. " ::>", "BudgetLabel", toScreen.x, toScreen.y, colorRed, 1, 1)
+
+							for i, violation in ipairs(violations) do
+								toScreen.y = toScreen.y + fontHeight
+								draw.SimpleText(showDetail and violation or lowDetailText, "BudgetLabel", toScreen.x, toScreen.y, color_white, 1, 1)
+							end
 						end
 					end
 				end
@@ -319,4 +332,3 @@ hook.Add("ixHUDReset", "ixCTOReset", function()
 		cookie.Set("ixHUD_" .. v .. "_Y", nil)
 	end
 end)
-

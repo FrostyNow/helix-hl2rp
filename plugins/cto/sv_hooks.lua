@@ -17,7 +17,7 @@ function PLUGIN:Tick()
 					if (!IsValid(client)) then
 						data[client] = nil
 					else
-						if (camPos:Distance(client:GetPos()) > 450 or !combineCamera:IsLineOfSightClear(client)) then
+						if (!self:CanCombineIdentifyTarget(client) or camPos:Distance(client:GetPos()) > 450 or !combineCamera:IsLineOfSightClear(client)) then
 							data[client] = nil
 						elseif (#data[client] < 1) then
 							local violations = {}
@@ -38,12 +38,20 @@ function PLUGIN:Tick()
 								violations[#violations + 1] = self.VIOLATION_FALLEN_OVER
 							end
 
-							if (client:IsWepRaised()) then
+							if (self:IsSuspectedViolentAct(client)) then
+								violations[#violations + 1] = self.VIOLATION_SUSPECTED_VIOLENCE
+							end
+
+							if (self:IsVisibleWeaponViolation(client)) then
 								violations[#violations + 1] = self.VIOLATION_RAISED_WEAPON
 							end
 
+							if (!client:IsCombine() and !self:PlayerHasCID(client)) then
+								violations[#violations + 1] = self.VIOLATION_MISSING_CID
+							end
+
 							if (#violations > 0) then
-								if (!client:IsCombine() and !client:GetNetVar("IsBiosignalGone")) then
+								if (!client:IsCombine()) then
 									data[client] = violations
 
 									combineCamera:Fire("SetIdle")

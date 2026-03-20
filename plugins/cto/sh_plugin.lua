@@ -13,7 +13,9 @@ ix.util.Include("sv_plugin.lua")
 ix.lang.AddTable("english", {
 	["Camera Terminal"] = "Camera Terminal",
 	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
-	["Raised Weapon"] = "Raised Weapon",
+	["Unauthorized Weapon Possession"] = "Unauthorized Weapon Possession",
+	["Suspected Violent Act"] = "Suspected Violent Act",
+	["Missing CID"] = "Missing CID",
 	MovementViolation = "Movement violation(s) sighted by C-i%s...",
 	NoBiosignalNote = "Note: Your character currently has no biosignal.",
 	DownloadingTrauma = "Downloading trauma packet...",
@@ -64,7 +66,9 @@ ix.lang.AddTable("korean", {
 	["Jumping"] = "점프",
 	["Ducking"] = "앉기",
 	["Laying"] = "드러누움",
-	["Raised Weapon"] = "무기 준비",
+	["Unauthorized Weapon Possession"] = "비인가 무기 소지",
+	["Suspected Violent Act"] = "폭력 행위 의심",
+	["Missing CID"] = "CID 미소지",
 	["Within Sights"] = "명 시야에 들어옴",
 	["Violations Within Sights"] = "시야 내 위반 행위 포착",
 	["Possible Violation"] = "위반 행위 의심",
@@ -122,14 +126,92 @@ PLUGIN.VIOLATION_JUMPING = 1
 PLUGIN.VIOLATION_CROUCHING = 2
 PLUGIN.VIOLATION_FALLEN_OVER = 3
 PLUGIN.VIOLATION_RAISED_WEAPON = 4
+PLUGIN.VIOLATION_MISSING_CID = 5
+PLUGIN.VIOLATION_SUSPECTED_VIOLENCE = 6
 
 -- Camera controlling enums.
 PLUGIN.CAMERA_VIEW = 0
 PLUGIN.CAMERA_DISABLE = 1
 PLUGIN.CAMERA_ENABLE = 2
 
+PLUGIN.raisedWeaponWhitelist = {
+	ix_hands = true,
+	ix_keys = true,
+	swep_vortigaunt_sweep = true,
+	weapon_physgun = true,
+	gmod_tool = true
+}
+
+PLUGIN.weaponViolationFactionWhitelist = {
+	[FACTION_ADMIN] = true,
+	[FACTION_CONSCRIPT] = true
+}
+
 function PLUGIN:isCameraEnabled(camera)
 	return camera:GetSequenceName(camera:GetSequence()) == "idlealert"
+end
+
+function PLUGIN:PlayerHasCID(target)
+	if (!IsValid(target) or !target:IsPlayer()) then
+		return false
+	end
+
+	local character = target:GetCharacter()
+	local inventory = character and character.GetInventory and character:GetInventory()
+
+	return inventory and inventory:HasItem("cid") or false
+end
+
+function PLUGIN:CanCombineIdentifyTarget(target)
+	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
+		return false
+	end
+
+	if (self.weaponViolationFactionWhitelist[target:Team()]) then
+		return false
+	end
+
+	if (target:IsCombine()) then
+		return !target:GetNetVar("IsBiosignalGone", false)
+	end
+
+	return self:PlayerHasCID(target) != false
+end
+
+function PLUGIN:IsVisibleWeaponViolation(target)
+	if (!IsValid(target) or !target:IsPlayer()) then
+		return false
+	end
+
+	if (self.weaponViolationFactionWhitelist[target:Team()]) then
+		return false
+	end
+
+	local weapon = target:GetActiveWeapon()
+
+	if (!IsValid(weapon)) then
+		return false
+	end
+
+	return !self.raisedWeaponWhitelist[weapon:GetClass()]
+end
+
+function PLUGIN:IsSuspectedViolentAct(target)
+	if (!IsValid(target) or !target:IsPlayer()) then
+		return false
+	end
+
+	if (self.weaponViolationFactionWhitelist[target:Team()]) then
+		return false
+	end
+
+	local weapon = target:GetActiveWeapon()
+
+	if (!IsValid(weapon) or weapon:GetClass() != "ix_hands") then
+		return false
+	end
+
+	return target:IsWepRaised()
 end
 
 if (SERVER) then
