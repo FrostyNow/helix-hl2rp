@@ -344,7 +344,7 @@ function Schema:GetPlayerPainSound(client)
 		return false
 	end
 
-	if (client:IsCombine()) then
+	if (client:IsCombine() and Schema:CanPlayerSeeCombineOverlay(client)) then
 		return GetCombinePainSound(client)
 	end
 
@@ -380,7 +380,11 @@ end
 -- end
 
 function Schema:GetPlayerDeathSound(client)
-	if (client:IsCombine()) then
+	if (client:IsAdmin() and client:GetMoveType() == MOVETYPE_NOCLIP) then
+		return false
+	end
+
+	if (client:IsCombine() and Schema:CanPlayerSeeCombineOverlay(client)) then
 		local sound = GetCombineDeathSound(client)
 		local receivers = {}
 		local maxDistance = 10 * 39.37
