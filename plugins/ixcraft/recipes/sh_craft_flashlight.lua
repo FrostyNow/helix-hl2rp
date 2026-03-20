@@ -14,3 +14,6 @@ RECIPE.results = {
 }
 RECIPE.station = "craftingtable"
 
+RECIPE.attribs = {
+	["int"] = 2
+}

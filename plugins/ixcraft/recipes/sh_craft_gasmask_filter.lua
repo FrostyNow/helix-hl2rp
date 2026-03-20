@@ -15,3 +15,7 @@ RECIPE.results = {
 	["gasmask_filter"] = 1
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 6
+}

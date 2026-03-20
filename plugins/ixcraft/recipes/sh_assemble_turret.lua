@@ -13,3 +13,7 @@ RECIPE.results = {
 	["turret"] = 1
 }
 RECIPE.station = {"workbench", "craftingtable"}
+
+RECIPE.attribs = {
+	["int"] = 6
+}

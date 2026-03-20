@@ -12,3 +12,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["762x39ammo"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

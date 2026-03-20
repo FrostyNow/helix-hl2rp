@@ -9,3 +9,7 @@ RECIPE.results = {
 	["comp_lead"] = 1,
 	["misc_gunpowder"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

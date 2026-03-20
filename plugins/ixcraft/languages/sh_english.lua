@@ -9,9 +9,11 @@ LANGUAGE = {
 	["CraftSuccess"] = "You have successfully crafted %s.",
 	["CraftingProgress"] = "Crafting %s...",
 	["CraftAlreadyInProgress"] = "You are already crafting something else.",
+	["CraftMissingAttrib"] = "You do not have enough %s. (Required: %s)",
 
 	["CraftTools"] = "TOOLS",
 	["CraftRequirements"] = "REQUIREMENTS",
+	["Attributes"] = "ATTRIBUTES",
 	["CraftResults"] = "RESULTS",
 	["CraftStation"] = "STATION",
 	["All"] = "All",

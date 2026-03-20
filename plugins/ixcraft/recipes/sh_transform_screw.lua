@@ -10,3 +10,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["comp_screw"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

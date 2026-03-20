@@ -9,3 +9,7 @@ RECIPE.results = {
 	["comp_bone"] = 1
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["str"] = 2
+}

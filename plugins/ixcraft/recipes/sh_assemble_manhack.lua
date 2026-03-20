@@ -15,3 +15,7 @@ RECIPE.results = {
 	["manhack"] = 1
 }
 RECIPE.station = "workbench"
+
+RECIPE.attribs = {
+	["int"] = 6
+}

@@ -9,3 +9,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["misc_charcoal"] = 1
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

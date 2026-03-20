@@ -10,3 +10,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["splint"] = 1
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

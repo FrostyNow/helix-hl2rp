@@ -132,6 +132,26 @@ function PLUGIN:PopulateRecipeTooltip(tooltip, recipe)
 		AddListRow(tooltip, "toolList", toolEntries)
 	end
 
+	local attributeEntries = {}
+
+	for attribID, value in pairs(recipe.attribs or {}) do
+		local attribName = attribID
+
+		if (ix.attributes and ix.attributes.list[attribID]) then
+			attribName = L(ix.attributes.list[attribID].name)
+		end
+
+		attributeEntries[#attributeEntries + 1] = attribName .. " " .. value
+	end
+
+	if (#attributeEntries > 0) then
+		local attributes = tooltip:AddRow("attributes")
+		attributes:SetText(L("Attributes"))
+		attributes:SetBackgroundColor(Color(150, 50, 50))
+		attributes:SizeToContents()
+		AddListRow(tooltip, "attributeList", attributeEntries)
+	end
+
 	if (#requirementEntries > 0) then
 		local requirements = tooltip:AddRow("requirements")
 		requirements:SetText(L("CraftRequirements"))

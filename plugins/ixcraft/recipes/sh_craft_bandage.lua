@@ -10,3 +10,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["bandage"] = 1
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

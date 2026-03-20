@@ -15,3 +15,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["pistol"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 4
+}

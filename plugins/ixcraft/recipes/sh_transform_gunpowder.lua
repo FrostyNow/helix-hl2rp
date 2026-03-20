@@ -12,13 +12,6 @@ RECIPE.results = {
 	["misc_gunpowder"] = 1,
 }
 
-RECIPE:PostHook("OnCanSee", function(recipeTable, client)
-	local character = client:GetCharacter()
-	local attributes = character:GetAttributes()
-
-	if (attributes["int"] and attributes["int"] >= 2) then 
-		return true 
-	end
-
-	return false
-end)
+RECIPE.attribs = {
+	["int"] = 2
+}

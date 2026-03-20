@@ -15,3 +15,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["akm"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 4
+}

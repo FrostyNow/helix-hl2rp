@@ -12,3 +12,7 @@ RECIPE.results = {
 	["comp_steel"] = 5
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 2
+}

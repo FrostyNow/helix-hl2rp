@@ -11,3 +11,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["misc_gunparts_smg"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 4
+}

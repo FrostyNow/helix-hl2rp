@@ -15,3 +15,7 @@ RECIPE.results = {
 	["citizen_gasmask"] = 1
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 6
+}

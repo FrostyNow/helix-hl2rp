@@ -11,3 +11,7 @@ RECIPE.results = {
 	["comp_fiberglass"] = 2
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 2
+}

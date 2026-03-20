@@ -13,3 +13,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["grenade"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 4
+}

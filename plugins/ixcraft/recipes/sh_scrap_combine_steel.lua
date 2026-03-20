@@ -9,3 +9,8 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["steel"] = 2
 }
+
+RECIPE.attribs = {
+	["int"] = 2,
+	["str"] = 2,
+}

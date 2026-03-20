@@ -11,3 +11,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["smg1ammo"] = 1,
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

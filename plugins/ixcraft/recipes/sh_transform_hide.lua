@@ -12,3 +12,7 @@ RECIPE.requirements = {
 RECIPE.results = {
 	["comp_leather"] = 2
 }
+
+RECIPE.attribs = {
+	["int"] = 2
+}

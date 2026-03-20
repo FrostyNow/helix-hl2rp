@@ -12,3 +12,7 @@ RECIPE.results = {
 	["resistance_turret"] = 1
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 6
+}

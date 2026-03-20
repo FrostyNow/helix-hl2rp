@@ -10,9 +10,11 @@ LANGUAGE = {
 	["CraftSuccess"] = "%s(을)를 성공적으로 만들었습니다.",
 	["CraftingProgress"] = "%s 제작 중...",
 	["CraftAlreadyInProgress"] = "이미 다른 제작을 진행 중입니다.",
+	["CraftMissingAttrib"] = "%s 능력치가 부족합니다. (%s 이상 필요)",
 
 	["CraftTools"] = "도구",
 	["CraftRequirements"] = "재료",
+	["Attributes"] = "능력치",
 	["CraftResults"] = "결과",
 	["CraftStation"] = "스테이션",
 	["All"] = "전체",

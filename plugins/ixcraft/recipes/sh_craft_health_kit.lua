@@ -13,3 +13,7 @@ RECIPE.results = {
 	["health_kit"] = 1
 }
 RECIPE.station = "craftingtable"
+
+RECIPE.attribs = {
+	["int"] = 6
+}

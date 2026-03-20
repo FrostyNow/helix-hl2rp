@@ -156,6 +156,28 @@ function RECIPE:CheckRequirement(inventory, uniqueID, req, client)
 	return false, itemName
 end
 
+function RECIPE:CheckAttributes(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
+	for attribID, value in pairs(self.attribs or {}) do
+		if (character:GetAttribute(attribID, 0) < value) then
+			local attribName = attribID
+
+			if (ix.attributes and ix.attributes.list[attribID]) then
+				attribName = L(ix.attributes.list[attribID].name)
+			end
+
+			return false, "@CraftMissingAttrib", attribName, value
+		end
+	end
+
+	return true
+end
+
 function RECIPE:GetStationName(client)
 	local stations = self:GetStations()
 
@@ -283,6 +305,12 @@ function RECIPE:OnCanSee(client)
 		return false
 	end
 
+	local bHasAttribs = self:CheckAttributes(client)
+
+	if (bHasAttribs == false) then
+		return false
+	end
+
 	if (self.postHooks and self.postHooks["OnCanSee"]) then
 		local a, b, c, d, e, f = self.postHooks["OnCanSee"](self, client)
 
@@ -352,6 +380,12 @@ function RECIPE:OnCanCraft(client)
 	end
 
 	-- Check requirements (unified format)
+	local bHasAttribs, failString, c, d, e, f = self:CheckAttributes(client)
+
+	if (bHasAttribs == false) then
+		return false, failString, c, d, e, f
+	end
+
 	for uniqueID, entry in pairs(self.requirements or {}) do
 		local req = ParseRequirement(entry)
 		local bHas, missingName = self:CheckRequirement(inventory, uniqueID, req, client)
