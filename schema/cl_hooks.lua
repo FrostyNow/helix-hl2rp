@@ -18,6 +18,61 @@ function Schema:PopulateCharacterInfo(client, character, tooltip)
 	end
 end
 
+do
+	local function HasEquippedCPMask(character)
+		local inventory = character and character:GetInventory()
+
+		if (!inventory or !inventory.GetItems) then
+			return false
+		end
+
+		for _, item in pairs(inventory:GetItems()) do
+			if (!item:GetData("equip")) then
+				continue
+			end
+
+			local uniqueID = isstring(item.uniqueID) and item.uniqueID:lower() or ""
+
+			if (uniqueID:find("cp_mask", 1, true)) then
+				return true
+			end
+		end
+
+		return false
+	end
+
+	local function ShouldHideScoreboardIcon(client)
+		if (!IsValid(client) or client:Team() != FACTION_MPF) then
+			return false
+		end
+
+		local character = client:GetCharacter()
+		local faction = character and ix.faction.indices[character:GetFaction()]
+
+		if (!character or !faction or !faction.IsUniformCitizenDuty or !faction:IsUniformCitizenDuty(character)) then
+			return false
+		end
+
+		return !HasEquippedCPMask(character)
+	end
+
+	local scoreboardRow = vgui.GetControlTable("ixScoreboardRow")
+
+	if (scoreboardRow and !scoreboardRow.ixSchemaMaskedIconPatch) then
+		scoreboardRow.ixSchemaMaskedIconPatch = true
+
+		local originalUpdate = scoreboardRow.Update
+
+		function scoreboardRow:Update(...)
+			originalUpdate(self, ...)
+
+			if (IsValid(self.icon) and ShouldHideScoreboardIcon(self.player)) then
+				self.icon:SetHidden(true)
+			end
+		end
+	end
+end
+
 function Schema:CalcView(client, origin, angles, fov)
 	if (!client:Alive()) then
 		local ragdoll
