@@ -11,13 +11,23 @@ function PLUGIN:GetCIDData(item, character)
 		return nil
 	end
 
+	if (istable(item) and !item.GetData) then
+		return {
+			name = item.name or (character and character:GetName() or L("unknown")),
+			id = tostring(item.id or (character and character:GetData("cid", "00000") or "00000")),
+			class = item.class or "Second Class Citizen",
+			title = item.title or "cidTitle"
+		}
+	end
+
 	local fallbackName = character and character:GetName() or L("unknown")
 	local fallbackID = character and character:GetData("cid", "00000") or "00000"
 
 	return {
 		name = item:GetData("name", fallbackName),
 		id = item:GetData("id", fallbackID),
-		class = item:GetData("class", "Second Class Citizen")
+		class = item:GetData("class", "Second Class Citizen"),
+		title = item:GetData("title", "cidTitle")
 	}
 end
 
@@ -34,6 +44,7 @@ if (SERVER) then
 				name = data.name,
 				id = data.id,
 				class = data.class,
+				title = data.title,
 				owner = owner
 			})
 		net.Send(target)
@@ -77,6 +88,7 @@ if (CLIENT) then
 		local name = data.name or L("unknown")
 		local id = tostring(data.id or "00000")
 		local class = data.class or "Second Class Citizen"
+		local title = data.title or "cidTitle"
 		local owner = data.owner
 
 		if (IsValid(ix.gui.cidPanel)) then
@@ -89,6 +101,8 @@ if (CLIENT) then
 			color = (ix.class.list[CLASS_CWU] and ix.class.list[CLASS_CWU].color) or Color(50, 150, 50)
 		elseif (class == "First Class Citizen") then
 			color = (ix.class.list[CLASS_ELITE_CITIZEN] and ix.class.list[CLASS_ELITE_CITIZEN].color) or Color(50, 100, 200)
+		elseif (class == "Enslaved Vortigaunt" or class == "Vortigaunt") then
+			color = (FACTION_VORT and team.GetColor(FACTION_VORT)) or Color(77, 158, 154)
 		end
 
 		local panel = vgui.Create("DFrame")
@@ -121,7 +135,7 @@ if (CLIENT) then
 			surface.SetDrawColor(255, 255, 255, 20)
 			surface.DrawOutlinedRect(0, 0, w, 40)
 
-			draw.SimpleText(L("cidTitle"), "ixMediumFont", w / 2, 20, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			draw.SimpleText(L(title), "ixMediumFont", w / 2, 20, color_white, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		end
 
 		local content = panel:Add("Panel")

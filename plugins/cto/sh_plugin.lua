@@ -157,7 +157,16 @@ function PLUGIN:PlayerHasCID(target)
 	end
 
 	local character = target:GetCharacter()
-	local inventory = character and character.GetInventory and character:GetInventory()
+
+	if (!character) then
+		return false
+	end
+
+	if (Schema.HasCharacterIdentification) then
+		return Schema:HasCharacterIdentification(character)
+	end
+
+	local inventory = character.GetInventory and character:GetInventory()
 
 	return inventory and inventory:HasItem("cid") or false
 end

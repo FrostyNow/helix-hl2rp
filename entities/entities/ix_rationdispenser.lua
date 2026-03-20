@@ -168,10 +168,11 @@ if (SERVER) then
 
 			local char = client:GetCharacter()
 			local inv = char:GetInventory()
-			local cid = inv:HasItem("cid")
+			local identification = Schema.GetIdentificationData and Schema:GetIdentificationData(char)
+			local cid = identification and identification.item or nil
 			local token = inv:HasItem("ration_token")
 
-			if (!cid) then
+			if (!identification) then
 				self:DisplayError(7)
 				return
 			end
@@ -187,14 +188,22 @@ if (SERVER) then
 					return
 				end
 
-				if (cid:GetData("nextRationTime", 0) < os.time() or token) then
+				local nextRationTime = cid and cid:GetData("nextRationTime", 0) or char:GetData("nextRationTime", 0)
+
+				if (nextRationTime < os.time() or token) then
 					self:SetDisplay(8)
 					self:EmitSound("ambient/machines/combine_terminal_idle3.wav")
 
 					if (token) then
 						token:Remove()
 					else
-						cid:SetData("nextRationTime", os.time() + ix.config.Get("rationInterval", 1))
+						local rationTime = os.time() + ix.config.Get("rationInterval", 1)
+
+						if (cid) then
+							cid:SetData("nextRationTime", rationTime)
+						else
+							char:SetData("nextRationTime", rationTime)
+						end
 					end
 
 					timer.Simple(10.2, function()

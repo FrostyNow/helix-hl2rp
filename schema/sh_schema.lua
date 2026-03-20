@@ -771,6 +771,58 @@ function Schema:GetCitizenID(target)
 	end
 end
 
+function Schema:GetIdentificationItem(character)
+	if (!character or !character.GetInventory) then
+		return false
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory or !inventory.GetItems) then
+		return false
+	end
+
+	local item = inventory:HasItem("cid")
+
+	if (item != false and item != nil) then
+		return item
+	end
+
+	return false
+end
+
+function Schema:GetIdentificationData(character)
+	if (!character) then
+		return nil
+	end
+
+	local item = self:GetIdentificationItem(character)
+
+	if (item) then
+		return {
+			name = item:GetData("name", character:GetName()),
+			id = item:GetData("id", character:GetData("cid", "00000")),
+			class = item:GetData("class", "Second Class Citizen"),
+			title = item:GetData("title", "cidTitle"),
+			item = item
+		}
+	end
+
+	local implicitData = hook.Run("GetCharacterIdentificationData", character)
+
+	if (istable(implicitData)) then
+		implicitData.name = implicitData.name or character:GetName()
+		implicitData.id = tostring(implicitData.id or character:GetData("cid", "00000"))
+		implicitData.class = implicitData.class or "Second Class Citizen"
+		implicitData.title = implicitData.title or "cidTitle"
+		return implicitData
+	end
+end
+
+function Schema:HasCharacterIdentification(character)
+	return self:GetIdentificationData(character) != nil
+end
+
 function Schema:IsConceptCombine(client)
 	if (!IsValid(client)) then return false end
 	local model = client:GetModel():lower()

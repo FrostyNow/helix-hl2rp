@@ -655,8 +655,11 @@ function PLUGIN:HasCivicTerminalAccess(client)
 		return false
 	end
 
-	local cidItem = inventory:HasItem("cid")
+	if (Schema.HasCharacterIdentification) then
+		return Schema:HasCharacterIdentification(character)
+	end
 
+	local cidItem = inventory:HasItem("cid")
 	return cidItem != false and cidItem != nil
 end
 

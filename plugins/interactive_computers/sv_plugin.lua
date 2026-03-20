@@ -263,8 +263,7 @@ end
 
 function PLUGIN:GetResolvedJournalAuthor(client)
 	local character = IsValid(client) and client:GetCharacter()
-	local inventory = character and character:GetInventory()
-	local cidItem = inventory and inventory:HasItem("cid")
+	local identification = character and Schema.GetIdentificationData and Schema:GetIdentificationData(character)
 
 	if (!character) then
 		return ""
@@ -275,9 +274,9 @@ function PLUGIN:GetResolvedJournalAuthor(client)
 	end
 
 	if (client:IsAdmin()) then
-		if (cidItem) then
-			local cidName = string.Trim(tostring(cidItem:GetData("name", "")))
-			local cidID = string.Trim(tostring(cidItem:GetData("id", "")))
+		if (identification) then
+			local cidName = string.Trim(tostring(identification.name or ""))
+			local cidID = string.Trim(tostring(identification.id or ""))
 
 			if (cidName != "") then
 				return cidID != "" and string.format("%s #%s", cidName, cidID) or cidName
@@ -287,8 +286,8 @@ function PLUGIN:GetResolvedJournalAuthor(client)
 		return ""
 	end
 
-	if (cidItem) then
-		return string.Trim(tostring(cidItem:GetData("name", "")))
+	if (identification) then
+		return string.Trim(tostring(identification.name or ""))
 	end
 
 	return ""

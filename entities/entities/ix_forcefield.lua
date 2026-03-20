@@ -43,11 +43,7 @@ local MODES = {
 		function(client)
 			local character = client:GetCharacter()
 
-			if (character and character:GetInventory() and !character:GetInventory():HasItem("cid")) then
-				return true
-			else
-				return false
-			end
+			return !(character and Schema.HasCharacterIdentification and Schema:HasCharacterIdentification(character))
 		end,
 		"ffModeCID"
 	},
@@ -430,8 +426,11 @@ local function PlayerHasCID(client)
 		return false
 	end
 
-	local inventory = character:GetInventory()
+	if (Schema.HasCharacterIdentification) then
+		return Schema:HasCharacterIdentification(character)
+	end
 
+	local inventory = character:GetInventory()
 	return inventory and inventory:HasItem("cid") or false
 end
 

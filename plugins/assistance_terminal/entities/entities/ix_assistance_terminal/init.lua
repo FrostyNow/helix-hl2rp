@@ -88,7 +88,7 @@ function ENT:Use(ply)
 		return
 	end
 
-	if ( !character:GetInventory():HasItem("cid") ) then
+	if ( !Schema.HasCharacterIdentification or !Schema:HasCharacterIdentification(character) ) then
 		PlayLockedSound(self)
 
 		ply:NotifyLocalized("terminalNeedsCID")
@@ -126,15 +126,9 @@ function ENT:Use(ply)
 		if (self:GetNetVar("alarm", false)) then return end
 
 		local area = ply:GetAreaName()
-		local cidName = "Anonymous"
-		local cidID = "000000"
-		for _, v in pairs(character:GetInventory():GetItems()) do
-			if (v.uniqueID == "cid") then
-				cidName = v:GetData("name")
-				cidID = v:GetData("id")
-				break
-			end
-		end
+		local identification = Schema.GetIdentificationData and Schema:GetIdentificationData(character) or nil
+		local cidName = identification and identification.name or "Anonymous"
+		local cidID = identification and identification.id or "000000"
 
 		if (!area or area == "") then
 			area = "@terminalUnknownLocation"

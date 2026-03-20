@@ -15,17 +15,10 @@ ix.command.Add("Apply", {
 		local character = client:GetCharacter()
 
 		if character then
-			local inv = character:GetInventory()
-			local cidItem
-			for _, v in pairs(inv:GetItems()) do
-				if (v.uniqueID == "cid") then
-					cidItem = v
-					break
-				end
-			end
+			local cidData = Schema.GetIdentificationData and Schema:GetIdentificationData(character)
 
-			if cidItem then
-				local cidData = PLUGIN:GetCIDData(cidItem, character)
+			if cidData then
+				cidData = PLUGIN:GetCIDData(cidData.item or cidData, character)
 				local name = cidData.name
 
 				applyCooldowns[client] = curTime + 5

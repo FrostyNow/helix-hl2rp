@@ -2,27 +2,37 @@
 FACTION.name = "Vortigaunt"
 FACTION.description = "vortigauntDesc"
 FACTION.color = Color(77, 158, 154, 255)
-FACTION.models = {"models/vortigaunt.mdl"}
-FACTION.weapons = {"swep_vortigaunt_sweep", "swep_vortigaunt_beam_edit", "swep_vortigaunt_heal"}
-FACTION.isDefault = false
+FACTION.models = {"models/vortigaunt_slave.mdl"}
+FACTION.weapons = {}
+FACTION.isDefault = true
 FACTION.isGloballyRecognized = false
 
-function FACTION:OnTransfered(client)
-	local character = client:GetCharacter()
+function FACTION:OnCharacterCreated(client, character)
+	character:SetModel("models/vortigaunt_slave.mdl")
 
-	character:SetModel("models/vortigaunt.mdl")
-	
-	-- Assign default vortigaunt class
-	for k, v in pairs(ix.class.list) do
-		if v.faction == FACTION_VORTIGAUNT and v.isDefault then
-			character:SetClass(k)
-			break
-		end
+	if (CLASS_SLAVE_VORT) then
+		character:SetClass(CLASS_SLAVE_VORT)
 	end
-	
-	-- Give vortigaunt weapons (beam and heal)
-	character:GiveWeapon("swep_vortigaunt_beam_edit")
-	character:GiveWeapon("swep_vortigaunt_heal")
+
+	local plugin = ix.plugin.Get("vortigaunt_stuff")
+
+	if (plugin and plugin.EnsureVortigauntCID) then
+		plugin:EnsureVortigauntCID(character, client)
+	end
+end
+
+function FACTION:OnTransferred(character)
+	character:SetModel("models/vortigaunt_slave.mdl")
+
+	if (CLASS_SLAVE_VORT) then
+		character:SetClass(CLASS_SLAVE_VORT)
+	end
+
+	local plugin = ix.plugin.Get("vortigaunt_stuff")
+
+	if (plugin and plugin.EnsureVortigauntCID) then
+		plugin:EnsureVortigauntCID(character, character:GetPlayer())
+	end
 end
 
 function FACTION:ModifyPlayerStep(client, data)
@@ -38,4 +48,4 @@ function FACTION:ModifyPlayerStep(client, data)
 	end
 end
 
-FACTION_VORTIGAUNT = FACTION.index
+FACTION_VORT = FACTION.index
