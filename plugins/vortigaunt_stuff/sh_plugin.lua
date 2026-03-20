@@ -170,11 +170,7 @@ function PLUGIN:GetPlayerPainSound(client)
 	local character = client:GetCharacter()
 
 	if (character and character:IsVortigaunt()) then
-		return table.Random({
-			"vo/npc/vortigaunt/vortigese11.wav",
-			"vo/npc/vortigaunt/vortigese07.wav",
-			"vo/npc/vortigaunt/vortigese03.wav"
-		})
+		return false
 	end
 end
 
