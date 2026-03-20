@@ -3,6 +3,7 @@ RECIPE.description = "recipeCheeseCakeDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/willardnetworks/food/wn_food_cheesecake.mdl"
 RECIPE.requirements = {
+	["misc_plate"] = 1,
 	["misc_dried_eggprotein"] = 1,
 	["cheese_slice"] = {amount = 1, substitutes = {["blue_cheese"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}

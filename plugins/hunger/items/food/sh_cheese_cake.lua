@@ -5,3 +5,4 @@ ITEM.hunger = 20
 ITEM.price = 50
 ITEM.heal = 8
 ITEM.usenum = 2
+ITEM.empty = "misc_plate"
