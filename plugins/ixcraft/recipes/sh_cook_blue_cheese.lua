@@ -1,16 +1,13 @@
-RECIPE.name = "Burger"
-RECIPE.description = "recipeBurgerDesc"
+RECIPE.name = "Blue Cheese"
+RECIPE.description = "recipeBlueCheeseDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/dead rising 2/burger.mdl"
+RECIPE.model = "models/willardnetworks/food/cheesewheel2c.mdl"
 RECIPE.requirements = {
-	["bread"] = 1,
-	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
-	["cheese_slice"] = {amount = 1, substitutes = {["blue_cheese"] = 1, ["misc_dried_spices"] = 1}},
-	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1}},
+	["milk"] = 1,
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {
-	["burger"] = 1
+	["blue_cheese"] = 2
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

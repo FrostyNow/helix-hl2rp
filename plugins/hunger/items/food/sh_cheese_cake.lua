@@ -1,0 +1,7 @@
+ITEM.name = "Cheese Cake"
+ITEM.model = "models/willardnetworks/food/wn_food_cheesecake.mdl"
+ITEM.description = "itemCheeseCakeDesc"
+ITEM.hunger = 20
+ITEM.price = 50
+ITEM.heal = 8
+ITEM.usenum = 2

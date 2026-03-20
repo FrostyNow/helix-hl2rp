@@ -1,7 +1,7 @@
 RECIPE.name = "Cheese"
-RECIPE.description = "recipeCheeseDesc"
+RECIPE.description = "recipeCutCheeseDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/bioshockinfinite/pound_cheese.mdl"
+RECIPE.model = "models/willardnetworks/food/cheesewheel1c.mdl"
 RECIPE.requirements = {
 	["cheese"] = 1
 }
