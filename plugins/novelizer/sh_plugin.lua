@@ -2545,6 +2545,61 @@ function PLUGIN:HasDamageFlag(damageType, flag)
 	return isnumber(flag) and isnumber(damageType) and bitBand(damageType, flag) == flag
 end
 
+function PLUGIN:GetWeaponItemByClass(className)
+	className = string.lower(tostring(className or ""))
+
+	if (not IsFilledString(className) or not istable(ix and ix.item and ix.item.list)) then
+		return nil
+	end
+
+	for _, itemTable in pairs(ix.item.list) do
+		if (istable(itemTable) and itemTable.isWeapon == true
+			and string.lower(tostring(itemTable.class or "")) == className) then
+			return itemTable
+		end
+	end
+end
+
+function PLUGIN:IsDamageFromMeleeWeapon(dmgInfo)
+	if (not dmgInfo) then
+		return false
+	end
+
+	local entities = {
+		dmgInfo:GetInflictor(),
+		dmgInfo:GetAttacker()
+	}
+
+	for _, entity in ipairs(entities) do
+		if (not IsValid(entity)) then
+			continue
+		end
+
+		local className = string.lower(tostring(entity.GetClass and entity:GetClass() or ""))
+		local itemTable = entity.ixItem
+
+		if (not istable(itemTable) and entity:IsWeapon()) then
+			itemTable = self:GetWeaponItemByClass(className)
+		end
+
+		if (istable(itemTable) and itemTable.isWeapon == true
+			and string.lower(tostring(itemTable.weaponCategory or "")) == "melee") then
+			return true
+		end
+
+		if (className == "ix_hands" or className == "ix_stunstick" or className == "weapon_crowbar"
+			or className == "weapon_hl2axe" or className == "weapon_hl2bottle"
+			or className == "weapon_hl2brokenbottle" or className == "weapon_hl2hook"
+			or className == "weapon_hl2pan" or className == "weapon_hl2pickaxe"
+			or className == "weapon_hl2pipe" or className == "weapon_hl2pot"
+			or className == "weapon_hl2shovel") then
+			return true
+		end
+	end
+
+	return false
+end
+
 function PLUGIN:ClassifyDamageType(dmgInfo)
 	if (not dmgInfo) then
 		return nil
@@ -2567,6 +2622,14 @@ function PLUGIN:ClassifyDamageType(dmgInfo)
 		{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
 		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}}
 	}
+
+	if (self:IsDamageFromMeleeWeapon(dmgInfo)) then
+		if (self:HasDamageFlag(damageType, DMG_SLASH)) then
+			return definitions[10]
+		end
+
+		return definitions[14]
+	end
 
 	for _, definition in ipairs(definitions) do
 		for _, flag in ipairs(definition.flags) do
