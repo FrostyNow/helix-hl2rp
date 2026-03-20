@@ -18,7 +18,7 @@ ITEM.functions.Use = {
 	end,
 	OnCanRun = function(item)
 		local client = item.player
-		return client:IsAlive() and (client:IsCombine() or client:GetMaxArmor() > 0) and client:Armor() < (client:GetMaxArmor() or 255)
+		return client:Alive() and (client:IsCombine() or client:GetMaxArmor() > 0) and client:Armor() < (client:GetMaxArmor() or 255)
 	end
 }
 
