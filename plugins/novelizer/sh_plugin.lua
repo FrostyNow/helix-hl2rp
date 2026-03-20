@@ -4768,46 +4768,48 @@ function PLUGIN:Think()
 				end
 			end
 
-			-- Ladder state change detection
-			local onLadder = client:GetMoveType() == MOVETYPE_LADDER
-			self.ixNovelizerLadderStates = self.ixNovelizerLadderStates or {}
-			local state = self.ixNovelizerLadderStates[client]
+			if (server) then
+				-- Ladder narration must be server-authoritative to avoid duplicate novelme sends.
+				local onLadder = client:GetMoveType() == MOVETYPE_LADDER
+				self.ixNovelizerLadderStates = self.ixNovelizerLadderStates or {}
+				local state = self.ixNovelizerLadderStates[client]
 
-			if (not state) then
-				state = { active = false, startTime = 0, narrated = false, leaveTime = nil }
-				self.ixNovelizerLadderStates[client] = state
-			end
-
-			if (onLadder) then
-				state.leaveTime = nil
-
-				if (not state.active) then
-					state.active = true
-					state.startTime = currentTime
-					state.narrated = false
-				elseif (not state.narrated
-					and currentTime >= state.startTime + 0.25
-					and self:CanAutoNarrate(client)
-					and (client.ixNovelizerLastLadderTime or 0) + 2 <= currentTime
-					and self:PassNamedCooldown(client, "ladder", 3)) then
-
-					state.narrated = true
-					client.ixNovelizerLastLadderTime = currentTime
-
-					self:SendNovelMe(client, table.Random({
-						"novelizerLadder1",
-						"novelizerLadder2",
-						"novelizerLadder3"
-					}), nil, { actionKey = "ladder" })
+				if (not state) then
+					state = { active = false, startTime = 0, narrated = false, leaveTime = nil }
+					self.ixNovelizerLadderStates[client] = state
 				end
-			elseif (state.active) then
-				state.leaveTime = state.leaveTime or currentTime
 
-				if (state.leaveTime + 0.4 <= currentTime) then
-					state.active = false
-					state.startTime = 0
-					state.narrated = false
+				if (onLadder) then
 					state.leaveTime = nil
+
+					if (not state.active) then
+						state.active = true
+						state.startTime = currentTime
+						state.narrated = false
+					elseif (not state.narrated
+						and currentTime >= state.startTime + 0.25
+						and self:CanAutoNarrate(client)
+						and (client.ixNovelizerLastLadderTime or 0) + 2 <= currentTime
+						and self:PassNamedCooldown(client, "ladder", 3)) then
+
+						state.narrated = true
+						client.ixNovelizerLastLadderTime = currentTime
+
+						self:SendNovelMe(client, table.Random({
+							"novelizerLadder1",
+							"novelizerLadder2",
+							"novelizerLadder3"
+						}), nil, { actionKey = "ladder" })
+					end
+				elseif (state.active) then
+					state.leaveTime = state.leaveTime or currentTime
+
+					if (state.leaveTime + 0.4 <= currentTime) then
+						state.active = false
+						state.startTime = 0
+						state.narrated = false
+						state.leaveTime = nil
+					end
 				end
 			end
 		end
