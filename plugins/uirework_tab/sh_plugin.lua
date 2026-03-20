@@ -49,5 +49,5 @@ ix.config.Add("tabMenuTitle", false, "Wether or not there should be titles on ta
 		ix.util.Notify("Reopen the tab menu!")
 	end
 end, {
-	category = "Appearance (User Interface)",
+	category = "Appearance",
 })

@@ -6,12 +6,12 @@ PLUGIN.servername = "TEAM FROSTY"
 PLUGIN.updatetext = "HL2 RP"
 
 ix.lang.AddTable("english", {
-	optDevHud = "Show Dev Hud",
-	optdDevHud = "Show Dev Hud at the bottom of the screen.",
+	optStaffHud = "Show Dev Hud",
+	optdStaffHud = "Show Dev Hud at the bottom of the screen.",
 })
 ix.lang.AddTable("korean", {
-	optDevHud = "개발자 HUD 표시하기",
-	optdDevHud = "화면 하단에 개발자 HUD를 표시합니다.",
+	optStaffHud = "개발자 HUD 표시하기",
+	optdStaffHud = "화면 하단에 개발자 HUD를 표시합니다.",
 })
 
 ix.config.Add("DevHud", true, "Weather or not players see the hud at all.", nil, {
@@ -24,9 +24,9 @@ CAMI.RegisterPrivilege({
 })
 
 
-ix.option.Add("Staff Hud", ix.type.bool, true, {
+ix.option.Add("StaffHud", ix.type.bool, true, {
 	bNetworked = true,
-	category = PLUGIN.name,
+	category = "appearance",
 	hidden = function()
 		return !CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Staff Hud", nil)
 	end
@@ -95,7 +95,7 @@ if (CLIENT) then
 				TEXT_ALIGN_CENTER
 				)
 				if CAMI.PlayerHasAccess(LocalPlayer(), "Helix - Staff Hud", nil) then
-					if (ix.option.Get("Staff Hud", true)) then
+					if (ix.option.Get("StaffHud", true)) then
 						local trace = lclient:GetEyeTraceNoCursor() 
 						local entTrace = trace.Entity
 						--Dev Info

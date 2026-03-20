@@ -15,5 +15,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ]]
 
 ix.config.Add("mainMenuTitleColor", false, "Wether or not the title in the main menu should use the config color.", nil, {
-    category = "Appearance (User Interface)",
+    category = "Appearance",
 })
