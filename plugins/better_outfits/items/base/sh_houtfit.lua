@@ -68,6 +68,10 @@ local function GetBadAirPlugin()
 	return ix.plugin.Get("badair")
 end
 
+local function GetAppearancePlugin()
+	return ix.plugin.Get("better_outfits") or ix.plugin.Get("better_armor")
+end
+
 --[[
 -- This will change a player's skin after changing the model. Keep in mind it starts at 0.
 ITEM.newSkin = 1
@@ -633,7 +637,7 @@ function ITEM:ApplyOutfit(client)
 	if (!IsValid(client)) then return end
 
 	local char = client:GetCharacter()
-	local outfitPlugin = ix.plugin.Get("better_outfits")
+	local outfitPlugin = GetAppearancePlugin()
 	if (!char) then return end
 
 	if (IsTopLayer(self)) then

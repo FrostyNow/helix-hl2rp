@@ -258,9 +258,49 @@ local DEFAULT_ALLOWED_BASE_MODEL_CLASSES = {
 	citizen_male = true,
 	metrocop = true
 }
+local TEMP_OUTFIT_MODEL_OVERRIDE = "tempOutfitModelOverride"
+local TEMP_OUTFIT_SKIN_OVERRIDE = "tempOutfitSkinOverride"
 
 local function NormalizeModel(model)
 	return isstring(model) and model:gsub("\\", "/"):lower() or ""
+end
+
+local modelBodygroupNameCache = {}
+
+local function GetModelBodygroupName(model, index)
+	model = NormalizeModel(model)
+
+	if (model == "") then
+		return nil
+	end
+
+	modelBodygroupNameCache[model] = modelBodygroupNameCache[model] or {}
+
+	if (modelBodygroupNameCache[model][index] != nil) then
+		return modelBodygroupNameCache[model][index]
+	end
+
+	local entity
+
+	if (SERVER) then
+		entity = ents.Create("prop_dynamic")
+	else
+		entity = ClientsideModel(model)
+	end
+
+	if (!IsValid(entity)) then
+		return nil
+	end
+
+	entity:SetModel(model)
+
+	for i = 0, entity:GetNumBodyGroups() - 1 do
+		modelBodygroupNameCache[model][i] = entity:GetBodygroupName(i)
+	end
+
+	entity:Remove()
+
+	return modelBodygroupNameCache[model][index]
 end
 
 local function BuildLookup(values, normalizeKey)
@@ -345,6 +385,370 @@ end
 
 local function GetAllowedBaseModels(item)
 	return BuildLookup(item.allowedBaseModels, NormalizeModel)
+end
+
+local function ResolveCharacterInventory(character)
+	if (!character or !character.GetInventory) then
+		return nil
+	end
+
+	local inventory = character:GetInventory()
+
+	if (isnumber(inventory)) then
+		inventory = ix.item.inventories[inventory] or ix.inventory.Get(inventory)
+	end
+
+	if (!istable(inventory) or !inventory.GetItems) then
+		return nil
+	end
+
+	return inventory
+end
+
+local function GetCharacterItems(character)
+	local items = {}
+	local inventory = ResolveCharacterInventory(character)
+
+	if (inventory) then
+		for _, item in pairs(inventory:GetItems()) do
+			items[#items + 1] = item
+		end
+
+		return items
+	end
+
+	local charID = character and character.GetID and character:GetID()
+
+	if (!charID) then
+		return items
+	end
+
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, item in pairs(inv:GetItems()) do
+				items[#items + 1] = item
+			end
+		end
+	end
+
+	return items
+end
+
+function PLUGIN:HasEquippedModelChangingOutfit(character)
+	if (!character) then
+		return false
+	end
+
+	local inventory = ResolveCharacterInventory(character)
+
+	if (!inventory) then
+		return false
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (item:GetData("equip") and IsModelChangingItem(item)) then
+			return true
+		end
+	end
+
+	return false
+end
+
+function PLUGIN:GetCharacterPreviewAppearance(character, entity)
+	if (!character) then
+		return nil
+	end
+
+	local items = GetCharacterItems(character)
+	local stack = table.Copy(character:GetData("appearanceStack", {}))
+	local baseModel = character:GetData("oldModelBase", character:GetModel())
+	local targetModel = baseModel
+	local topSkinItem = nil
+	local equippedLookup = {}
+
+	for _, item in ipairs(items) do
+		if (item:GetData("equip")) then
+			equippedLookup[item.id] = item
+
+			if (IsModelChangingItem(item) and !table.HasValue(stack, item.id)) then
+				table.insert(stack, 1, item.id)
+			end
+		end
+	end
+
+	for _, stackID in ipairs(stack) do
+		local item = equippedLookup[stackID]
+
+		if (item and IsModelChangingItem(item)) then
+			if (isfunction(item.OnGetReplacement)) then
+				local resolved = item:OnGetReplacement()
+
+				if (resolved) then
+					targetModel = resolved
+				end
+			elseif (item.replacement) then
+				targetModel = item.replacement
+			elseif (item.replacements) then
+				if (isstring(item.replacements)) then
+					targetModel = item.replacements
+				elseif (istable(item.replacements)) then
+					if (#item.replacements == 2 and isstring(item.replacements[1])) then
+						targetModel = targetModel:gsub(item.replacements[1], item.replacements[2])
+					else
+						for _, replacement in ipairs(item.replacements) do
+							if (istable(replacement)) then
+								targetModel = targetModel:gsub(replacement[1], replacement[2])
+							end
+						end
+					end
+				end
+			end
+
+			if (item.newSkin != nil) then
+				topSkinItem = item
+			end
+		end
+	end
+
+	local skin = tonumber(character:GetData("skin", 0)) or 0
+
+	if (topSkinItem and topSkinItem.newSkin != nil) then
+		skin = tonumber(topSkinItem.newSkin) or skin
+	end
+
+	local bodygroups = {}
+	local isTopLayerVisible = NormalizeModel(targetModel) != NormalizeModel(baseModel)
+	local currentModel = NormalizeModel(targetModel)
+
+	for key, value in pairs(character:GetData("groups", {})) do
+		local bodygroupKey = key
+
+		if (isnumber(key) and isTopLayerVisible) then
+			bodygroupKey = GetModelBodygroupName(baseModel, key)
+		end
+
+		if (bodygroupKey != nil) then
+			bodygroups[bodygroupKey] = tonumber(value) or 0
+		end
+	end
+
+	for _, item in ipairs(items) do
+		if (item:GetData("equip") and item.eqBodyGroups) then
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !item:IsCompatibleWith(baseModel) and !IsModelChangingItem(item)) then
+				continue
+			end
+
+			for bgName, bgValue in pairs(item.eqBodyGroups) do
+				bodygroups[bgName] = tonumber(bgValue) or 0
+			end
+		end
+	end
+
+	return {
+		model = targetModel,
+		skin = skin,
+		bodygroups = bodygroups
+	}
+end
+
+function PLUGIN:ApplyCharacterPreviewAppearance(character, entity)
+	if (!character or !IsValid(entity)) then
+		return false
+	end
+
+	local appearance = self:GetCharacterPreviewAppearance(character, entity)
+
+	if (!appearance or !isstring(appearance.model) or appearance.model == "") then
+		return false
+	end
+
+	if (NormalizeModel(entity:GetModel()) != NormalizeModel(appearance.model)) then
+		entity:SetModel(appearance.model)
+	end
+
+	entity:SetSkin(math.max(tonumber(appearance.skin) or 0, 0))
+
+	for i = 0, entity:GetNumBodyGroups() - 1 do
+		entity:SetBodygroup(i, 0)
+	end
+
+	for key, value in pairs(appearance.bodygroups or {}) do
+		local index = tonumber(key) or entity:FindBodygroupByName(key)
+
+		if (index and index > -1) then
+			entity:SetBodygroup(index, tonumber(value) or 0)
+		end
+	end
+
+	return true
+end
+
+function PLUGIN:SetTemporaryOutfitModelOverride(character, model)
+	if (!character) then
+		return
+	end
+
+	model = isstring(model) and model or nil
+	character:SetVar(TEMP_OUTFIT_MODEL_OVERRIDE, model, true)
+end
+
+function PLUGIN:GetTemporaryOutfitModelOverride(character)
+	return character and character:GetVar(TEMP_OUTFIT_MODEL_OVERRIDE)
+end
+
+function PLUGIN:SetTemporaryOutfitSkinOverride(character, skin)
+	if (!character) then
+		return
+	end
+
+	skin = skin == nil and nil or math.max(tonumber(skin) or 0, 0)
+	character:SetVar(TEMP_OUTFIT_SKIN_OVERRIDE, skin, true)
+end
+
+function PLUGIN:GetTemporaryOutfitSkinOverride(character)
+	return character and character:GetVar(TEMP_OUTFIT_SKIN_OVERRIDE)
+end
+
+function PLUGIN:IsModelOverridden(character)
+	if (!character) then
+		return false
+	end
+
+	for key, value in pairs(character:GetData()) do
+		if (isstring(key) and key:sub(1, 8) == "oldModel" and value != nil) then
+			return true
+		end
+	end
+
+	return false
+end
+
+function PLUGIN:ClearTemporaryOutfitOverrides(character)
+	if (!character) then
+		return
+	end
+
+	character:SetVar(TEMP_OUTFIT_MODEL_OVERRIDE, nil, true)
+	character:SetVar(TEMP_OUTFIT_SKIN_OVERRIDE, nil, true)
+end
+
+function PLUGIN:ReapplyBodygroupAppearance(client, character)
+	if (!IsValid(client) or !character) then
+		return
+	end
+
+	for i = 0, client:GetNumBodyGroups() - 1 do
+		client:SetBodygroup(i, 0)
+	end
+
+	local currentModel = NormalizeModel(client:GetModel())
+	local isOverridden = self:IsModelOverridden(character)
+	local baseGroups = character:GetData("groups", {})
+
+	for key, value in pairs(baseGroups) do
+		local index = -1
+
+		if (isnumber(key)) then
+			if (!isOverridden) then
+				index = key
+			else
+				continue
+			end
+		else
+			index = client:FindBodygroupByName(key)
+		end
+
+		if (index and index > -1) then
+			client:SetBodygroup(index, tonumber(value) or 0)
+		end
+	end
+
+	local charID = character:GetID()
+	local items = {}
+
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, item in pairs(inv:GetItems()) do
+				table.insert(items, item)
+			end
+		end
+	end
+
+	for _, item in pairs(items) do
+		if (item:GetData("equip") and item.eqBodyGroups) then
+			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !IsModelChangingItem(item)) then
+				continue
+			end
+
+			for bgName, bgValue in pairs(item.eqBodyGroups) do
+				local index = client:FindBodygroupByName(bgName)
+
+				if (index > -1) then
+					client:SetBodygroup(index, bgValue)
+				end
+			end
+		end
+	end
+end
+
+function PLUGIN:GetExpectedAppearanceSkin(character, client)
+	if (!character) then
+		return 0
+	end
+
+	local skin = tonumber(character:GetData("skin", IsValid(client) and client:GetSkin() or 0)) or 0
+	local inventory = ResolveCharacterInventory(character)
+
+	if (!inventory) then
+		return skin
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (!item:GetData("equip") or item.newSkin == nil or !IsModelChangingItem(item)) then
+			continue
+		end
+
+		local itemTable = ix.item.list[item.uniqueID]
+		local category = item.outfitCategory or (itemTable and itemTable.outfitCategory)
+
+		if (category and character:GetData("oldSkin" .. category) != nil) then
+			skin = tonumber(item.newSkin) or skin
+		end
+	end
+
+	return skin
+end
+
+function PLUGIN:ApplyTemporaryOutfitOverrides(client, character)
+	if (!IsValid(client) or !character) then
+		return false
+	end
+
+	if (!self:HasEquippedModelChangingOutfit(character)) then
+		self:ClearTemporaryOutfitOverrides(character)
+		return false
+	end
+
+	local model = self:GetTemporaryOutfitModelOverride(character)
+	local skin = self:GetTemporaryOutfitSkinOverride(character)
+	local changed = false
+
+	if (isstring(model) and model != "" and NormalizeModel(client:GetModel()) != NormalizeModel(model)) then
+		client:SetModel(model)
+		client:SetupHands()
+		self:ReapplyBodygroupAppearance(client, character)
+		changed = true
+	end
+
+	if (skin != nil) then
+		client:SetSkin(math.max(tonumber(skin) or 0, 0))
+		changed = true
+	elseif (changed) then
+		local expectedSkin = self:GetExpectedAppearanceSkin(character, client)
+		client:SetSkin(expectedSkin)
+	end
+
+	return changed
 end
 
 function PLUGIN:CanPlayerUnequipItem(client, item)

@@ -71,6 +71,10 @@ local function GetBadAirPlugin()
 	return ix.plugin.Get("badair")
 end
 
+local function GetAppearancePlugin()
+	return ix.plugin.Get("better_outfits") or ix.plugin.Get("better_armor")
+end
+
 ITEM.damage = {1, 1, 1, 1, 1, 1, 1}
 ITEM.maxDurability = 100
 ITEM.intAttr = 1
@@ -761,7 +765,7 @@ function ITEM:ApplyOutfit(client)
 	if (!IsValid(client)) then return end
 
 	local char = client:GetCharacter()
-	local outfitPlugin = ix.plugin.Get("better_outfits")
+	local outfitPlugin = GetAppearancePlugin()
 	if (!char) then return end
 
 	if (IsTopLayer(self)) then

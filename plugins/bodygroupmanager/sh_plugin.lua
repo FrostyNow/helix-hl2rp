@@ -89,6 +89,10 @@ local function HasEquippedOutfit(character)
 	return false
 end
 
+local function GetAppearancePlugin()
+	return ix.plugin.Get("better_outfits") or ix.plugin.Get("better_armor")
+end
+
 local ORIGINAL_GROUPS_KEY = "originalAppearanceGroups"
 local ORIGINAL_SKIN_KEY = "originalAppearanceSkin"
 
@@ -529,7 +533,7 @@ function PLUGIN:ApplyResolvedAppearance(character, player)
 
 	self:ApplyStoredAppearance(character, player)
 
-	local outfitsPlugin = ix.plugin.Get("better_outfits")
+	local outfitsPlugin = GetAppearancePlugin()
 
 	if (outfitsPlugin) then
 		outfitsPlugin:ApplyTemporaryOutfitOverrides(player, character)
@@ -591,7 +595,7 @@ function PLUGIN:ResetCharacterModel(target, client)
 		return false
 	end
 
-	local outfitsPlugin = ix.plugin.Get("better_outfits")
+	local outfitsPlugin = GetAppearancePlugin()
 
 	if (outfitsPlugin) then
 		outfitsPlugin:SetTemporaryOutfitModelOverride(target, nil)
@@ -626,7 +630,7 @@ function PLUGIN:ResetCharacterSkin(target, client)
 		return false
 	end
 
-	local outfitsPlugin = ix.plugin.Get("better_outfits")
+	local outfitsPlugin = GetAppearancePlugin()
 
 	if (outfitsPlugin) then
 		outfitsPlugin:SetTemporaryOutfitSkinOverride(target, nil)
@@ -648,7 +652,7 @@ function PLUGIN:ResetCharacterFullAppearance(target, client)
 		return false
 	end
 
-	local outfitsPlugin = ix.plugin.Get("better_outfits")
+	local outfitsPlugin = GetAppearancePlugin()
 
 	if (outfitsPlugin) then
 		outfitsPlugin:ClearTemporaryOutfitOverrides(target)
@@ -736,7 +740,7 @@ function PLUGIN:ForceResetCharacterAppearance(target, client)
 	local originalGroups, originalSkin = self:GetOriginalAppearance(target, player)
 	local model = self:GetResetModel(target, player)
 
-	local outfitsPlugin = ix.plugin.Get("better_outfits")
+	local outfitsPlugin = GetAppearancePlugin()
 
 	self:StripEquippedAppearanceItems(target, player)
 	self:ClearEquippedAppearanceState(target)
