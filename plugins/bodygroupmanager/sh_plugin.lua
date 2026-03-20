@@ -14,10 +14,16 @@ ix.lang.AddTable("english", {
 	skin = "Skin",
 	next = "Next",
 	previous = "Previous",
-	cmdCharResetBodygroups = "Reset the bodygroups of a target character and unequip related items.",
-	cmdCharResetModel = "Reset the model of a target character and unequip related appearance items.",
-	cmdCharResetSkin = "Reset the skin of a target character and unequip related appearance items.",
+	cmdCharResetAppearance = "Clear temporary appearance overrides and rebuild a target character's full current appearance.",
+	cmdCharForceResetAppearance = "Force clear all equipped appearance data and restore a target character's saved original appearance.",
+	cmdCharResetBodygroups = "Rebuild a target character's bodygroups from their current equipped appearance.",
+	cmdCharResetModel = "Clear a target character's temporary model override and rebuild their current equipped appearance.",
+	cmdCharResetSkin = "Clear a target character's temporary skin override and rebuild their current equipped appearance.",
 	cmdCharForceResetBodygroups = "Force reset a loaded character by exact name, unequip appearance items, and delete saved bodygroup/skin data.",
+	resetAppearanceTarget = "Your character appearance has been rebuilt by an administrator.",
+	resetAppearanceClient = "You have rebuilt %s's appearance.",
+	forceResetAppearanceTarget = "Your appearance and equipped appearance data have been force-reset by an administrator.",
+	forceResetAppearanceClient = "You have force-reset %s's appearance and equipped appearance data.",
 	resetBodygroupsTarget = "Your bodygroups have been reset by an administrator.",
 	resetBodygroupsClient = "You have reset the bodygroups of %s.",
 	resetModelTarget = "Your character model has been reset by an administrator.",
@@ -43,10 +49,16 @@ ix.lang.AddTable("korean", {
 	skin = "스킨",
 	next = "다음",
 	previous = "이전",
-	cmdCharResetBodygroups = "대상의 바디그룹을 초기화하고 관련 아이템을 장착 해제합니다.",
-	cmdCharResetModel = "대상의 모델을 초기화하고 관련 외형 아이템을 장착 해제합니다.",
-	cmdCharResetSkin = "대상의 스킨을 초기화하고 관련 외형 아이템을 장착 해제합니다.",
+	cmdCharResetAppearance = "대상의 임시 외형 오버라이드를 제거하고 현재 장착 외형 전체를 다시 계산합니다.",
+	cmdCharForceResetAppearance = "대상의 외형 장착 정보 전체를 강제로 초기화하고 저장된 원래 외형으로 복구합니다.",
+	cmdCharResetBodygroups = "대상의 현재 장착 외형을 기준으로 바디그룹을 다시 계산합니다.",
+	cmdCharResetModel = "대상의 임시 모델 오버라이드를 제거하고 현재 장착 외형을 다시 계산합니다.",
+	cmdCharResetSkin = "대상의 임시 스킨 오버라이드를 제거하고 현재 장착 외형을 다시 계산합니다.",
 	cmdCharForceResetBodygroups = "정확한 이름과 true 확인값으로 로드된 대상의 바디그룹과 저장 외형 데이터를 강제 초기화합니다.",
+	resetAppearanceTarget = "관리자에 의해 캐릭터 외형 전체가 다시 계산되었습니다.",
+	resetAppearanceClient = "%s의 외형 전체를 다시 계산했습니다.",
+	forceResetAppearanceTarget = "관리자에 의해 외형과 외형 장착 데이터가 강제 초기화되었습니다.",
+	forceResetAppearanceClient = "%s의 외형과 외형 장착 데이터를 강제 초기화했습니다.",
 	resetBodygroupsTarget = "관리자에 의해 바디그룹이 초기화되었습니다.",
 	resetBodygroupsClient = "%s의 바디그룹을 초기화했습니다.",
 	resetModelTarget = "관리자에 의해 캐릭터 모델이 초기화되었습니다.",
@@ -449,6 +461,24 @@ function PLUGIN:StripEquippedAppearanceItems(character, player)
 	return equippedItems
 end
 
+function PLUGIN:ClearEquippedAppearanceState(character)
+	local inventory = character and character:GetInventory()
+
+	if (!inventory) then
+		return
+	end
+
+	for _, item in pairs(inventory:GetItems()) do
+		if (item:GetData("equip")) then
+			item:SetData("equip", false)
+		end
+
+		if (item:GetData("outfitAttachments")) then
+			item:SetData("outfitAttachments", {})
+		end
+	end
+end
+
 function PLUGIN:ApplyStoredAppearance(character, player)
 	if (!character or !IsValid(player)) then
 		return
@@ -489,6 +519,20 @@ function PLUGIN:ApplyStoredAppearance(character, player)
 				player:SetBodygroup(index, tonumber(value) or 0)
 			end
 		end
+	end
+end
+
+function PLUGIN:ApplyResolvedAppearance(character, player)
+	if (!character or !IsValid(player)) then
+		return
+	end
+
+	self:ApplyStoredAppearance(character, player)
+
+	local outfitsPlugin = ix.plugin.Get("better_outfits")
+
+	if (outfitsPlugin) then
+		outfitsPlugin:ApplyTemporaryOutfitOverrides(player, character)
 	end
 end
 
@@ -549,20 +593,24 @@ function PLUGIN:ResetCharacterModel(target, client)
 
 	local outfitsPlugin = ix.plugin.Get("better_outfits")
 
-	self:StripEquippedAppearanceItems(target, player)
-
 	if (outfitsPlugin) then
 		outfitsPlugin:SetTemporaryOutfitModelOverride(target, nil)
 	end
 
-	local model = self:GetResetModel(target, player)
+	if (!self:HasEquippedModelChangingOutfit(target)) then
+		local model = self:GetResetModel(target, player)
 
-	if (isstring(model) and model != "") then
-		target:SetModel(model)
-		player:SetupHands()
+		if (isstring(model) and model != "") then
+			target:SetData("oldModelBase", model)
+
+			if (NormalizeModelPath(player:GetModel()) != NormalizeModelPath(model)) then
+				target:SetModel(model)
+				player:SetupHands()
+			end
+		end
 	end
 
-	self:ApplyStoredAppearance(target, player)
+	self:ApplyResolvedAppearance(target, player)
 	target:Save()
 
 	player:NotifyLocalized("resetModelTarget")
@@ -580,20 +628,38 @@ function PLUGIN:ResetCharacterSkin(target, client)
 
 	local outfitsPlugin = ix.plugin.Get("better_outfits")
 
-	self:StripEquippedAppearanceItems(target, player)
-	target:SetData("skin", 0)
-	target:SetData(ORIGINAL_SKIN_KEY, 0)
-
 	if (outfitsPlugin) then
 		outfitsPlugin:SetTemporaryOutfitSkinOverride(target, nil)
 	end
 
-	player:SetSkin(0)
-	self:ApplyStoredAppearance(target, player)
+	self:ApplyResolvedAppearance(target, player)
 	target:Save()
 
 	player:NotifyLocalized("resetSkinTarget")
 	client:NotifyLocalized("resetSkinClient", target:GetName())
+	return true
+end
+
+function PLUGIN:ResetCharacterFullAppearance(target, client)
+	local player = target:GetPlayer()
+
+	if (!IsValid(player)) then
+		client:NotifyLocalized("resetBodygroupsOnlineOnly")
+		return false
+	end
+
+	local outfitsPlugin = ix.plugin.Get("better_outfits")
+
+	if (outfitsPlugin) then
+		outfitsPlugin:ClearTemporaryOutfitOverrides(target)
+	end
+
+	player:ResetBodygroups()
+	self:ApplyResolvedAppearance(target, player)
+	target:Save()
+
+	player:NotifyLocalized("resetAppearanceTarget")
+	client:NotifyLocalized("resetAppearanceClient", target:GetName())
 	return true
 end
 
@@ -625,33 +691,82 @@ function PLUGIN:ResetCharacterAppearance(target, client, forceClear)
 		return false
 	end
 
+	if (!forceClear) then
+		player:ResetBodygroups()
+		self:ApplyResolvedAppearance(target, player)
+		target:Save()
+
+		player:NotifyLocalized("resetBodygroupsTarget")
+		client:NotifyLocalized("resetBodygroupsClient", target:GetName())
+		return true
+	end
+
 	local hadOriginalAppearance = (target:GetData(ORIGINAL_GROUPS_KEY) != nil and target:GetData(ORIGINAL_SKIN_KEY) != nil)
 
 	self:StripEquippedAppearanceItems(target, player)
 
-	if (forceClear) then
-		self:ClearAppearanceStorage(target)
-	else
-		target:SetData("groups", {})
-		target:SetData("oldGroupsmodel", nil)
-		target:SetData("oldGroupskevlar", nil)
+	self:ClearAppearanceStorage(target)
 
-		if (!hadOriginalAppearance) then
-			self:EnsureOriginalAppearance(target, player)
-		end
+	if (!hadOriginalAppearance) then
+		self:EnsureOriginalAppearance(target, player)
 	end
 
 	player:ResetBodygroups()
 	player:SetSkin(0)
 
-	if (!forceClear and !self:RestoreOriginalAppearance(target, player)) then
+	if (!self:RestoreOriginalAppearance(target, player)) then
 		player:SetSkin(tonumber(target:GetData("skin", player:GetSkin())) or 0)
 	end
 
-	player:NotifyLocalized(forceClear and "forceResetBodygroupsTarget" or "resetBodygroupsTarget")
+	player:NotifyLocalized("forceResetBodygroupsTarget")
 
 	target:Save()
-	client:NotifyLocalized(forceClear and "forceResetBodygroupsClient" or "resetBodygroupsClient", target:GetName())
+	client:NotifyLocalized("forceResetBodygroupsClient", target:GetName())
+	return true
+end
+
+function PLUGIN:ForceResetCharacterAppearance(target, client)
+	local player = target:GetPlayer()
+
+	if (!IsValid(player)) then
+		client:NotifyLocalized("resetBodygroupsOnlineOnly")
+		return false
+	end
+
+	local originalGroups, originalSkin = self:GetOriginalAppearance(target, player)
+	local model = self:GetResetModel(target, player)
+
+	local outfitsPlugin = ix.plugin.Get("better_outfits")
+
+	self:StripEquippedAppearanceItems(target, player)
+	self:ClearEquippedAppearanceState(target)
+	self:ClearAppearanceStorage(target)
+
+	target:SetData("groups", originalGroups or {})
+	target:SetData("skin", tonumber(originalSkin) or 0)
+	target:SetData(ORIGINAL_GROUPS_KEY, table.Copy(originalGroups or {}))
+	target:SetData(ORIGINAL_SKIN_KEY, tonumber(originalSkin) or 0)
+	target:SetData("oldModelBase", model)
+
+	if (outfitsPlugin) then
+		outfitsPlugin:ClearTemporaryOutfitOverrides(target)
+	end
+
+	player:ResetBodygroups()
+
+	if (isstring(model) and model != "") and NormalizeModelPath(player:GetModel()) != NormalizeModelPath(model) then
+		target:SetModel(model)
+		player:SetupHands()
+	end
+
+	if (!self:RestoreOriginalAppearance(target, player)) then
+		player:SetSkin(tonumber(target:GetData("skin", player:GetSkin())) or 0)
+	end
+
+	target:Save()
+
+	player:NotifyLocalized("forceResetAppearanceTarget")
+	client:NotifyLocalized("forceResetAppearanceClient", target:GetName())
 	return true
 end
 
@@ -743,6 +858,22 @@ ix.command.Add("CharResetBodygroups", {
 	end
 })
 
+ix.command.Add("CharResetAppearance", {
+	description = "@cmdCharResetAppearance",
+	adminOnly = true,
+	arguments = {
+		ix.type.character
+	},
+	OnRun = function(self, client, target)
+		if (!IsValid(target:GetPlayer())) then
+			client:NotifyLocalized("resetBodygroupsOnlineOnly")
+			return
+		end
+
+		PLUGIN:ResetCharacterFullAppearance(target, client)
+	end
+})
+
 ix.command.Add("CharResetModel", {
 	description = "@cmdCharResetModel",
 	adminOnly = true,
@@ -802,6 +933,22 @@ ix.command.Add("CharForceResetBodygroups", {
 		end
 
 		PLUGIN:ResetCharacterAppearance(target, client, true)
+	end
+})
+
+ix.command.Add("CharForceResetAppearance", {
+	description = "@cmdCharForceResetAppearance",
+	adminOnly = true,
+	arguments = {
+		ix.type.character
+	},
+	OnRun = function(self, client, target)
+		if (!IsValid(target:GetPlayer())) then
+			client:NotifyLocalized("resetBodygroupsOnlineOnly")
+			return
+		end
+
+		PLUGIN:ForceResetCharacterAppearance(target, client)
 	end
 })
 
