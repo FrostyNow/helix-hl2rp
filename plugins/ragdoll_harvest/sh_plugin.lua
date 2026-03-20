@@ -126,6 +126,7 @@ ix.lang.AddTable("english", {
 	itemBloodySkullDesc = "A blood-soaked human skull cracked loose from a shattered corpse.",
 	itemRibDesc = "A rib bone from a shattered corpse.",
 	itemSpineDesc = "A spine from a shattered corpse.",
+	notEnoughStrHarvest = "You are not strong enough to butcher this, or you need a melee weapon equipped.",
 })
 
 ix.lang.AddTable("korean", {
@@ -139,6 +140,7 @@ ix.lang.AddTable("korean", {
 	itemRibDesc = "산산조각 시체에서 나온 갈비뼈입니다.",
 	["Spine"] = "척추",
 	itemSpineDesc = "산산조각 시체에서 나온 척추입니다.",
+	notEnoughStrHarvest = "도축하기에는 힘이 부족하거나, 근접 무기를 장착해야 합니다.",
 })
 
 local function CopyOptions(source)
@@ -439,6 +441,28 @@ if (SERVER) then
 			return
 		end
 
+		local character = client:GetCharacter()
+		if (character) then
+			local str = character:GetAttribute("str", 0)
+			local maxAttributes = ix.config.Get("maxAttributes", 30)
+			local inventory = character:GetInventory()
+			local hasMelee = false
+
+			if (inventory) then
+				for _, item in pairs(inventory:GetItems()) do
+					if (item.weaponCategory == "melee" and item:GetData("equip") == true) then
+						hasMelee = true
+						break
+					end
+				end
+			end
+
+			if (str < (maxAttributes * 2 / 3) and !hasMelee) then
+				client:NotifyLocalized("notEnoughStrHarvest")
+				return
+			end
+		end
+
 		if (client:GetPos():DistToSqr(entity:GetPos()) > 96 ^ 2) then
 			client:NotifyLocalized("tooFar")
 			return
@@ -457,7 +481,19 @@ if (SERVER) then
 		entity:SetNetVar("ixHarvestBusy", true)
 		client:SetAction(HARVEST_ACTION_KEY, data.time or DEFAULT_HARVEST_TIME)
 
+		local uniqueID = "ixHarvestSound_" .. client:SteamID64()
+		timer.Create(uniqueID, 0.7, 0, function()
+			if (!IsValid(client) or !IsValid(entity) or !entity:GetNetVar("ixHarvestBusy", false)) then
+				timer.Remove(uniqueID)
+				return
+			end
+
+			entity:EmitSound("physics/flesh/flesh_squishy_impact_hard" .. math.random(1, 4) .. ".wav", 65, math.random(90, 110))
+		end)
+
 		client:DoStaredAction(entity, function()
+			timer.Remove(uniqueID)
+
 			if (!IsValid(client) or !client:Alive() or !IsValid(entity)) then
 				return
 			end
@@ -503,6 +539,8 @@ if (SERVER) then
 
 			entity:Remove()
 		end, data.time or DEFAULT_HARVEST_TIME, function()
+			timer.Remove(uniqueID)
+
 			if (IsValid(client)) then
 				client:SetAction()
 			end
