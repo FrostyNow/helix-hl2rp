@@ -51,6 +51,12 @@ LANGUAGE = {
 	itemDirtyWaterDesc = "A bottle of water so dirty that it is unfit for human consumption.",
 	itemTeaDesc = "A drink made by steeping tea tree leaves in water.",
 	itemAntlionMeatDesc = "A piece of meat from a extra-dimensional creature, Antlion.",
+	supplementsTunaDesc = "A piece of tuna-flavored ration that gives a slight sense of fullness.",
+	supplementsBarMilkDesc = "A milk-flavored ration in tablet form that is slightly below the daily required intake.",
+	supplementsFowlDesc = "A cube-shaped chicken-flavored ration that can serve as a decent meal.",
+	supplementsBarCitrusDesc = "A soft, orange-colored gel-type citrus-flavored ration.",
+	supplementsBeefDesc = "A cube-shaped beef-flavored ration containing adequate nutrients.",
+	supplementsBarWineDesc = "A wine-flavored tablet that restores vitality when consumed.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

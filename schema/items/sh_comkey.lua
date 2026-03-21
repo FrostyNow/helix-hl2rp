@@ -4,6 +4,7 @@ ITEM.model = Model("models/synapse/misc_props/synapse_misc_combine_card.mdl")
 ITEM.description = "itemCombineKeycardDesc"
 ITEM.category = "Utility"
 ITEM.price = 2000
+ITEM.noDeathDrop = true
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

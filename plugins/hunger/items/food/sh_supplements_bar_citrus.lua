@@ -1,0 +1,9 @@
+ITEM.name = "Sweetened hydration bar"
+ITEM.model = Model("models/hls/alyxports/ration_bar.mdl")
+ITEM.description = "supplementsBarCitrusDesc"
+ITEM.skin = 2
+ITEM.classes = nil
+ITEM.hunger = 20
+ITEM.thirst = 20
+ITEM.price = 20
+ITEM.sound = "interface/inv_eat_paperwrap.ogg"

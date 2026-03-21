@@ -1,0 +1,8 @@
+ITEM.name = "Concentrated fowl blend"
+ITEM.model = Model("models/hls/alyxports/ration_box.mdl")
+ITEM.description = "supplementsFowlDesc"
+ITEM.skin = 2
+ITEM.classes = nil
+ITEM.hunger = 30
+ITEM.price = 35
+ITEM.sound = "interface/inv_eat_ration1.ogg"

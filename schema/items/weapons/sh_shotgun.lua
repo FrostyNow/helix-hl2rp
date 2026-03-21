@@ -1,7 +1,7 @@
 ITEM.name = "Shotgun"
 ITEM.description = "shotgunDesc"
 ITEM.model = "models/weapons/w_shotgun.mdl"
-ITEM.class = "weapon_shotgun"
+ITEM.class = "arc9_l4d2_spas12"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_SGS, CLASS_EMP, CLASS_REBEL}
 ITEM.width = 3

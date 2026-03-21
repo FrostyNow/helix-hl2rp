@@ -29,7 +29,7 @@ ix.command.Add("NightVision", {
 	alias = "NV",
 	description = "@cmdNightVision",
 	arguments = bit.bor(ix.type.string, ix.type.optional),
-	OnCanRun = function(self, client)
+	OnCheckAccess = function(self, client)
 		return Schema:CanPlayerSeeCombineOverlay(client) and client:Team() == FACTION_OTA
 	end,
 	OnRun = function(self, client, mode)

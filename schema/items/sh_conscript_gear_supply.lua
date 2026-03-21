@@ -39,5 +39,9 @@ ITEM.functions.Open = {
 		end
 
 		client:EmitSound("ambient/fire/mtov_flame2.wav", 75, math.random(160, 180), 0.35)
+	end,
+	OnCanRun = function(item)
+		local char = item.player:GetCharacter()
+		return char:HasFlags("C")
 	end
 }

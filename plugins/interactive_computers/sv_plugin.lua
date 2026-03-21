@@ -413,6 +413,10 @@ function PLUGIN:ClearAccessSession(entity, client)
 	end
 end
 
+function PLUGIN:ReleaseAccessSession(entity, client)
+	return self:ClearAccessSession(entity, client)
+end
+
 function PLUGIN:IsGeneralComputerLocked(data, session)
 	return false
 end

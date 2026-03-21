@@ -1,0 +1,8 @@
+ITEM.name = "Refined craniate slices"
+ITEM.model = Model("models/hls/alyxports/ration_box.mdl")
+ITEM.description = "supplementsTunaDesc"
+ITEM.skin = 1
+ITEM.classes = nil
+ITEM.hunger = 25
+ITEM.price = 20
+ITEM.sound = "interface/inv_eat_ration1.ogg"

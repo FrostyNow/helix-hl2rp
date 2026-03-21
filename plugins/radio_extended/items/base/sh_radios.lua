@@ -2,7 +2,7 @@ ITEM.name = "Radio Base"
 ITEM.model = Model("models/deadbodies/dead_male_civilian_radio.mdl")
 ITEM.description = "A shiny handheld radio%s.\nIt is currently turned %s%s."
 ITEM.price = 120
-ITEM.flag = "v"
+ITEM.noBusiness = true
 ITEM.category = "Utility"
 
 local radioTypes = {"walkietalkie","longrange","duplexradio","duplexwalkie","hybridradio","hybridwalkie"}

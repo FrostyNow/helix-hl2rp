@@ -3,7 +3,6 @@ ITEM.description = "pistolDesc"
 ITEM.class = "arc9_hl2_pistol"
 ITEM.weaponCategory = "sidearm"
 ITEM.classes = {CLASS_REBEL}
-ITEM.flag = "V"
 ITEM.width = 2
 ITEM.height = 1
 ITEM.price = 300

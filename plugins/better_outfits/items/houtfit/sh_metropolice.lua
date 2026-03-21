@@ -13,6 +13,7 @@ ITEM.eqBodyGroups = {
 }
 ITEM.newSkin = 0
 ITEM.allowedBaseFactions = {FACTION_CITIZEN}
+ITEM.noDeathDrop = true
 
 ITEM.functions.Equip.OnCanRun = function(item)
 	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then

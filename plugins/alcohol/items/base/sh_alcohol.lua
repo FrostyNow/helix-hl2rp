@@ -9,6 +9,7 @@ ITEM.usenum = 4
 ITEM.thirst = 0
 ITEM.radiation = 0
 ITEM.empty = false
+ITEM.classes = {CLASS_CWU}
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
@@ -77,5 +78,13 @@ ITEM.functions.Drink = {
 			end
 			return true
 		end
+	end,
+	OnCanRun = function(item)
+		local client = item.player
+		local character = client:GetCharacter()
+		local enabled = !Schema:IsCombineRank(client:Name(), "SCN")
+		if (FACTION_OTA and client:Team() == FACTION_OTA) then enabled = false end
+
+		return enabled
 	end
 }

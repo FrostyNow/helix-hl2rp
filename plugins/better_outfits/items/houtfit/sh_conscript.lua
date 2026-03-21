@@ -9,6 +9,7 @@ ITEM.outfitCategory = "torso"
 ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
+ITEM.noDeathDrop = true
 
 ITEM.functions.Equip.OnCanRun = function(item)
 	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then

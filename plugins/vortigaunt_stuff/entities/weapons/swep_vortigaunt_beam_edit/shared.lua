@@ -233,7 +233,7 @@ end
 function SWEP:PrimaryAttack()
 
 	-- Check stamina
-	if self.Owner:GetLocalVar("stm", 0) < 40 then
+	if self.Owner:GetLocalVar("stm", 0) < 5 then
 		if (SERVER) and CurTime() > (self.NextNotifyTime or 0) then
 			self.Owner:NotifyLocalized("notEnoughStamina")
 			self.NextNotifyTime = CurTime() + 2 -- 2 second cooldown
@@ -259,7 +259,7 @@ function SWEP:PrimaryAttack()
 			
 			-- Consume stamina after successful attack
 			if SERVER then
-				self.Owner:ConsumeStamina(40)
+				self.Owner:ConsumeStamina(5)
 			end
 			
 			self.Weapon:SendWeaponAnim(ACT_VM_SECONDARYATTACK)

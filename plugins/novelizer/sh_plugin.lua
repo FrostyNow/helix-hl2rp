@@ -1270,6 +1270,48 @@ local function GetPhraseTemplate(phraseKey, language)
 	return (info and info[phraseKey]) or (languages.english and languages.english[phraseKey]) or nil
 end
 
+local function ResolvePhraseReference(text)
+	if (not IsFilledString(text)) then
+		return nil, nil
+	end
+
+	local resolved = GetPhraseTemplate(text, "english")
+
+	if (IsFilledString(resolved)) then
+		return resolved, text
+	end
+
+	local languages = ix.lang and ix.lang.stored
+
+	if (istable(languages)) then
+		for _, languageData in pairs(languages) do
+			if (istable(languageData) and IsFilledString(languageData[text])) then
+				return text, text
+			end
+		end
+	end
+
+	local normalized = text:gsub("%s+L$", "")
+
+	if (normalized ~= text) then
+		resolved = GetPhraseTemplate(normalized, "english")
+
+		if (IsFilledString(resolved)) then
+			return resolved, normalized
+		end
+
+		if (istable(languages)) then
+			for _, languageData in pairs(languages) do
+				if (istable(languageData) and IsFilledString(languageData[normalized])) then
+					return normalized, normalized
+				end
+			end
+		end
+	end
+
+	return text, nil
+end
+
 local function StripTrailingParticleNoise(text)
 	if (not isstring(text) or text == "") then
 		return text
@@ -1607,7 +1649,8 @@ end
 
 function PLUGIN:ResolveItemSubjectData(item)
 	if (item and IsFilledString(item.novelizerSubject)) then
-		return item.novelizerSubject, nil
+		local text, phrase = ResolvePhraseReference(item.novelizerSubject)
+		return text or item.novelizerSubject, phrase
 	end
 
 	if (item) then
@@ -1624,7 +1667,8 @@ function PLUGIN:ResolveItemSubjectData(item)
 	end
 
 	if (item and IsFilledString(item.name)) then
-		return item.name, item.name
+		local text, phrase = ResolvePhraseReference(item.name)
+		return text or item.name, phrase
 	end
 
 	return L("novelizerSomething"), "novelizerSomething"
@@ -1645,8 +1689,10 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	local className = entity:GetClass()
 	
 	if (className == "ix_money") then
-		local plural = ix.currency.plural or "tokens"
-		return plural, plural
+		local plural = ix.currency.plural or "currencyPlural"
+		local text, phrase = ResolvePhraseReference(plural)
+
+		return text or plural, phrase
 	end
 
 	if (className == "prop_ragdoll") then
@@ -1664,7 +1710,8 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	local subjectPhrase = classSubjectPhrases[className]
 
 	if (IsFilledString(subjectPhrase)) then
-		return subjectPhrase, subjectPhrase
+		local text, phrase = ResolvePhraseReference(subjectPhrase)
+		return text or subjectPhrase, phrase or subjectPhrase
 	end
 
 	if (entity:IsVehicle()) then
@@ -1684,7 +1731,8 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	end
 
 	if (IsFilledString(entity.novelizerSubject)) then
-		return entity.novelizerSubject, nil
+		local text, phrase = ResolvePhraseReference(entity.novelizerSubject)
+		return text or entity.novelizerSubject, phrase
 	end
 
 	if (isfunction(entity.GetItemTable)) then
@@ -1692,11 +1740,13 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 
 		if (istable(itemTable)) then
 			if (IsFilledString(itemTable.novelizerSubject)) then
-				return itemTable.novelizerSubject, nil
+				local text, phrase = ResolvePhraseReference(itemTable.novelizerSubject)
+				return text or itemTable.novelizerSubject, phrase
 			end
 
 			if (IsFilledString(itemTable.name)) then
-				return itemTable.name, itemTable.name
+				local text, phrase = ResolvePhraseReference(itemTable.name)
+				return text or itemTable.name, phrase
 			end
 		end
 	end
@@ -1708,11 +1758,13 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 
 		if (definition) then
 			if (IsFilledString(definition.langKey)) then
-				return definition.langKey, definition.langKey
+				local text, phrase = ResolvePhraseReference(definition.langKey)
+				return text or definition.langKey, phrase or definition.langKey
 			end
 
 			if (IsFilledString(definition.name)) then
-				return definition.name, definition.name
+				local text, phrase = ResolvePhraseReference(definition.name)
+				return text or definition.name, phrase
 			end
 		end
 	end
@@ -1721,19 +1773,22 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 		local name = entity:GetDisplayName()
 
 		if (IsFilledString(name)) then
-			return name, name
+			local text, phrase = ResolvePhraseReference(name)
+			return text or name, phrase
 		end
 	end
 
 	if (IsFilledString(entity.PrintName) and entity.PrintName ~= "Entity") then
-		return entity.PrintName, entity.PrintName
+		local text, phrase = ResolvePhraseReference(entity.PrintName)
+		return text or entity.PrintName, phrase
 	end
 
 	local stored = scripted_ents.GetStored(entity:GetClass())
 	local storedTable = stored and stored.t
 
 	if (istable(storedTable) and IsFilledString(storedTable.PrintName) and storedTable.PrintName ~= "Entity") then
-		return storedTable.PrintName, storedTable.PrintName
+		local text, phrase = ResolvePhraseReference(storedTable.PrintName)
+		return text or storedTable.PrintName, phrase
 	end
 
 	for _, data in ipairs(modelSubjectPhrases) do

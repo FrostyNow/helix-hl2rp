@@ -1,22 +1,11 @@
 
-ITEM.name = "MPF Gear Pack"
-ITEM.model = Model("models/props_junk/cardboard_box003a.mdl")
-ITEM.description = "cpGearSupplyDesc"
+ITEM.name = "Ration"
+ITEM.model = Model("models/hls/alyxports/ration_package.mdl")
+ITEM.description = "rationGr3Desc"
 ITEM.category = "Utility"
-ITEM.items = {
-	"bag",
-	"cp_mask",
-	"gasmask_filter",
-	"cp_vest_mpf",
-	"stunstick",
-	"pistol",
-	"pistolammo",
-	"handheld_radio",
-	"flashlight",
-	"zip_tie",
-	"zip_tie",
-}
-ITEM.price = 400
+ITEM.items = {"supplements_poultry", "supplements_bar_citrus"}
+ITEM.price = 120
+ITEM.skin = 3
 ITEM.exRender = true
 ITEM.iconCam = {
 	pos = Vector(356.67, 303.02, 565.94),
@@ -37,10 +26,10 @@ ITEM.functions.Open = {
 			end
 		end
 
+		local luck = character:GetAttribute("lck", 0)
+		local luckMult = ix.config.Get("luckMultiplier", 1)
+		character:GiveMoney(ix.config.Get("rationTokens", 20) * 1.3 + luck * luckMult)
+
 		client:EmitSound("ambient/fire/mtov_flame2.wav", 75, math.random(160, 180), 0.35)
-	end,
-	OnCanRun = function(item)
-		local char = item.player:GetCharacter()
-		return char:HasFlags("M")
 	end
 }

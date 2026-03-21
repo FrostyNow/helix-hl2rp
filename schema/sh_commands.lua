@@ -573,7 +573,7 @@ end)
 
 ix.command.Add("HUDReset", {
 	description = "@cmdHUDReset",
-	OnCanRun = function(self, client)
+	OnCheckAccess = function(self, client)
 		return Schema:CanPlayerSeeCombineOverlay(client)
 	end,
 	OnRun = function(self, client)

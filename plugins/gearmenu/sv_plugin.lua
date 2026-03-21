@@ -288,6 +288,10 @@ net.Receive("ixGearEquipReq", function(len, client)
     local itemID = net.ReadUInt(32)
     local item = ix.item.instances[itemID]
     if (!item or (item.player != client and item:GetOwner() != client)) then return end
+
+    local character = client:GetCharacter()
+    local mainInv = character and character:GetInventory()
+    if (!mainInv) then return end
     
     local equipFunc
     for k, v in pairs(item.functions or {}) do
@@ -296,10 +300,19 @@ net.Receive("ixGearEquipReq", function(len, client)
     if (!equipFunc) then return end
     
     item.player = client
+
+    -- Gear items live outside the main inventory, but Helix's default equip guard
+    -- still validates against the character's primary inventory ID.
+    local oldInvID = item.invID
+    item.invID = mainInv:GetID()
+
     if (equipFunc.OnCanRun and equipFunc.OnCanRun(item) == false) then
+        item.invID = oldInvID
         item.player = nil
         return
     end
+
+    item.invID = oldInvID
 
     if (equipFunc.OnRun) then
         equipFunc.OnRun(item)

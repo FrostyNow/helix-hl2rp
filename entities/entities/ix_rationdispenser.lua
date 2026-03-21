@@ -97,10 +97,45 @@ if (SERVER) then
 		self.nextUseTime = CurTime()
 	end
 
-	function ENT:SpawnRation(callback, releaseDelay)
-		releaseDelay = releaseDelay or 1.2
+	function ENT:GetRationPoolForCharacter(character)
+		if (!character) then
+			return {"ration"}
+		end
 
-		local itemTable = ix.item.Get("ration")
+		local classID = character:GetClass()
+
+		if (classID == CLASS_ELITE_CITIZEN or character:HasFlags("C") or character:HasFlags("M")) then
+			return {"ration_gr1", "ration_gr2", "ration_gr3"}
+		end
+
+		if (classID == CLASS_CWU) then
+			return {"ration", "ration_gr1", "ration_gr2"}
+		end
+
+		return {"ration"}
+	end
+
+	function ENT:GetRandomRationID(character)
+		return table.Random(self:GetRationPoolForCharacter(character))
+	end
+
+	function ENT:GetDispenseItemForCharacter(client, character)
+		if (IsValid(client)) then
+			local faction = client:Team()
+
+			if (faction == FACTION_CONSCRIPT or faction == FACTION_MPF) then
+				return "metropolice_ration"
+			end
+		end
+
+		return self:GetRandomRationID(character)
+	end
+
+	function ENT:SpawnRation(rationID, callback, releaseDelay)
+		releaseDelay = releaseDelay or 1.2
+		rationID = rationID or "ration"
+
+		local itemTable = ix.item.Get(rationID) or ix.item.Get("ration")
 
 		self.dummy:SetModel(itemTable:GetModel())
 		self.dummy:SetNoDraw(false)
@@ -110,7 +145,7 @@ if (SERVER) then
 		end
 
 		timer.Simple(releaseDelay, function()
-			ix.item.Spawn("ration", self.dummy:GetPos(), function(item, entity)
+			ix.item.Spawn(rationID, self.dummy:GetPos(), function(item, entity)
 				self.dummy:SetNoDraw(true)
 			end, self.dummy:GetAngles())
 
@@ -127,9 +162,9 @@ if (SERVER) then
 		end)
 	end
 
-	function ENT:StartDispense()
+	function ENT:StartDispense(rationID)
 		self:SetDisplay(3)
-		self:SpawnRation(function()
+		self:SpawnRation(rationID, function()
 			self.dispenser:Fire("SetAnimation", "dispense_package")
 			self:EmitSound("ambient/machines/combine_terminal_idle4.wav")
 		end)
@@ -154,68 +189,71 @@ if (SERVER) then
 			return
 		end
 
-		if (client:IsCombine()) then
+		if (client:KeyDown(IN_WALK) and client:IsCombine()) then
 			self:SetEnabled(!self:GetEnabled())
 			self:EmitSound(self:GetEnabled() and "buttons/combine_button1.wav" or "buttons/combine_button2.wav")
 
 			Schema:SaveRationDispensers()
 			self.nextUseTime = CurTime() + 2
-		else
-			if (!self:GetEnabled()) then
-				self:DisplayError(6)
-				return
-			end
-
-			local char = client:GetCharacter()
-			local inv = char:GetInventory()
-			local identification = Schema.GetIdentificationData and Schema:GetIdentificationData(char)
-			local cid = identification and identification.item or nil
-			local token = inv:HasItem("ration_token")
-
-			if (!identification) then
-				self:DisplayError(7)
-				return
-			end
-
-			-- display checking message
-			self.canUse = false
-			self:SetDisplay(2)
-			self:EmitSound("ambient/machines/combine_terminal_idle2.wav")
-
-			-- check cid ration time and dispense if allowed
-			timer.Simple(math.random(1.8, 2.2), function()
-				if (!IsValid(self)) then
-					return
-				end
-
-				local nextRationTime = cid and cid:GetData("nextRationTime", 0) or char:GetData("nextRationTime", 0)
-
-				if (nextRationTime < os.time() or token) then
-					self:SetDisplay(8)
-					self:EmitSound("ambient/machines/combine_terminal_idle3.wav")
-
-					if (token) then
-						token:Remove()
-					else
-						local rationTime = os.time() + ix.config.Get("rationInterval", 1)
-
-						if (cid) then
-							cid:SetData("nextRationTime", rationTime)
-						else
-							char:SetData("nextRationTime", rationTime)
-						end
-					end
-
-					timer.Simple(10.2, function()
-						if (IsValid(self)) then
-							self:StartDispense()
-						end
-					end)
-				else
-					self:DisplayError(4)
-				end
-			end)
+			return
 		end
+
+		if (!self:GetEnabled()) then
+			self:DisplayError(6)
+			return
+		end
+
+		local char = client:GetCharacter()
+		local inv = char:GetInventory()
+		local identification = Schema.GetIdentificationData and Schema:GetIdentificationData(char)
+		local cid = identification and identification.item or nil
+		local token = inv:HasItem("ration_token")
+
+		if (!identification) then
+			self:DisplayError(7)
+			return
+		end
+
+		-- display checking message
+		self.canUse = false
+		self:SetDisplay(2)
+		self:EmitSound("ambient/machines/combine_terminal_idle2.wav")
+
+		-- check cid ration time and dispense if allowed
+		timer.Simple(math.random(1.8, 2.2), function()
+			if (!IsValid(self)) then
+				return
+			end
+
+			local nextRationTime = cid and cid:GetData("nextRationTime", 0) or char:GetData("nextRationTime", 0)
+
+			if (nextRationTime < os.time() or token) then
+				local rationID = self:GetDispenseItemForCharacter(client, char)
+
+				self:SetDisplay(8)
+				self:EmitSound("ambient/machines/combine_terminal_idle3.wav")
+
+				if (token) then
+					token:Remove()
+				else
+					local rationTime = os.time() + ix.config.Get("rationInterval", 1)
+
+					if (cid) then
+						cid:SetData("nextRationTime", rationTime)
+					else
+						char:SetData("nextRationTime", rationTime)
+					end
+				end
+
+				timer.Simple(10.2, function()
+					if (IsValid(self)) then
+						self:StartDispense(rationID)
+					end
+				end)
+			else
+				self:DisplayError(4)
+			end
+		end)
 	end
 
 	function ENT:OnRemove()

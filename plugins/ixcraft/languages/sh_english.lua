@@ -110,11 +110,11 @@ LANGUAGE = {
 	recipeSpringDesc = "Craft a spring by drawing aluminum into a wire and coiling it.",
 	recipeGunpowderDesc = "Craft gunpowder by mixing nitrate fertilizer and charcoal.",
 
-	recipeMeatSoupDesc = "Craft meat soup.",
-	recipeVegetSoupDesc = "Craft vegetable soup.",
-	recipeHeadcrabSoupDesc = "Craft headcrab soup.",
-	recipePizzaDesc = "Craft a pizza.",
-	recipeBurgerDesc = "Craft a burger.",
+	recipeMeatSoupDesc = "Cook meat soup.",
+	recipeVegetSoupDesc = "Cook vegetable soup.",
+	recipeHeadcrabSoupDesc = "Cook headcrab soup.",
+	recipePizzaDesc = "Bake a pizza.",
+	recipeBurgerDesc = "Cook a burger.",
 	recipeBrownieDesc = "Bake a brownie.",
 	recipeHeadcrabPlatterDesc = "Cook a headcrab platter.",
 	recipeCheeseDesc = "Make cheese from milk.",
@@ -127,4 +127,5 @@ LANGUAGE = {
 	recipeSteakDesc = "Cook a steak from meat.",
 	recipeNoodlesDesc = "Cook noodles.",
 	recipeChineseTakeoutDesc = "Cook Chinese takeout.",
+	recipePastaDesc = "Cook pasta.",
 }
