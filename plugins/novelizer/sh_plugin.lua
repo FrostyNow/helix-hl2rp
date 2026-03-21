@@ -1656,8 +1656,8 @@ function PLUGIN:ResolveItemSubjectData(item)
 	if (item) then
 		local uniqueID = string.lower(tostring(item.uniqueID or ""))
 		local className = string.lower(tostring(item.class or ""))
-
-		if (uniqueID == "ration" or uniqueID == "metropolice_ration") then
+		local isRation = "ration" or "ration_gr1" or "ration_gr2" or "ration_gr3" or "metropolice_ration"
+		if (uniqueID == isRation) then
 			return "ration pack", "novelizerRationPack"
 		end
 
