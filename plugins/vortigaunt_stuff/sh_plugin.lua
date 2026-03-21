@@ -589,50 +589,6 @@ if SERVER then
 		self:ApplyVortigauntClassState(character, client or character:GetPlayer(), character:GetClass())
 	end
 
-	function PLUGIN:InitializedPlugins()
-		local interactionPlugin = ix.plugin.list["playerinteraction"]
-
-		if (interactionPlugin) then
-			if (!interactionPlugin.interactions["free_vort_shackles"]) then
-				interactionPlugin.interactions["free_vort_shackles"] = {
-					name = "보르티곤트 족쇄 해제",
-					description = "노예 보르티곤트의 족쇄를 해제합니다.",
-					check = function(client, target)
-						local targetCharacter = IsValid(target) and target:GetCharacter()
-
-						return targetCharacter
-							and targetCharacter:IsVortigaunt()
-							and targetCharacter:GetClass() == CLASS_SLAVE_VORT
-							and !target:GetNetVar("vortShackleRemoving")
-							and PLUGIN:CanManageSlaveVortigaunt(client, target)
-					end,
-					action = function(client, target)
-						PLUGIN:StartVortigauntLiberation(client, target)
-					end
-				}
-			end
-
-			if (!interactionPlugin.interactions["enslave_vort_shackles"]) then
-				interactionPlugin.interactions["enslave_vort_shackles"] = {
-					name = "보르티곤트 족쇄 채우기",
-					description = "해방된 보르티곤트에게 다시 족쇄를 채웁니다.",
-					check = function(client, target)
-						local targetCharacter = IsValid(target) and target:GetCharacter()
-
-						return targetCharacter
-							and targetCharacter:IsVortigaunt()
-							and targetCharacter:GetClass() == CLASS_VORT
-							and !target:GetNetVar("vortShackleRemoving")
-							and PLUGIN:CanManageSlaveVortigaunt(client, target)
-					end,
-					action = function(client, target)
-						PLUGIN:StartVortigauntReshackle(client, target)
-					end
-				}
-			end
-		end
-	end
-
 	function PLUGIN:GetCharacterIdentificationData(character)
 		if (!character or !character.IsVortigaunt or !character:IsVortigaunt()) then
 			return

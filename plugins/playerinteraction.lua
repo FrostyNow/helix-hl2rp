@@ -50,7 +50,13 @@ ix.lang.AddTable("english", {
     interactionUntieDesc = "Carefully untie a restrained player.",
     interactionRecognize = "Recognize",
     interactionRecognizeDesc = "Commit this person to memory.",
-    interactionScoreboard = "Interact"
+    interactionScoreboard = "Interact",
+    interactionVortFree = "Free Vortigaunt",
+    interactionVortFreeDesc = "Remove shackles from an enslaved Vortigaunt.",
+    interactionVortShackle = "Shackle Vortigaunt",
+    interactionVortShackleDesc = "Apply shackles to a free Vortigaunt.",
+    interactionVortAlreadyFree = "That Vortigaunt is already free.",
+    interactionVortAlreadyShackled = "That Vortigaunt is already shackled."
 })
 
 ix.lang.AddTable("korean", {
@@ -84,7 +90,13 @@ ix.lang.AddTable("korean", {
     interactionUntieDesc = "묶인 플레이어를 조심스럽게 풀어줍니다.",
     interactionRecognize = "인식",
     interactionRecognizeDesc = "이 사람을 기억해 둡니다.",
-    interactionScoreboard = "상호작용"
+    interactionScoreboard = "상호작용",
+    interactionVortFree = "보르티곤트 해방",
+    interactionVortFreeDesc = "노예 보르티곤트의 족쇄를 해제합니다.",
+    interactionVortShackle = "보르티곤트 족쇄",
+    interactionVortShackleDesc = "해방된 보르티곤트에게 족쇄를 채웁니다.",
+    interactionVortAlreadyFree = "대상 보르티곤트는 이미 해방된 상태입니다.",
+    interactionVortAlreadyShackled = "대상 보르티곤트는 이미 족쇄가 채워져 있습니다."
 })
 
 local function GetTargetName(viewer, target)
@@ -218,6 +230,14 @@ function PLUGIN:CanUseInteraction(client, target, interaction)
         end
     end
 
+    if (interaction.check) then
+        local legacyOk, legacyReason = interaction.check(client, target)
+
+        if (legacyOk == false or legacyOk == nil) then
+            return false, legacyReason
+        end
+    end
+
     if (interaction.canRun) then
         local canRun, blockedReason = interaction.canRun(client, target)
 
@@ -260,6 +280,96 @@ end
 function PLUGIN:RegisterInteraction(uniqueID, data)
     self.interactions = self.interactions or {}
     self.interactions[uniqueID] = data
+end
+
+function PLUGIN:RegisterExternalInteractions()
+    local vortPlugin = ix.plugin.Get("vortigaunt_stuff")
+
+    if (
+        vortPlugin
+        and vortPlugin.CanManageSlaveVortigaunt
+        and vortPlugin.IsEnslavedVortigaunt
+        and vortPlugin.StartVortigauntLiberation
+        and vortPlugin.StartVortigauntReshackle
+    ) then
+        self:RegisterInteraction("free_vort_shackles", {
+            order = 40,
+            name = "interactionVortFree",
+            description = "interactionVortFreeDesc",
+            shouldShow = function(client, target)
+                local targetCharacter = IsValid(target) and target:GetCharacter()
+
+                return targetCharacter
+                    and targetCharacter.IsVortigaunt
+                    and targetCharacter:IsVortigaunt()
+                    and vortPlugin:IsEnslavedVortigaunt(targetCharacter)
+                    and vortPlugin:CanManageSlaveVortigaunt(client, target)
+            end,
+            canRun = function(client, target)
+                local targetCharacter = IsValid(target) and target:GetCharacter()
+
+                if not (targetCharacter and targetCharacter.IsVortigaunt and targetCharacter:IsVortigaunt()) then
+                    return false, "vortTargetNotVort"
+                end
+
+                if not vortPlugin:IsEnslavedVortigaunt(targetCharacter) then
+                    return false, "interactionVortAlreadyFree"
+                end
+
+                if (target:GetNetVar("vortShackleRemoving")) then
+                    return false, "interactionMenuCooldown"
+                end
+
+                if not vortPlugin:CanManageSlaveVortigaunt(client, target) then
+                    return false, "vortShackleDenied"
+                end
+
+                return true
+            end,
+            onRun = function(client, target)
+                vortPlugin:StartVortigauntLiberation(client, target)
+            end
+        })
+
+        self:RegisterInteraction("enslave_vort_shackles", {
+            order = 50,
+            name = "interactionVortShackle",
+            description = "interactionVortShackleDesc",
+            shouldShow = function(client, target)
+                local targetCharacter = IsValid(target) and target:GetCharacter()
+
+                return targetCharacter
+                    and targetCharacter.IsVortigaunt
+                    and targetCharacter:IsVortigaunt()
+                    and not vortPlugin:IsEnslavedVortigaunt(targetCharacter)
+                    and vortPlugin:CanManageSlaveVortigaunt(client, target)
+            end,
+            canRun = function(client, target)
+                local targetCharacter = IsValid(target) and target:GetCharacter()
+
+                if not (targetCharacter and targetCharacter.IsVortigaunt and targetCharacter:IsVortigaunt()) then
+                    return false, "vortTargetNotVort"
+                end
+
+                if (target:GetNetVar("vortShackleRemoving")) then
+                    return false, "interactionMenuCooldown"
+                end
+
+                if not vortPlugin:CanManageSlaveVortigaunt(client, target) then
+                    return false, "vortShackleDenied"
+                end
+
+                if (vortPlugin:IsEnslavedVortigaunt(targetCharacter)) then
+                    return false, "interactionVortAlreadyShackled"
+                end
+
+                return true
+            end,
+            onRun = function(client, target)
+                vortPlugin:StartVortigauntReshackle(client, target)
+            end
+        })
+    end
 end
 
 PLUGIN.interactions = PLUGIN.interactions or {}
@@ -372,6 +482,10 @@ PLUGIN:RegisterInteraction("recognise", {
         end
     end
 })
+
+function PLUGIN:InitializedPlugins()
+    self:RegisterExternalInteractions()
+end
 
 if (CLIENT) then
     ix.gui.interactionMenu = ix.gui.interactionMenu or nil
@@ -500,8 +614,11 @@ if (CLIENT) then
             button:DockMargin(0, 0, 0, 6)
             button:SetTall(34)
             button:SetFont("ixMenuButtonFontSmall")
-            button:SetText(L(interaction.name or interactionID))
-            button:SetToolTip(L(interaction.description or ""))
+            local name = interaction.name and L(interaction.name) or interactionID
+            local description = interaction.description and L(interaction.description) or ""
+
+            button:SetText(name)
+            button:SetToolTip(description)
             button.DoClick = function()
                 if not IsValid(self.target) then
                     self:Close()
@@ -618,6 +735,10 @@ else
 
         client.ixNextPlayerInteraction = CurTime() + PLUGIN.useCooldown
 
-        interaction.onRun(client, target)
+        if (interaction.onRun) then
+            interaction.onRun(client, target)
+        elseif (interaction.action) then
+            interaction.action(client, target)
+        end
     end)
 end
