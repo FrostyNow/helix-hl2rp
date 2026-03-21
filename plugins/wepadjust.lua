@@ -27,6 +27,15 @@ local STRENGTH_MELEE_WEAPONS = {
 	["weapon_hl2shovel"] = true
 }
 
+local BASH_MELEE_WEAPONS = {
+	["arc9_rtb_akm"] = true,
+	["arc9_hla_irifle"] = true,
+	["arc9_hl2_smg1"] = true,
+	["arc9_hla_hmg"] = true,
+	["arc9_hl2_pistol"] = true,
+	["arc9_rtb_oicw"] = true
+}
+
 PLUGIN.name = "Weapon Stats Override"
 PLUGIN.author = "Ronald and Frosty"
 PLUGIN.desc = "Overrides weapon stats and ammo types."
@@ -51,6 +60,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 7
 		swep.DamageMin = 5
+		swep.BashDamage = 10
 		swep.Ammo = "7.62x39mm"
 		swep.ForceDefaultClip = 0
 	end
@@ -60,6 +70,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 10
 		swep.DamageMin = 8
+		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
 		swep.RPM = 500
 	end
@@ -68,6 +79,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 6
 		swep.DamageMin = 4
+		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
 	end
 
@@ -75,6 +87,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 8
 		swep.DamageMin = 6
+		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
 	end
 
@@ -82,6 +95,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 6
 		swep.DamageMin = 4
+		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
 	end
 
@@ -89,6 +103,7 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 8
 		swep.DamageMin = 6
+		swep.BashDamage = 10
 		swep.Ammo = "5.56x45mm"
 		swep.ForceDefaultClip = 0
 		swep.UBGLAmmo = "20x28mm grenade"
@@ -214,6 +229,14 @@ local function GetMeleeClass(attacker, inflictor)
 	end
 end
 
+local function IsStrengthMeleeDamage(class, dmgInfo)
+	if (STRENGTH_MELEE_WEAPONS[class]) then
+		return true
+	end
+
+	return BASH_MELEE_WEAPONS[class] and dmgInfo:IsDamageType(DMG_CLUB)
+end
+
 function PLUGIN:EntityTakeDamage(entity, dmgInfo)
 	local attacker = dmgInfo:GetAttacker()
 	local inflictor = dmgInfo:GetInflictor()
@@ -229,7 +252,7 @@ function PLUGIN:EntityTakeDamage(entity, dmgInfo)
 		local character = attacker:GetCharacter()
 		local bonusDamage = 0
 
-		if (character and STRENGTH_MELEE_WEAPONS[class]) then
+		if (character and IsStrengthMeleeDamage(class, dmgInfo)) then
 			local strength = character:GetAttribute("str", 0)
 			local multiplier = ix.config.Get("strengthMeleeMultiplier", 0.3)
 

@@ -13,15 +13,35 @@ if (SERVER) then
 	resource.AddWorkshop("224378049")
 
 	function PLUGIN:PlayerSpawn(client)
-		client:SetLocalVar("nv_mode", "off")
-		netstream.Start(client, "ixNVToggle", false)
-		netstream.Start(client, "ixFLIRToggle", false)
+		if client:GetLocalVar("nv_mode", "off") then
+			client:SetLocalVar("nv_mode", "off")
+			netstream.Start(client, "ixNVToggle", false)
+			netstream.Start(client, "ixFLIRToggle", false)
+		end
+	end
+
+	function PLUGIN:PlayerDeath(client)
+		if client:GetLocalVar("nv_mode", "off") then
+			client:SetLocalVar("nv_mode", "off")
+			netstream.Start(client, "ixNVToggle", false)
+			netstream.Start(client, "ixFLIRToggle", false)
+		end
 	end
 
 	function PLUGIN:PlayerLoadedCharacter(client, character, oldCharacter)
-		client:SetLocalVar("nv_mode", "off")
-		netstream.Start(client, "ixNVToggle", false)
-		netstream.Start(client, "ixFLIRToggle", false)
+		if client:GetLocalVar("nv_mode", "off") then
+			client:SetLocalVar("nv_mode", "off")
+			netstream.Start(client, "ixNVToggle", false)
+			netstream.Start(client, "ixFLIRToggle", false)
+		end
+	end
+
+	function PLUGIN:PlayerDisconnected(client)
+		if client:GetLocalVar("nv_mode", "off") then
+			client:SetLocalVar("nv_mode", "off")
+			netstream.Start(client, "ixNVToggle", false)
+			netstream.Start(client, "ixFLIRToggle", false)
+		end
 	end
 end
 
