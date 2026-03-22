@@ -1,0 +1,10 @@
+ENT.Type = "anim"
+ENT.PrintName = "writing_table"
+ENT.Author = ""
+ENT.Category = "Helix"
+ENT.Spawnable = true
+ENT.AdminSpawnable = true
+ENT.AdminOnly = true
+ENT.PhysgunDisable = true
+ENT.PhysgunAllowAdmin = true
+ENT.PopulateEntityInfo = true
