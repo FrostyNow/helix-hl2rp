@@ -5,7 +5,7 @@ AddCSLuaFile( "shared.lua" )
 include( 'shared.lua' )
 
 util.AddNetworkString("ix_book_open_ui")
-util.AddNetworkString("ix_book_finish")
+util.AddNetworkString("ix_book_Wrting_Start")
 
 function ENT:SpawnFunction(client, trace)
 	local SpawnPos = trace.HitPos + trace.HitNormal * 46
@@ -63,7 +63,7 @@ function ENT:Use(client)
 	
     if (client:GetNetVar("can_action", false)) then return end
 
-    client:SetAction("Clean up before work...", 3) 
+    client:SetAction("Clean up before work...", 1) 
 
 	client:DoStaredAction(self, function()
         
@@ -71,7 +71,7 @@ function ENT:Use(client)
         	net.WriteTable(allAttributes)
 		net.Send(client)
         
-        client:Notify("Ready Writing Book.") end, 3, function()
+        client:Notify("Ready Writing Book.") end, 1, function()
         
 		client:SetAction(false)
 		
