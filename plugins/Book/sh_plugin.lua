@@ -1,6 +1,6 @@
-PLUGIN.name = "Alcohol"
-PLUGIN.author = "AleXXX_007 | Modified by Frosty"
-PLUGIN.description = "Adds alcohol with effects."
+PLUGIN.name = "Writing Book"
+PLUGIN.author = " "
+PLUGIN.description = "Writing Book and Share Knowledge"
 
 ix.lang.AddTable("english", {
 	itemBeerDesc = "An alcoholic drink brewed from cereal grains—most commonly from malted barley, though wheat, maize (corn), and rice are also used.",
