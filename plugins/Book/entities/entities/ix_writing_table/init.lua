@@ -30,7 +30,6 @@ function ENT:SpawnFunction(client, trace)
 	end
 
 	return entity
-
 end
 
 function ENT:Initialize()
@@ -56,8 +55,7 @@ function ENT:Use(client)
 	local allAttributes = {}
 
 	if (not character) then return end
-	-- Get All Attribute
-
+	 Get All Attribute
 	if (ix.attributes and ix.attributes.list) then
 		for k, v in pairs(ix.attributes.list) do
 			allAttributes[k] = character:GetAttribute(k, 0)
@@ -66,5 +64,6 @@ function ENT:Use(client)
 	
 	if (table.Count(allAttributes) == 0) then
 		client:Notify("No Attribute.")
-    return
+    	return
+	end
 end
