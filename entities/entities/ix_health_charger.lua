@@ -75,7 +75,7 @@ if (SERVER) then
 	end
 
 	function ENT:Initialize()
-		self:SetModel("models/props_combine/health_charger001.mdl")
+		self:SetModel("models/ccr/props/health_charger.mdl")
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
@@ -84,7 +84,8 @@ if (SERVER) then
 		self.rechargeTime = CurTime()
 		self.sessionPaidUsed = 0
 		self.nextGrubScan = 0
-		
+		self.vialIndex = self:FindBodygroupByName("Vial")
+
 		local phys = self:GetPhysicsObject()
 		if (IsValid(phys)) then
 			phys:Wake()
@@ -141,22 +142,16 @@ if (SERVER) then
 
 		self:SetFreeCharge(self:GetFreeCharge() + self.freeChargeAmount)
 
-		if (self.grubConsumeSound) then
-			local sound = self.grubConsumeSound
-
-			if (istable(sound)) then
-				sound = table.Random(sound)
-			end
-
-			if (sound != "") then
-				self:EmitSound(sound)
-			end
-		end
+		-- Sound and bodygroup changes moved to Think when charging actually starts
 
 		itemTable:Remove()
 
 		if (IsValid(entity)) then
 			entity:Remove()
+		end
+		
+		if (self.vialIndex != -1) then
+			self:SetBodygroup(self.vialIndex, 1)
 		end
 
 		return true
@@ -203,6 +198,7 @@ if (SERVER) then
 		
 		self.user = nil
 		self.sessionPaidUsed = 0
+		self.beganCharging = false
 	end
 	
 	function ENT:Think()
@@ -233,6 +229,22 @@ if (SERVER) then
 					self.user:SetLocalVar("toxicity", math.Clamp(toxicity - restored, 0, 100))
 				end
 			end
+
+			if (restored > 0 and !self.beganCharging) then
+				self.beganCharging = true
+
+				if (self.grubConsumeSound) then
+					local sound = self.grubConsumeSound
+
+					if (istable(sound)) then
+						sound = table.Random(sound)
+					end
+
+					if (sound != "") then
+						self:EmitSound(sound)
+					end
+				end
+			end
 			
 			local nextUsed = math.Clamp(self:GetUsed() + self.restoreCost, 0, 1)
 			local freeCharge = self:GetFreeCharge()
@@ -241,6 +253,24 @@ if (SERVER) then
 
 			if (freeConsumed > 0) then
 				self:SetFreeCharge(freeCharge - freeConsumed)
+			end
+
+			if (self.vialIndex != -1) then
+				local vialState = self:GetBodygroup(self.vialIndex)
+				local freeCharge = self:GetFreeCharge()
+
+				if (vialState > 0) then
+					if (freeCharge < 1) then
+						self:SetBodygroup(self.vialIndex, 0)
+
+						local position = self:GetPos() + self:GetForward() * 5
+						ix.item.Spawn("antlion_grub_empty", position)
+					elseif (freeCharge <= 30 and vialState != 3) then
+						self:SetBodygroup(self.vialIndex, 3)
+					elseif (vialState == 1 and self.beganCharging) then
+						self:SetBodygroup(self.vialIndex, 2)
+					end
+				end
 			end
 
 			if (paidRestored > 0) then

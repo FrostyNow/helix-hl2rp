@@ -425,7 +425,7 @@ local function setNightVisionState(enabled, nightType)
 
 	hook.Add("Think", "ixNV_MonitorIllumination", function()
 		ply = LocalPlayer()
-		if (!IsValid(ply) or !ply:Alive()) then
+		if (!IsValid(ply) or !ply:Alive() or !ply:GetCharacter()) then
 			return
 		end
 

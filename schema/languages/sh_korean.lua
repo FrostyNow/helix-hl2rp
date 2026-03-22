@@ -576,6 +576,8 @@ LANGUAGE = {
 	itemCombineSteelDesc = "콤바인 장비를 만드는 데 사용되는 특이한 강철 조각입니다.",
 	["Tea Cup"] = "찻잔",
 	itemTeaCupDesc = "차를 마시기 좋은 찻잔입니다.",
+	["Empty Vial"] = "빈 유리병",
+	itemEmptyVialDesc = "개미귀신 유충을 담았던 빈 유리병입니다",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

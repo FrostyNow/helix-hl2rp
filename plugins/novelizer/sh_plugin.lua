@@ -423,9 +423,6 @@ ix.lang.AddTable("english", {
 	novelizerSwitchSuitcase1 = "takes %s in hand.",
 	novelizerSwitchSuitcase2 = "brings %s up by the handle.",
 	novelizerSwitchSuitcase3 = "shifts %s into their grip.",
-	novelizerSwitchKeys1 = "takes out %s.",
-	novelizerSwitchKeys2 = "pulls out %s and lets it hang from their hand.",
-	novelizerSwitchKeys3 = "brings %s out into hand.",
 	novelizerHandsRaise1 = "clenches their fists.",
 	novelizerHandsRaise2 = "brings both hands up into a guarded stance.",
 	novelizerHandsRaise3 = "balls their hands into fists.",
@@ -1000,9 +997,6 @@ ix.lang.AddTable("korean", {
 	novelizerSwitchSuitcase1 = "%s 손에 듭니다.",
 	novelizerSwitchSuitcase2 = "%s 손잡이째 들어 쥡니다.",
 	novelizerSwitchSuitcase3 = "%s 손으로 고쳐 잡습니다.",
-	novelizerSwitchKeys1 = "%s 꺼내 듭니다.",
-	novelizerSwitchKeys2 = "%s 손에 걸어 듭니다.",
-	novelizerSwitchKeys3 = "%s 손안에 꺼내 쥡니다.",
 	novelizerHandsRaise1 = "주먹을 쥡니다.",
 	novelizerHandsRaise2 = "두 주먹을 올려 경계 자세를 취합니다.",
 	novelizerHandsRaise3 = "손을 말아쥐고 싸울 자세를 잡습니다.",
@@ -2033,8 +2027,6 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "bag") then
 		return isEquip and {"novelizerEquipBag1", "novelizerEquipBag2", "novelizerEquipBag3"}
 			or {"novelizerUnequipBag1", "novelizerUnequipBag2", "novelizerUnequipBag3"}
-	elseif (category == "suitcase") then
-		return nil
 	end
 
 	return isEquip and {"novelizerEquip1", "novelizerEquip2", "novelizerEquip3"}
@@ -2048,7 +2040,7 @@ function PLUGIN:IsSpecialSwitchWeapon(weapon)
 
 	local className = string.lower(tostring(weapon:GetClass() or ""))
 
-	return className == "ix_keys" or self:IsNarratableWeapon(weapon)
+	return self:IsNarratableWeapon(weapon)
 end
 
 function PLUGIN:GetSwitchPhrasePool(weapon)
@@ -2061,14 +2053,6 @@ function PLUGIN:GetSwitchPhrasePool(weapon)
 	end
 
 	local className = string.lower(tostring(weapon:GetClass() or ""))
-
-	if (className == "ix_keys") then
-		return {
-			"novelizerSwitchKeys1",
-			"novelizerSwitchKeys2",
-			"novelizerSwitchKeys3"
-		}
-	end
 
 	if (istable(weapon.ixItem) and self:GetEquipCategory(weapon.ixItem) == "suitcase") then
 		return {

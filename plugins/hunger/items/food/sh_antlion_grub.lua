@@ -8,6 +8,6 @@ ITEM.hunger = -10
 ITEM.thirst = -5
 ITEM.price = 60
 ITEM.heal = 5
-ITEM.cookable = true
+ITEM.empty = "antlion_grub_empty"
 ITEM.usenum = 4
 ITEM.sound = "interface/inv_eat_mutant_food.ogg"

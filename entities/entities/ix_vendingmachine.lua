@@ -38,7 +38,7 @@ end
 
 if (SERVER) then
 	function ENT:Initialize()
-		self:SetModel("models/props_interiors/VendingMachineSoda01a.mdl")
+		self:SetModel("models/willardnetworks/misc/customvendingmachine.mdl")
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetSolid(SOLID_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
@@ -56,6 +56,7 @@ if (SERVER) then
 
 		vendor:SetPos(trace.HitPos + Vector(0, 0, 48))
 		vendor:SetAngles(Angle(0, (vendor:GetPos() - client:GetPos()):Angle().y - 180, 0))
+		vendor:SetSkin(1)
 		vendor:Spawn()
 		vendor:Activate()
 

@@ -30,6 +30,7 @@ LANGUAGE = {
 	["StationUseHint"] = "사용 키를 눌러 제작을 시작하세요.",
 	["Crafting Table"] = "제작대",
 	stationCraftingTableDesc = "다양한 물건을 만들거나 분해할 수 있는 제작대입니다.",
+	stationFurnaceDesc = "다양한 물건을 녹이거나 가열할 수 있는 화로입니다.",
 
 	["Ammunition"] = "탄약",
 	["Crafting"] = "제작",
@@ -185,6 +186,8 @@ LANGUAGE = {
 	recipeScrapTeaCupDesc = "찻잔을 분해합니다.",
 	["Scrap Coffee Cup"] = "커피잔 분해",
 	recipeScrapCoffeeCupDesc = "커피잔을 분해합니다.",
+	["Scrap Empty Vial"] = "빈 유리병 분해",
+	recipeEmptyVialDesc = "빈 유리병을 분해합니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",

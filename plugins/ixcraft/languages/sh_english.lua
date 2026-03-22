@@ -26,6 +26,7 @@ LANGUAGE = {
 
 	stationWorkbenchDesc = "A workbench used for crafting.",
 	stationCraftingTableDesc = "A crafting table used for crafting and scraping.",
+	stationFurnaceDesc = "A furnace used for melting and heating things.",
 	["StationUseHint"] = "Press use key to open crafting.",
 
 	recipeManhackDesc = "Assemble some parts to craft a Manhack.",
@@ -101,6 +102,7 @@ LANGUAGE = {
 	recipeScrapCombineSteelDesc = "Recycle a Combine steel chunk into generic steel pieces.",
 	recipeScrapTeaCupDesc = "Disassemble a tea cup.",
 	recipeScrapCoffeeCupDesc = "Disassemble a coffee cup.",
+	recipeEmptyVialDesc = "Disassemble an empty vial.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",

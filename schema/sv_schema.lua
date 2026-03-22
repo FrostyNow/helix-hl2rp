@@ -47,7 +47,8 @@ function Schema:SaveVendingMachines()
 				pos = v:GetPos(),
 				angles = v:GetAngles(),
 				class = v:GetClass(),
-				stock = v:GetAllStock()
+				stock = v:GetAllStock(),
+				skin = v:GetSkin()
 			}
 		end
 	end
@@ -128,6 +129,7 @@ function Schema:LoadVendingMachines()
 				entity:SetAngles(v.angles)
 				entity:Spawn()
 				entity:SetStock(v.stock)
+				entity:SetSkin(v.skin or 0)
 				entity:Activate()
 			end
 		end

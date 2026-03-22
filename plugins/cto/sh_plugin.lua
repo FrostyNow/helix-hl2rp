@@ -139,7 +139,8 @@ PLUGIN.raisedWeaponWhitelist = {
 	ix_keys = true,
 	swep_vortigaunt_sweep = true,
 	weapon_physgun = true,
-	gmod_tool = true
+	gmod_tool = true,
+	ix_suitcase = true,
 }
 
 PLUGIN.weaponViolationFactionWhitelist = {

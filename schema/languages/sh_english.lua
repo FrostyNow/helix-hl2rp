@@ -276,6 +276,7 @@ LANGUAGE = {
 	itemResinDesc = "A piece of material used for 3D printing objects.",
 	itemCombineSteelDesc = "A piece of exotic steel that is used to make Combine equipment.",
 	itemTeaCupDesc = "A tea cup used for drinking tea.",
+	itemEmptyVialDesc = "An empty vial that once contained a Antlion Grub.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

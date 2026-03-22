@@ -6,8 +6,7 @@ RECIPE.requirements = {
 	["antlion_grub"] = 1
 }
 RECIPE.results = {
-	["glass"] = 1,
-	["comp_aluminium"] = 1,
-	["comp_acid"] = 1,
+	["antlion_grub_empty"] = 1,
+	["comp_fertilizer"] = 1,
 }
 RECIPE.station = "craftingtable"
