@@ -61,22 +61,21 @@ function ENT:Use(client)
     	return
 	end
 	
-	-- Debug Test
-	-- PrintTable(allAttributes)
-	-- 이미 무언가 하고 있다면 중단
     if (client:GetNetVar("can_action", false)) then return end
 
-    -- [진행 바 시작] 3초 동안 글을 쓰는 동작을 가정
-    client:SetAction("작성 중...", 3) 
-    client:DoStaredAction(self, function()
-        -- 성공 시: UI 열기 신호 전송
-        net.Start("ix_book_open_ui")
-        net.Send(client)
+    client:SetAction("Clean up before work...", 3) 
+
+	client:DoStaredAction(self, function()
         
-        client:Notify("원고를 정리하기 시작합니다.")
-    end, 3, function()
-        -- 실패 시 (움직이거나 취소됨)
-        client:Notify("작성이 중단되었습니다.")
+		net.Start("ix_book_open_ui")
+        	net.WriteTable(allAttributes)
+		net.Send(client)
+        
+        client:Notify("Ready Writing Book.") end, 3, function()
+        
+		client:SetAction(false)
+		
+		client:Notify("Canceld Wrting Book.")
     end)
 	
 end

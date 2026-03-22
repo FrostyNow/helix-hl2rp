@@ -20,74 +20,67 @@ function ENT:OnPopulateEntityInfo(container)
 		desc:SizeToContents()
 end
 
-
 net.Receive("ix_book_open_ui", function()
+    local attributes = net.ReadTable()
+    -- Debug Only
+    -- print("[BookSystem] :")
+    -- PrintTable(attributes)
+
     if (IsValid(ix.gui.bookEditor)) then ix.gui.bookEditor:Remove() end
 
     local frame = vgui.Create("DFrame")
     frame:SetSize(500, 600)
-    frame:SetTitle("원고 작성 및 제본")
+    frame:SetTitle("Wrting Book")
     frame:MakePopup()
     frame:Center()
     ix.gui.bookEditor = frame
 
-    -- 안내 문구
-    local help = frame:Add("DLabel")
-    help:SetText("종이에 내용을 정성껏 기록하세요.")
-    help:Dock(TOP)
-    help:SetContentAlignment(5)
-    help:DockMargin(0, 5, 0, 5)
+    local sheet = frame:Add("DPropertySheet")
+    sheet:Dock(FILL)
 
-    -- [입력창 설정]
-    local title = frame:Add("DTextEntry")
-    title:Dock(TOP)
-    title:SetPlaceholderText("제목을 입력하세요...")
-    title:DockMargin(20, 10, 20, 10)
+    for id, value in pairs(attributes) do
+        local attributeInfo = ix.attributes.list[id]
+        local attrName = attributeInfo and attributeInfo.name or id
 
-    local content = frame:Add("DTextEntry")
-    content:Dock(FILL)
-    content:SetMultiline(true)
-    content:SetPlaceholderText("이곳에 내용을 작성하세요...")
-    content:DockMargin(20, 0, 20, 20)
-    content:SetVerticalScrollbarEnabled(true)
+        if (value >= 0) then
+            local p = vgui.Create("DPanel", sheet)
+            p:Dock(FILL)
+            p:DockPadding(10, 10, 10, 10)
 
-    -- [제본 버튼]
-    local craftBtn = frame:Add("DButton")
-    craftBtn:Dock(BOTTOM)
-    craftBtn:SetText("원고 제본하기 (아이템 생성)")
-    craftBtn:SetTall(40)
-    craftBtn:DockMargin(20, 0, 20, 20)
+            local info = p:Add("DLabel")
+            info:SetText(attrName .. " 숙련도 (" .. value .. ") 기반 서적")
+            info:SetFont("ixMediumFont")
+            info:Dock(TOP)
+            info:SetContentAlignment(5)
+            info:SetTall(30)
 
-    craftBtn.DoClick = function()
-        -- 서버로 최종 데이터를 보냄 (아까 만든 로직 연결)
-        net.Start("ix_book_finish")
-            net.WriteString(title:GetText())
-            net.WriteString(content:GetText())
-        net.SendToServer()
+            local title = p:Add("DTextEntry")
+            title:Dock(TOP)
+            title:SetPlaceholderText("책 제목을 입력하세요...")
+            title:DockMargin(0, 10, 0, 10)
 
-        frame:Close()
+            local content = p:Add("DTextEntry")
+            content:Dock(FILL)
+            content:SetMultiline(true)
+            content:SetPlaceholderText(attrName .. "에 관한 지식을 기록하세요...")
+
+            local btn = p:Add("DButton")
+            btn:Dock(BOTTOM)
+            btn:SetTall(35)
+            btn:SetText(attrName .. " 교본 제작하기")
+            btn:DockMargin(0, 10, 0, 0)
+
+            btn.DoClick = function()
+                net.Start("ix_book_finish")
+                    net.WriteString(title:GetText())
+                    net.WriteString(content:GetText())
+                    net.WriteString(id) -- 능력치 ID를 같이 보냄
+                net.SendToServer()
+                frame:Close()
+            end
+
+            -- 탭 추가
+            sheet:AddSheet(attrName, p, "icon16/book_edit.png")
+        end
     end
-end)
-
-net.Receive("ix_book_read", function()
-    local title = net.ReadString()
-    local content = net.ReadString()
-
-    local frame = vgui.Create("DFrame")
-    frame:SetSize(400, 500)
-    frame:SetTitle(title) -- 책 제목을 창 제목으로
-    frame:Center()
-    frame:MakePopup()
-
-    local scroll = frame:Add("DScrollPanel")
-    scroll:Dock(FILL)
-
-    local text = scroll:Add("DLabel")
-    text:SetText(content)
-    text:SetFont("ixChatFont") -- Helix 기본 폰트
-    text:SetWrap(true) -- 자동 줄바꿈
-    text:SetAutoStretchVertical(true)
-    text:Dock(TOP)
-    text:DockMargin(10, 10, 10, 10)
-    text:SetTextColor(Color(255, 255, 255))
 end)
