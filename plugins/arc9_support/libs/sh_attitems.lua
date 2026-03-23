@@ -2,7 +2,7 @@
 ix.arc9.attachmentItems = ix.arc9.attachmentItems or {}
 ix.arc9.attachmentItemSources = ix.arc9.attachmentItemSources or {}
 
-local defaultAttachmentModel = "models/items/boxsrounds.mdl"
+local defaultAttachmentModel = "models/mosi/fallout4/props/junk/modcrate.mdl"
 
 local function getAttachmentTable(att)
     if (not ARC9 or not isstring(att) or att == "" or not isfunction(ARC9.GetAttTable)) then
