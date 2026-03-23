@@ -80,6 +80,11 @@ function ENT:Use(ply)
 		return
 	end
 
+	if (ply:IsCombine()) then
+		PlayLockedSound(self)
+		return
+	end
+
 	if ( (self.nextUseTime or 0) > CurTime() ) then
 		PlayLockedSound(self)
 
