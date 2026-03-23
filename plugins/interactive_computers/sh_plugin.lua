@@ -23,7 +23,12 @@ PLUGIN.allowedModels = {
 	["models/props_combine/combine_interface003.mdl"] = true,
 	["models/props_combine/combine_intmonitor001.mdl"] = true,
 	["models/props_combine/combine_intmonitor003.mdl"] = true,
-	["models/props_combine/breenconsole.mdl"] = true
+	["models/props_combine/breenconsole.mdl"] = true,
+
+	-- Addons
+	["models/props_se/hl2_combine_cmb_part_10a.mdl"] = true,
+	["models/props_se/hl2_combine_cmb_part_10b.mdl"] = true,
+	["models/props_se/hl2_combine_cmb_part_10c.mdl"] = true,
 }
 PLUGIN.combineModels = {
 	["models/props_combine/combine_interface001.mdl"] = true,
@@ -32,7 +37,12 @@ PLUGIN.combineModels = {
 	["models/props_combine/combine_interface003.mdl"] = true,
 	["models/props_combine/combine_intmonitor001.mdl"] = true,
 	["models/props_combine/combine_intmonitor003.mdl"] = true,
-	["models/props_combine/breenconsole.mdl"] = true
+	["models/props_combine/breenconsole.mdl"] = true,
+
+	-- Addons
+	["models/props_se/hl2_combine_cmb_part_10a.mdl"] = true,
+	["models/props_se/hl2_combine_cmb_part_10b.mdl"] = true,
+	["models/props_se/hl2_combine_cmb_part_10c.mdl"] = true,
 }
 PLUGIN.spawnCategory = "HL2 RP: Computers"
 PLUGIN.assemblyMaxDistance = 140
@@ -95,6 +105,36 @@ PLUGIN.entityDefinitions = {
 		name = "Combine Monitor 3",
 		langKey = "interactiveComputerCombineMonitor",
 		model = "models/props_combine/combine_intmonitor003.mdl",
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "support",
+		interactive = false
+	},
+	{
+		class = "ix_computer_combine_monitor_a",
+		name = "Combine Monitor A",
+		langKey = "interactiveComputerCombineMonitor",
+		model = "models/props_se/hl2_combine_cmb_part_10a.mdl",
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "support",
+		interactive = false
+	},
+	{
+		class = "ix_computer_combine_monitor_b",
+		name = "Combine Monitor B",
+		langKey = "interactiveComputerCombineMonitor",
+		model = "models/props_se/hl2_combine_cmb_part_10b.mdl",
+		skins = {off = 1, on = 0, error = 1},
+		family = "combine",
+		role = "support",
+		interactive = false
+	},
+	{
+		class = "ix_computer_combine_monitor_c",
+		name = "Combine Monitor C",
+		langKey = "interactiveComputerCombineMonitor",
+		model = "models/props_se/hl2_combine_cmb_part_10c.mdl",
 		skins = {off = 1, on = 0, error = 1},
 		family = "combine",
 		role = "support",
