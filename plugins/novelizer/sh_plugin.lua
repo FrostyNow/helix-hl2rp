@@ -409,6 +409,12 @@ ix.lang.AddTable("english", {
 	novelizerTransform1 = "reworks material at %s.",
 	novelizerTransform2 = "starts refining parts at %s.",
 	novelizerTransform3 = "processes components at %s.",
+	novelizerSelfCraft1 = "sets to work assembling something.",
+	novelizerSelfCraft2 = "starts piecing materials together.",
+	novelizerSelfCraft3 = "is busy with some handiwork.",
+	novelizerSelfCook1 = "carefully prepares some food by hand.",
+	novelizerSelfCook2 = "is busy preparing a meal.",
+	novelizerSelfCook3 = "is focused on food preparation.",
 	novelizerCookFood1 = "turns %s over the heat and starts cooking it.",
 	novelizerCookFood2 = "sets %s to cook with patient care.",
 	novelizerCookFood3 = "starts cooking %s.",
@@ -984,6 +990,12 @@ ix.lang.AddTable("korean", {
 	novelizerTransform1 = "%s 위에서 재료를 다시 가공합니다.",
 	novelizerTransform2 = "%s 앞에서 부품을 손질해 바꿉니다.",
 	novelizerTransform3 = "%s 위에서 자재를 다른 형태로 가공합니다.",
+	novelizerSelfCraft1 = "자기 손으로 무언가 조립하며 제작하기 시작합니다.",
+	novelizerSelfCraft2 = "재료를 맞추어 보며 무언가를 제작하기 시작합니다.",
+	novelizerSelfCraft3 = "제작 작업에 열중하기 시작합니다.",
+	novelizerSelfCook1 = "조심스럽게 손으로 음식을 준비하기 시작합니다.",
+	novelizerSelfCook2 = "음식 준비 작업에 열중합니다.",
+	novelizerSelfCook3 = "음식을 만드는 데 집중합니다.",
 	novelizerCookFood1 = "%s 불에 올려 조리하기 시작합니다.",
 	novelizerCookFood2 = "%s 열 위에서 천천히 익히기 시작합니다.",
 	novelizerCookFood3 = "%s 조리합니다.",
@@ -1472,6 +1484,7 @@ local classSubjectPhrases = {
 	ix_bucket = "novelizerBucketFire",
 	ix_bonfire = "novelizerBonfire",
 	ix_rationdispenser = "novelizerRationDispenser",
+	ix_station = "novelizerWorkbench",
 	ix_combinelock = "novelizerLock",
 	ix_unionlock = "novelizerLock",
 	ix_doorbreach = "novelizerBreachCharge",
@@ -3464,8 +3477,24 @@ function PLUGIN:GetNearbyCraftStation(client)
 	return nil
 end
 
-function PLUGIN:GetRecipePhrasePool(recipeTable)
+function PLUGIN:GetRecipePhrasePool(recipeTable, hasStation)
 	local category = string.lower(tostring(recipeTable and recipeTable.category or ""))
+
+	if (not hasStation) then
+		if (category == "food") then
+			return {
+				"novelizerSelfCook1",
+				"novelizerSelfCook2",
+				"novelizerSelfCook3"
+			}
+		end
+
+		return {
+			"novelizerSelfCraft1",
+			"novelizerSelfCraft2",
+			"novelizerSelfCraft3"
+		}
+	end
 
 	if (category == "food") then
 		return {
@@ -3508,11 +3537,7 @@ function PLUGIN:ResolveCraftStationSubject(client, recipeTable)
 		return self:GetBareEntitySubject(entity), entity
 	end
 
-	if (category == "food") then
-		return BuildArgument("stove", false, "novelizerStove"), nil
-	end
-
-	return BuildArgument("workbench", false, "novelizerWorkbench"), nil
+	return nil, nil
 end
 
 function PLUGIN:PatchLootSearch()
@@ -3584,6 +3609,14 @@ end
 
 function PLUGIN:PatchCraftingActions()
 	local craftPlugin = ix.plugin.list["ixcraft"]
+	local categorySounds = {
+		disassemble = "physics/metal/metal_box_break1.wav",
+		transform = "ambient/materials/gears_short2.wav",
+		medical = "items/smallmedkit1.wav",
+		weapon = "weapons/shotgun/shotgun_reload2.wav",
+		armor = "physics/metal/metal_solid_impact_bullet1.wav",
+		generic = "physics/wood/wood_box_scrape1.wav"
+	}
 
 	if (not craftPlugin or not craftPlugin.craft or craftPlugin.ixNovelizerCraftWrapped) then
 		return
@@ -3596,8 +3629,8 @@ function PLUGIN:PatchCraftingActions()
 			return
 		end
 
-		local phrasePool = self:GetRecipePhrasePool(recipeTable)
 		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local phrasePool = self:GetRecipePhrasePool(recipeTable, IsValid(stationEntity))
 		local chosenPhrase = table.Random(phrasePool)
 
 		-- Dynamic particle handling for Korean
@@ -3609,11 +3642,18 @@ function PLUGIN:PatchCraftingActions()
 			end
 		end
 
-		self:SendNovelMe(client, chosenPhrase, {
+		self:SendNovelMe(client, chosenPhrase, stationSubject and {
 			stationSubject
-		}, {
+		} or {}, {
 			actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
 		})
+
+		local category = string.lower(tostring(recipeTable.category or "generic"))
+		local sound = recipeTable.sound or categorySounds[category] or categorySounds.generic
+
+		if (sound and category ~= "food") then
+			(IsValid(stationEntity) and stationEntity or client):EmitSound(sound)
+		end
 
 		if (IsValid(stationEntity)) then
 			local itKey = string.lower(tostring(recipeTable.category or "")) == "food"
@@ -3631,8 +3671,8 @@ function PLUGIN:PatchCraftingActions()
 			return
 		end
 
-		local phrasePool = self:GetRecipePhrasePool(recipeTable)
 		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local phrasePool = self:GetRecipePhrasePool(recipeTable, IsValid(stationEntity))
 		local chosenPhrase = table.Random(phrasePool)
 
 		-- Dynamic particle handling for Korean
@@ -3644,11 +3684,18 @@ function PLUGIN:PatchCraftingActions()
 			end
 		end
 
-		self:SendNovelMe(client, chosenPhrase, {
+		self:SendNovelMe(client, chosenPhrase, stationSubject and {
 			stationSubject
-		}, {
+		} or {}, {
 			actionKey = "craft_start"
 		})
+
+		local category = string.lower(tostring(recipeTable.category or "generic"))
+		local sound = recipeTable.sound or categorySounds[category] or categorySounds.generic
+
+		if (sound and category ~= "food") then
+			(IsValid(stationEntity) and stationEntity or client):EmitSound(sound)
+		end
 	end)
 end
 
