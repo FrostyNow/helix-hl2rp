@@ -1,6 +1,6 @@
 
 ITEM.name = "MPF Gear Pack"
-ITEM.model = Model("models/props_junk/cardboard_box003a.mdl")
+ITEM.model = Model("models/hls/alyxports/cardboard_box_1.mdl")
 ITEM.description = "cpGearSupplyDesc"
 ITEM.category = "Utility"
 ITEM.items = {

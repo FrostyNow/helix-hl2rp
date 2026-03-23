@@ -583,6 +583,22 @@ LANGUAGE = {
 	itemTeaCupDesc = "차를 마시기 좋은 찻잔입니다.",
 	["Empty Vial"] = "빈 유리병",
 	itemEmptyVialDesc = "개미귀신 유충을 담았던 빈 유리병입니다",
+	["Box"] = "상자",
+	itemPlasticBoxJunkDesc = "버려진 포장용 상자입니다.",
+	["Spray Can"] = "스프레이 캔",
+	itemSprayCanDesc = "페인트 등을 분사하는 데 쓰던 스프레이 캔입니다.",
+	["Fork"] = "포크",
+	itemForkDesc = "식사용 포크입니다.",
+	["Table Knife"] = "테이블 나이프",
+	itemTableKnifeDesc = "식사용 나이프입니다.",
+	["Handset"] = "수화기",
+	itemHandsetDesc = "전화기에서 뜯어낸 수화기입니다.",
+	["Combine Coin"] = "콤바인 주화",
+	itemCombineCoinDesc = "C라는 글자가 새겨진 은 주화입니다.",
+	["The Terminal"] = "더 터미널",
+	itemTheTerminalDesc = "'더 터미널'이라는 제목의 신문입니다.",
+	["Waste Paper"] = "폐지",
+	itemWastePaperDesc = "구겨진 폐지 더미입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",
@@ -691,3 +707,5 @@ LANGUAGE = {
 	cmdHUDReset = "콤바인 HUD의 위치를 기본값으로 초기화합니다.",
 	hudResetMessage = "HUD의 위치가 초기화되었습니다.",
 }
+
+

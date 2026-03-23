@@ -29,6 +29,7 @@ PLUGIN.allowedModels = {
 	["models/props_se/hl2_combine_cmb_part_10a.mdl"] = true,
 	["models/props_se/hl2_combine_cmb_part_10b.mdl"] = true,
 	["models/props_se/hl2_combine_cmb_part_10c.mdl"] = true,
+	["models/willardnetworks/props/willard_computer.mdl"] = true,
 }
 PLUGIN.combineModels = {
 	["models/props_combine/combine_interface001.mdl"] = true,
@@ -89,6 +90,28 @@ PLUGIN.entityDefinitions = {
 		family = "general",
 		role = "monitor",
 		interactive = true
+	},
+	{
+		class = "ix_computer_workstation",
+		name = "Workstation",
+		langKey = "interactiveComputerWorkstation",
+		model = "models/willardnetworks/props/willard_computer.mdl",
+		skins = {off = 0, on = 0, error = 0},
+		family = "general",
+		role = "monitor",
+		interactive = true,
+		standalone = true,
+	},
+	{
+		class = "ix_computer_workstation_white",
+		name = "Workstation",
+		langKey = "interactiveComputerWorkstation",
+		model = "models/willardnetworks/props/willard_computer.mdl",
+		skins = {off = 1, on = 1, error = 1},
+		family = "general",
+		role = "monitor",
+		interactive = true,
+		standalone = true,
 	},
 	{
 		class = "ix_computer_combine_monitor_1",
@@ -210,6 +233,7 @@ ix.lang.AddTable("english", {
 	interactiveComputerKeyboard = "Computer Keyboard",
 	interactiveComputerLabMonitorA = "Workstation Monitor A",
 	interactiveComputerLabMonitorB = "Workstation Monitor B",
+	interactiveComputerWorkstation = "Workstation",
 	interactiveComputerCombineMonitor = "Combine Monitor",
 	interactiveComputerCombineInterface = "Combine Interface",
 	interactiveComputerCivicInterface = "Public Information Interface",

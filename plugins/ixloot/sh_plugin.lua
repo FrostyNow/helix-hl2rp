@@ -119,6 +119,14 @@ PLUGIN.randomLoot.common = {
 	["potato"] = 3,
 	["watermelon_slice"] = 1,
 	["sauce"] = 1,
+	["junk_fork"] = 2,
+	["junk_knife"] = 2,
+	["junk_payphone_receiver"] = 2,
+	["junk_plasticbox"] = 3,
+	["junk_spraycan"] = 2,
+	["junk_the_terminal"] = 2,
+	["junk_waste_paper"] = 3,
+	["coin"] = 2,
 }
 
 PLUGIN.randomLoot.rare = {
