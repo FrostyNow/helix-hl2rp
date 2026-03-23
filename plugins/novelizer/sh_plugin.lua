@@ -69,6 +69,7 @@ ix.lang.AddTable("english", {
 	novelizerPepsiMachine = "soda vending machine",
 	novelizerRationDispenser = "ration dispenser",
 	novelizerLock = "lock",
+	novelizerShipment = "shipment",
 	novelizerNewspaperProp = "newspaper",
 	novelizerRadioProp = "radio",
 	novelizerTVProp = "television",
@@ -643,6 +644,7 @@ ix.lang.AddTable("korean", {
 	novelizerPepsiMachine = "음료 자판기",
 	novelizerRationDispenser = "배급기",
 	novelizerLock = "잠금장치",
+	novelizerShipment = "보급품",
 	novelizerNewspaperProp = "신문",
 	novelizerRadioProp = "라디오",
 	novelizerTVProp = "TV",
@@ -829,9 +831,9 @@ ix.lang.AddTable("korean", {
 	novelizerMolotovThrow1 = "%s 불붙은 궤적을 그리도록 던집니다.",
 	novelizerMolotovThrow2 = "%s 화염병을 내던집니다.",
 	novelizerMolotovThrow3 = "%s 불길을 그리며 투척합니다.",
-	novelizerAmmo1 = "%s 탄약을 꺼내 장전합니다.",
-	novelizerAmmo2 = "%s 탄환을 꺼내 보충합니다.",
-	novelizerAmmo3 = "%s 탄약으로 잔탄을 채웁니다.",
+	novelizerAmmo1 = "%s 장전합니다.",
+	novelizerAmmo2 = "%s 보충합니다.",
+	novelizerAmmo3 = "%s 채웁니다.",
 	novelizerBattery1 = "%s 전력을 보충합니다.",
 	novelizerBattery2 = "%s 장비 전원계에 연결합니다.",
 	novelizerBattery3 = "%s 동력으로 장비를 충전합니다.",
@@ -986,7 +988,7 @@ ix.lang.AddTable("korean", {
 	novelizerCookFood2 = "%s 열 위에서 천천히 익히기 시작합니다.",
 	novelizerCookFood3 = "%s 조리합니다.",
 	novelizerRationOpen1 = "%s 뜯어 엽니다.",
-	novelizerRationOpen2 = "%s 봉인을 뜯습니다.",
+	novelizerRationOpen2 = "%s의 봉인을 뜯습니다.",
 	novelizerRationOpen3 = "%s 열어 안의 물건을 꺼내기 시작합니다.",
 	novelizerEquipSuitcase1 = "%s 손에 듭니다.",
 	novelizerEquipSuitcase2 = "%s 손잡이째 들어 올립니다.",
@@ -1489,7 +1491,8 @@ local modelSubjectPhrases = {
 	{patterns = {"vehicle"}, phrase = "novelizerVehicleProp"},
 	{patterns = {"newspaper"}, phrase = "novelizerNewspaperProp"},
 	{patterns = {"radio"}, phrase = "novelizerRadioProp"},
-	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"}
+	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"},
+	{patterns = {"shipment"}, phrase = "novelizerShipment"}
 }
 
 function PLUGIN:GetLocalizedArgumentValue(value, language)
@@ -1814,6 +1817,15 @@ end
 function PLUGIN:GetItemSubject(item)
 	local text, phrase = self:ResolveItemSubjectData(item)
 	return BuildArgument(text, "object", phrase)
+end
+
+function PLUGIN:GetItemSubjectWithParticle(item, particle)
+	local text, phrase = self:ResolveItemSubjectData(item)
+	return BuildArgument(text, particle or "object", phrase)
+end
+
+function PLUGIN:GetPossessiveItemSubject(item)
+	return self:GetItemSubjectWithParticle(item, "possessive")
 end
 
 function PLUGIN:GetEntitySubjectWithParticle(entity, particle)
@@ -2475,7 +2487,7 @@ end
 
 function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 	if (phraseKey == "novelizerMachineLock1" or phraseKey == "novelizerMachineLock2"
-		or phraseKey == "novelizerMachineLock3" or phraseKey == "novelizerMachineTerminal3"
+		or phraseKey == "novelizerMachineTerminal3"
 		or phraseKey == "novelizerMachineDoorUse3" or phraseKey == "novelizerMachineVending1"
 		or phraseKey == "novelizerMachineVending2" or phraseKey == "novelizerMachineComputer4"
 		or phraseKey == "novelizerMachineRadio1" or phraseKey == "novelizerMachineRadio2"
@@ -2827,6 +2839,18 @@ function PLUGIN:EmitConditionalIt(entity, key, data)
 	})
 end
 
+function PLUGIN:GetItemActionArguments(item, phraseKey)
+	if (phraseKey == "novelizerRationOpen2") then
+		return {
+			self:GetPossessiveItemSubject(item)
+		}
+	end
+
+	return {
+		self:GetItemSubject(item)
+	}
+end
+
 function PLUGIN:PatchItemAction(itemTable, action)
 	if (not itemTable.functions or not itemTable.functions[action]) then
 		return
@@ -2849,9 +2873,9 @@ function PLUGIN:PatchItemAction(itemTable, action)
 			return
 		end
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
-			self:GetItemSubject(item)
-		}, {
+		local phrase = table.Random(phrasePool)
+
+		self:SendNovelMe(client, phrase, self:GetItemActionArguments(item, phrase), {
 			actionKey = "item_" .. string.lower(narratedAction or action)
 		})
 	end)
@@ -2927,9 +2951,9 @@ function PLUGIN:PatchDirectItemAction(itemTable, action, phrasePool)
 			return
 		end
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
-			self:GetItemSubject(item)
-		}, {
+		local phrase = table.Random(phrasePool)
+
+		self:SendNovelMe(client, phrase, self:GetItemActionArguments(item, phrase), {
 			actionKey = "item_" .. string.lower(action)
 		})
 	end)
