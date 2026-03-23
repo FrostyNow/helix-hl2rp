@@ -1,6 +1,7 @@
 ITEM.name = "Frying Pan"
 ITEM.description = "itemFryingPanDesc"
 ITEM.class = "weapon_hl2pan"
+ITEM.classes = {CLASS_CWU}
 ITEM.category = "misc"
 ITEM.weaponCategory = "melee"
 ITEM.price = 25

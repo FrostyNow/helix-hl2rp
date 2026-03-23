@@ -1,15 +1,16 @@
-RECIPE.name = "Onion Rings"
-RECIPE.description = "recipeOnionRingsDesc"
+RECIPE.name = "Mixed Stew"
+RECIPE.description = "recipeStewLargeDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/dead rising 2/onion_rings.mdl"
+RECIPE.model = "models/props_lab/souppreplargepot.mdl"
 RECIPE.requirements = {
-	["onion"] = 1,
-	["dough"] = 1,
-	["vegetable_oil"] = 1,
-	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
+	["water_purified"] = {amount = 3, substitutes = {["water_purified_bottle"] = 3, ["water_empty"] = 3, ["mineral_water"] = 3}},
+	["potato"] = {amount = 3, substitutes = {["corn"] = 3, ["onion"] = 3, ["carrot"] = 3}},
+	["sauce"] = 2,
+	["antlion_meat"] = {amount = 2, substitutes = {["fish"] = 2, ["headcrab"] = 2, ["bacon"] = 2, ["steak"] = 2, ["sausage"] = 2}},
+	["pot_large"] = 1
 }
 RECIPE.results = {
-	["onionrings"] = 1
+	["stew_large"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

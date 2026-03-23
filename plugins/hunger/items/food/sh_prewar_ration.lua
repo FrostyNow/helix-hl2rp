@@ -1,0 +1,8 @@
+ITEM.name = "Pre-war Ration"
+ITEM.model = "models/bioshockinfinite/food_ration.mdl"
+ITEM.description = "itemPrewarRationDesc"
+ITEM.price = 100
+ITEM.hunger = 45
+ITEM.thirst = 10
+ITEM.heal = 5
+ITEM.usenum = 4

@@ -5,3 +5,4 @@ ITEM.price = 20
 ITEM.model = "models/synapse/props/ration_coupon.mdl"
 ITEM.category = "Utility"
 ITEM.isStackable = true
+ITEM.factions = {FACTION_OTA, FACTION_MPF, FACTION_CONSCRIPT}

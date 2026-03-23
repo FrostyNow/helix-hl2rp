@@ -48,7 +48,6 @@ PLUGIN.randomLoot.common = {
 	["misc_dried_spices"] = 1,
 	["misc_dried_tea"] = 1,
 	["misc_dried_vegetable"] = 1,
-	["misc_glue"] = 4,
 	["misc_margarine"] = 1,
 	["misc_plank"] = 5,
 	["misc_buttercup"] = 3,
@@ -110,6 +109,16 @@ PLUGIN.randomLoot.common = {
 	["newspaper"] = 3,
 	["resin"] = 1,
 	["comp_combine_steel"] = 2,
+	["misc_ashtray"] = 3,
+	["zucchini"] = 2,
+	["apple"] = 1,
+	["banana"] = 1,
+	["orange"] = 1,
+	["pear"] = 1,
+	["pineapple"] = 1,
+	["potato"] = 3,
+	["watermelon_slice"] = 1,
+	["sauce"] = 1,
 }
 
 PLUGIN.randomLoot.rare = {
@@ -166,6 +175,10 @@ PLUGIN.randomLoot.rare = {
 	["citizen_gasmask"] = 1,
 	["gasmask_filter"] = 1,
 	["extinguisher"] = 2,
+	["prewar_ration"] = 1,
+	["sandwich"] = 1,
+	["egg_raw"] = 1,
+	["pot_large"] = 1,
 }
 
 ix.util.Include("sv_plugin.lua")

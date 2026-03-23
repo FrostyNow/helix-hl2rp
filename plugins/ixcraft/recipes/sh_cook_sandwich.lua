@@ -1,15 +1,14 @@
-RECIPE.name = "Onion Rings"
-RECIPE.description = "recipeOnionRingsDesc"
+RECIPE.name = "Sandwich"
+RECIPE.description = "recipeSandwichDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/dead rising 2/onion_rings.mdl"
+RECIPE.model = "models/willardnetworks/food/sandwich.mdl"
 RECIPE.requirements = {
-	["onion"] = 1,
-	["dough"] = 1,
-	["vegetable_oil"] = 1,
-	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
+	["bread"] = {amount = 1, substitutes = {["baguette"] = 1, ["dough"] = 1}},
+	["cabbage"] = {amount = 1, substitutes = {["tomato"] = 1, ["carrot"] = 1, ["corn"] = 1, ["onion"] = 1, ["zucchini"] = 1, ["potato"] = 1}},
+	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["headcrab"] = 1, ["antlion_meat"] = 1, ["chicken_roast"] = 1}}
 }
 RECIPE.results = {
-	["onionrings"] = 1
+	["sandwich"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

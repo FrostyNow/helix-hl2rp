@@ -1,0 +1,8 @@
+ITEM.name = "Mixed Stew"
+ITEM.model = "models/props_lab/souppreplargepot.mdl"
+ITEM.description = "itemStewLargeDesc"
+ITEM.price = 80
+ITEM.hunger = 35
+ITEM.thirst = 20
+ITEM.usenum = 6
+ITEM.empty = "pot_large"

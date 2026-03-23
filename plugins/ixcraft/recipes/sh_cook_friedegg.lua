@@ -1,15 +1,14 @@
-RECIPE.name = "Onion Rings"
-RECIPE.description = "recipeOnionRingsDesc"
+RECIPE.name = "Fried Egg"
+RECIPE.description = "recipeFriedEggDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/dead rising 2/onion_rings.mdl"
+RECIPE.model = "models/willardnetworks/food/egg1.mdl"
 RECIPE.requirements = {
-	["onion"] = 1,
-	["dough"] = 1,
+	["egg_raw"] = 1,
 	["vegetable_oil"] = 1,
-	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
+	["pan"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1, ["misc_tool_pressurecooker"] = 1}}
 }
 RECIPE.results = {
-	["onionrings"] = 1
+	["friedegg"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

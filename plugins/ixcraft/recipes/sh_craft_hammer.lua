@@ -7,7 +7,7 @@ RECIPE.station = {"craftingtable", "workbench"}
 RECIPE.requirements = {
 	["comp_wood"] = 2,
 	["comp_steel"] = 1,
-	["misc_glue"] = 1,
+	["misc_glue"] = {amount = 1, substitutes = {["comp_adhesive"] = 1}},
 }
 RECIPE.results = {
 	["misc_tool_hammer"] = 1,

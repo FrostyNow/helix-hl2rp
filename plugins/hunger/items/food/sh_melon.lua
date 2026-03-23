@@ -1,8 +1,9 @@
 ITEM.name = "Watermelon"
 ITEM.model = "models/hlvr/food/watermelon01.mdl"
 ITEM.description = "itemMelonDesc"
-ITEM.price = 40
-ITEM.hunger = 10
-ITEM.thirst = 20
-ITEM.heal = 5
-ITEM.usenum = 4
+ITEM.price = 50
+ITEM.hunger = 15
+ITEM.thirst = 30
+ITEM.heal = 10
+ITEM.usenum = 2
+ITEM.empty = "watermelon_half"
