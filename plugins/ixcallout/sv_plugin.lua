@@ -210,9 +210,10 @@ local COMBINE_TEMPLATE_SETS = {
 		{
 			-- ASSAULT0: on1 contact V_G0_PLAYERS off1
 			sounds = {"npc/combine_soldier/vo/contact.wav"},
-			layout = {"text", "target"},
+			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착,",
+			suffix = ".",
 			-- "포착, 반시민 1."
 		},
 		{
@@ -320,7 +321,7 @@ local COMBINE_TEMPLATE_SETS = {
 			text = "목표 대상을 놓쳤다. 정찰 재개하라."
 		},
 		{
-			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/lostcontact.wav"},
+			sounds = {"npc/combine_soldier/vo/lostcontact.wav"},
 			text = "추적 실패.",
 			useDesignation = true,
 			-- "리더 1. 추적 실패."
@@ -398,9 +399,10 @@ local COMBINE_TEMPLATE_SETS = {
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/targetcontactat.wav"},
-			layout = {"text", "grid"},
+			layout = {"text", "grid", "suffix"},
 			usesGrid = true,
 			text = "목표 대상 포착,",
+			suffix = ".",
 			-- "목표 대상 포착, 5-3."
 		},
 		{
@@ -480,9 +482,10 @@ local COMBINE_TEMPLATE_SETS = {
 		{
 			-- ALERT5: contact V_G0_PLAYERS
 			sounds = {"npc/combine_soldier/vo/contact.wav"},
-			layout = {"text", "target"},
+			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착,",
+			suffix = ".",
 			-- "포착, 반시민 1."
 		},
 		{
@@ -501,9 +504,10 @@ local COMBINE_TEMPLATE_SETS = {
 		{
 			-- ALERT7: designatetargetas V_G0_PLAYERS
 			sounds = {"npc/combine_soldier/vo/designatetargetas.wav"},
-			layout = {"text", "target"},
+			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "지명 목표:",
+			suffix = ".",
 			-- "지명 목표: 반시민 1."
 		},
 		{
@@ -518,9 +522,10 @@ local COMBINE_TEMPLATE_SETS = {
 				"npc/combine_soldier/vo/contactconfim.wav",
 				"npc/combine_soldier/vo/designatetargetas.wav"
 			},
-			layout = {"text", "target"},
+			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착 확인. 지명 목표:",
+			suffix = ".",
 			-- "포착 확인. 지명 목표: 반시민 1."
 		}
 	},
@@ -566,6 +571,153 @@ local COMBINE_TEMPLATE_SETS = {
 			usesVictim = true,
 			text = "사상자 발생! 위치 사수하라!",
 			-- "소드 3. 사상자 발생! 위치 사수하라!"
+		}
+	},
+	player_hit = {
+		{
+			-- HIT0: targetcompromisedmovein
+			sounds = {"npc/combine_soldier/vo/targetcompromisedmovein.wav"},
+			text = "목표 대상 전투력 저하, 접근하라.",
+		},
+		{
+			-- HIT1: affirmativewegothimnow
+			sounds = {"npc/combine_soldier/vo/affirmativewegothimnow.wav"},
+			text = "알았다. 그를 잡았다.",
+		},
+		{
+			-- HIT2: thatsitwrapitup
+			sounds = {"npc/combine_soldier/vo/thatsitwrapitup.wav"},
+			text = "됐어, 마무리 해.",
+		}
+	},
+	monster_alert = {
+		{
+			-- MONST0: confirmsectornotsterile
+			sounds = {"npc/combine_soldier/vo/confirmsectornotsterile.wav"},
+			text = "미살균 구역인지 확인하라.",
+		},
+		{
+			-- MONST1: visualonexogens
+			sounds = {"npc/combine_soldier/vo/visualonexogens.wav"},
+			text = "엑소젠 발견했다.",
+		},
+		{
+			-- MONST2: overwatch sector V_SECTORS infected
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/infected.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "보고한다,",
+			suffix = "감염 확인.",
+			-- "보고한다, 구역 5 감염 확인."
+		}
+	},
+	monster_bugs = {
+		{
+			-- BUGS0: confirmsectornotsterile
+			sounds = {"npc/combine_soldier/vo/confirmsectornotsterile.wav"},
+			text = "미살균 구역인지 확인하라.",
+		},
+		{
+			-- BUGS1: swarmoutbreakinsector V_SECTORS
+			sounds = {"npc/combine_soldier/vo/swarmoutbreakinsector.wav"},
+			layout = {"text", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "새 보금 확산 확인.",
+			suffix = ".",
+			-- "새 보금 확산 확인. 5."
+		},
+		{
+			-- BUGS2: overwatch, weareinaninfestationzone, sector V_SECTORS
+			sounds = {
+				"npc/combine_soldier/vo/overwatch.wav",
+				"npc/combine_soldier/vo/weareinaninfestationzone.wav",
+				"npc/combine_soldier/vo/sector.wav"
+			},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "보고한다, 출몰 구역에 있다.",
+			suffix = ".",
+			-- "보고한다, 출몰 구역에 있다. 구역 5."
+		},
+		{
+			-- BUGS3: overwatch, wehavenontaggedviromes, grid V_GRIDXS dash V_GRIDYS
+			sounds = {
+				"npc/combine_soldier/vo/overwatch.wav",
+				"npc/combine_soldier/vo/wehavenontaggedviromes.wav",
+				"npc/combine_soldier/vo/grid.wav"
+			},
+			layout = {"text", "gridX", "dash", "gridY", "suffix"},
+			usesGrid = true,
+			text = "보고한다, 태그 없는 바이롬을 발견했다. 그리드:",
+			suffix = ".",
+			-- "보고한다, 태그 없는 바이롬을 발견했다. 그리드: 5-3."
+		}
+	},
+	monster_citizens = {
+		{
+			-- CITIZENS0: outbreak
+			sounds = {"npc/combine_soldier/vo/outbreak.wav"},
+			text = "확산.",
+		}
+	},
+	monster_character = {
+		{
+			-- CHARACTER0: target, prioritytwoescapee
+			sounds = {
+				"npc/combine_soldier/vo/target.wav",
+				"npc/combine_soldier/vo/prioritytwoescapee.wav"
+			},
+			text = "목표, 2번 임무 도망자 처리.",
+		},
+		{
+			-- CHARACTER1: outbreakstatusiscode hurricane
+			sounds = {"npc/combine_soldier/vo/outbreakstatusiscode.wav", "npc/combine_soldier/vo/hurricane.wav"},
+			text = "확산 상태 코드: 허리케인.",
+		}
+	},
+	monster_zombies = {
+		{
+			-- ZOMBIES0: necrotics
+			sounds = {"npc/combine_soldier/vo/necrotics.wav"},
+			text = "변종.",
+		},
+		{
+			-- ZOMBIES1: necroticsinbound
+			sounds = {"npc/combine_soldier/vo/necroticsinbound.wav"},
+			text = "변종 접근.",
+		},
+		{
+			-- ZOMBIES2: overwatch, weareinaninfestationzone, sector V_SECTORS
+			sounds = {
+				"npc/combine_soldier/vo/overwatch.wav",
+				"npc/combine_soldier/vo/weareinaninfestationzone.wav",
+				"npc/combine_soldier/vo/sector.wav"
+			},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "보고한다, 출몰 구역에 있다.",
+			suffix = ".",
+			-- "보고한다, 출몰 구역에 있다. 구역 5."
+		}
+	},
+	monster_parasites = {
+		{
+			-- PARASITES0: callcontactparasitics
+			sounds = {"npc/combine_soldier/vo/callcontactparasitics.wav"},
+			text = "기생 생명체 포착.",
+		},
+		{
+			-- PARASITES1: overwatch, wehavefreeparasites, sector V_SECTORS
+			sounds = {
+				"npc/combine_soldier/vo/overwatch.wav",
+				"npc/combine_soldier/vo/wehavefreeparasites.wav",
+				"npc/combine_soldier/vo/sector.wav"
+			},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "보고한다, 숙주 없는 기생 발견했다.",
+			suffix = ".",
+			-- "보고한다, 숙주 없는 기생 발견했다. 구역 5."
 		}
 	}
 }
@@ -978,21 +1130,79 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 			end
 		end,
 		text = function()
+			if (variant.sounds) then
+				for _, soundPath in ipairs(variant.sounds) do
+					sequence[#sequence + 1] = soundPath
+				end
+			end
+
 			if (variant.text) then
 				parts[#parts + 1] = variant.text
 			end
 		end,
-		target = function()
+		V_G0_PLAYERS = function()
 			if (variant.usesTarget and context and IsValid(context.target)) then
-				local targetData = self:BuildTargetIdentification(client, context.target)
+				local target = context.target
 
-				if (targetData) then
-					sequence[#sequence + 1] = targetData.sound
-					parts[#parts + 1] = targetData.text .. "."
+				if (target:IsPlayer()) then
+					if (target:IsCombine()) then
+						local name, num = self:GetCombineDesignationParts(target)
+
+						if (name) then
+							sequence[#sequence + 1] = name.sound
+							parts[#parts + 1] = name.text
+
+							if (num) then
+								for _, soundPath in ipairs(num) do
+									sequence[#sequence + 1] = soundPath
+								end
+								parts[#parts + 1] = tostring(self:GetCombineUnitID(target).number)
+							end
+						end
+					else
+						-- Human Players use randomized V_G0_PLAYERS variants
+						local choices = {
+							{sound = "npc/combine_soldier/vo/anticitizenone.wav", text = "반시민 1"},
+							{sound = "npc/combine_soldier/vo/targetone.wav", text = "목표 대상 1"},
+							{sound = "npc/combine_soldier/vo/priority1objective.wav", text = "1번 임무 목표 완수"},
+							{sound = "npc/combine_soldier/vo/phantom.wav", text = "팬텀"},
+							{sound = "npc/combine_soldier/vo/ghost2.wav", text = "고스트"}
+						}
+						local choice = table.Random(choices)
+						
+						sequence[#sequence + 1] = choice.sound
+						parts[#parts + 1] = choice.text
+					end
+				elseif (target:IsNPC()) then
+					local class = target:GetClass():lower()
+
+					if (class:find("zombie") or class == "npc_zombine") then
+						sequence[#sequence + 1] = "npc/combine_soldier/vo/necrotics.wav"
+						parts[#parts + 1] = "변종"
+					elseif (class:find("antlion") or class:find("headcrab")) then
+						sequence[#sequence + 1] = "npc/combine_soldier/vo/exogens.wav"
+						parts[#parts + 1] = "엑소젠"
+					else
+						-- Monstruous NPCs use variants EXCEPT Anticitizen One
+						local choices = {
+							{sound = "npc/combine_soldier/vo/targetone.wav", text = "목표 대상 1"},
+							{sound = "npc/combine_soldier/vo/priority1objective.wav", text = "1번 임무 목표 완수"},
+							{sound = "npc/combine_soldier/vo/phantom.wav", text = "팬텀"},
+							{sound = "npc/combine_soldier/vo/ghost2.wav", text = "고스트"}
+						}
+						local choice = table.Random(choices)
+						
+						sequence[#sequence + 1] = choice.sound
+						parts[#parts + 1] = choice.text
+					end
 				end
 			end
 		end,
-		distance = function()
+		target = function()
+			-- Alias to V_G0_PLAYERS
+			handlers.V_G0_PLAYERS()
+		end,
+		V_DISTS = function()
 			if (variant.usesDistance and context and IsValid(context.target)) then
 				local distance = math.Round(client:GetPos():Distance(context.target:GetPos()) / 50)
 
@@ -1021,7 +1231,11 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				parts[#parts + 1] = distStr
 			end
 		end,
-		bearing = function()
+		distance = function()
+			-- Alias to V_DISTS
+			handlers.V_DISTS()
+		end,
+		V_DIRS = function()
 			if (variant.usesBearing and context and IsValid(context.target)) then
 				local bearing = math.Round((context.target:GetPos() - client:GetPos()):Angle().y)
 				if (bearing < 0) then bearing = bearing + 360 end
@@ -1051,6 +1265,38 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				parts[#parts + 1] = bearingStr
 			end
 		end,
+		bearing = function()
+			-- Alias to V_DIRS
+			handlers.V_DIRS()
+		end,
+		gridX = function()
+			if (variant.usesGrid and context and IsValid(context.target)) then
+				local pos = context.target:GetPos()
+				local x = math.abs(math.Round(pos.x / 1000))
+
+				for _, soundPath in ipairs(self:BuildNumberSounds(x)) do
+					sequence[#sequence + 1] = soundPath
+				end
+
+				parts[#parts + 1] = tostring(x)
+			end
+		end,
+		gridY = function()
+			if (variant.usesGrid and context and IsValid(context.target)) then
+				local pos = context.target:GetPos()
+				local y = math.abs(math.Round(pos.y / 1000))
+
+				for _, soundPath in ipairs(self:BuildNumberSounds(y)) do
+					sequence[#sequence + 1] = soundPath
+				end
+
+				parts[#parts + 1] = tostring(y)
+			end
+		end,
+		dash = function()
+			sequence[#sequence + 1] = "npc/combine_soldier/vo/dash.wav"
+			parts[#parts + 1] = "-"
+		end,
 		grid = function()
 			if (variant.usesGrid and context and IsValid(context.target)) then
 				local pos = context.target:GetPos()
@@ -1076,7 +1322,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				parts[#parts + 1] = label
 			end
 		end,
-		sectorNumber = function()
+		V_SECTORS = function()
 			if (variant.usesSector) then
 				local num = self:GetAreaSectorNumber(client:GetArea())
 
@@ -1091,6 +1337,10 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				end
 			end
 		end,
+		sectorNumber = function()
+			-- Alias to V_SECTORS
+			handlers.V_SECTORS()
+		end,
 		victimDesignation = function()
 			if (variant.usesVictim and context and IsValid(context.target)) then
 				local name, num = self:GetCombineDesignationParts(context.target)
@@ -1103,7 +1353,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 						for _, soundPath in ipairs(num) do
 							sequence[#sequence + 1] = soundPath
 						end
-						parts[#parts + 1] = tostring(self:GetCombineUnitID(context.target).number) .. "."
+						parts[#parts + 1] = tostring(self:GetCombineUnitID(context.target).number)
 					end
 				end
 			end
@@ -1116,7 +1366,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 	}
 
 	local layout = variant.layout or {
-		"designation", "text", "victimDesignation", "target", "distance", "bearing", "grid", "sector", "suffix"
+		"designation", "text", "victimDesignation", "V_G0_PLAYERS", "V_DISTS", "V_DIRS", "grid", "gridX", "dash", "gridY", "sectorLabel", "V_SECTORS", "suffix"
 	}
 
 	for _, key in ipairs(layout) do
@@ -1129,9 +1379,30 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		return nil
 	end
 
+	local resultText = ""
+	local lastPart = ""
+
+	for i, part in ipairs(parts) do
+		if (i == 1) then
+			resultText = part
+		else
+			-- If the current part starts with punctuation (including dash/colon), NO space
+			-- OR if the PREVIOUS part was a dash, NO space (for formatting like 5-3)
+			local noSpace = part:match("^[,%.!%?%-%:]") or lastPart:match("%-$")
+
+			if (noSpace) then
+				resultText = resultText .. part
+			else
+				resultText = resultText .. " " .. part
+			end
+		end
+
+		lastPart = part
+	end
+
 	return {
 		sounds = sequence,
-		text = table.concat(parts, " ")
+		text = resultText
 	}
 end
 
@@ -1422,6 +1693,38 @@ function PLUGIN:GetNearbyAutoVoiceCount(client, radius)
 	return count
 end
 
+function PLUGIN:PostEntityTakeDamage(target, damageInfo)
+	if (!self:IsVoicePluginAvailable()) then
+		return
+	end
+
+	local attacker = damageInfo:GetAttacker()
+
+	-- Only care if the attacker is a valid Combine unit
+	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:IsAlive() or !attacker:IsCombine()) then
+		return
+	end
+
+	-- Only care if the target is a player and NOT Combine
+	if (!IsValid(target) or !target:IsPlayer() or !target:Alive() or target:IsCombine()) then
+		return
+	end
+
+	local health = target:Health()
+	local maxHealth = target:GetMaxHealth() or 100
+
+	-- If the target is significantly damaged (below 30%)
+	if (health > 0 and (health / maxHealth) <= 0.3) then
+		if (self:CanUsePlayerCooldown(attacker, "player_hit", 15)) then
+			local event = self:BuildTemplateEvent(attacker, "player_hit")
+
+			if (event) then
+				self:EmitVoiceEvent(attacker, event.text, event.sounds)
+			end
+		end
+	end
+end
+
 function PLUGIN:HandleThrownGrenade(grenade)
 	if (!IsValid(grenade) or grenade:GetClass() != GRENADE_CLASS) then
 		return
@@ -1633,24 +1936,51 @@ function PLUGIN:ScanForCombatCallouts()
 			end
 		end
 
-		if (#targets > 0) then
-			-- Update last seen time and reset 'lost' flags
-			local isFirstContact = (client.ixLastSeenTime == nil)
+		local target = targets[1]
+		local isFirstContact = (client.ixLastSeenTime == nil)
+		local forcedIndex = nil
 
-			client.ixLastSeenTime = CurTime()
-			client.ixHasTriggeredLostShort = false
-			client.ixHasTriggeredLostLong = false
+		client.ixLastSeenTime = CurTime()
+		client.ixHasTriggeredLostShort = false
+		client.ixHasTriggeredLostLong = false
 
-			if (self:CanUsePlayerCooldown(client, "combat_callout", COMBAT_REACTION_COOLDOWN)) then
-				local template = "combatCallout"
-				local distSqr = client:GetPos():DistToSqr(targets[1]:GetPos())
+		if (self:CanUsePlayerCooldown(client, "combat_callout", COMBAT_REACTION_COOLDOWN)) then
+			local template = "combatCallout"
+			local distSqr = client:GetPos():DistToSqr(target:GetPos())
 
-				if (isFirstContact) then
-					-- Squad leaders report first contact
-					if (self:IsSquadLeader(client)) then
-						template = "leader_alert"
+			if (isFirstContact) then
+				-- Squad leaders report first contact
+				if (self:IsSquadLeader(client)) then
+					template = "leader_alert"
+
+					-- Specialty check for non-humans
+					if (!target:IsPlayer()) then
+						local class = target:GetClass():lower()
+
+						if (class:find("zombie") or class == "npc_zombine") then
+							template = "monster_alert"
+							forcedIndex = 3 -- MONST2: infected
+						elseif (class:find("antlion") or class:find("headcrab")) then
+							template = "monster_alert"
+							forcedIndex = 2 -- MONST1: exogens
+						else
+							template = "monster_alert"
+							forcedIndex = 1 -- MONST0: sterile
+						end
+					else
+						-- Non-leader units use specific hazard sets
+						local class = target:GetClass():lower()
+
+						if (class:find("antlion")) then
+							template = "monster_bugs"
+						elseif (class:find("headcrab")) then
+							template = "monster_parasites"
+						elseif (class:find("zombie") or class == "npc_zombine") then
+							template = "monster_zombies"
+						end
 					end
-				else
+				end
+			else
 					-- If lost for more than 10 seconds, use refind_enemy
 					local timeSinceLastSeen = CurTime() - (client.ixLastSeenTime or 0)
 
@@ -1662,7 +1992,8 @@ function PLUGIN:ScanForCombatCallouts()
 				local event = self:BuildTemplateEvent(client, template, {
 					target = targets[1],
 					distance = distSqr,
-					bearing = (targets[1]:GetPos() - client:GetPos()):Angle().y
+					bearing = (targets[1]:GetPos() - client:GetPos()):Angle().y,
+					forcedIndex = forcedIndex
 				})
 
 				if (event) then
