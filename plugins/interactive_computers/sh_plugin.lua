@@ -371,6 +371,7 @@ ix.lang.AddTable("korean", {
 	interactiveComputerKeyboard = "컴퓨터 키보드",
 	interactiveComputerLabMonitorA = "작업용 모니터",
 	interactiveComputerLabMonitorB = "작업용 모니터",
+	interactiveComputerWorkstation = "워크스테이션",
 	interactiveComputerCombineMonitor = "콤바인 모니터",
 	interactiveComputerCombineInterface = "콤바인 인터페이스",
 	interactiveComputerCivicInterface = "공공 정보 인터페이스",
@@ -643,6 +644,10 @@ function PLUGIN:GetRequiredSupportRoles(entity)
 	end
 
 	if (definition.family == "general") then
+		if (definition.standalone == true) then
+			return {}
+		end
+
 		return {"desktop"}
 	end
 
@@ -660,6 +665,10 @@ function PLUGIN:ResolveStorageEntity(entity)
 	end
 
 	if (definition.family == "general" and definition.interactive == true) then
+		if (definition.standalone == true) then
+			return entity
+		end
+
 		return self:FindNearestSupportComputer(entity, "desktop") or entity
 	end
 

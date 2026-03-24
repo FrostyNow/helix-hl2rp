@@ -93,6 +93,10 @@ ITEM.functions.Use = {
 
 			if (succeeded) then
 				if (useDoor and IsValid(target)) then
+					if (IsValid(target.ixLock)) then
+						target.ixLock:SetLocked(false)
+					end
+
 					target:Fire("unlock")
 					target:Fire("open")
 					ply:EmitSound("buttons/combine_button1.wav")

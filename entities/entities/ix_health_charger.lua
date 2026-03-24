@@ -76,6 +76,7 @@ if (SERVER) then
 
 	function ENT:Initialize()
 		self:SetModel("models/ccr/props/health_charger.mdl")
+		self:DrawShadow(false)
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)

@@ -118,7 +118,14 @@ ix.container.Register("models/props_c17/lockers001a_single.mdl", {
 	name = "Locker",
 	description = "containerLockerDesc",
 	width = 1,
-	height = 3,
+	height = 4,
+})
+
+ix.container.Register("models/props_c17/lockers001b_single.mdl", {
+	name = "Locker",
+	description = "containerLockerDesc",
+	width = 1,
+	height = 4,
 })
 
 ix.container.Register("models/props_interiors/furniture_drawer01a.mdl", {
@@ -145,7 +152,7 @@ ix.container.Register("models/props_junk/wood_crate001b.mdl", {
 ix.container.Register("models/props_junk/wood_crate001a_half.mdl", {
 	name = "Crate",
 	description = "containerCrateDesc",
-	width = 4,
+	width = 8,
 	height = 2,
 })
 

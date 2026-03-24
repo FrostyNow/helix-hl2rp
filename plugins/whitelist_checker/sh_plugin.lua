@@ -3,6 +3,9 @@ PLUGIN.name = "Whitelist & Flag Checker"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Provides admin commands to view whitelists and flags."
 
+ix.util.Include("sv_plugin.lua")
+ix.util.Include("cl_plugin.lua")
+
 ix.lang.AddTable("english", {
 	cmdPlyCheckWhitelists = "Check all whitelisted players and their characters for a faction.",
 	wlCheckerTitle = "Whitelist Checker - %s",

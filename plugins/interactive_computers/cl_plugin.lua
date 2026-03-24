@@ -274,6 +274,10 @@ local function HasInteractiveKeyboard(frame)
 		return true
 	end
 
+	if (definition.standalone == true) then
+		return true
+	end
+
 	return IsValid(PLUGIN:FindNearestSupportComputer(frame.entity, "keyboard"))
 end
 
@@ -1565,12 +1569,12 @@ local function StyleCombineListView(list)
 	if (IsValid(header)) then
 		header:SetTall(22)
 		header.Paint = function(_, width, height)
-			surface.SetDrawColor(8, 18, 12, 240)
+			surface.SetDrawColor(8, 16, 28, 240)
 			surface.DrawRect(0, 0, width, height)
 		end
 
 		for _, column in ipairs(header.Columns or {}) do
-			column:SetTextColor(COLOR_DOS_TEXT)
+			column:SetTextColor(COMBINE_TEXT)
 			column:SetFont("ixComputerDOSTiny")
 		end
 	end
@@ -1579,19 +1583,19 @@ local function StyleCombineListView(list)
 	if (IsValid(vBar)) then
 		vBar:SetWide(8)
 		vBar.Paint = function(_, width, height)
-			surface.SetDrawColor(Color(6, 12, 6, 220))
+			surface.SetDrawColor(Color(8, 16, 28, 220))
 			surface.DrawRect(0, 0, width, height)
 		end
 		vBar.btnUp:SetText("")
 		vBar.btnDown:SetText("")
 		vBar.btnGrip:SetText("")
 		vBar.btnUp.Paint = function(_, width, height)
-			surface.SetDrawColor(12, 36, 16, 220)
+			surface.SetDrawColor(14, 24, 38, 220)
 			surface.DrawRect(0, 0, width, height)
 		end
 		vBar.btnDown.Paint = vBar.btnUp.Paint
 		vBar.btnGrip.Paint = function(_, width, height)
-			surface.SetDrawColor(COLOR_DOS_TEXT.r, COLOR_DOS_TEXT.g, COLOR_DOS_TEXT.b, 110)
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 110)
 			surface.DrawRect(0, 0, width, height)
 		end
 	end
@@ -2144,11 +2148,14 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 	self.entity = entity
 	self.context = context or {}
 	SetTerminalPowerState(self, powered)
+	local previousSelectionID = self.selectedTarget
 	self.rosterList:Clear()
 	self.selectedTarget = nil
 
 	for _, entry in ipairs(self.context.roster or {}) do
-		local line = self.rosterList:AddLine(string.format("%s [#%s]", entry.name or "UNKNOWN", entry.cid or "00000"))
+		local status = entry.isOnline and "" or " [OFFLINE]"
+		local line = self.rosterList:AddLine(string.format("%s [#%s]%s", entry.name or "UNKNOWN", entry.cid or "00000", status))
+		
 		line.Paint = function(self, width, height)
 			local selected = self:IsSelected()
 
@@ -2160,12 +2167,22 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 
 		if (line.Columns) then
 			for _, column in ipairs(line.Columns) do
-				column:SetTextColor(COMBINE_TEXT)
+				column:SetTextColor(entry.isOnline and COMBINE_TEXT or Color(150, 150, 150, 255))
 				column:SetFont("ixComputerDOSTiny")
 			end
 		end
 
 		line.ixTarget = entry.target
+		line.ixCharID = entry.id
+
+		if (previousSelectionID == entry.target) then
+			self.selectedTarget = entry.target
+			line:SetSelected(true)
+		end
+	end
+
+	if (self.selectedTarget) then
+		self:PopulateSelectedData()
 	end
 
 	self.objectivesEntry:SetText((self.context.objectives and self.context.objectives.text) or "")

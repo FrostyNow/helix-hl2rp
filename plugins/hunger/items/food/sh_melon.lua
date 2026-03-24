@@ -1,5 +1,5 @@
 ITEM.name = "Watermelon"
-ITEM.model = "models/hlvr/food/watermelon01.mdl"
+ITEM.model = "models/props_junk/watermelon01.mdl"
 ITEM.description = "itemMelonDesc"
 ITEM.price = 50
 ITEM.hunger = 15

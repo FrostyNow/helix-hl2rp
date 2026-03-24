@@ -95,7 +95,7 @@ if (SERVER) then
 
 		if (tracePosition) then
 			for k, v in ipairs(self.Items) do
-				local position = self:GetPos() + self:GetForward() * 17.5 + self:GetRight() * -24.4 + (self:GetUp() * 5.3 - Vector(0, 0, (k - 1) * 2.1))
+				local position = self:GetPos() + self:GetForward() * 18.2 + self:GetRight() * -24.4 + (self:GetUp() * 4.98 - Vector(0, 0, (k - 1) * 2.01))
 
 				if (position:DistToSqr(tracePosition) <= 1) then
 					return k
@@ -174,7 +174,11 @@ if (SERVER) then
 		end
 
 		if (self:GetStock(buttonID) > 0) then
-			ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -26, function(item, entity)
+			ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -30.25, function(item, entity)
+				local angles = self:GetAngles()
+				angles:RotateAroundAxis(angles:Forward(), 90)
+				entity:SetAngles(angles)
+
 				self:EmitSound("buttons/button1.wav", 60)
 				self:EmitSound("buttons/button4.wav", 60)
 
@@ -207,18 +211,22 @@ else
 	local color_blue = Color(0, 50, 100, 255)
 	local color_black = Color(60, 60, 60, 255)
 
-	function ENT:PopulateEntityOptions(options)
-		if (LocalPlayer():IsAdmin()) then
-			options["Reset Stock"] = {
-				callback = function()
-					net.Start("ixVendingMachineReset")
-						net.WriteEntity(self)
-					net.SendToServer()
-				end,
-				icon = "icon16/arrow_refresh.png"
-			}
+	properties.Add("ixVendingMachineReset", {
+		MenuLabel = L("vendingResetStock"),
+		Order = 999,
+		MenuIcon = "icon16/arrow_refresh.png",
+		Filter = function(self, entity, client)
+			if (!IsValid(entity) or entity:GetClass() != "ix_vendingmachine") then return false end
+			if (!client:IsAdmin()) then return false end
+
+			return true
+		end,
+		Action = function(self, entity)
+			net.Start("ixVendingMachineReset")
+				net.WriteEntity(entity)
+			net.SendToServer()
 		end
-	end
+	})
 
 	function ENT:Draw()
 		self:DrawModel()
@@ -235,7 +243,7 @@ else
 		angles:RotateAroundAxis(angles:Up(), 90)
 		angles:RotateAroundAxis(angles:Forward(), 90)
 
-		cam.Start3D2D(position + forward * 17.33 + right * -19.2 + up * 6.1, angles, 0.06)
+		cam.Start3D2D(position + forward * 17.6 + right * -19.2 + up * 5, angles, 0.06)
 			render.PushFilterMin(TEXFILTER.NONE)
 			render.PushFilterMag(TEXFILTER.NONE)
 
@@ -248,7 +256,7 @@ else
 			for i = 1, 8 do
 				local itemInfo = self.Items[i]
 				local x = 0
-				local y = (i - 1) * 34
+				local y = (i - 1) * 33.5
 
 				surface.SetDrawColor(color_black)
 				surface.DrawOutlinedRect(x, y, width, height)

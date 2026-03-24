@@ -1736,21 +1736,35 @@ Schema.voices.AddClass("Combine", function(client)
 end)
 
 Schema.voices.AddClass("CitizenMale", function(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
 	local index = client:FindBodygroupByName("mask")
 	local bIsCombineMaskOff = client:IsCombine() and Schema:IsConceptCombine(client) and index != -1 and client:GetBodygroup(index) == 0
 
-	return (!client:IsCombine() or bIsCombineMaskOff) and !client:IsFemale() and !client:GetCharacter():IsVortigaunt()
+	return (!client:IsCombine() or bIsCombineMaskOff) and !client:IsFemale() and !character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("CitizenFemale", function(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
 	local index = client:FindBodygroupByName("mask")
 	local bIsCombineMaskOff = client:IsCombine() and Schema:IsConceptCombine(client) and index != -1 and client:GetBodygroup(index) == 0
 
-	return (!client:IsCombine() or bIsCombineMaskOff) and client:IsFemale() and !client:GetCharacter():IsVortigaunt()
+	return (!client:IsCombine() or bIsCombineMaskOff) and client:IsFemale() and !character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("Vortigaunt", function(client)
-	return client:GetCharacter():IsVortigaunt()
+	local character = client:GetCharacter()
+
+	return character and character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("Overwatch", function(client)

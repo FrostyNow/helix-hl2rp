@@ -275,6 +275,7 @@ function ITEM.postHooks.Scan(item, status)
 end
 
 ITEM.functions.Broadcast = {
+	icon = "icon16/feed.png",
 	OnRun = function(itemTable)
 		local character = itemTable.player:GetCharacter()
 		local inventory = character:GetInventory()
@@ -339,6 +340,7 @@ ITEM.functions.Broadcast = {
 
 -- Hybrid radio stuff
 ITEM.functions.AdMode = { -- Sorry, ordering
+	icon = "icon16/control_equalizer_blue.png",
 	name = "Mode",
 	OnRun = function(itemTable)
 		itemTable:SetData("duplex", !itemTable:GetData("duplex",itemTable.duplex))

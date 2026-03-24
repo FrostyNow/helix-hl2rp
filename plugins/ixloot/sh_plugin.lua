@@ -156,8 +156,8 @@ PLUGIN.randomLoot.rare = {
 	["bag"] = 1,
 	["satchel"] = 1,
 	["suitcase"] = 1,
-	["pistol"] = 1,
-	["pistolammo"] = 1,
+	-- ["pistol"] = 1,
+	-- ["pistolammo"] = 1,
 	["health_vial"] = 1,
 	["headcrab"] = 3,
 	["medkit"] = 2,
@@ -187,6 +187,8 @@ PLUGIN.randomLoot.rare = {
 	["sandwich"] = 1,
 	["egg_raw"] = 1,
 	["pot_large"] = 1,
+	["duffle_bag"] = 1,
+	["flare"] = 1
 }
 
 ix.util.Include("sv_plugin.lua")

@@ -5,6 +5,8 @@ PLUGIN.name = "More Containers"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds more container props."
 
+ix.util.Include("sh_definitions.lua")
+
 ix.lang.AddTable("english", {
 	containerCombineCrateDesc = "A heavy crate for stores ammunition that is made of Combine metal.",
 	containerDressingTableDesc = "A dressing table with drawers.",

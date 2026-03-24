@@ -368,7 +368,7 @@ LANGUAGE = {
 	empBroken = "EMP 장비가 망가졌습니다!",
 	empOverloading = "사용 중...",
 	empUseAction = "사용",
-	empInvalidTarget = "문 잠금장치 또는 콤바인 터미널을 조준해야 합니다.",
+	empInvalidTarget = "잠긴 문, 센트리 건, 또는 콤바인 터미널을 조준해야 합니다.",
 	empInstabilityLevel = "불안정도",
 	["Book"] = "책",
 	bookDesc = "가볍게 읽을 만한 책입니다.\n독서를 통해 지능을 향상시킬 수 있습니다.",
@@ -604,6 +604,8 @@ LANGUAGE = {
 	itemWastePaperDesc = "구겨진 폐지 더미입니다.",
 	["Vending Machine Stock"] = "자판기 재고품",
 	itemVendingStockDesc = "자판기에 공급할 음료들이 들어있는 상자입니다. 자판기에 가져다 대면 모든 재고가 보충됩니다.",
+	["Flare"] = "조명탄",
+	itemFlareDesc = "구조 신호를 보내는 데 사용할 수 있는 조명탄입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

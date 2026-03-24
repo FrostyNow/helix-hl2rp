@@ -163,7 +163,11 @@ if (SERVER) then
 		end
 
 		if (self:GetStock(buttonID) > 0) then
-			ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -26, function(item, entity)
+			ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -30.25, function(item, entity)
+				local angles = self:GetAngles()
+				angles:RotateAroundAxis(angles:Forward(), 90)
+				entity:SetAngles(angles)
+
 				self:EmitSound("buttons/button1.wav", 60)
 				self:EmitSound("buttons/button4.wav", 60)
 
@@ -196,18 +200,22 @@ else
 	local color_blue = Color(0, 50, 100, 255)
 	local color_black = Color(60, 60, 60, 255)
 
-	function ENT:PopulateEntityOptions(options)
-		if (LocalPlayer():IsAdmin()) then
-			options["Reset Stock"] = {
-				callback = function()
-					net.Start("ixCoffeeMachineReset")
-						net.WriteEntity(self)
-					net.SendToServer()
-				end,
-				icon = "icon16/arrow_refresh.png"
-			}
+	properties.Add("ixCoffeeMachineReset", {
+		MenuLabel = L("vendingResetStock"),
+		Order = 999,
+		MenuIcon = "icon16/arrow_refresh.png",
+		Filter = function(self, entity, client)
+			if (!IsValid(entity) or entity:GetClass() != "ix_coffeemachine") then return false end
+			if (!client:IsAdmin()) then return false end
+
+			return true
+		end,
+		Action = function(self, entity)
+			net.Start("ixCoffeeMachineReset")
+				net.WriteEntity(entity)
+			net.SendToServer()
 		end
-	end
+	})
 
 	function ENT:Draw()
 		self:DrawModel()

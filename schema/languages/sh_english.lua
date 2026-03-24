@@ -182,7 +182,7 @@ LANGUAGE = {
 	empBroken = "The EMP Tool has broken!",
 	empOverloading = "Overloading...",
 	empUseAction = "Use",
-	empInvalidTarget = "You must aim at either a door lock or a Combine terminal.",
+	empInvalidTarget = "You must aim at either a locked door, sentry gun, or a Combine terminal.",
 	empInstabilityLevel = "Instability Level",
 
 	bookDesc = "A readable book.",
@@ -291,6 +291,7 @@ LANGUAGE = {
 	itemTheTerminalDesc = "A newspaper titled 'The Terminal'.",
 	itemWastePaperDesc = "A bunch of crumpled waste paper.",
 	itemVendingStockDesc = "A crate containing various drinks for restocking vending machines. Bring it close to a machine to refill it.",
+	itemFlareDesc = "A flare that can be used to signal for help.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

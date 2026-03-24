@@ -4,7 +4,7 @@ ITEM.model = "models/gibs/scanner_gib02.mdl"
 ITEM.price = 50
 ITEM.width = 1
 ITEM.height = 1
-ITEM.outfitCategory = "vest"
+ITEM.outfitCategory = "plate"
 ITEM.factions = {FACTION_OTA}
 
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}

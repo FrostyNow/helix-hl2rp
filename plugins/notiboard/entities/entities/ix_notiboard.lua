@@ -12,34 +12,39 @@ ENT.Category = "Helix"
 ENT.RenderGroup = RENDERGROUP_BOTH
 
 if (CLIENT) then
+	local genericFont = ix.config.Get("genericFont")
 	surface.CreateFont("ix_NotiBoardFont", {
-		font = "Inter" or "ixGenericFont",
+		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 27,
 		weight = 500,
 		antialias = true,
+		extended = true
 	})
 
 	surface.CreateFont("ix_NotiBoardFont2", {
-		font = "Inter" or "ixGenericFont",
+		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 27,
 		weight = 500,
 		antialias = true,
-		blursize = 2
+		blursize = 2,
+		extended = true
 	})
 
 	surface.CreateFont("ix_NotiBoardTitle", {
-		font = "Inter" or "ixGenericFont",
-		size = 33,
-		weight = 1000,
-		antialias = true
-	})
-
-	surface.CreateFont("ix_NotiBoardTitle2", {
-		font = "Inter" or "ixGenericFont",
+		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 33,
 		weight = 1000,
 		antialias = true,
-		blursize = 2
+		extended = true
+	})
+
+	surface.CreateFont("ix_NotiBoardTitle2", {
+		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
+		size = 33,
+		weight = 1000,
+		antialias = true,
+		blursize = 2,
+		extended = true
 	})
 
 	local SCREEN_OVERLAY = Material("effects/combine_binocoverlay")
@@ -120,24 +125,40 @@ if (CLIENT) then
 		render.EnableClipping(false)
 	end
 
-	netstream.Hook("ix_ShowNotiMenu", function(entity)
-		local menu = DermaMenu()
+	properties.Add("ixNotiBoard", {
+		MenuLabel = "Noti-Board",
+		Order = 999,
+		MenuIcon = "icon16/comment.png",
+		Filter = function(self, entity, client)
+			if (!IsValid(entity) or entity:GetClass() != "ix_notiboard") then return false end
+			if (!client:IsAdmin()) then return false end
 
-		menu:AddOption(L("notiSetTitle"), function()
-			Derma_StringRequest(L("notiSetTitle"), L("notiEnterTitle"), entity:GetNetVar("title", ""), function(text)
-				netstream.Start("ix_NotiRequest", "title", tostring(text), entity)
-			end, nil, L("submit"), L("cancel"))
-		end):SetImage("icon16/page_edit.png")
+			return true
+		end,
+		MenuOpen = function(self, option, entity, tr)
+			local submenu = option:AddSubMenu()
 
-		menu:AddOption(L("notiSetText"), function()
-			Derma_StringRequest(L("notiSetText"), L("notiEnterText"), entity:GetNetVar("text", ""), function(text)
-				netstream.Start("ix_NotiRequest", "text", tostring(text), entity)
-			end, nil, L("submit"), L("cancel"))
-		end):SetImage("icon16/page_white_edit.png")
+			submenu:AddOption(L("notiSetTitle"), function()
+				Derma_StringRequest(L("notiSetTitle"), L("notiEnterTitle"), entity:GetNetVar("title", ""), function(text)
+					netstream.Start("ix_NotiRequest", "title", tostring(text), entity)
+				end, nil, L("submit"), L("cancel"))
+			end):SetIcon("icon16/page_edit.png")
 
-		menu:Open()
-		menu:Center()
-	end)
+			submenu:AddOption(L("notiSetText"), function()
+				Derma_StringRequest(L("notiSetText"), L("notiEnterText"), entity:GetNetVar("text", ""), function(text)
+					netstream.Start("ix_NotiRequest", "text", tostring(text), entity)
+				end, nil, L("submit"), L("cancel"))
+			end):SetIcon("icon16/page_white_edit.png")
+
+			submenu:AddOption(L("notiSetGroupMenu"), function()
+				Derma_StringRequest(L("notiSetGroupMenu"), L("notiEnterGroup"), tostring(entity:GetNetVar("group", "")), function(text)
+					netstream.Start("ix_NotiRequest", "group", tostring(text), entity)
+				end, nil, L("submit"), L("cancel"))
+			end):SetIcon("icon16/group_edit.png")
+		end,
+		Action = function(self, entity)
+		end
+	})
 else
 	function ENT:Initialize()
 		self:SetModel("models/hunter/plates/plate1x4.mdl")
@@ -145,6 +166,7 @@ else
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
 		self:SetColor(Color(0, 0, 0))
+		self:DrawShadow(false)
 
 		local physicsObject = self:GetPhysicsObject()
 		if (IsValid(physicsObject)) then
@@ -152,11 +174,6 @@ else
 		end
 	end
 
-	function ENT:Use(client)
-		if (client:IsAdmin()) then
-			netstream.Start(client, "ix_ShowNotiMenu", self)
-		end
-	end
 
 	netstream.Hook("ix_NotiRequest", function(client, key, value, entity)
 		if (!client:IsAdmin() or !IsValid(entity) or entity:GetClass() != "ix_notiboard") then
@@ -165,6 +182,21 @@ else
 
 		if (key == "title" or key == "text") then
 			entity:SetNetVar(key, value)
+		elseif (key == "group") then
+			local group = tonumber(value)
+			if (group) then
+				entity:SetNetVar("group", group)
+
+				for _, v in ipairs(ents.FindByClass("ix_notiboard")) do
+					if (v != entity and v:GetNetVar("group") == group) then
+						entity:SetNetVar("title", v:GetNetVar("title"))
+						entity:SetNetVar("text", v:GetNetVar("text"))
+						break
+					end
+				end
+			else
+				entity:SetNetVar("group", nil)
+			end
 		end
 	end)
 end

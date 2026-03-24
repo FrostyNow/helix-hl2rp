@@ -838,96 +838,82 @@ local COMBINE_TEMPLATE_SETS = {
 		{
 			-- IDLE0: on1 V_RNDNAMES V_RNDCODES V_RNDNUMS dash V_RNDNUMS off1
 			layout = {"rndNames", "rndCodes", "rndNums", "dash", "rndNums"},
-			-- -- TODO: 고스트 에코 1-5
+			-- 고스트 에코 1-5.
 		},
-		{
-			-- IDLE1: on1 overwatchreportspossiblehostiles off1
-			sounds = {"npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav"},
-			text = "오버워치, 잠재적 적대 세력 보고하라.",
-			-- -- TODO: 오버워치, 잠재적 적대 세력 보고하라.
-		},
-		{
-			-- IDLE2: ovewatchorders3ccstimboost
-			sounds = {"npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav"},
-			text = "오버워치, 3CC 스팀팩 투여 지시.",
-			-- -- TODO: 오버워치, 3CC 스팀팩 투여 지시.
-		},
+		-- {
+		-- 	-- IDLE1: on1 overwatchreportspossiblehostiles off1
+		-- 	sounds = {"npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav"},
+		-- 	text = "적으로 의심되는 단체가 접근하고 있다.",
+		-- },
+		-- {
+		-- 	-- IDLE2: ovewatchorders3ccstimboost
+		-- 	sounds = {"npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav"},
+		-- 	text = "스팀팩 3CC 투여하라.",
+		-- },
 		{
 			-- IDLE3: stabilizationteamholding
 			sounds = {"npc/combine_soldier/vo/stabilizationteamholding.wav"},
-			text = "진압 팀, 대기 중.",
-			-- -- TODO: 진압 팀, 대기 중.
+			text = "진압 팀, 현 위치에서 대기 중이다.",
 		},
 		{
 			-- IDLE4: V_MYNAMES V_MYNUMS standingby
-			sounds = {"npc/combine_soldier/vo/standingby.wav"},
+			sounds = {"npc/combine_soldier/vo/standingby].wav"},
 			text = "대기 중.",
 			useDesignation = true,
 			useNumber = true,
-			-- -- TODO: 대기 중.
 		}
 	},
 	quest = {
 		{
 			sounds = {"npc/combine_soldier/vo/readyweaponshostilesinbound.wav"},
-			text = "무기 준비, 적대 세력 진입 중.",
-			-- -- TODO: 무기 준비, 적대 세력 진입 중.
+			text = "무기 준비하라, 적 접근 중.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/prepforcontact.wav"},
-			text = "교전 준비.",
-			-- -- TODO: 교전 준비.
+			text = "전투 준비, 보고하라.",
 		},
-		{
-			sounds = {"npc/combine_soldier/vo/skyshieldreportslostcontact.wav", "npc/combine_soldier/vo/readyweapons.wav"},
-			text = "스카이쉴드, 추적 실패 보고. 무기 준비하라.",
-			-- -- TODO: 스카이쉴드, 추적 실패 보고. 무기 준비하라.
-		},
+		-- {
+		-- 	sounds = {"npc/combine_soldier/vo/skyshieldreportslostcontact.wav", "npc/combine_soldier/vo/readyweapons.wav"},
+		-- 	text = "스카이쉴드, 교신 실패. 무기 준비.",
+		-- },
 		{
 			sounds = {"npc/combine_soldier/vo/stayalert.wav"},
 			text = "경계하라.",
-			-- -- TODO: 경계하라.
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav"},
-			text = "무기 안전장치 해제, 교전 준비.",
-			-- -- TODO: 무기 안전장치 해제, 교전 준비.
+			text = "무기 안전 해제, 전투 준비.",
 		},
 		{
 			-- QUEST5: overwatch isatcode V_RNDCODES V_RNDNUMS
 			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/isatcode.wav"},
 			layout = {"text", "rndCodes", "rndNums"},
-			text = "오버워치, 현재 상태 코드",
-			-- -- TODO: 오버워치, 현재 상태 코드 노바 1.
+			text = "보고한다, 코드:",
 		}
 	},
 	answer = {
 		{
 			sounds = {"npc/combine_soldier/vo/affirmative.wav"},
-			text = "수신함.",
-			-- -- TODO: 수신함.
+			text = "알았다.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/copy.wav"},
-			text = "카피.",
-			-- -- TODO: 카피.
+			text = "알았다.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/copythat.wav"},
-			text = "카피 댓.",
-			-- -- TODO: 카피 댓.
+			text = "알았다.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/affirmative2.wav"},
-			text = "명령 수신함.",
-			-- -- TODO: 명령 수신함.
+			text = "알았다.",
 		},
 		{
 			-- ANSWER4: copythat, V_RNDNAMES V_RNDCODES V_RNDNUMS dash V_RNDNUMS
 			sounds = {"npc/combine_soldier/vo/copythat.wav"},
 			layout = {"text", "rndNames", "rndCodes", "rndNums", "dash", "rndNums"},
-			text = "카피 댓.",
-			-- -- TODO: 카피 댓. 고스트 에코 1-5.
+			text = "알았다.",
+			-- 알았다. 고스트 에코 1-5.
 		}
 	},
 	clear = {
@@ -938,8 +924,8 @@ local COMBINE_TEMPLATE_SETS = {
 			useDesignation = true,
 			useNumber = true,
 			usesGrid = true,
-			text = "움직임 없다. 그리드:",
-			-- -- TODO: 리더 1. 움직임 없다. 그리드: 5-3.
+			text = "이동이 감지되지 않는다. 그리드:",
+			-- 이동이 감지되지 않는다. 그리드: 5-3.
 		},
 		{
 			-- CLEAR1: V_MYNAMES V_MYNUMS isholdingatcode V_RNDCODES
@@ -947,64 +933,58 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"designation", "text", "rndCodes"},
 			useDesignation = true,
 			useNumber = true,
-			text = "상태 코드 유지 중, 코드:",
-			-- -- TODO: 리더 1. 상태 코드 유지 중, 코드: 에코.
+			text = "대기 중, 코드:",
+			-- 리더 1. 대기 중, 코드: 에코.
 		},
 		{
 			-- CLEAR2: V_MYNAMES V_MYNUMS hasnegativemovement
 			sounds = {"npc/combine_soldier/vo/hasnegativemovement.wav"},
-			text = "움직임 없다.",
+			text = "이동이 감지되지 않는다.",
 			useDesignation = true,
 			useNumber = true,
-			-- -- TODO: 리더 1. 움직임 없다.
+			-- 리더 1. 이동이 감지되지 않는다.
 		},
 		{
 			-- CLEAR3: affirmative, noviscon
 			sounds = {"npc/combine_soldier/vo/affirmative.wav", "npc/combine_soldier/vo/noviscon.wav"},
-			text = "수신함, 시야 내 목표 없음.",
-			-- -- TODO: 수신함, 시야 내 목표 없음.
+			text = "알았다, 추적 실패.",
 		},
 		{
 			-- CLEAR4: sightlineisclear
 			sounds = {"npc/combine_soldier/vo/sightlineisclear.wav"},
-			text = "사선 이상 무.",
-			-- -- TODO: 사선 이상 무.
+			text = "가시거리 이상 없음.",
 		},
 		{
 			-- CLEAR5: V_MYNAMES reportingclear
 			sounds = {"npc/combine_soldier/vo/reportingclear.wav"},
-			text = "이상 무.",
+			text = "이상 없음.",
 			useDesignation = true,
-			-- -- TODO: 리더, 이상 무.
+			-- 리더, 이상 없음.
 		},
 		{
 			-- CLEAR6: sectorissecurenovison
 			sounds = {"npc/combine_soldier/vo/sectorissecurenovison.wav"},
-			text = "구역 확보 완료, 시제 확보되지 않음.",
-			-- -- TODO: 구역 확보 완료, 시제 확보되지 않음.
+			text = "구역 확보, 포착 없음.",
 		}
 	},
 	check = {
 		{
 			sounds = {"npc/combine_soldier/vo/stayalertreportsightlines.wav"},
-			text = "경계하라, 사선 보고하라.",
-			-- -- TODO: 경계하라, 사선 보고하라.
+			text = "경계하라, 상황 보고하라.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/reportallpositionsclear.wav"},
-			text = "전 위치 이상 유무 보고하라.",
-			-- -- TODO: 전 위치 이상 유무 보고하라.
+			text = "모든 위치는 보고하라.",
 		},
 		{
 			sounds = {"npc/combine_soldier/vo/reportallradialsfree.wav"},
-			text = "전 방향 이상 유무 보고하라.",
-			-- -- TODO: 전 방향 이상 유무 보고하라.
+			text = "모든 구역은 보고하라.",
 		}
 	}
 }
 
 local COMBINE_CALLSIGN_KEYS = {
-	-- soldier names, remembered by speaker:
+	-- soldier names:
 	LEADER = "리더",
 	FLASH = "플래시",
 	RANGER = "레인저",
@@ -1058,7 +1038,7 @@ local COMBINE_CALLSIGN_KEYS = {
 	QUICKSAND = "퀵샌드",
 	RIPCORD = "립코드",
 
-	-- metropolice unit names, remembered by speaker:
+	-- metropolice unit names:
 	DEFENDER = "디펜더",
 	HERO = "히어로",
 	JURY = "주리",
@@ -1353,6 +1333,7 @@ function PLUGIN:GetCombineDesignationParts(client)
 	local callsignKey = COMBINE_CALLSIGN_KEYS[info.callsign]
 	local callsignSound = callsignKey and self:GetVoiceSound("Combine", callsignKey) or nil
 	local callsignText = callsignKey and self:GetVoiceText("Combine", callsignKey) or info.callsign
+	if (callsignText) then callsignText = string.TrimRight(string.Trim(callsignText), ".,") end
 	local numberSounds = self:BuildNumberSounds(info.number or 0)
 
 	return {
@@ -1392,10 +1373,11 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 	local sequence = {}
 	local parts = {}
 
-	local handlers = {
+	local handlers
+	handlers = {
 		designation = function()
 			if (variant.useDesignation == true) then
-				local name, num = self:GetCombineDesignationParts(client)
+				local name, num, info = self:GetCombineDesignationParts(client)
 
 				if (name) then
 					sequence[#sequence + 1] = name.sound
@@ -1405,7 +1387,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 						for _, soundPath in ipairs(num) do
 							sequence[#sequence + 1] = soundPath
 						end
-						parts[#parts + 1] = tostring(self:GetCombineUnitID(client).number) .. "."
+						parts[#parts + 1] = tostring(info and info.number or 0) .. "."
 					end
 				end
 			end
@@ -1427,7 +1409,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 
 				if (target:IsPlayer()) then
 					if (target:IsCombine()) then
-						local name, num = self:GetCombineDesignationParts(target)
+						local name, num, targetInfo = self:GetCombineDesignationParts(target)
 
 						if (name) then
 							sequence[#sequence + 1] = name.sound
@@ -1437,7 +1419,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 								for _, soundPath in ipairs(num) do
 									sequence[#sequence + 1] = soundPath
 								end
-								parts[#parts + 1] = tostring(self:GetCombineUnitID(target).number)
+								parts[#parts + 1] = tostring(targetInfo and targetInfo.number or 0)
 							end
 						end
 					else
@@ -1705,9 +1687,24 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		end
 	}
 
-	local layout = variant.layout or {
-		"designation", "text", "victimDesignation", "V_G0_PLAYERS", "V_DISTS", "V_DIRS", "grid", "gridX", "dash", "gridY", "sectorLabel", "V_SECTORS", "rndNames", "rndCodes", "rndNums", "suffix"
-	}
+	local layout = variant.layout
+	
+	if (!layout) then
+		layout = {}
+		if (variant.useDesignation) then layout[#layout + 1] = "designation" end
+		layout[#layout + 1] = "text"
+		if (variant.usesVictim) then layout[#layout + 1] = "victimDesignation" end
+		if (variant.usesTarget) then layout[#layout + 1] = "V_G0_PLAYERS" end
+		if (variant.usesDistance) then layout[#layout + 1] = "V_DISTS" end
+		if (variant.usesBearing) then layout[#layout + 1] = "V_DIRS" end
+		if (variant.usesGrid) then layout[#layout + 1] = "grid" end
+		if (variant.usesSector) then 
+			layout[#layout + 1] = "sectorLabel"
+			layout[#layout + 1] = "V_SECTORS"
+		end
+		if (variant.usesKills) then layout[#layout + 1] = "seqGlobNbrs" end
+		if (variant.suffix) then layout[#layout + 1] = "suffix" end
+	end
 
 	for _, key in ipairs(layout) do
 		if (handlers[key]) then
@@ -2085,7 +2082,7 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 	end
 
 	-- Only care if the attacker is a valid Combine unit
-	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:IsAlive() or !attacker:IsCombine()) then
+	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:Alive() or !attacker:IsCombine()) then
 		return
 	end
 
@@ -2233,7 +2230,7 @@ function PLUGIN:IsHostileToCombine(entity, source)
 
 		local faction = client:Team()
 
-		if (client:IsCombine() or faction == (FACTION_ADMIN or FACTION_CONSCRIPT)) then
+		if (client:IsCombine() or faction == FACTION_ADMIN or faction == FACTION_CONSCRIPT) then
 			return false
 		end
 
@@ -2275,6 +2272,43 @@ function PLUGIN:IsSquadLeader(client)
 	return false
 end
 
+function PLUGIN:TriggerResponders(client, responseType)
+	local responders = {}
+	local clientRadio = self:GetActiveRadioState(client)
+	
+	for _, other in ipairs(player.GetAll()) do
+		if (other != client and other:Alive() and other:IsCombine() and self:CanAutoVoice(other)) then
+			local otherRadio = self:GetActiveRadioState(other)
+			local distSqr = other:GetPos():DistToSqr(client:GetPos())
+			local canHear = false
+			
+			if (distSqr <= (600 * 600)) then
+				canHear = true
+			elseif (clientRadio and otherRadio and clientRadio.freq == otherRadio.freq and clientRadio.chan == otherRadio.chan) then
+				canHear = true
+			end
+			
+			if (canHear) then
+				responders[#responders + 1] = other
+			end
+		end
+	end
+	
+	for _, responder in ipairs(responders) do
+		timer.Simple(math.random(2, 4), function()
+			if (IsValid(responder) and responder:Alive() and responder:IsCombine() and self:CanAutoVoice(responder)) then
+				if (responder:GetNetVar("typing", false) or (responder.ixLastChatTime and CurTime() - responder.ixLastChatTime < 60)) then return end
+				if (responder.ixLastSeenTime) then return end
+				
+				local respEvent = self:BuildTemplateEvent(responder, responseType)
+				if (respEvent) then
+					self:EmitVoiceEvent(responder, respEvent.text, respEvent.sounds)
+				end
+			end
+		end)
+	end
+end
+
 function PLUGIN:ScanForCombatCallouts()
 	local otaUnits = {}
 
@@ -2283,8 +2317,43 @@ function PLUGIN:ScanForCombatCallouts()
 			local weapon = client:GetActiveWeapon()
 			local weaponClass = IsValid(weapon) and weapon:GetClass() or ""
 
-			if (client:IsWepRaised() and !EXCLUDED_WEAPONS[weaponClass]) then
+			local isRaised = client:IsWepRaised() and !EXCLUDED_WEAPONS[weaponClass]
+			if (isRaised) then
 				otaUnits[#otaUnits + 1] = client
+
+				if (!client.ixWasWepRaised) then
+					client.ixWasWepRaised = true
+					
+					local canQuest = false
+					local clientRadio = self:GetActiveRadioState(client)
+					
+					if (clientRadio) then
+						canQuest = true
+					else
+						for _, other in ipairs(player.GetAll()) do
+							if (other != client and other:Alive() and other:IsCombine()) then
+								if (other:GetPos():DistToSqr(client:GetPos()) <= (600 * 600)) then
+									canQuest = true
+									break
+								end
+							end
+						end
+					end
+					
+					if (canQuest) then
+						local cooldown = self:IsSquadLeader(client) and 30 or 120
+						if ((client.ixNextQuestVoice or 0) < CurTime()) then
+							client.ixNextQuestVoice = CurTime() + cooldown
+							local event = self:BuildTemplateEvent(client, "quest")
+							if (event) then
+								self:EmitVoiceEvent(client, event.text, event.sounds)
+								self:TriggerResponders(client, "answer")
+							end
+						end
+					end
+				end
+			else
+				client.ixWasWepRaised = false
 			end
 		end
 	end
@@ -2437,11 +2506,10 @@ function PLUGIN:ScanForCombatCallouts()
 					
 					-- Need at least one other combine nearby to talk to
 					if (canIdle and self:GetNearbyAutoVoiceCount(client, 600) > 1) then
-						client.ixNextIdleChatter = CurTime() + 300 -- 5 minutes cooldown
+						client.ixNextIdleChatter = CurTime() + 120 -- 2 minutes cooldown
 						
 						local choices = {"idle"}
 						if (self:IsSquadLeader(client)) then
-							table.insert(choices, "quest")
 							table.insert(choices, "check")
 						end
 						
@@ -2451,35 +2519,8 @@ function PLUGIN:ScanForCombatCallouts()
 						if (event) then
 							self:EmitVoiceEvent(client, event.text, event.sounds)
 							
-							-- If it requires an answer from someone else
-							if (selection == "quest" or selection == "check") then
-								local responseType = selection == "quest" and "answer" or "clear"
-								
-								local responders = {}
-								for _, other in ipairs(player.GetAll()) do
-									if (other != client and other:Alive() and other:IsCombine() and self:CanAutoVoice(other)) then
-										if (other:GetPos():DistToSqr(client:GetPos()) <= (600 * 600)) then
-											responders[#responders + 1] = other
-										end
-									end
-								end
-								
-								if (#responders > 0) then
-									local responder = responders[math.random(#responders)]
-									
-									timer.Simple(math.random(2, 4), function()
-										if (IsValid(responder) and responder:Alive() and responder:IsCombine() and self:CanAutoVoice(responder)) then
-											-- ensure they are still fully idle
-											if (responder:GetNetVar("typing", false) or (responder.ixLastChatTime and CurTime() - responder.ixLastChatTime < 60)) then return end
-											if (responder.ixLastSeenTime) then return end
-											
-											local respEvent = self:BuildTemplateEvent(responder, responseType)
-											if (respEvent) then
-												self:EmitVoiceEvent(responder, respEvent.text, respEvent.sounds)
-											end
-										end
-									end)
-								end
+							if (selection == "check") then
+								self:TriggerResponders(client, "clear")
 							end
 							
 							return

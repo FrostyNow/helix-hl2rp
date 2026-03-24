@@ -77,7 +77,7 @@ netstream.Hook("OpenWhitelistChecker", function(factionID, data)
 	list.OnRowRightClick = function(panel, lineID, line)
 		local steamID = line:GetColumnText(2)
 		local info = data[steamID]
-		local menu = Derma_Menu()
+		local menu = vgui.Create("DMenu")
 
 		menu:AddOption(L("wlCheckerCopyID"), function()
 			SetClipboardText(steamID)
@@ -182,7 +182,7 @@ netstream.Hook("OpenFlagChecker", function(data)
 	Populate()
 
 	list.OnRowRightClick = function(panel, lineID, line)
-		local menu = Derma_Menu()
+		local menu = vgui.Create("DMenu")
 		local steamID = line.steamID
 		local info = line.info
 

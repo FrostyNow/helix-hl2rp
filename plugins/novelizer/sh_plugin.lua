@@ -4727,10 +4727,10 @@ function PLUGIN:PlayerUse(client, entity)
 		self:EmitConditionalIt(entity, "washer", {
 			cooldown = 5
 		})
-	elseif (className == "ix_vendingmachine" or className == "ix_pepsimachine" or className == "ix_coffeemachine") then
-		self:EmitConditionalIt(entity, "vending_hum", {
-			cooldown = 5
-		})
+	-- elseif (className == "ix_vendingmachine" or className == "ix_pepsimachine" or className == "ix_coffeemachine") then
+	-- 	self:EmitConditionalIt(entity, "vending_hum", {
+	-- 		cooldown = 5
+	-- 	})
 	elseif (className == "ix_stationary_radio" or className == "ix_radiorepeater") then
 		self:EmitConditionalIt(entity, "radio_static", {
 			cooldown = 4
