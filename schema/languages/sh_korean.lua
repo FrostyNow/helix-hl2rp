@@ -301,6 +301,8 @@ LANGUAGE = {
 	suitcaseDesc = "작은 여행용 가방입니다.",
 	["Bag"] = "주머니",
 	bagDesc = "작은 주머니입니다.",
+	["Duffle Bag"] = "더플백",
+	duffleBagDesc = "큰 더플백입니다.",
 	["Citizen ID"] = "시민 신분증",
 	["Combine Lock"] = "콤바인 잠금장치",
 	combineLockDesc = "문에 설치하는 금속제 잠금장치입니다.",
@@ -600,6 +602,8 @@ LANGUAGE = {
 	itemTheTerminalDesc = "'더 터미널'이라는 제목의 신문입니다.",
 	["Waste Paper"] = "폐지",
 	itemWastePaperDesc = "구겨진 폐지 더미입니다.",
+	["Vending Machine Stock"] = "자판기 재고품",
+	itemVendingStockDesc = "자판기에 공급할 음료들이 들어있는 상자입니다. 자판기에 가져다 대면 모든 재고가 보충됩니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

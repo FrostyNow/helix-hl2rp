@@ -144,6 +144,7 @@ LANGUAGE = {
 
 	suitcaseDesc = "A small suitcase.",
 	bagDesc = "A small bag.",
+	duffleBagDesc = "A large bag.",
 	combineLockDesc = "A metal apparatus applied to doors.",
 	prepareDetonation = "Preparing detonation...",
 	metropoliceSupplementsDesc = "A tinned can containing a good portion of your daily nutrients.",
@@ -289,6 +290,7 @@ LANGUAGE = {
 	itemCombineCoinDesc = "A silver coin with C on it.",
 	itemTheTerminalDesc = "A newspaper titled 'The Terminal'.",
 	itemWastePaperDesc = "A bunch of crumpled waste paper.",
+	itemVendingStockDesc = "A crate containing various drinks for restocking vending machines. Bring it close to a machine to refill it.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",
