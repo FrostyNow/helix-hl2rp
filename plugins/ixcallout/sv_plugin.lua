@@ -833,6 +833,173 @@ local COMBINE_TEMPLATE_SETS = {
 			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/antiseptic.wav", "npc/combine_soldier/vo/administer.wav"},
 			text = "보고한다, 소독제 지급하라.",
 		}
+	},
+	idle = {
+		{
+			-- IDLE0: on1 V_RNDNAMES V_RNDCODES V_RNDNUMS dash V_RNDNUMS off1
+			layout = {"rndNames", "rndCodes", "rndNums", "dash", "rndNums"},
+			-- -- TODO: 고스트 에코 1-5
+		},
+		{
+			-- IDLE1: on1 overwatchreportspossiblehostiles off1
+			sounds = {"npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav"},
+			text = "오버워치, 잠재적 적대 세력 보고하라.",
+			-- -- TODO: 오버워치, 잠재적 적대 세력 보고하라.
+		},
+		{
+			-- IDLE2: ovewatchorders3ccstimboost
+			sounds = {"npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav"},
+			text = "오버워치, 3CC 스팀팩 투여 지시.",
+			-- -- TODO: 오버워치, 3CC 스팀팩 투여 지시.
+		},
+		{
+			-- IDLE3: stabilizationteamholding
+			sounds = {"npc/combine_soldier/vo/stabilizationteamholding.wav"},
+			text = "진압 팀, 대기 중.",
+			-- -- TODO: 진압 팀, 대기 중.
+		},
+		{
+			-- IDLE4: V_MYNAMES V_MYNUMS standingby
+			sounds = {"npc/combine_soldier/vo/standingby.wav"},
+			text = "대기 중.",
+			useDesignation = true,
+			useNumber = true,
+			-- -- TODO: 대기 중.
+		}
+	},
+	quest = {
+		{
+			sounds = {"npc/combine_soldier/vo/readyweaponshostilesinbound.wav"},
+			text = "무기 준비, 적대 세력 진입 중.",
+			-- -- TODO: 무기 준비, 적대 세력 진입 중.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/prepforcontact.wav"},
+			text = "교전 준비.",
+			-- -- TODO: 교전 준비.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/skyshieldreportslostcontact.wav", "npc/combine_soldier/vo/readyweapons.wav"},
+			text = "스카이쉴드, 추적 실패 보고. 무기 준비하라.",
+			-- -- TODO: 스카이쉴드, 추적 실패 보고. 무기 준비하라.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/stayalert.wav"},
+			text = "경계하라.",
+			-- -- TODO: 경계하라.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav"},
+			text = "무기 안전장치 해제, 교전 준비.",
+			-- -- TODO: 무기 안전장치 해제, 교전 준비.
+		},
+		{
+			-- QUEST5: overwatch isatcode V_RNDCODES V_RNDNUMS
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/isatcode.wav"},
+			layout = {"text", "rndCodes", "rndNums"},
+			text = "오버워치, 현재 상태 코드",
+			-- -- TODO: 오버워치, 현재 상태 코드 노바 1.
+		}
+	},
+	answer = {
+		{
+			sounds = {"npc/combine_soldier/vo/affirmative.wav"},
+			text = "수신함.",
+			-- -- TODO: 수신함.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/copy.wav"},
+			text = "카피.",
+			-- -- TODO: 카피.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/copythat.wav"},
+			text = "카피 댓.",
+			-- -- TODO: 카피 댓.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/affirmative2.wav"},
+			text = "명령 수신함.",
+			-- -- TODO: 명령 수신함.
+		},
+		{
+			-- ANSWER4: copythat, V_RNDNAMES V_RNDCODES V_RNDNUMS dash V_RNDNUMS
+			sounds = {"npc/combine_soldier/vo/copythat.wav"},
+			layout = {"text", "rndNames", "rndCodes", "rndNums", "dash", "rndNums"},
+			text = "카피 댓.",
+			-- -- TODO: 카피 댓. 고스트 에코 1-5.
+		}
+	},
+	clear = {
+		{
+			-- CLEAR0: V_MYNAMES V_MYNUMS hasnegativemovement grid V_GRIDXS dash V_GRIDYS
+			sounds = {"npc/combine_soldier/vo/hasnegativemovement.wav"},
+			layout = {"designation", "text", "grid"},
+			useDesignation = true,
+			useNumber = true,
+			usesGrid = true,
+			text = "움직임 없다. 그리드:",
+			-- -- TODO: 리더 1. 움직임 없다. 그리드: 5-3.
+		},
+		{
+			-- CLEAR1: V_MYNAMES V_MYNUMS isholdingatcode V_RNDCODES
+			sounds = {"npc/combine_soldier/vo/isholdingatcode.wav"},
+			layout = {"designation", "text", "rndCodes"},
+			useDesignation = true,
+			useNumber = true,
+			text = "상태 코드 유지 중, 코드:",
+			-- -- TODO: 리더 1. 상태 코드 유지 중, 코드: 에코.
+		},
+		{
+			-- CLEAR2: V_MYNAMES V_MYNUMS hasnegativemovement
+			sounds = {"npc/combine_soldier/vo/hasnegativemovement.wav"},
+			text = "움직임 없다.",
+			useDesignation = true,
+			useNumber = true,
+			-- -- TODO: 리더 1. 움직임 없다.
+		},
+		{
+			-- CLEAR3: affirmative, noviscon
+			sounds = {"npc/combine_soldier/vo/affirmative.wav", "npc/combine_soldier/vo/noviscon.wav"},
+			text = "수신함, 시야 내 목표 없음.",
+			-- -- TODO: 수신함, 시야 내 목표 없음.
+		},
+		{
+			-- CLEAR4: sightlineisclear
+			sounds = {"npc/combine_soldier/vo/sightlineisclear.wav"},
+			text = "사선 이상 무.",
+			-- -- TODO: 사선 이상 무.
+		},
+		{
+			-- CLEAR5: V_MYNAMES reportingclear
+			sounds = {"npc/combine_soldier/vo/reportingclear.wav"},
+			text = "이상 무.",
+			useDesignation = true,
+			-- -- TODO: 리더, 이상 무.
+		},
+		{
+			-- CLEAR6: sectorissecurenovison
+			sounds = {"npc/combine_soldier/vo/sectorissecurenovison.wav"},
+			text = "구역 확보 완료, 시제 확보되지 않음.",
+			-- -- TODO: 구역 확보 완료, 시제 확보되지 않음.
+		}
+	},
+	check = {
+		{
+			sounds = {"npc/combine_soldier/vo/stayalertreportsightlines.wav"},
+			text = "경계하라, 사선 보고하라.",
+			-- -- TODO: 경계하라, 사선 보고하라.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/reportallpositionsclear.wav"},
+			text = "전 위치 이상 유무 보고하라.",
+			-- -- TODO: 전 위치 이상 유무 보고하라.
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/reportallradialsfree.wav"},
+			text = "전 방향 이상 유무 보고하라.",
+			-- -- TODO: 전 방향 이상 유무 보고하라.
+		}
 	}
 }
 
@@ -1481,6 +1648,56 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				client.ixVoiceKills = 0
 			end
 		end,
+		rndNames = function()
+			local names = {
+				{sound = "npc/combine_soldier/vo/ghost.wav", text = "고스트"},
+				{sound = "npc/combine_soldier/vo/reaper.wav", text = "리퍼"},
+				{sound = "npc/combine_soldier/vo/nomad.wav", text = "노매드"},
+				{sound = "npc/combine_soldier/vo/hurricane.wav", text = "허리케인"},
+				{sound = "npc/combine_soldier/vo/phantom.wav", text = "팬텀"},
+				{sound = "npc/combine_soldier/vo/judge.wav", text = "저지"},
+				{sound = "npc/combine_soldier/vo/shadow.wav", text = "섀도"},
+				{sound = "npc/combine_soldier/vo/slam.wav", text = "슬램"},
+				{sound = "npc/combine_soldier/vo/stinger.wav", text = "스팅어"},
+				{sound = "npc/combine_soldier/vo/storm.wav", text = "스톰"},
+				{sound = "npc/combine_soldier/vo/vamp.wav", text = "뱀프"},
+				{sound = "npc/combine_soldier/vo/winder.wav", text = "와인더"},
+				{sound = "npc/combine_soldier/vo/star.wav", text = "스타"}
+			}
+			local choice = names[math.random(#names)]
+			sequence[#sequence + 1] = choice.sound
+			parts[#parts + 1] = choice.text
+		end,
+		rndCodes = function()
+			local codes = {
+				{sound = "npc/combine_soldier/vo/apex.wav", text = "에이펙스"},
+				{sound = "npc/combine_soldier/vo/ion.wav", text = "이온"},
+				{sound = "npc/combine_soldier/vo/jet.wav", text = "제트"},
+				{sound = "npc/combine_soldier/vo/kilo.wav", text = "킬로"},
+				{sound = "npc/combine_soldier/vo/mace.wav", text = "메이스"},
+				{sound = "npc/combine_soldier/vo/nova.wav", text = "노바"},
+				{sound = "npc/combine_soldier/vo/payback.wav", text = "페이백"},
+				{sound = "npc/combine_soldier/vo/sundown.wav", text = "선다운"},
+				{sound = "npc/combine_soldier/vo/uniform.wav", text = "유니폼"},
+				{sound = "npc/combine_soldier/vo/boomer.wav", text = "부머"},
+				{sound = "npc/combine_soldier/vo/echo.wav", text = "에코"},
+				{sound = "npc/combine_soldier/vo/flatline.wav", text = "플랫라인"},
+				{sound = "npc/combine_soldier/vo/helix.wav", text = "헬릭스"},
+				{sound = "npc/combine_soldier/vo/ice.wav", text = "아이스"},
+				{sound = "npc/combine_soldier/vo/quicksand.wav", text = "퀵샌드"},
+				{sound = "npc/combine_soldier/vo/ripcord.wav", text = "립코드"}
+			}
+			local choice = codes[math.random(#codes)]
+			sequence[#sequence + 1] = choice.sound
+			parts[#parts + 1] = choice.text
+		end,
+		rndNums = function()
+			local num = math.random(1, 9)
+			for _, soundPath in ipairs(self:BuildNumberSounds(num)) do
+				sequence[#sequence + 1] = soundPath
+			end
+			parts[#parts + 1] = tostring(num)
+		end,
 		suffix = function()
 			if (variant.suffix and variant.suffix != "") then
 				parts[#parts + 1] = variant.suffix
@@ -1489,7 +1706,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 	}
 
 	local layout = variant.layout or {
-		"designation", "text", "victimDesignation", "V_G0_PLAYERS", "V_DISTS", "V_DIRS", "grid", "gridX", "dash", "gridY", "sectorLabel", "V_SECTORS", "suffix"
+		"designation", "text", "victimDesignation", "V_G0_PLAYERS", "V_DISTS", "V_DIRS", "grid", "gridX", "dash", "gridY", "sectorLabel", "V_SECTORS", "rndNames", "rndCodes", "rndNums", "suffix"
 	}
 
 	for _, key in ipairs(layout) do
@@ -2208,9 +2425,74 @@ function PLUGIN:ScanForCombatCallouts()
 						end
 					end
 				end
+			else
+				-- IDLE logic (client.ixLastSeenTime is nil)
+				if ((client.ixNextIdleChatter or 0) < CurTime()) then
+					local canIdle = true
+					
+					-- exclude if typing recently or currently typing
+					if (client:GetNetVar("typing", false) or (client.ixLastChatTime and CurTime() - client.ixLastChatTime < 60)) then
+						canIdle = false
+					end
+					
+					-- Need at least one other combine nearby to talk to
+					if (canIdle and self:GetNearbyAutoVoiceCount(client, 600) > 1) then
+						client.ixNextIdleChatter = CurTime() + 300 -- 5 minutes cooldown
+						
+						local choices = {"idle"}
+						if (self:IsSquadLeader(client)) then
+							table.insert(choices, "quest")
+							table.insert(choices, "check")
+						end
+						
+						local selection = choices[math.random(#choices)]
+						local event = self:BuildTemplateEvent(client, selection)
+						
+						if (event) then
+							self:EmitVoiceEvent(client, event.text, event.sounds)
+							
+							-- If it requires an answer from someone else
+							if (selection == "quest" or selection == "check") then
+								local responseType = selection == "quest" and "answer" or "clear"
+								
+								local responders = {}
+								for _, other in ipairs(player.GetAll()) do
+									if (other != client and other:Alive() and other:IsCombine() and self:CanAutoVoice(other)) then
+										if (other:GetPos():DistToSqr(client:GetPos()) <= (600 * 600)) then
+											responders[#responders + 1] = other
+										end
+									end
+								end
+								
+								if (#responders > 0) then
+									local responder = responders[math.random(#responders)]
+									
+									timer.Simple(math.random(2, 4), function()
+										if (IsValid(responder) and responder:Alive() and responder:IsCombine() and self:CanAutoVoice(responder)) then
+											-- ensure they are still fully idle
+											if (responder:GetNetVar("typing", false) or (responder.ixLastChatTime and CurTime() - responder.ixLastChatTime < 60)) then return end
+											if (responder.ixLastSeenTime) then return end
+											
+											local respEvent = self:BuildTemplateEvent(responder, responseType)
+											if (respEvent) then
+												self:EmitVoiceEvent(responder, respEvent.text, respEvent.sounds)
+											end
+										end
+									end)
+								end
+							end
+							
+							return
+						end
+					end
+				end
 			end
 		end
 	end
+end
+
+function PLUGIN:PostPlayerSay(client, chatType, message)
+	client.ixLastChatTime = CurTime()
 end
 
 function PLUGIN:PlayerDeath(client, inflictor, attacker)
@@ -2223,7 +2505,6 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 		if (attacker.ixLastSeenTime != nil) then
 			attacker.ixVoiceKills = (attacker.ixVoiceKills or 0) + 1
 			
-			-- 랜덤으로 player_dead(기존 대사) 또는 kill_monster(숫자 카운트) 출력
 			local templateName = (math.random(1, 2) == 1) and "player_dead" or "kill_monster"
 			if (self:CanUsePlayerCooldown(attacker, templateName, 5)) then
 				local event = self:BuildTemplateEvent(attacker, templateName, {target = client})
