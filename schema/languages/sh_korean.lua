@@ -359,6 +359,7 @@ LANGUAGE = {
 	empOverloadDoorSucceed = "잠금장치를 해제했습니다.",
 	empOverloadDoorFailed = "콤바인 잠금장치가 달려 있는 문에 사용해야 합니다!",
 	["Overload Camera"] = "카메라 종료",
+	empOverloadTurretSucceed = "터렛을 해킹하는 데 성공했습니다.",
 	empOverloadCameraSucceed = "카메라의 전원을 껐습니다.",
 	empOverloadCameraFailed = "전원이 켜진 콤바인 카메라에 사용해야 합니다!",
 	empFailed = "EMP 장비 사용에 실패했습니다.",
