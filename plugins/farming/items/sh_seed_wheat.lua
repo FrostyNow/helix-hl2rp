@@ -1,12 +1,7 @@
-ITEM.name = "Corn"
-ITEM.model = "models/bioshockinfinite/porn_on_cob.mdl"
-ITEM.description = "itemCornDesc"
-ITEM.price = 10
-ITEM.hunger = 7
-ITEM.heal = 5
-ITEM.cookable = true
+ITEM.name = "itemWheatSeed"
+ITEM.description = "itemWheatSeedDesc"
+ITEM.model = "models/mosi/fnv/props/junk/seedbag.mdl"
 
-ITEM.functions = ITEM.functions or {}
 ITEM.functions.Plant = {
     name = "심기",
     icon = "icon16/arrow_down.png",
@@ -17,9 +12,9 @@ ITEM.functions.Plant = {
 
         if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000) then
             if (entity:GetCropType() == "") then
-                entity:SetCropType("corn")
+                entity:SetCropType("wheat")
                 entity:SetProgress(0)
-                client:NotifyLocalized("farmPlanted", L("cropCorn", client))
+                client:NotifyLocalized("farmPlanted", L("itemWheat", client))
                 return true
             else
                 client:NotifyLocalized("farmAlreadyPlanted")
