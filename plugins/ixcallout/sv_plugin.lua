@@ -719,6 +719,120 @@ local COMBINE_TEMPLATE_SETS = {
 			suffix = ".",
 			-- "보고한다, 숙주 없는 기생 발견했다. 구역 5."
 		}
+	},
+	kill_monster = {
+		{
+			-- MONST0: V_SEQGLOBNBRS cleaned
+			sounds = {"npc/combine_soldier/vo/cleaned.wav"},
+			layout = {"seqGlobNbrs", "text"},
+			usesKills = true,
+			text = "처리했다.",
+			-- "4 처리했다."
+		},
+		{
+			-- MONST1: V_SEQGLOBNBRS sterilized
+			sounds = {"npc/combine_soldier/vo/sterilized.wav"},
+			layout = {"seqGlobNbrs", "text"},
+			usesKills = true,
+			text = "처리됐다.",
+			-- "4 처리됐다."
+		},
+		{
+			-- MONST2: V_SEQGLOBNBRS contained
+			sounds = {"npc/combine_soldier/vo/contained.wav"},
+			layout = {"seqGlobNbrs", "text"},
+			usesKills = true,
+			text = "격리되었다.",
+			-- "4 격리되었다."
+		}
+	},
+	cover = {
+		{
+			-- COVER0: coverhurt
+			sounds = {"npc/combine_soldier/vo/coverhurt.wav"},
+			text = "엄호하라!",
+		},
+		{
+			-- COVER1: displace2
+			sounds = {"npc/combine_soldier/vo/displace2.wav"},
+			text = "분산해라!",
+		},
+		{
+			-- COVER2: V_MYNAMES V_MYNUMS requestmedical
+			sounds = {"npc/combine_soldier/vo/requestmedical.wav"},
+			text = "의료 요청.",
+			useDesignation = true,
+			useNumber = true,
+			-- "리더 1. 의료 요청."
+		},
+		{
+			-- COVER3: V_MYNAMES V_MYNUMS requeststimdose
+			sounds = {"npc/combine_soldier/vo/requeststimdose.wav"},
+			text = "스팀팩 요청.",
+			useDesignation = true,
+			useNumber = true,
+			-- "리더 1. 스팀팩 요청."
+		}
+	},
+	taunt = {
+		{
+			-- TAUNT0: targetineffective
+			sounds = {"npc/combine_soldier/vo/targetineffective.wav"},
+			text = "큰 손상 없음.",
+		},
+		{
+			-- TAUNT1: bodypackholding
+			sounds = {"npc/combine_soldier/vo/bodypackholding.wav"},
+			text = "방탄복 양호.",
+		},
+		{
+			-- TAUNT2: V_MYNAMES V_MYNUMS fullactive
+			sounds = {"npc/combine_soldier/vo/fullactive.wav"},
+			text = "이상 무.",
+			useDesignation = true,
+			useNumber = true,
+			-- "리더 1. 이상 무."
+		}
+	},
+	player_dead = {
+		{
+			-- PLAYER_DEAD0: overwatchconfirmhvtcontained
+			sounds = {"npc/combine_soldier/vo/overwatchconfirmhvtcontained.wav"},
+			text = "목표 대상 처리 임무가 완수됐다.",
+		},
+		{
+			-- PLAYER_DEAD2: overwatchtargetcontained
+			sounds = {"npc/combine_soldier/vo/overwatchtargetcontained.wav"},
+			text = "목표 대상은 처리됐다.",
+		},
+		{
+			-- PLAYER_DEAD3: overwatch, stabilizationteamhassector
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/stabilizationteamhassector.wav"},
+			text = "진압 팀, 구역 통제 임무 완수됐다.",
+		},
+		{
+			-- PLAYER_DEAD4: overwatch, V_G0_PLAYERS secure
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/secure.wav"},
+			layout = {"text", "target", "suffix"},
+			usesTarget = true,
+			text = "보고한다,",
+			suffix = "처리 완수.",
+			-- "보고한다, 확산 처리 완수."
+		},
+		{
+			-- PLAYER_DEAD5: overwatch, V_G0_PLAYERS delivered
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/delivered.wav"},
+			layout = {"text", "target", "suffix"},
+			usesTarget = true,
+			text = "보고한다,",
+			suffix = "처리 완료.",
+			-- "보고한다, 확산 처리 완료."
+		},
+		{
+			-- PLAYER_DEAD6: overwatch, antiseptic administer
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/antiseptic.wav", "npc/combine_soldier/vo/administer.wav"},
+			text = "보고한다, 소독제 지급하라.",
+		}
 	}
 }
 
@@ -1160,16 +1274,13 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 							end
 						end
 					else
-						-- Human Players use randomized V_G0_PLAYERS variants
 						local choices = {
-							{sound = "npc/combine_soldier/vo/anticitizenone.wav", text = "반시민 1"},
-							{sound = "npc/combine_soldier/vo/targetone.wav", text = "목표 대상 1"},
-							{sound = "npc/combine_soldier/vo/priority1objective.wav", text = "1번 임무 목표 완수"},
-							{sound = "npc/combine_soldier/vo/phantom.wav", text = "팬텀"},
-							{sound = "npc/combine_soldier/vo/ghost2.wav", text = "고스트"}
+							{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
+							{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
+							{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
 						}
 						local choice = table.Random(choices)
-						
+
 						sequence[#sequence + 1] = choice.sound
 						parts[#parts + 1] = choice.text
 					end
@@ -1177,21 +1288,25 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 					local class = target:GetClass():lower()
 
 					if (class:find("zombie") or class == "npc_zombine") then
-						sequence[#sequence + 1] = "npc/combine_soldier/vo/necrotics.wav"
-						parts[#parts + 1] = "변종"
+						local choices = {
+							{sound = "npc/combine_soldier/vo/necrotics.wav", text = "변종"},
+							{sound = "npc/metropolice/vo/infected.wav", text = "감염"}
+						}
+						local choice = table.Random(choices)
+
+						sequence[#sequence + 1] = choice.sound
+						parts[#parts + 1] = choice.text
 					elseif (class:find("antlion") or class:find("headcrab")) then
 						sequence[#sequence + 1] = "npc/combine_soldier/vo/exogens.wav"
 						parts[#parts + 1] = "엑소젠"
 					else
-						-- Monstruous NPCs use variants EXCEPT Anticitizen One
 						local choices = {
-							{sound = "npc/combine_soldier/vo/targetone.wav", text = "목표 대상 1"},
-							{sound = "npc/combine_soldier/vo/priority1objective.wav", text = "1번 임무 목표 완수"},
-							{sound = "npc/combine_soldier/vo/phantom.wav", text = "팬텀"},
-							{sound = "npc/combine_soldier/vo/ghost2.wav", text = "고스트"}
+							{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
+							{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
+							{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
 						}
 						local choice = table.Random(choices)
-						
+
 						sequence[#sequence + 1] = choice.sound
 						parts[#parts + 1] = choice.text
 					end
@@ -1348,14 +1463,22 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 				if (name) then
 					sequence[#sequence + 1] = name.sound
 					parts[#parts + 1] = name.text
-
-					if (num) then
-						for _, soundPath in ipairs(num) do
-							sequence[#sequence + 1] = soundPath
-						end
-						parts[#parts + 1] = tostring(self:GetCombineUnitID(context.target).number)
-					end
 				end
+			end
+		end,
+		seqGlobNbrs = function()
+			if (variant.usesKills) then
+				local kills = client.ixVoiceKills or 1
+				-- Limit to safe range (if somehow more than 9, just say 9)
+				if (kills > 9) then kills = 9 end
+				
+				for _, soundPath in ipairs(self:BuildNumberSounds(kills)) do
+					sequence[#sequence + 1] = soundPath
+				end
+				parts[#parts + 1] = tostring(kills)
+				
+				-- Reset the counter after we explicitly declare recent kills.
+				client.ixVoiceKills = 0
 			end
 		end,
 		suffix = function()
@@ -1693,12 +1816,56 @@ function PLUGIN:GetNearbyAutoVoiceCount(client, radius)
 	return count
 end
 
+function PLUGIN:OnNPCKilled(npc, attacker, inflictor)
+	if (!self:IsVoicePluginAvailable()) then
+		return
+	end
+
+	-- 콤바인이 비콤바인(NPC)을 처치했을 때
+	if (IsValid(attacker) and attacker:IsPlayer() and attacker:Alive() and attacker:IsCombine() and self:CanAutoVoice(attacker)) then
+		if (attacker.ixLastSeenTime != nil) then
+			attacker.ixVoiceKills = (attacker.ixVoiceKills or 0) + 1
+			if (self:CanUsePlayerCooldown(attacker, "kill_monster", 5)) then
+				local event = self:BuildTemplateEvent(attacker, "kill_monster")
+				if (event) then
+					self:EmitVoiceEvent(attacker, event.text, event.sounds)
+				end
+			end
+		end
+	end
+end
+
 function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 	if (!self:IsVoicePluginAvailable()) then
 		return
 	end
 
 	local attacker = damageInfo:GetAttacker()
+
+	-- Handle Combine getting hurt
+	if (IsValid(target) and target:IsPlayer() and target:Alive() and target:IsCombine()) then
+		if (IsValid(attacker) and attacker != target and self:IsHostileToCombine(attacker, target)) then
+			local damage = damageInfo:GetDamage()
+			local health = target:Health()
+			local maxHealth = target:GetMaxHealth() or 100
+
+			if (damage > 15 or (health / maxHealth) <= 0.5) then
+				if (self:CanUsePlayerCooldown(target, "cover", 10)) then
+					local event = self:BuildTemplateEvent(target, "cover")
+					if (event) then
+						self:EmitVoiceEvent(target, event.text, event.sounds)
+					end
+				end
+			else
+				if (self:CanUsePlayerCooldown(target, "taunt", 10)) then
+					local event = self:BuildTemplateEvent(target, "taunt")
+					if (event) then
+						self:EmitVoiceEvent(target, event.text, event.sounds)
+					end
+				end
+			end
+		end
+	end
 
 	-- Only care if the attacker is a valid Combine unit
 	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:IsAlive() or !attacker:IsCombine()) then
@@ -1936,51 +2103,59 @@ function PLUGIN:ScanForCombatCallouts()
 			end
 		end
 
-		local target = targets[1]
-		local isFirstContact = (client.ixLastSeenTime == nil)
-		local forcedIndex = nil
+		if (#targets > 0) then
+			local target = targets[1]
+			local isFirstContact = (client.ixLastSeenTime == nil)
+			local forcedIndex = nil
 
-		client.ixLastSeenTime = CurTime()
-		client.ixHasTriggeredLostShort = false
-		client.ixHasTriggeredLostLong = false
+			client.ixLastSeenTime = CurTime()
+			client.ixHasTriggeredLostShort = false
+			client.ixHasTriggeredLostLong = false
 
-		if (self:CanUsePlayerCooldown(client, "combat_callout", COMBAT_REACTION_COOLDOWN)) then
-			local template = "combatCallout"
-			local distSqr = client:GetPos():DistToSqr(target:GetPos())
+			if (self:CanUsePlayerCooldown(client, "combat_callout", COMBAT_REACTION_COOLDOWN)) then
+				local template = "combatCallout"
+				local distSqr = client:GetPos():DistToSqr(target:GetPos())
 
-			if (isFirstContact) then
-				-- Squad leaders report first contact
-				if (self:IsSquadLeader(client)) then
-					template = "leader_alert"
+				if (isFirstContact) then
+					-- Squad leaders report first contact
+					if (self:IsSquadLeader(client)) then
+						template = "leader_alert"
 
-					-- Specialty check for non-humans
-					if (!target:IsPlayer()) then
-						local class = target:GetClass():lower()
+						-- Specialty check for non-humans
+						if (!target:IsPlayer()) then
+							local class = target:GetClass():lower()
 
-						if (class:find("zombie") or class == "npc_zombine") then
-							template = "monster_alert"
-							forcedIndex = 3 -- MONST2: infected
-						elseif (class:find("antlion") or class:find("headcrab")) then
-							template = "monster_alert"
-							forcedIndex = 2 -- MONST1: exogens
-						else
-							template = "monster_alert"
-							forcedIndex = 1 -- MONST0: sterile
+							if (class:find("zombie") or class == "npc_zombine") then
+								template = "monster_alert"
+								forcedIndex = 3 -- MONST2: infected
+							elseif (class:find("antlion") or class:find("headcrab") or class:find("barnacle")) then
+								template = "monster_alert"
+								forcedIndex = 2 -- MONST1: exogens
+							elseif (class == "npc_alyx" or class == "npc_barney") then
+								template = "monster_character"
+								forcedIndex = nil
+							else
+								template = "monster_alert"
+								forcedIndex = 1 -- MONST0: sterile
+							end
 						end
 					else
 						-- Non-leader units use specific hazard sets
-						local class = target:GetClass():lower()
+						if (!target:IsPlayer()) then
+							local class = target:GetClass():lower()
 
-						if (class:find("antlion")) then
-							template = "monster_bugs"
-						elseif (class:find("headcrab")) then
-							template = "monster_parasites"
-						elseif (class:find("zombie") or class == "npc_zombine") then
-							template = "monster_zombies"
+							if (class:find("antlion")) then
+								template = "monster_bugs"
+							elseif (class:find("headcrab") or class:find("barnacle")) then
+								template = "monster_parasites"
+							elseif (class:find("zombie") or class == "npc_zombine") then
+								template = "monster_zombies"
+							elseif (class == "npc_alyx" or class == "npc_barney") then
+								template = "monster_character"
+							end
 						end
 					end
-				end
-			else
+				else
 					-- If lost for more than 10 seconds, use refind_enemy
 					local timeSinceLastSeen = CurTime() - (client.ixLastSeenTime or 0)
 
@@ -2004,28 +2179,31 @@ function PLUGIN:ScanForCombatCallouts()
 			end
 		else
 			-- No hostile visible. Check how long since last contact.
-			if (unit.ixLastSeenTime) then
-				local elapsed = CurTime() - unit.ixLastSeenTime
+			if (client.ixLastSeenTime) then
+				local elapsed = CurTime() - client.ixLastSeenTime
 
 				if (elapsed >= 60) then -- Beyond combat timeout
-					unit.ixLastSeenTime = nil
-				elseif (elapsed >= 10 and !unit.ixHasTriggeredLostLong) then
-					if (self:CanUsePlayerCooldown(unit, "combat_callout", 15)) then
-						unit.ixHasTriggeredLostLong = true
-						local event = self:BuildTemplateEvent(unit, "lost_long")
+					client.ixLastSeenTime = nil
+					client.ixVoiceKills = nil
+				elseif (elapsed >= 10 and !client.ixHasTriggeredLostLong) then
+					if (self:CanUsePlayerCooldown(client, "combat_callout", 15)) then
+						client.ixHasTriggeredLostLong = true
+						client.ixVoiceKills = nil
+						local event = self:BuildTemplateEvent(client, "lost_long")
 
 						if (event) then
-							self:EmitVoiceEvent(unit, event.text, event.sounds)
+							self:EmitVoiceEvent(client, event.text, event.sounds)
 							return
 						end
 					end
-				elseif (elapsed >= 5 and !unit.ixHasTriggeredLostShort) then
-					if (self:CanUsePlayerCooldown(unit, "combat_callout", 15)) then
-						unit.ixHasTriggeredLostShort = true
-						local event = self:BuildTemplateEvent(unit, "lost_short")
+				elseif (elapsed >= 5 and !client.ixHasTriggeredLostShort) then
+					if (self:CanUsePlayerCooldown(client, "combat_callout", 15)) then
+						client.ixHasTriggeredLostShort = true
+						client.ixVoiceKills = nil
+						local event = self:BuildTemplateEvent(client, "lost_short")
 
 						if (event) then
-							self:EmitVoiceEvent(unit, event.text, event.sounds)
+							self:EmitVoiceEvent(client, event.text, event.sounds)
 							return
 						end
 					end
@@ -2035,13 +2213,32 @@ function PLUGIN:ScanForCombatCallouts()
 	end
 end
 
-function PLUGIN:PlayerDeath(client)
-	if (!self:IsVoicePluginAvailable() or !IsValid(client) or !client:IsCombine()) then
+function PLUGIN:PlayerDeath(client, inflictor, attacker)
+	if (!self:IsVoicePluginAvailable() or !IsValid(client)) then
+		return
+	end
+
+	-- Handle Combine killing a player
+	if (!client:IsCombine() and IsValid(attacker) and attacker:IsPlayer() and attacker:IsCombine() and self:CanAutoVoice(attacker)) then
+		if (attacker.ixLastSeenTime != nil) then
+			attacker.ixVoiceKills = (attacker.ixVoiceKills or 0) + 1
+			
+			-- 랜덤으로 player_dead(기존 대사) 또는 kill_monster(숫자 카운트) 출력
+			local templateName = (math.random(1, 2) == 1) and "player_dead" or "kill_monster"
+			if (self:CanUsePlayerCooldown(attacker, templateName, 5)) then
+				local event = self:BuildTemplateEvent(attacker, templateName, {target = client})
+				if (event) then
+					self:EmitVoiceEvent(attacker, event.text, event.sounds)
+				end
+			end
+		end
+	end
+
+	if (!client:IsCombine()) then
 		return
 	end
 
 	local currentTime = CurTime()
-
 	if (self.nextDeathReaction > currentTime) then
 		return
 	end
