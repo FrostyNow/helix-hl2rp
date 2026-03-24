@@ -85,6 +85,7 @@ function FACTION:OnCharacterCreated(client, character)
 	inventory:Add("ota_supplements", 2)
 	inventory:Add("ota_pouches", 1)
 	inventory:Add("ota_legpouches", 1)
+	inventory:Add("ota_plate", 1)
 end
 
 function FACTION:GetDefaultName(client)

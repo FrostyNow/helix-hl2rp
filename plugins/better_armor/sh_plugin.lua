@@ -27,6 +27,7 @@ ix.lang.AddTable("english", {
 	molle_vest_desc = "A ballistic combat vest equipped with MOLLE storage pouches.",
 	overwatch_vest_desc = "A bulletproof vest made from the equipment of the Overwatch Transhuman Arm.",
 	flak_jacket_desc = "A protective vest designed to shield against fragmentation and shrapnel.",
+	otaPlateDesc = "A bulletproof plate for the equipment of the Overwatch Transhuman Arm.",
 })
 ix.lang.AddTable("korean", {
 	["Intelligence"] = "지능",
@@ -67,6 +68,8 @@ ix.lang.AddTable("korean", {
 	overwatch_vest_desc = "감시인 신인류 부대의 제식 장비를 벗겨내서 만든 방탄 조끼입니다.",
 	["Flak Jacket"] = "방편복",
 	flak_jacket_desc = "파편을 방호할 수 있는 조끼입니다.",
+	["OTA Armor Plate"] = "감시부대 방탄판",
+	otaPlateDesc = "감시인 신인류 부대의 제식 장비를 위한 방탄판입니다.",
 })
 
 ix.util.Include("cl_plugin.lua")
