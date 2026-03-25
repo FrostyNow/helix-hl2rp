@@ -662,6 +662,10 @@ function ITEM:ApplyOutfit(client)
 
 	local model = client:GetModel()
 
+	if (!char:GetData("oldModelBase")) then
+		char:SetData("oldModelBase", model)
+	end
+
 	-- Reset all bodygroups first BEFORE changing model
 	for i = 0, client:GetNumBodyGroups() - 1 do
 		client:SetBodygroup(i, 0)
