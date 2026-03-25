@@ -1768,7 +1768,7 @@ Schema.voices.AddClass("Vortigaunt", function(client)
 end)
 
 Schema.voices.AddClass("Overwatch", function(client)
-	return (client:Team() == FACTION_ADMIN and client:IsFemale()) or (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))
+	return (client:Team() == FACTION_ADMIN and (client:IsFemale() or client:IsAdmin())) or (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))
 end)
 
 Schema.voices.AddClass("Dispatch", function(client)

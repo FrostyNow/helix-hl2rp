@@ -196,7 +196,7 @@ function SWEP:PrimaryAttack()
 	local maxAttr = ix.config.Get("maxAttributes", 100)
 
 	if (self:GetActivated()) then
-		damage = math.Clamp(3 + (strength / maxAttr * 17), 3, 20)
+		damage = damage * 0.5 + math.Clamp(3 + (strength / maxAttr * 17), 3, 20)
 	else
 		damage = math.Clamp(1 + (strength / maxAttr * 14), 1, 15)
 	end
