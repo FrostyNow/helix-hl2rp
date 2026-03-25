@@ -124,17 +124,36 @@ end
 
 function PLUGIN:GetRandomItem(lootTable)
 	local totalWeight = 0
+	local processedTable = {}
 
-	for _, weight in pairs(lootTable) do
-		totalWeight = totalWeight + weight
+	for k, v in pairs(lootTable) do
+		local itemID
+		local weight
+
+		if (type(v) == "number") then
+			itemID = k
+			weight = v
+		elseif (type(v) == "string") then
+			itemID = v
+			local itemTable = ix.item.list[itemID]
+			local price = (itemTable and itemTable.price) or 10
+			weight = math.Clamp(math.floor(100 / math.max(1, price)), 1, 100)
+		end
+
+		if (itemID and weight) then
+			totalWeight = totalWeight + weight
+			processedTable[itemID] = (processedTable[itemID] or 0) + weight
+		end
+	end
+
+	if (totalWeight <= 0) then
+		return
 	end
 
 	local randomValue = math.random(1, totalWeight)
 	local currentWeight = 0
 
-	print(randomValue)
-
-	for item, weight in pairs(lootTable) do
+	for item, weight in pairs(processedTable) do
 		currentWeight = currentWeight + weight
 
 		if (randomValue <= currentWeight) then

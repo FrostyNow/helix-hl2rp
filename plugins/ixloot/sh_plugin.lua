@@ -17,181 +17,181 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 -- loot weights: higher number = more common
 PLUGIN.randomLoot = {}
 PLUGIN.randomLoot.common = {
-	["bucket"] = 50, -- price 2
-	["comp_adhesive"] = 33, -- price 3
-	["comp_acid"] = 33, -- price 3
-	["comp_aluminium"] = 33, -- price 3
-	["comp_antiseptic"] = 33, -- price 3
-	-- ["comp_bone"] = 33, -- price 3 (default)
-	["comp_ceramic"] = 33, -- price 3
-	["comp_steel"] = 33, -- price 3
-	["comp_concrete"] = 33, -- price 3
-	["comp_cloth"] = 33, -- price 3
-	["comp_copper"] = 33, -- price 3
-	["comp_cork"] = 33, -- price 3
-	["comp_fertilizer"] = 33, -- price 3
-	["comp_gears"] = 33, -- price 3
-	["comp_glass"] = 33, -- price 3
-	["comp_lead"] = 33, -- price 3
-	["comp_leather"] = 33, -- price 3
-	["comp_oil"] = 33, -- price 3
-	["comp_plastic"] = 33, -- price 3
-	["comp_rubber"] = 33, -- price 3
-	["comp_screw"] = 33, -- price 3
-	["comp_spring"] = 33, -- price 3
-	["comp_wood"] = 33, -- price 3
-	["glass_bottle_generic"] = 25, -- price 4
-	["misc_hide"] = 33, -- price 3
-	["misc_battery"] = 1, -- price 75
-	["misc_charcoal"] = 33, -- price 3
-	["misc_dried_eggprotein"] = 33, -- price 3
-	["misc_dried_spices"] = 33, -- price 3
-	["misc_dried_tea"] = 33, -- price 3
-	["misc_dried_vegetable"] = 33, -- price 3
-	["misc_margarine"] = 33, -- price 3
-	["misc_plank"] = 33, -- price 3
-	["misc_buttercup"] = 33, -- price 3
-	["misc_cafeteriatray"] = 33, -- price 3
-	["misc_camera"] = 33, -- price 3
-	["misc_cigarettecarton"] = 33, -- price 3
-	["misc_cigarettepack"] = 33, -- price 3
-	["misc_ducttape"] = 33, -- price 3
-	["misc_glue"] = 33, -- price 3
-	["misc_hotplate"] = 33, -- price 3
-	["misc_telephone"] = 33, -- price 3
-	["misc_coffeecup"] = 33, -- price 3
-	["misc_turpentine"] = 33, -- price 3
-	["misc_money"] = 10, -- price 10
-	["misc_plasticbottle"] = 33, -- price 3
-	["misc_tool_coffeepot"] = 10, -- price 10
-	["misc_tool_hammer"] = 10, -- price 10
-	["misc_tool_pressurecooker"] = 10, -- price 10
-	["misc_tool_screwdriver"] = 10, -- price 10
-	["misc_tool_wrench"] = 10, -- price 10
-	["empty_can"] = 100, -- price 1
-	["flashlight"] = 2, -- price 50
-	["request_device"] = 2, -- price 50
-	["shot_glass"] = 20, -- price 5
-	["water_empty"] = 100, -- price 1
-	["book"] = 1, -- price 100
-	["water"] = 6, -- price 15
-	["water_sparkling"] = 5, -- price 20
-	["water_special"] = 2, -- price 35
-	["beer"] = 2, -- price 40
-	["vodka"] = 2, -- price 40
-	["moonshine"] = 4, -- price 25
-	["wine"] = 2, -- price 40
-	["bandage"] = 2, -- price 40
-	["canned_ham"] = 5, -- price 20
-	["canned_soup"] = 5, -- price 20
-	["paper"] = 33, -- price 3
-	["note"] = 10, -- price 10
-	["ration"] = 5, -- price 20
-	["coke_bottle"] = 4, -- price 25
-	["carrot"] = 10, -- price 10
-	["onion"] = 6, -- price 15
-	["bleach"] = 3, -- price 30
-	["chinese_takeout"] = 6, -- price 15
-	["chocolate"] = 5, -- price 20
-	["corn"] = 10, -- price 10
-	["milk"] = 4, -- price 25
-	["mineral_water"] = 3, -- price 30
-	["pepsi"] = 4, -- price 25
-	["headcrab"] = 16, -- price 6
-	["tomato"] = 6, -- price 15
-	["coke_bottle_empty"] = 20, -- price 5
-	["ration_token"] = 1, -- price 100
-	["coupon"] = 2, -- price 50
-	["coffee_beans"] = 20, -- price 5
-	["vegetable_oil"] = 6, -- price 15
-	["misc_canister"] = 10, -- price 10
-	["misc_plate"] = 50, -- price 2
-	["newspaper"] = 1, -- price 100
-	["resin"] = 20, -- price 5
-	["comp_combine_steel"] = 20, -- price 5
-	["misc_ashtray"] = 33, -- price 3
-	["zucchini"] = 6, -- price 15
-	["apple"] = 3, -- price 30
-	["banana"] = 2, -- price 35
-	["orange"] = 5, -- price 20
-	["pear"] = 5, -- price 20
-	["pineapple"] = 2, -- price 45
-	["potato"] = 10, -- price 10
-	["watermelon_slice"] = 10, -- price 10
-	["sauce"] = 20, -- price 5
-	["junk_fork"] = 50, -- price 2
-	["junk_knife"] = 100, -- price 1
-	["junk_payphone_receiver"] = 20, -- price 5
-	["junk_plasticbox"] = 50, -- price 2
-	["junk_spraycan"] = 33, -- price 3
-	["junk_the_terminal"] = 10, -- price 10
-	["junk_waste_paper"] = 50, -- price 2
-	["coin"] = 100, -- price 1
-	["pesticide"] = 2, -- price 50
-	["watering_can"] = 1, -- price 60
+	"bucket",
+	"comp_adhesive",
+	"comp_acid",
+	"comp_aluminium",
+	"comp_antiseptic",
+	-- "comp_bone",
+	"comp_ceramic",
+	"comp_steel",
+	"comp_concrete",
+	"comp_cloth",
+	"comp_copper",
+	"comp_cork",
+	"comp_fertilizer",
+	"comp_gears",
+	"comp_glass",
+	"comp_lead",
+	"comp_leather",
+	"comp_oil",
+	"comp_plastic",
+	"comp_rubber",
+	"comp_screw",
+	"comp_spring",
+	"comp_wood",
+	"glass_bottle_generic",
+	"misc_hide",
+	"misc_battery",
+	"misc_charcoal",
+	"misc_dried_eggprotein",
+	"misc_dried_spices",
+	"misc_dried_tea",
+	"misc_dried_vegetable",
+	"misc_margarine",
+	"misc_plank",
+	"misc_buttercup",
+	"misc_cafeteriatray",
+	"misc_camera",
+	"misc_cigarettecarton",
+	"misc_cigarettepack",
+	"misc_ducttape",
+	"misc_glue",
+	"misc_hotplate",
+	"misc_telephone",
+	"misc_coffeecup",
+	"misc_turpentine",
+	"misc_money",
+	"misc_plasticbottle",
+	"misc_tool_coffeepot",
+	"misc_tool_hammer",
+	"misc_tool_pressurecooker",
+	"misc_tool_screwdriver",
+	"misc_tool_wrench",
+	"empty_can",
+	"flashlight",
+	"request_device",
+	"shot_glass",
+	"water_empty",
+	"book",
+	"water",
+	"water_sparkling",
+	"water_special",
+	"beer",
+	"vodka",
+	"moonshine",
+	"wine",
+	"bandage",
+	"canned_ham",
+	"canned_soup",
+	"paper",
+	"note",
+	"ration",
+	"coke_bottle",
+	"carrot",
+	"onion",
+	"bleach",
+	"chinese_takeout",
+	"chocolate",
+	"corn",
+	"milk",
+	"mineral_water",
+	"pepsi",
+	"headcrab",
+	"tomato",
+	"coke_bottle_empty",
+	"ration_token",
+	"coupon",
+	"coffee_beans",
+	"vegetable_oil",
+	"misc_canister",
+	"misc_plate",
+	"newspaper",
+	"resin",
+	"comp_combine_steel",
+	"misc_ashtray",
+	"zucchini",
+	"apple",
+	"banana",
+	"orange",
+	"pear",
+	"pineapple",
+	"potato",
+	"watermelon_slice",
+	"sauce",
+	"junk_fork",
+	"junk_knife",
+	"junk_payphone_receiver",
+	"junk_plasticbox",
+	"junk_spraycan",
+	"junk_the_terminal",
+	"junk_waste_paper",
+	"coin",
+	"pesticide",
+	"watering_can",
 }
 
 PLUGIN.randomLoot.rare = {
-	["resin"] = 5,
-	["comp_combine_steel"] = 5,
-	["antlion_grub"] = 1,
-	["gin"] = 2,
-	["whiskey"] = 2,
-	["bourbon"] = 2,
-	["antidepressants"] = 2,
-	["comp_ballisticfiber"] = 2,
-	["comp_circuitry"] = 3,
-	["comp_crystal"] = 2,
-	["comp_fiberglass"] = 2,
-	["comp_fiberoptic"] = 2,
-	["comp_gold"] = 1,
-	-- ["comp_nuclear"] = 1,
-	["comp_silver"] = 1,
-	["misc_gunpowder"] = 2,
-	["battery"] = 3,
-	["book"] = 3,
-	["emp"] = 1,
-	["flashlight"] = 3,
-	["handheld_radio"] = 1,
-	["walkietalkie"] = 1,
-	["unionkey"] = 1,
-	["bag"] = 1,
-	["satchel"] = 1,
-	["suitcase"] = 1,
-	-- ["pistol"] = 1,
-	-- ["pistolammo"] = 1,
-	["health_vial"] = 1,
-	["headcrab"] = 3,
-	["medkit"] = 2,
-	["pot"] = 1,
-	["pan"] = 1,
-	["pipe"] = 1,
-	["axe"] = 1,
-	["bottle_shard"] = 3,
-	["manhack"] = 1,
-	["manhack_gib01"] = 1,
-	["manhack_gib02"] = 1,
-	["manhack_gib03"] = 1,
-	["manhack_gib04"] = 1,
-	["manhack_gib05"] = 1,
-	["scanner_gib01"] = 1,
-	["scanner_gib02"] = 1,
-	["scanner_gib04"] = 1,
-	["scanner_gib05"] = 1,
-	["misc_gunparts_pistol"] = 1,
-	["misc_gunparts_rifle"] = 1,
-	["misc_gunparts_shotgun"] = 1,
-	["misc_gunparts_smg"] = 1,
-	["citizen_gasmask"] = 1,
-	["gasmask_filter"] = 1,
-	["extinguisher"] = 2,
-	["prewar_ration"] = 1,
-	["sandwich"] = 1,
-	["egg_raw"] = 1,
-	["pot_large"] = 1,
-	["duffle_bag"] = 1,
-	["flare"] = 1,
-	["shovel"] = 1,
+	"resin",
+	"comp_combine_steel",
+	"antlion_grub",
+	"gin",
+	"whiskey",
+	"bourbon",
+	"antidepressants",
+	"comp_ballisticfiber",
+	"comp_circuitry",
+	"comp_crystal",
+	"comp_fiberglass",
+	"comp_fiberoptic",
+	"comp_gold",
+	-- "comp_nuclear",
+	"comp_silver",
+	"misc_gunpowder",
+	"battery",
+	"book",
+	"emp",
+	"flashlight",
+	"handheld_radio",
+	"walkietalkie",
+	"unionkey",
+	"bag",
+	"satchel",
+	"suitcase",
+	-- "pistol",
+	-- "pistolammo",
+	"health_vial",
+	"headcrab",
+	"medkit",
+	"pot",
+	"pan",
+	"pipe",
+	"axe",
+	"bottle_shard",
+	"manhack",
+	"manhack_gib01",
+	"manhack_gib02",
+	"manhack_gib03",
+	"manhack_gib04",
+	"manhack_gib05",
+	"scanner_gib01",
+	"scanner_gib02",
+	"scanner_gib04",
+	"scanner_gib05",
+	"misc_gunparts_pistol",
+	"misc_gunparts_rifle",
+	"misc_gunparts_shotgun",
+	"misc_gunparts_smg",
+	"citizen_gasmask",
+	"gasmask_filter",
+	"extinguisher",
+	"prewar_ration",
+	"sandwich",
+	"egg_raw",
+	"pot_large",
+	"duffle_bag",
+	"flare",
+	"shovel",
 }
 
 ix.util.Include("sv_plugin.lua")
