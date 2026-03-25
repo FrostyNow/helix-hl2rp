@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.PrintName = "Crop"
-ENT.Category = "HL2 RP"
+ENT.Category = "Helix Farming"
 ENT.Spawnable = false
 
 function ENT:SetupDataTables()

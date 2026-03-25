@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.PrintName = "Farm Box"
-ENT.Category = "HL2 RP"
+ENT.Category = "Helix Farming"
 ENT.Spawnable = true
 ENT.bNoPersist = true
 

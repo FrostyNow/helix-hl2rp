@@ -25,5 +25,8 @@ ITEM.functions.Fertilize = {
 			client:NotifyLocalized("farmLookAtBox")
 		end
 		return false
+	end,
+	OnCanRun = function(item)
+		return !IsValid(item.entity)
 	end
 }

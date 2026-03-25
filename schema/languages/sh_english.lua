@@ -292,6 +292,7 @@ LANGUAGE = {
 	itemWastePaperDesc = "A bunch of crumpled waste paper.",
 	itemVendingStockDesc = "A crate containing various drinks for restocking vending machines. Bring it close to a machine to refill it.",
 	itemFlareDesc = "A flare that can be used to signal for help.",
+	shovelDesc = "A shovel used for digging and farming.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

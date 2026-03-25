@@ -1,11 +1,21 @@
-ITEM.base = "base_bags"
+
 ITEM.name = "Watering Can"
 ITEM.description = "itemWateringCanDesc"
 ITEM.model = "models/noble/limelight/watering_can.mdl"
 ITEM.invWidth = 1
 ITEM.invHeight = 1
+ITEM.waterItems = {
+	["water"] = {isClean = false},
+	["water_purified"] = {isClean = true},
+	["water_purified_bottle"] = {isClean = true},
+	["mineral_water"] = {isClean = true},
+	["water_dirty"] = {isClean = false},
+	["water_dirty_bottle"] = {isClean = false},
+	["water_dirty_can"] = {isClean = false},
+}
 
 ITEM.functions.Water = {
+	name = "Apply water",
 	icon = "icon16/water.png",
 	OnRun = function(item)
 		local client = item.player
@@ -19,17 +29,17 @@ ITEM.functions.Water = {
 				local waterItem = nil
 				
 				for _, v in pairs(waterItems) do
-					-- Helix basic waters
-					if (string.find(v.uniqueID, "water") or string.find(v.name, "물")) then
+					if (item.waterItems[v.uniqueID]) then
 						waterItem = v
 						break
 					end
 				end
 
 				if (waterItem) then
-					local isClean = (waterItem.uniqueID == "water_boiled" or waterItem.uniqueID == "water")
+					local waterInfo = item.waterItems[waterItem.uniqueID]
+					local isClean = waterInfo.isClean
 					
-					entity:SetWaterAmount(entity:GetWaterAmount() + 43200)
+					entity:SetWaterAmount(entity:GetWaterAmount() + ix.config.Get("waterDrainTime", 6))
 					if (isClean) then
 						entity:SetWaterQuality(entity:GetWaterQuality() + 1)
 					end
@@ -48,5 +58,8 @@ ITEM.functions.Water = {
 			client:NotifyLocalized("farmLookAtBox")
 		end
 		return false
+	end,
+	OnCanRun = function(item)
+		return !IsValid(item.entity)
 	end
 }

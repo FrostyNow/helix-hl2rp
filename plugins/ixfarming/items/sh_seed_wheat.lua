@@ -4,6 +4,17 @@ ITEM.model = "models/mosi/fnv/props/junk/seedbag.mdl"
 
 ITEM.functions.Plant = {
 	icon = "icon16/arrow_down.png",
+	OnCanRun = function(item)
+		if (!ix.plugin.Get("ixfarming")) then
+			return false
+		end
+
+		local client = item.player
+		local trace = client:GetEyeTraceNoCursor()
+		local entity = trace.Entity
+
+		return !IsValid(item.entity) and (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000)
+	end,
 	OnRun = function(item)
 		local client = item.player
 		local trace = client:GetEyeTraceNoCursor()
@@ -13,7 +24,7 @@ ITEM.functions.Plant = {
 			if (entity:GetCropType() == "") then
 				entity:SetCropType("wheat")
 				entity:SetProgress(0)
-				client:NotifyLocalized("farmPlanted", L("itemWheat", client))
+				client:NotifyLocalized("farmPlanted", L("cropWheat", client))
 				return true
 			else
 				client:NotifyLocalized("farmAlreadyPlanted")

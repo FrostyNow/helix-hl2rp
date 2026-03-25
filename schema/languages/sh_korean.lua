@@ -606,6 +606,8 @@ LANGUAGE = {
 	itemVendingStockDesc = "자판기에 공급할 음료들이 들어있는 상자입니다. 자판기에 가져다 대면 모든 재고가 보충됩니다.",
 	["Flare"] = "조명탄",
 	itemFlareDesc = "구조 신호를 보내는 데 사용할 수 있는 조명탄입니다.",
+	["Shovel"] = "삽",
+	shovelDesc = "땅을 파거나 농사를 짓는 데 사용하는 삽입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

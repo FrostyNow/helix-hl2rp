@@ -7,16 +7,8 @@ models/props_wasteland/kitchen_stove003a.mdl
 
 농사
 models/noble/limelight/broccoli_plant.mdl
-models/noble/limelight/carrot_plant.mdl
-models/noble/limelight/corn_plant.mdl
-models/noble/limelight/farmbox.mdl
-models/noble/limelight/fertilizer.mdl
-models/noble/limelight/pesticide.mdl
 models/noble/limelight/pine_tree.mdl - 존나큼
-models/noble/limelight/potato_plant.mdl
 models/noble/limelight/spinach_plant.mdl
-models/noble/limelight/watering_can.mdl
-models/noble/limelight/wheat_plant.mdl
 
 담배
 models/hls/alyxports/cigarette_pack.mdl

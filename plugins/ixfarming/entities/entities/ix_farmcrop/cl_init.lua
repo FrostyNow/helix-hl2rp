@@ -34,6 +34,9 @@ function ENT:OnPopulateEntityInfo(tooltip)
 	elseif (farmBox:GetWaterAmount() <= 0) then
 		status:SetText(L("farmWithered"))
 		status:SetBackgroundColor(Color(200, 50, 50))
+	elseif (farmBox:GetHasPesticide()) then
+		status:SetText(L("farmPoisoned"))
+		status:SetBackgroundColor(Color(150, 50, 200))
 	else
 		status:SetText(L("farmWatered"))
 		status:SetBackgroundColor(Color(50, 150, 200))

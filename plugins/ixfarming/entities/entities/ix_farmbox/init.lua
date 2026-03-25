@@ -60,15 +60,21 @@ function ENT:Think()
 		
 		-- Crop needs water to grow
 		if (self:GetWaterAmount() > 0) then
-			self:SetProgress(math.min(self:GetProgress() + 1, growthTime))
-			
-			-- 1 water per in-game 3 hour
-			local waterHour = ix.config.Get("waterDrainTime", 3)
-			local waterDrainTime = math.max(1, waterHour * ix.config.Get("secondsPerMinute", 60))
-			if (math.random(1, waterDrainTime) == 1) then
-				self:SetWaterAmount(self:GetWaterAmount() - 1)
+			if (self:GetHasPesticide()) then
+				-- If it has pesticide, it needs fertilizer to cure it
+				if (self:GetHasFertilizer()) then
+					self:SetHasPesticide(false)
+					self:SetHasFertilizer(false) -- consume fertilizer to wash away pesticide
+				end
+			else
+				self:SetProgress(math.min(self:GetProgress() + 1, growthTime))
 			end
-		end
+			
+			-- 1 in-game hour = 60 in-game minutes
+			local drainInterval = 60 * ix.config.Get("secondsPerMinute", 60)
+			if (math.random(1, drainInterval) == 1) then
+				self:SetWaterAmount(math.max(0, self:GetWaterAmount() - 1))
+			end
 		end
 	else
 		if (IsValid(self.cropEnt)) then
@@ -90,7 +96,9 @@ function ENT:Use(activator)
 			-- Harvest!
 			local amount = 1
 			if (self:GetWaterQuality() > 0) then
-				local chance = math.Clamp(self:GetWaterQuality() * 20, 0, 80)
+				local luck = activator:GetCharacter():GetAttribute("lck", 0)
+				local lckMlt = ix.config.Get("luckMultiplier", 1)
+				local chance = math.Clamp(self:GetWaterQuality() * 20 + luck * lckMlt, 0, 80)
 				if (math.random(1, 100) <= chance) then
 					amount = math.random(2, 3)
 				end
