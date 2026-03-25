@@ -129,7 +129,7 @@ function PLUGIN:GetRandomItem(lootTable)
 		totalWeight = totalWeight + weight
 	end
 
-	local randomValue = math.random(0, totalWeight)
+	local randomValue = math.random(1, totalWeight)
 	local currentWeight = 0
 
 	print(randomValue)
@@ -148,37 +148,45 @@ function PLUGIN:SearchLootContainer(ent, ply)
 	if not ( ply:IsCombine() ) then
 		if not ent.containerAlreadyUsed or ent.containerAlreadyUsed <= CurTime() then
 			if not ( ply.isEatingConsumeable == true ) then -- support for my plugin
-				local randomChance = math.random(1,20)
-				local randomAmountChance = math.random(1,3)
-				local lootAmount = 1
 
-				local randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
-				if ( randomAmountChance == 3 ) then
-					lootAmount = math.random(1,3)
-				else
-					lootAmount = 1
-				end
-
-				-- ply:Freeze(true)
 				ply:SetAction("@storageSearching", SEARCH_DURATION)
 				self:StartLootSearchSound(ent, ply)
 				ply:DoStaredAction(ent, function()
 					self:StopLootSearchSound(ply)
-					-- ply:Freeze(false)
-					for i = 1, lootAmount do
-						if (randomChance == math.random(1,20)) then
-							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
-							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
 
-							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
-							ply:GetCharacter():GetInventory():Add(randomLootItem)
-						else
-							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
-							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
-							
-							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
-							ply:GetCharacter():GetInventory():Add(randomLootItem)
+					local character = ply:GetCharacter()
+					local lck = character:GetAttribute("lck", 0)
+					local multiplier = ix.config.Get("luckMultiplier", 1)
+					
+					local firstItemChance = 50 + (lck * multiplier)
+					local extraItemChance = 30 + (lck * multiplier)
+
+					if (math.random(1, 100) <= firstItemChance) then
+						local function GiveItem()
+							local rareChance = 1 + math.min(lck * multiplier, 10)
+							local randomLootItem
+
+							if (math.random(1, 100) <= rareChance) then
+								randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
+							else
+								randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
+							end
+
+							if (randomLootItem and ix.item.Get(randomLootItem)) then
+								ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
+								character:GetInventory():Add(randomLootItem)
+							end
 						end
+
+						-- Give the first item
+						GiveItem()
+
+						-- Handle extra items with 30% chance (plus luck)
+						while (math.random(1, 100) <= extraItemChance) do
+							GiveItem()
+						end
+					else
+						ply:NotifyLocalized("ixlootNoItem")
 					end
 
 					ent.containerAlreadyUsed = CurTime() + 180
