@@ -61,7 +61,7 @@ ix.lang.AddTable("korean", {
 	recyclerStorageName = "재활용 투입구"
 })
 
-ENT.CurrencyPerKG = 5
+ENT.CurrencyPerKG = 1
 
 function ENT:SetupDataTables()
 	self:NetworkVar("Int", 0, "RecycleAmount")
