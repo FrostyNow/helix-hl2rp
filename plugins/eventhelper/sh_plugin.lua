@@ -33,6 +33,7 @@ local earthquakeSounds = {
 
 if (SERVER) then
 	util.AddNetworkString("ixBlackoutSync")
+	util.AddNetworkString("ixEarthquake")
 
 	function PLUGIN:PlayerInitialSpawn(client)
 		net.Start("ixBlackoutSync")
@@ -53,6 +54,26 @@ if (CLIENT) then
 	net.Receive("ixBlackoutSync", function()
 		local bBlackout = net.ReadBool()
 		PLUGIN.bBlackout = bBlackout
+	end)
+
+	net.Receive("ixEarthquake", function()
+		local magnitude = net.ReadFloat()
+		local duration = net.ReadFloat()
+		local bSound = net.ReadBool()
+
+		util.ScreenShake(LocalPlayer():GetPos(), magnitude, 5, duration, 5000)
+
+		if (bSound) then
+			LocalPlayer():EmitSound("ambient/atmosphere/city_rumble1.wav", 100)
+
+			local timerID = "ixEarthquakeSound"
+			local maxCount = math.max(1, math.floor(duration / 3))
+
+			timer.Create(timerID, 1.5, maxCount, function()
+				if (!LocalPlayer():Alive()) then return end
+				LocalPlayer():EmitSound(table.Random(earthquakeSounds), 100, math.random(90, 110))
+			end)
+		end
 	end)
 
 	function PLUGIN:HUDPaint()
@@ -91,23 +112,11 @@ ix.command.Add("Earthquake", {
 		duration = math.Clamp(duration, 1, 60)
 		bSound = (bSound == nil) and true or bSound
 
-		for _, v in ipairs(player.GetAll()) do
-			util.ScreenShake(v:GetPos(), magnitude, 5, duration, 5000)
-
-			if (bSound) then
-				v:EmitSound("ambient/atmosphere/city_rumble1.wav", 100)
-				
-				-- Play crashing sounds randomly during the duration
-				local timerID = "ixEarthquakeSound_" .. v:EntIndex()
-				local maxCount = math.max(1, math.floor(duration / 3))
-
-				timer.Create(timerID, 1.5, maxCount, function()
-					if (IsValid(v)) then
-						v:EmitSound(table.Random(earthquakeSounds), 100, math.random(90, 110))
-					end
-				end)
-			end
-		end
+		net.Start("ixEarthquake")
+			net.WriteFloat(magnitude)
+			net.WriteFloat(duration)
+			net.WriteBool(bSound)
+		net.Broadcast()
 
 		ix.util.NotifyLocalized("earthquakeStarted", nil)
 		return client:NotifyLocalized("earthquakeTriggered", magnitude, duration)
