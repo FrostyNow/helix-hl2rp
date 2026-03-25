@@ -61,6 +61,7 @@ LANGUAGE = {
 	recipeHealthKitDesc = "Craft a health kit.",
 	recipeHealthVialDesc = "Craft a health vial.",
 	recipeGunPartsDesc = "Process weapon parts to make them usable.",
+	recipeFertilizerDesc = "Craft fertilizer.",
 	
 	recipeScrapAmmoPistolDesc = "Disassemble pistol ammo to extract parts.",
 	recipeScrapGrenadeDesc = "Disassemble an HE Grenade to extract parts.",

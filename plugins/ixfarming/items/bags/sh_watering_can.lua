@@ -2,6 +2,11 @@
 ITEM.name = "Watering Can"
 ITEM.description = "itemWateringCanDesc"
 ITEM.model = "models/noble/limelight/watering_can.mdl"
+ITEM.category = "Utility"
+ITEM.width = 1
+ITEM.height = 1
+ITEM.price = 40
+
 ITEM.invWidth = 1
 ITEM.invHeight = 1
 ITEM.waterItems = {
@@ -22,7 +27,7 @@ ITEM.functions.Water = {
 		local trace = client:GetEyeTraceNoCursor()
 		local entity = trace.Entity
 
-		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000) then
+		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 20000) then
 			local inv = item:GetInventory()
 			if (inv) then
 				local waterItems = inv:GetItems()

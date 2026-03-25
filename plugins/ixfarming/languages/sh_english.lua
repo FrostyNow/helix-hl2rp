@@ -15,6 +15,9 @@ LANGUAGE = {
 	farmWithered = "Withering.",
 	farmPoisoned = "Poisoned.",
 	farmHarvest = "Ready to harvest.",
+	farmGrowing = "Growing (%d%%)",
+	farmWaterAmount = "Water Amount: %d",
+	farmFertilized = "Fertilized",
 	
 	cropCarrot = "Carrot",
 	cropCorn = "Corn",
@@ -26,7 +29,7 @@ LANGUAGE = {
 	farmLookAtBox = "You must look closely at a farm box to do this.",
 	
 	farmWaterGiven = "You watered the farm box with %s.",
-	farmNoWaterItem = "There is no water item inside the watering can.",
+	farmNoWaterItem = "You must fill the watering can with water first.",
 	farmNoWaterInventory = "Cannot access the watering can's inventory.",
 	
 	farmFertilizerApplied = "You applied fertilizer. The crops will grow faster.",

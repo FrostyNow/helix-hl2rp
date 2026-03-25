@@ -13,7 +13,7 @@ ITEM.functions.Apply = {
 			entity = entity:GetFarmBox()
 		end
 
-		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000) then
+		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 20000) then
 			if (entity:GetCropType() != "") then
 				entity:SetCropType("")
 				entity:SetProgress(0)

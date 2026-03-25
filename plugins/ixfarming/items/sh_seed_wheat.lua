@@ -13,14 +13,14 @@ ITEM.functions.Plant = {
 		local trace = client:GetEyeTraceNoCursor()
 		local entity = trace.Entity
 
-		return !IsValid(item.entity) and (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000)
+		return !IsValid(item.entity)
 	end,
 	OnRun = function(item)
 		local client = item.player
 		local trace = client:GetEyeTraceNoCursor()
 		local entity = trace.Entity
 
-		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000) then
+		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 20000) then
 			if (entity:GetCropType() == "") then
 				entity:SetCropType("wheat")
 				entity:SetProgress(0)

@@ -9,7 +9,7 @@ ITEM.functions.Fertilize = {
 		local trace = client:GetEyeTraceNoCursor()
 		local entity = trace.Entity
 
-		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 10000) then
+		if (IsValid(entity) and entity:GetClass() == "ix_farmbox" and entity:GetPos():DistToSqr(client:GetPos()) <= 20000) then
 			if (entity:GetCropType() != "") then
 				if (!entity:GetHasFertilizer()) then
 					entity:SetHasFertilizer(true)

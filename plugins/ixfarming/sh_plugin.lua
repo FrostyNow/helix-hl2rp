@@ -4,11 +4,8 @@ PLUGIN.name = "Farming"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "A plugin that allows players to grow crops in a farm box."
 
--- 3 in-game days = 3 * 24 * 60 * sec-per-min real seconds
-local defaultGrowth = 3 * 24 * 60 * (ix.config and ix.config.Get("secondsPerMinute") or 60)
-
-ix.config.Add("cropGrowthTime", defaultGrowth, "How much it takes for crops to fully grow (in seconds). Default: 3 in-game days", nil, {
-	data = {min = 1, max = 864000},
+ix.config.Add("cropGrowthDays", 3, "How much it takes for crops to fully grow. Default: 3 in-game days", nil, {
+	data = {min = 0.1, max = 30, decimals = 1},
 	category = "Farming"
 })
 
@@ -16,6 +13,9 @@ ix.config.Add("waterDrainTime", 180, "How often crops need water. Default: 6 in-
 	data = {min = 1, max = 720},
 	category = "Farming"
 })
+
+-- (cropGrowthDays) * (24 hours) * (60 minutes) * (secondsPerMinute)
+local growthTime = ix.config.Get("cropGrowthDays", 3) * 24 * 60 * ix.config.Get("secondsPerMinute", 60)
 
 if (SERVER) then
 	function PLUGIN:SaveData()
@@ -117,9 +117,14 @@ if (CLIENT) then
 
 			local pos = trace.HitPos
 			local ang = Angle(0, client:EyeAngles().y + 180, 0)
-			
-			ix.gui.farmboxGhost:SetPos(pos)
 			ix.gui.farmboxGhost:SetAngles(ang)
+
+			-- Center the ghost based on its bounding box
+			local mins, _ = ix.gui.farmboxGhost:GetModelBounds()
+			local center = ix.gui.farmboxGhost:OBBCenter()
+			local offset = ix.gui.farmboxGhost:LocalToWorld(Vector(center.x, center.y, mins.z)) - ix.gui.farmboxGhost:GetPos()
+			
+			ix.gui.farmboxGhost:SetPos(pos - offset)
 
 			local mins, maxs = ix.gui.farmboxGhost:GetModelBounds()
 			

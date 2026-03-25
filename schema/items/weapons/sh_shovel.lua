@@ -7,6 +7,11 @@ ITEM.price = 40
 ITEM.model = "models/props_junk/shovel01a.mdl"
 ITEM.width = 1
 ITEM.height = 3
+ITEM.iconCam = {
+	pos = Vector(509.64, 427.61, 310.24),
+	ang = Angle(25.06, 219.99, 0),
+	fov = 1.65
+}
 ITEM.exRender = true
 ITEM.isjunk = true
 
@@ -40,6 +45,10 @@ ITEM.functions.MakeFarmbox = {
 	end,
 	OnCanRun = function(item)
 		if (!ix.plugin.Get("ixfarming")) then
+			return false
+		end
+
+		if (item:GetData("equip", false)) then
 			return false
 		end
 

@@ -104,6 +104,8 @@ LANGUAGE = {
 	["Process Rifle Parts"] = "소총 부품 가공",
 	["Process Pistol Parts"] = "권총 부품 가공",
 	recipeGunPartsDesc = "무기 부품을 가공하여 사용할 수 있도록 만듭니다.",
+	["Craft Fertilizer"] = "비료 제작",
+	recipeFertilizerDesc = "비료를 제작합니다.",
 
 	["Scrap Buttercup"] = "버터컵 분해",
 	recipeScrapButtercupDesc = "버터컵을 분해하여 부품을 추출합니다.",
@@ -125,6 +127,7 @@ LANGUAGE = {
 	recipeScrapScannerBodyDesc = "스캐너 비행체를 분해하여 부품을 추출합니다.",
 	["Scrap Aluminium Can"] = "알루미늄 캔 분해",
 	recipeScrapAluminiumCanDesc = "알루미늄 캔을 분해하여 부품을 추출합니다.",
+	["Scrap Telephone"] = "전화기 분해",
 	recipeScrapTelephoneDesc = "전화기를 분해하여 부품을 추출합니다.",
 	["Scrap Ashtray"] = "재떨이 분해",
 	recipeScrapAshtrayDesc = "재떨이를 분해하여 부품을 추출합니다.",
@@ -207,6 +210,10 @@ LANGUAGE = {
 	recipeScrapTheTerminalDesc = "신문에서 유용한 자재를 찾아냅니다.",
 	["Scrap Waste Paper"] = "폐지 분해",
 	recipeScrapWastePaperDesc = "폐지에서 유용한 자재를 찾아냅니다.",
+	["Scrap Large Pot"] = "대형 냄비 분해",
+	recipeScrapPotLargeDesc = "대형 냄비를 분해하여 파편을 추출합니다.",
+	["Scrap Watering Can"] = "물뿌리개 분해",
+	recipeScrapWateringCanDesc = "물뿌리개를 분해합니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",
@@ -241,5 +248,4 @@ LANGUAGE = {
 	recipeStewDesc = "이것저것 남은 재료들을 몽땅 넣고 끓여서 섞어찌개를 만듭니다.",
 	recipeStewLargeDesc = "커다란 냄비에 온갖 재료를 쏟아붓고 끓여내어 대용량의 섞어찌개를 만듭니다.",
 	recipeSandwichDesc = "빵 사이에 야채와 고기를 끼워 넣어 샌드위치를 요리합니다.",
-	recipeScrapPotLargeDesc = "대형 냄비를 분해하여 파편을 추출합니다.",
 }

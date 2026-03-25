@@ -82,6 +82,9 @@ ix.lang.AddTable("english", {
 	novelizerKeys = "keyring",
 	novelizerHands = "fists",
 	novelizerBody = "body",
+	novelizerHeadcrab = "headcrab",
+	novelizerAntlion = "antlion",
+	novelizerZombie = "zombie",
 	novelizerCorpse = "corpse",
 	novelizerSuitcase = "suitcase",
 	novelizerRationPack = "ration pack",
@@ -663,6 +666,9 @@ ix.lang.AddTable("korean", {
 	novelizerKeys = "열쇠고리",
 	novelizerHands = "주먹",
 	novelizerBody = "몸",
+	novelizerHeadcrab = "헤드크랩",
+	novelizerAntlion = "개미귀신",
+	novelizerZombie = "좀비",
 	novelizerCorpse = "시신",
 	novelizerSuitcase = "여행 가방",
 	novelizerRationPack = "배급 포대",
@@ -1712,6 +1718,20 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 
 		if (isCorpse or (IsValid(owner) and owner:IsPlayer() and not owner:Alive())) then
 			return "corpse", "novelizerCorpse"
+		end
+
+		local model = string.lower(tostring(entity:GetModel() or ""))
+
+		if (model:find("headcrab", 1, true)) then
+			return "headcrab", "novelizerHeadcrab"
+		end
+
+		if (model:find("antlion", 1, true)) then
+			return "antlion", "novelizerAntlion"
+		end
+
+		if (model:find("zombie", 1, true)) then
+			return "zombie", "novelizerZombie"
 		end
 
 		return "body", "novelizerBody"
@@ -3231,11 +3251,11 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineWasher2",
 		"novelizerMachineWasher3"
 	})
-	self:RegisterEntityUsePhrases("ix_forcefield", {
-		"novelizerMachineForcefield1",
-		"novelizerMachineForcefield2",
-		"novelizerMachineForcefield3"
-	})
+	-- self:RegisterEntityUsePhrases("ix_forcefield", {
+	-- 	"novelizerMachineForcefield1",
+	-- 	"novelizerMachineForcefield2",
+	-- 	"novelizerMachineForcefield3"
+	-- })
 	self:RegisterEntityUsePhrases("ix_radiorepeater", {
 		"novelizerMachineRadio1",
 		"novelizerMachineRadio2",

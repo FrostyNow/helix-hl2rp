@@ -20,6 +20,9 @@ LANGUAGE = {
 	farmWithered = "시들시들합니다.",
 	farmPoisoned = "중독되었습니다.",
 	farmHarvest = "수확할 수 있습니다.",
+	farmGrowing = "%d%% 성장 중",
+	farmWaterAmount = "수분량: %d",
+	farmFertilized = "비료 효과 적용 중",
 	
 	cropCarrot = "당근",
 	cropCorn = "옥수수",
@@ -31,7 +34,7 @@ LANGUAGE = {
 	farmLookAtBox = "가까운 텃밭을 바라보고 사용해야 합니다.",
 	
 	farmWaterGiven = "텃밭에 %s을(를) 주었습니다.",
-	farmNoWaterItem = "물뿌리개 안(인벤토리)에 물 아이템이 없습니다.",
+	farmNoWaterItem = "물뿌리개에 물을 채워야 합니다.",
 	farmNoWaterInventory = "물뿌리개 인벤토리를 불러올 수 없습니다.",
 	
 	farmFertilizerApplied = "상자에 비료를 뿌렸습니다. 작물이 더 빨리 자랍니다.",

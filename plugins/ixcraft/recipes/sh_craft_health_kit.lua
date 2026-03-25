@@ -2,7 +2,7 @@
 RECIPE.name = "Health Kit"
 RECIPE.description = "recipeHealthKitDesc"
 RECIPE.category = "Crafting"
-RECIPE.model = "models/healthkit.mdl"
+RECIPE.model = "models/items/healthkit.mdl"
 RECIPE.requirements = {
 	["antlion_grub"] = 1,
 	["comp_circuitry"] = 1,

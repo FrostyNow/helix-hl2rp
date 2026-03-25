@@ -31,9 +31,6 @@ models/mosi/fallout4/props/food/gourd.mdl
 고깃덩이
 models/mosi/fnv/props/food/yoaguaimeat.mdl
 
-씨앗 (작음)
-models/mosi/fnv/props/junk/seedbag.mdl
-
 담배자판기
 models/props_downtown/cigarettemachine.mdl
 

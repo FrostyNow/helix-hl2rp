@@ -2,6 +2,26 @@ include("shared.lua")
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
+function ENT:SpawnFunction(ply, tr, className)
+	if (!tr.Hit) then return end
+
+	local pos = tr.HitPos
+	local ang = Angle(0, ply:GetAngles().y + 180, 0)
+
+	local entity = ents.Create(className)
+	entity:SetAngles(ang)
+	entity:Spawn()
+	entity:Activate()
+
+	local mins, _ = entity:GetModelBounds()
+	local center = entity:OBBCenter()
+	local offset = entity:LocalToWorld(Vector(center.x, center.y, mins.z)) - entity:GetPos()
+
+	entity:SetPos(pos - offset)
+
+	return entity
+end
+
 function ENT:Initialize()
 	self:SetModel("models/noble/limelight/farmbox.mdl")
 	self:PhysicsInit(SOLID_VPHYSICS)
@@ -31,7 +51,8 @@ function ENT:Think()
 	if (cropType != "") then
 		if (!IsValid(self.cropEnt)) then
 			self.cropEnt = ents.Create("ix_farmcrop")
-			self.cropEnt:SetPos(self:GetPos() + Vector(0, 0, 2))
+			local center = self:OBBCenter()
+			self.cropEnt:SetPos(self:LocalToWorld(Vector(center.x, center.y, 8)))
 			self.cropEnt:SetAngles(self:GetAngles())
 			self.cropEnt:Spawn()
 			self.cropEnt:SetParent(self)
@@ -51,8 +72,8 @@ function ENT:Think()
 			end
 		end
 
-		local baseTime = 3 * 24 * 60 * ix.config.Get("secondsPerMinute", 60)
-		local growthTime = ix.config.Get("cropGrowthTime", baseTime)
+		local growthDays = ix.config.Get("cropGrowthDays", 3)
+		local growthTime = growthDays * 24 * 60 * ix.config.Get("secondsPerMinute", 60)
 		
 		if (self:GetHasFertilizer()) then
 			growthTime = growthTime / 2
@@ -88,8 +109,8 @@ end
 
 function ENT:Use(activator)
 	if (self:GetCropType() != "") then
-		local baseTime = 3 * 24 * 60 * ix.config.Get("secondsPerMinute", 60)
-		local growthTime = ix.config.Get("cropGrowthTime", baseTime)
+		local growthDays = ix.config.Get("cropGrowthDays", 3)
+		local growthTime = growthDays * 24 * 60 * ix.config.Get("secondsPerMinute", 60)
 		if (self:GetHasFertilizer()) then growthTime = growthTime / 2 end
 		
 		if (self:GetProgress() >= growthTime) then
@@ -104,8 +125,9 @@ function ENT:Use(activator)
 				end
 			end
 			
+			local center = self:OBBCenter()
 			for i = 1, amount do
-				ix.item.Spawn(self:GetCropType(), self:GetPos() + Vector(0, 0, 20 + i * 5))
+				ix.item.Spawn(self:GetCropType(), self:LocalToWorld(Vector(center.x, center.y, 20 + i * 5)))
 			end
 			
 			local cropName = "(?)"
