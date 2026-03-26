@@ -48,6 +48,14 @@ function PLUGIN:Tick()
 								violations[#violations + 1] = self.VIOLATION_RAISED_WEAPON
 							end
 
+							if (client:GetNetVar("isSearchingLoot")) then
+								violations[#violations + 1] = self.VIOLATION_SEARCHING_TRASH
+							end
+
+							if (self:HasMultipleCIDs(client)) then
+								violations[#violations + 1] = self.VIOLATION_MULTIPLE_CIDS
+							end
+
 							if (!client:IsCombine() and !self:PlayerHasCID(client)) then
 								violations[#violations + 1] = self.VIOLATION_MISSING_CID
 							end
@@ -169,5 +177,12 @@ function PLUGIN:SetupPlayerVisibility(client)
 		if (IsValid(camera) and client:IsLineOfSightClear(terminal)) then
 			AddOriginToPVS(camera:GetPos() + Vector("0 0 -10"))
 		end
+	end
+end
+
+function PLUGIN:PlayerTick(ply)
+	if ((ply.ixNextCIDCheck or 0) < CurTime()) then
+		ply:SetNetVar("hasMultipleCIDs", self:HasMultipleCIDs(ply))
+		ply.ixNextCIDCheck = CurTime() + 5
 	end
 end

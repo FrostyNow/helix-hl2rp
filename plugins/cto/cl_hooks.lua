@@ -91,8 +91,8 @@ function PLUGIN:HUDPaint()
 		local bUnobstruct = ix.config.Get("biosignalUnobstruct")
 		local biosignalDist = ix.config.Get("biosignalDistance")
 
-		local beholder = client
-		local beholderEyePos = beholder:EyePos()
+		local beholder = (IsValid(client.ixScn) and client:GetViewEntity() == client.ixScn) and client.ixScn or client
+		local beholderEyePos = (beholder == client) and beholder:EyePos() or beholder:WorldSpaceCenter()
 
 		local biosignalExpiry = ix.config.Get("expireBiosignals")
 
@@ -231,6 +231,10 @@ function PLUGIN:HUDPaint()
 								violations[#violations + 1] = "<:: 1x" .. L("Missing CID") .. " ::>"
 							elseif (vio == self.VIOLATION_SUSPECTED_VIOLENCE) then
 								violations[#violations + 1] = "<:: 1x" .. L("Suspected Violent Act") .. " ::>"
+							elseif (vio == self.VIOLATION_SEARCHING_TRASH) then
+								violations[#violations + 1] = "<:: 1x" .. L("Searching Trash") .. " ::>"
+							elseif (vio == self.VIOLATION_MULTIPLE_CIDS) then
+								violations[#violations + 1] = "<:: 1x" .. L("Multiple CIDs") .. " ::>"
 							end
 						end
 					end
@@ -274,7 +278,7 @@ function PLUGIN:HUDPaint()
 		local maximumDistance = ix.config.Get("citizenDistance")
 
 		-- If we are using suit zoom.
-		if (client:GetFOV() < 40) then
+		if (client:GetFOV() < 40 or beholder != client) then
 			maximumDistance = maximumDistance * 3
 		end
 
@@ -317,6 +321,8 @@ function PLUGIN:HUDPaint()
 						if (v:GetLocalVar("ragdoll")) then violations[#violations + 1] = "<:: 1x" .. L("Laying") .. " ::>"	end
 						if (self:IsSuspectedViolentAct(v)) then violations[#violations + 1] = "<:: 1x" .. L("Suspected Violent Act") .. " ::>" end
 						if (self:IsVisibleWeaponViolation(v)) then violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Weapon Possession") .. " ::>" end
+						if (v:GetNetVar("isSearchingLoot")) then violations[#violations + 1] = "<:: 1x" .. L("Searching Trash") .. " ::>" end
+						if (self:HasMultipleCIDs(v)) then violations[#violations + 1] = "<:: 1x" .. L("Multiple CIDs") .. " ::>" end
 
 						if (#violations > 0) then
 							draw.SimpleText("<:: " .. L("Possible Violation") .. " ::>", "BudgetLabel", toScreen.x, toScreen.y, colorRed, 1, 1)

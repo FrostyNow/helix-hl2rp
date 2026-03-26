@@ -170,7 +170,10 @@ function PLUGIN:SearchLootContainer(ent, ply)
 
 				ply:SetAction("@storageSearching", SEARCH_DURATION)
 				self:StartLootSearchSound(ent, ply)
+				ply:SetNetVar("isSearchingLoot", true)
+
 				ply:DoStaredAction(ent, function()
+					ply:SetNetVar("isSearchingLoot", false)
 					self:StopLootSearchSound(ply)
 
 					local character = ply:GetCharacter()
@@ -210,6 +213,7 @@ function PLUGIN:SearchLootContainer(ent, ply)
 
 					ent.containerAlreadyUsed = CurTime() + 180
 				end, SEARCH_DURATION, function()
+					ply:SetNetVar("isSearchingLoot", false)
 					self:StopLootSearchSound(ply)
 					ply:SetAction(false)
 				end)

@@ -68,7 +68,9 @@ ix.lang.AddTable("korean", {
 	["Laying"] = "드러누움",
 	["Unauthorized Weapon Possession"] = "비인가 무기 소지",
 	["Suspected Violent Act"] = "폭력 행위 의심",
+	["Searching Trash"] = "비인가 폐품 수집 행위",
 	["Missing CID"] = "CID 미소지",
+	["Multiple CIDs"] = "다중 CID 소지",
 	["Within Sights"] = "명 시야에 들어옴",
 	["Violations Within Sights"] = "시야 내 위반 행위 포착",
 	["Possible Violation"] = "위반 행위 의심",
@@ -128,6 +130,8 @@ PLUGIN.VIOLATION_FALLEN_OVER = 3
 PLUGIN.VIOLATION_RAISED_WEAPON = 4
 PLUGIN.VIOLATION_MISSING_CID = 5
 PLUGIN.VIOLATION_SUSPECTED_VIOLENCE = 6
+PLUGIN.VIOLATION_SEARCHING_TRASH = 7
+PLUGIN.VIOLATION_MULTIPLE_CIDS = 8
 
 -- Camera controlling enums.
 PLUGIN.CAMERA_VIEW = 0
@@ -170,6 +174,42 @@ function PLUGIN:PlayerHasCID(target)
 	local inventory = character.GetInventory and character:GetInventory()
 
 	return inventory and inventory:HasItem("cid") or false
+end
+
+function PLUGIN:HasMultipleCIDs(target)
+	if (!IsValid(target)) then
+		return false
+	end
+
+	if (CLIENT) then
+		return target:GetNetVar("hasMultipleCIDs", false)
+	end
+
+	local character = target:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory) then
+		return false
+	end
+
+	local count = 0
+
+	for _, v in pairs(inventory:GetItems()) do
+		if (v.uniqueID == "cid") then
+			count = count + 1
+
+			if (count >= 2) then
+				return true
+			end
+		end
+	end
+
+	return false
 end
 
 function PLUGIN:CanCombineIdentifyTarget(target)

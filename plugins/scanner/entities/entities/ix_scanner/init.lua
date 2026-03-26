@@ -328,7 +328,26 @@ function ENT:die(dmgInfo)
 	end
 
 	local force = dmgInfo and dmgInfo:GetDamageForce() or Vector(0, 0, 50)
-	self:GibBreakClient(force)
+	-- self:GibBreakClient(force)
+
+	if (SERVER) then
+		local pos = self:GetPos() + Vector(0, 0, 8)
+		local isClaw = self:GetModel():find("shield_scanner")
+		if (not isClaw) then
+			local items = {"scanner_gib01", "scanner_gib02", "scanner_gib04", "scanner_gib05"}
+
+			table.Shuffle(items)
+			local count = math.random(1, #items)
+			
+			for i = 1, count do
+				ix.item.Spawn(items[i], pos + VectorRand(-8, 8))
+			end
+		end
+
+		if (math.random(1, 100) <= 30) then
+			ix.item.Spawn("battery", pos + VectorRand(-8, 8))
+		end
+	end
 
 	local effect = EffectData()
 		effect:SetStart(self:GetPos())

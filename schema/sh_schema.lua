@@ -928,7 +928,15 @@ if (SERVER) then
 end
 
 function Schema:CanPlayerSeeCombineOverlay(client)
-	if (!IsValid(client) or !client:IsCombine()) then
+	if (!IsValid(client)) then
+		return false
+	end
+
+	if (IsValid(client.ixScn)) then
+		return true
+	end
+
+	if (!client:IsCombine()) then
 		return false
 	end
 
