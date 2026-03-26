@@ -1732,7 +1732,7 @@ Schema.voices.AddClass("Combine", function(client)
 		return index != -1 and client:GetBodygroup(index) >= 1
 	end
 
-	return (client:IsCombine() and !(Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))) or client:GetModel() == "models/dpfilms/metropolice/hdpolice.mdl" or client:GetModel() == "models/combine_soldier.mdl"
+	return client:IsCombine()
 end)
 
 Schema.voices.AddClass("CitizenMale", function(client)
@@ -1768,7 +1768,11 @@ Schema.voices.AddClass("Vortigaunt", function(client)
 end)
 
 Schema.voices.AddClass("Overwatch", function(client)
-	return (client:Team() == FACTION_ADMIN and (client:IsFemale() or client:IsAdmin())) or (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))
+	if (ix.plugin.Get("scanner") and IsValid(client:GetNetVar("ixScn"))) then
+		return true
+	end
+
+	return client:Team() == FACTION_ADMIN and (client:IsFemale() or client:IsAdmin())
 end)
 
 Schema.voices.AddClass("Dispatch", function(client)

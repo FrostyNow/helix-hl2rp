@@ -3,7 +3,7 @@ local PLUGIN = PLUGIN
 ENT.Type = "anim"
 ENT.PrintName = "Scanner"
 ENT.Category = "HL2 RP"
-ENT.Spawnable = false -- no
+ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.AutomaticFrameAdvance = true
 
@@ -34,7 +34,7 @@ function ENT:SpawnFunction(ply, trace, className)
     local entity = ents.Create(className)
     entity:SetPos(trace.HitPos + Vector(0, 0, 32))
     entity:Spawn()
-    entity:SetPilotEntity(ply)
+    entity:Activate()
 
     return entity
 end

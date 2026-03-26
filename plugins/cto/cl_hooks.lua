@@ -135,12 +135,21 @@ function PLUGIN:HUDPaint()
 
 				if (toScreen.visible) then
 					local text = "<:: " .. (data.unitID or "???") .. " ::>"
-					local color = team.GetColor(unit:Team()) or color_white
+					local color = color_white
+					if (unit:IsPlayer()) then
+						color = team.GetColor(unit:Team())
+					else
+						color = (FACTION_MPF and team.GetColor(FACTION_MPF)) or Color(150, 150, 200)
+					end
 
 					local showDetail = (Vector(toScreen.x, toScreen.y):Distance(halfScrVector) <= lowDetailBox)
 
 					if (showDetail) then
-						text = "<:: " .. unit:Name() .. " ::>"
+						if (unit:IsPlayer()) then
+							text = "<:: " .. unit:Name() .. " ::>"
+						else
+							text = "<:: " .. (data.unitIDFull or data.unitID or "SCANNER") .. " ::>"
+						end
 					end
 
 					local timeSince = math.Round(curTime - data.time, 2)

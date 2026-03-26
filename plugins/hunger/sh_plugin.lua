@@ -270,8 +270,6 @@ if SERVER then
 
 		if (char) then
 			local bIsCombine = false
-			if (Schema:IsCombineRank(client:Name(), "SCN")) then bIsCombine = true end
-			if (ix.plugin.list["scanner"] and client.ixScn) then bIsCombine = true end
 			
 			if (bIsCombine) then
 				char:SetData("hunger", 100)
@@ -306,9 +304,8 @@ if SERVER then
 
 	function playerMeta:TickThirst(amount)
 		local char = self:GetCharacter()
-		local enabled = !Schema:IsCombineRank(self:Name(), "SCN")
 
-		if (char and enabled) then
+		if (char) then
 			char:SetData("thirst", char:GetData("thirst", 100) - amount)
 			self:SetLocalVar("thirst", char:GetData("thirst", 100) - amount)
 
@@ -321,9 +318,8 @@ if SERVER then
 
 	function playerMeta:TickHunger(amount)
 		local char = self:GetCharacter()
-		local enabled = !Schema:IsCombineRank(self:Name(), "SCN")
 
-		if (char and enabled) then
+		if (char) then
 			char:SetData("hunger", char:GetData("hunger", 100) - amount)
 			self:SetLocalVar("hunger", char:GetData("hunger", 100) - amount)
 
@@ -544,7 +540,7 @@ end
 
 function PLUGIN:AdjustStaminaOffset(client, offset)
 	local char = client:GetCharacter()
-	local enabled = client:Team() != FACTION_OTA and !Schema:IsCombineRank(client:Name(), "SCN")
+	local enabled = client:Team() != FACTION_OTA
 
 	if (!char or !enabled) then
 		return

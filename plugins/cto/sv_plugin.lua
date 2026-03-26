@@ -77,6 +77,17 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	end
 end
 
+-- scanner plugin support
+function PLUGIN:DoPostScannerLoss(scanner)
+	local pilot = scanner:GetPilot()
+	local location = scanner:GetAreaName() != "" and scanner:GetAreaName() or "unknown location"
+	local scannerID = scanner:GetNetVar("ixScannerName", "SCN")
+
+	-- Alert all other units.
+	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(0, 180, 255, 45))
+	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 45), scannerID, location)
+end
+
 function PLUGIN:SetPlayerBiosignal(client, bEnable)
 	if (client:IsCombine()) then
 		local isDisabledAlready = client:GetNetVar("IsBiosignalGone")

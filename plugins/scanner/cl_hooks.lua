@@ -40,11 +40,12 @@ local blackAndWhite = {
 function PLUGIN:CalcView(ply, origin, angles, fov)
 	if not ix then return end
 
-	if (ply:IsValid() and ply:GetCharacter() and ply:GetCharacter():GetClass() == CLASS_SCANNER) and (IsValid(ix.gui.menu) or IsValid(ix.gui.characterMenu)) then return false end
-	if (LocalPlayer():GetNetVar("curCamera", false) or LocalPlayer():GetNetVar("curVisor", false)) then return end -- Compatibility with my Dispatch Plugin.
+	if (IsValid(ix.gui.menu) or IsValid(ix.gui.characterMenu)) then return false end
+	if (LocalPlayer():GetNetVar("curCamera", false) or LocalPlayer():GetNetVar("curVisor", false)) then return end
+
 	local entity = ply:GetViewEntity()
 
-	if (ply:IsValid() and ply:GetCharacter() and (ply:GetCharacter():GetClass() == CLASS_SCANNER)) then
+	if (IsValid(ply.ixScn) and IsValid(entity) and entity == ply.ixScn) then
 		if not (input.IsKeyDown(KEY_C)) then
 			view.angles = ply:GetAimVector():Angle()
 			if (hidden) then
@@ -73,15 +74,16 @@ function PLUGIN:InputMouseApply(command, x, y, angle)
 end
 
 function PLUGIN:PreDrawOpaqueRenderables()
-	local viewEntity = LocalPlayer():GetViewEntity()
+	local client = LocalPlayer()
+	local viewEntity = client:GetViewEntity()
 
 	if (IsValid(self.lastViewEntity) and self.lastViewEntity != viewEntity) then
 		self.lastViewEntity:SetNoDraw(false)
 		self.lastViewEntity = nil
-		LocalPlayer():EmitSound(CLICK, 50, 120)
+		client:EmitSound(CLICK, 50, 120)
 	end
 
-	if (LocalPlayer():IsCombine() and Schema:CanPlayerSeeCombineOverlay(LocalPlayer()) and IsValid(viewEntity) and viewEntity:GetClass():find("scanner")) then
+	if (IsValid(client.ixScn) and IsValid(viewEntity) and viewEntity == client.ixScn) then
 		viewEntity:SetNoDraw(true)
 
 		if (self.lastViewEntity ~= viewEntity) then
@@ -122,13 +124,15 @@ function PLUGIN:HUDPaint()
 		draw.SimpleText("RE-CHARGING: "..percent.."%", "ixScannerFont", x, y - 24, Color(255 + glow, 100 + glow, 25, 250))
 	end
 
-	local position = LocalPlayer():GetPos()
-	local angle = LocalPlayer():GetAimVector():Angle()
+	local scanner = self.lastViewEntity
+	local position = IsValid(scanner) and scanner:GetPos() or LocalPlayer():GetPos()
+	local angle = IsValid(scanner) and scanner:GetAngles() or LocalPlayer():GetAimVector():Angle()
+	local scannerName = IsValid(scanner) and scanner:GetNetVar("ixScannerName", L("scannerName")) or LocalPlayer():Name()
 	local zone = LocalPlayer():GetAreaName() != "" and LocalPlayer():GetAreaName() or "unknown"
 
 	draw.SimpleText("POS ("..math.floor(position[1])..", "..math.floor(position[2])..", "..math.floor(position[3])..")", "ixScannerFont", x + 8, y + 8, color_white)
 	draw.SimpleText("ANG ("..math.floor(angle[1])..", "..math.floor(angle[2])..", "..math.floor(angle[3])..")", "ixScannerFont", x + 8, y + 24, color_white)
-	draw.SimpleText("ID  ("..LocalPlayer():Name()..")", "ixScannerFont", x + 8, y + 40, color_white)
+	draw.SimpleText("ID  ("..scannerName..")", "ixScannerFont", x + 8, y + 40, color_white)
 	draw.SimpleText("ZM  ("..(math.Round(zoom / 40, 2) * 100).."%)", "ixScannerFont", x + 8, y + 56, color_white)
 	draw.SimpleText("ZONE("..(zone)..")", "ixScannerFont", x + 8, y + 88, color_white)
 
@@ -195,5 +199,14 @@ function PLUGIN:PlayerBindPress(ply, bind, pressed)
 		IsValid(self.lastViewEntity)) then
 		self:takePicture()
 		return true
+	end
+end
+
+function PLUGIN:PopulateCharacterInfo(client, character, tooltip)
+	if IsValid(client) and IsValid(character) and client:GetNetVar("ixScanning") then
+		local panel = tooltip:AddRowAfter("name", "scanner")
+		panel:SetBackgroundColor(Color(100, 200, 255, 220))
+		panel:SetText(L("scanning"))
+		panel:SizeToContents()
 	end
 end

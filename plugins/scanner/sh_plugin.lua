@@ -2,7 +2,7 @@ local PLUGIN = PLUGIN
 
 PLUGIN.name = "Player Scanners Util"
 PLUGIN.description = "Adds functions that allow players to control scanners."
-PLUGIN.author = "Chessnut, Riggs"
+PLUGIN.author = "Chessnut, Riggs | Modified by Frosty"
 PLUGIN.schema = "Any"
 PLUGIN.license = [[
 Copyright 2022 Riggs Mackay
@@ -18,12 +18,58 @@ ix.lang.AddTable("english", {
 	cmdPhotoCache = "Opens the scanner photo cache.",
 	combineOnly = "Only Combine Players can view the scanner photo cache!",
 	noScannerPlugin = "The server is missing the 'scanner' plugin.",
+	scannerAlreadyOperating = "You are already operating a scanner.",
+	scannerName = "Combine Scanner",
+	scannerNameClaw = "Shield Scanner",
+	scannerDesc = "A remotely operated surveillance unit used by the Combine.",
+	scannerPilot = "Operated by: %s",
+	scanning = "Scanning",
 })
 ix.lang.AddTable("korean", {
 	cmdPhotoCache = "저장된 스캐너 사진을 확인합니다.",
 	cacheCmbOnly = "콤바인 플레이어만 저장된 스캐너 사진을 확인할 수 있습니다!",
 	noScannerPlugin = "이 서버에 'scanner' 플러그인이 없습니다.",
+	scannerAlreadyOperating = "이미 조종 중인 스캐너가 있습니다.",
+	scannerName = "콤바인 스캐너",
+	scannerNameClaw = "실드 스캐너",
+	scannerDesc = "콤바인에서 사용하는 원격 감시 유닛입니다.",
+	scannerPilot = "조종자: %s",
+	scanning = "스캐너 조종 중",
 })
+
+PLUGIN.callsigns = {
+	"GHOST", "REAPER", "NOMAD", "HURRICANE", "PHANTOM", "JUDGE", "SHADOW", 
+	"SLAM", "STINGER", "STORM", "VAMP", "WINDER", "STAR"
+}
+
+-- Unique Scanner names
+function PLUGIN:GenerateUniqueScannerName(isClaw)
+	local prefix = isClaw and "OTA.SHIELD-" or "c17:MPF-SCN."
+	local callsign = table.Random(self.callsigns)
+	local digit = math.random(0, 9)
+	local name = prefix .. callsign .. ":" .. digit
+
+	-- Prevent duplicated name
+	if (SERVER) then
+		local bUnique = false
+		local attempts = 0
+		while (!bUnique and attempts < 20) do
+			bUnique = true
+			for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+				if (v:GetNetVar("ixScannerName") == name) then
+					bUnique = false
+					callsign = table.Random(self.callsigns)
+					digit = math.random(0, 9)
+					name = prefix .. callsign .. ":" .. digit
+					break
+				end
+			end
+			attempts = attempts + 1
+		end
+	end
+
+	return name
+end
 
 if ( CLIENT ) then
 	PLUGIN.PICTURE_WIDTH = 580
@@ -54,18 +100,70 @@ ix.command.Add("PhotoCache", {
 	end
 })
 
-local CHAR = ix.meta.character
+-- Context menu property
+properties.Add("ixScannerOperate", {
+	MenuLabel = "Operate Scanner",
+	Order = 500,
+	MenuIcon = "icon16/eye.png",
 
-if (CHAR) then
-	CHAR.GetModelScanner = CHAR.GetModelScanner or CHAR.GetModel
+	Filter = function(self, entity, ply)
+		if not IsValid(entity) then return false end
+		if entity:GetClass() ~= "ix_scanner" then return false end
+		if not IsValid(ply) then return false end
+		if not ply:IsAdmin() then return false end
+		if not entity:canOperate(ply) then return false end
+		if IsValid(entity:GetPilot()) then return false end
+		return true
+	end,
 
-	function CHAR:GetModel(...)
-		local class = self:GetClass()
+	Action = function(self, entity)
+		self:MsgStart()
+			net.WriteEntity(entity)
+		self:MsgEnd()
+	end,
 
-		if (CLASS_SCANNER and class == CLASS_SCANNER) then
-			return "models/Combine_Scanner.mdl"
+	Receive = function(self, length, ply)
+		if not ply:IsAdmin() then return end
+		local entity = net.ReadEntity()
+		if not IsValid(entity) or entity:GetClass() ~= "ix_scanner" then return end
+		if IsValid(entity:GetPilot()) then return end
+
+		entity.spawn = ply:GetPos()
+		entity:setPilot(ply)
+		ply.ixScn = entity
+	end,
+})
+
+function PLUGIN:GetCharacterName(ply, chatType)
+	local scanner = ply:GetNetVar("ixScn")
+	if (IsValid(scanner) and (chatType == "ic" or chatType == "me" or chatType == "it" or chatType == "y" or chatType == "w" or chatType == "yell" or chatType == "whisper")) then
+		return scanner:GetNetVar("ixScannerName", "Combine Scanner")
+	end
+end
+
+function PLUGIN:InitializedChatClasses()
+	local proximityClasses = {"ic", "me", "it", "w", "y", "looc", "roll"}
+
+	for _, id in ipairs(proximityClasses) do
+		local class = ix.chat.classes[id]
+		if (class) then
+			class.CanHear = function(this, speaker, listener)
+				local speakerScanner = speaker:GetNetVar("ixScn")
+				local listenerScanner = listener:GetNetVar("ixScn")
+
+				local speakPos = IsValid(speakerScanner) and speakerScanner:GetPos() or speaker:GetPos()
+				local listenPos = IsValid(listenerScanner) and listenerScanner:GetPos() or listener:GetPos()
+				local range = (isnumber(this.range) and this.range or ix.config.Get("chatRange", 280)) ^ 2
+
+				-- yells and rolls use multiplier (square of distance multiplier)
+				if (id == "y" or id == "me" or id == "it" or id == "roll") then
+					range = range * 4 -- typical helix 2x distance squared
+				elseif (id == "w") then
+					range = range * 0.0625 -- 0.25 distance squared
+				end
+
+				return (speakPos - listenPos):LengthSqr() <= range
+			end
 		end
-
-		return self:GetModelScanner(...)
 	end
 end

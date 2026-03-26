@@ -396,10 +396,6 @@ combinePainSounds = {
 }
 
 local function GetCombinePainSound(client)
-	if (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD")) then
-		return false
-	end
-
 	if (client:Team() == FACTION_OTA) then
 		return combinePainSounds[math.random(1, #combinePainSounds)]
 	end

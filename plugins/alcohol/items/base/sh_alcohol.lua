@@ -81,10 +81,7 @@ ITEM.functions.Drink = {
 	end,
 	OnCanRun = function(item)
 		local client = item.player
-		local character = client:GetCharacter()
-		local enabled = !Schema:IsCombineRank(client:Name(), "SCN")
-		if (FACTION_OTA and client:Team() == FACTION_OTA) then enabled = false end
 
-		return enabled
+		return client:GetCharacter() and client:Team() != FACTION_OTA
 	end
 }

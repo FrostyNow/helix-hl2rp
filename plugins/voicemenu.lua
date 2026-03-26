@@ -602,6 +602,10 @@ if (CLIENT) then
 		end
 
 		if (lowered == "overwatch") then
+			if (IsValid(LocalPlayer():GetNetVar("ixScn"))) then
+				return {MODE_NORMAL, MODE_RADIO}
+			end
+
 			return {MODE_RADIO}
 		end
 
@@ -610,6 +614,10 @@ if (CLIENT) then
 
 	function PANEL:CanSendRadio()
 		local client = LocalPlayer()
+
+		if (IsValid(client:GetNetVar("ixScn"))) then
+			return true
+		end
 
 		if (!IsValid(client) or !client:GetCharacter() or client:IsRestricted()) then
 			return false

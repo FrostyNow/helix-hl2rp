@@ -57,6 +57,23 @@ function PLUGIN:UpdateBiosignalLocations()
 				}
 			end
 		end
+
+		for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+			local pilot = v:GetPilot()
+			if (IsValid(pilot) and pilot != client and !pilot:GetNetVar("IsBiosignalGone", false)) then
+				local fullName = v:GetNetVar("ixScannerName", "SCN")
+				local shortID = fullName:match("[.-]([%w]+:%d)$") or fullName
+
+				self.biosignalLocations[v] = {
+					pos = v:GetPos() + Vector(0, 0, 10),
+					time = curTime,
+					isLost = false,
+					isKnockedOut = false,
+					unitID = shortID,
+					unitIDFull = fullName
+				}
+			end
+		end
 	end
 end
 

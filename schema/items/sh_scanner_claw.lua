@@ -1,12 +1,12 @@
 
-ITEM.name = "Combine Scanner"
-ITEM.description = "itemScannerDesc"
-ITEM.model = Model("models/Combine_Scanner.mdl")
+ITEM.name = "Combine Shield Scanner"
+ITEM.description = "itemShieldScannerDesc"
+ITEM.model = Model("models/shield_scanner.mdl")
 ITEM.category = "Utility"
 ITEM.width = 2
 ITEM.height = 2
-ITEM.price = 100
-ITEM.classes = {CLASS_MPU, CLASS_EMP}
+ITEM.price = 120
+ITEM.factions = {FACTION_OTA}
 
 ITEM.functions.Use = {
 	name = "Place It",
@@ -33,9 +33,10 @@ ITEM.functions.Use = {
 			entity:SetAngles(ply:GetAngles())
 			entity:Spawn()
 			entity:Activate()
+			entity:setClawScanner()
 			entity:SetNetVar("player", ply)
 		else
-			local ent = ents.Create("npc_cscanner")
+			local ent = ents.Create("npc_shieldscanner")
 
 			for k, v in pairs(ents.GetAll()) do
 				if v:IsPlayer() then

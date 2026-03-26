@@ -166,10 +166,11 @@ ITEM.functions.Eat = {
 	OnCanRun = function(item)
 		local client = item.player
 		local character = client:GetCharacter()
-		local enabled = !Schema:IsCombineRank(client:Name(), "SCN")
+		local enabled = true
+
 		if (FACTION_OTA and client:Team() == FACTION_OTA and item.uniqueID != "ota_supplements") then enabled = false end
 
-		return enabled
+		return client:GetCharacter() and enabled
 	end
 }
 

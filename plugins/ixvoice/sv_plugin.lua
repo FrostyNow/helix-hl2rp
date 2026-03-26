@@ -28,7 +28,7 @@ local function GetModeFromChatType(chatType)
 	end
 end
 
-local function IsClassAllowedForMode(className, mode)
+local function IsClassAllowedForMode(client, className, mode)
 	local lowered = string.lower(className or "")
 
 	if (lowered == "breencast") then
@@ -40,6 +40,10 @@ local function IsClassAllowedForMode(className, mode)
 	end
 
 	if (lowered == "overwatch") then
+		if (ix.plugin.Get("scanner") and IsValid(client:GetNetVar("ixScn"))) then
+			return true
+		end
+
 		return mode == MODE_RADIO
 	end
 
@@ -52,7 +56,7 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 		local mode = GetModeFromChatType(chatType)
 		
 		for _, definition in ipairs(class) do
-			if (!IsClassAllowedForMode(definition, mode)) then
+			if (!IsClassAllowedForMode(speaker, definition, mode)) then
 				continue
 			end
 

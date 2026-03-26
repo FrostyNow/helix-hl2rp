@@ -92,6 +92,9 @@ net.Receive("ixScannerData", function()
     end)
 
     PHOTO_CACHE[#PHOTO_CACHE + 1] = {data = html, time = os.time()}
+    if (#PHOTO_CACHE > 50) then
+        table.remove(PHOTO_CACHE, 1)
+    end
     CURRENT_PHOTO = panel
 end)
 
