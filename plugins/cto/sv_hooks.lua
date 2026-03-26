@@ -67,6 +67,10 @@ function PLUGIN:Tick()
 								combineCamera:Fire("SetAngry")
 
 								Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
+
+								if (ix.plugin.Get("scanner")) then
+									self:RequestSurveillancePhoto(combineCamera)
+								end
 							end
 						end
 					end

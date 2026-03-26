@@ -113,6 +113,7 @@ local function GetExcludedFactions()
 end
 
 function PLUGIN:BuildCombinePayload(client, callback)
+	local scannerPlugin = ix.plugin.Get("scanner")
 	local payload = {
 		combineTerminal = true,
 		civicData = self:GetCivicPanelData(),
@@ -121,8 +122,29 @@ function PLUGIN:BuildCombinePayload(client, callback)
 		canEditData = client:IsCombine(),
 		objectives = Schema and Schema.CombineObjectives or {},
 		journalData = self:GetCombineJournalData(client),
-		roster = {}
+		roster = {},
+		photoLogs = scannerPlugin and scannerPlugin.photoHistory or {},
+		cameras = {}
 	}
+
+	for _, v in ipairs(ents.FindByClass("npc_combine_camera")) do
+		payload.cameras[#payload.cameras + 1] = {
+			ent = v,
+			id = v:EntIndex(),
+			name = "C-i" .. v:EntIndex()
+		}
+	end
+
+	for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+		local pilot = v:GetPilot()
+		if (IsValid(pilot)) then
+			payload.cameras[#payload.cameras + 1] = {
+				ent = v,
+				id = v:EntIndex(),
+				name = v:GetNetVar("ixScannerName", "SCN-" .. v:EntIndex())
+			}
+		end
+	end
 
 	local excluded = GetExcludedFactions()
 	local onlineRoster = {}

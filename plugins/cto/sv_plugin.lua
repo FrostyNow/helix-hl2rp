@@ -157,3 +157,47 @@ function PLUGIN:DispatchRequestSignal(client, text)
 
 	Schema:AddCombineDisplayMessage("@AssistanceRequestRecv", Color(175, 125, 100, 45))
 end
+
+function PLUGIN:RequestSurveillancePhoto(camera)
+	if ((camera.ixNextPhotoRequest or 0) > CurTime()) then
+		return
+	end
+
+	camera.ixNextPhotoRequest = CurTime() + 15
+
+	local receiver
+	local bestReceiver
+
+	-- Find nearest camera terminal first for sake of resource friendship
+	for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+		if (v:GetNWEntity("camera") == camera) then
+			for _, client in ipairs(player.GetAll()) do
+				if (client:IsCombine() and !client:GetNetVar("IsBiosignalGone", false) and client:GetPos():DistToSqr(v:GetPos()) <= 250 * 250) then
+					bestReceiver = client
+					break
+				end
+			end
+		end
+
+		if (bestReceiver) then break end
+	end
+
+	if (bestReceiver) then
+		receiver = bestReceiver
+	else
+		for _, v in ipairs(player.GetAll()) do
+			if (v:IsCombine() and !v:GetNetVar("IsBiosignalGone", false)) then
+				if (!v.ixScn and !v:GetNetVar("ixScanning")) then
+					receiver = v
+					break
+				end
+			end
+		end
+	end
+
+	if (receiver) then
+		net.Start("ixSurveillancePhotoRequest")
+			net.WriteEntity(camera)
+		net.Send(receiver)
+	end
+end

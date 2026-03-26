@@ -73,8 +73,10 @@ function PLUGIN:KeyPress(ply, key)
 	elseif (key == IN_DUCK) then
 		if (ply:GetViewEntity() == ply.ixScn) then
 			ply:SetViewEntity(NULL)
+			ply:SetNetVar("ixScanning", false)
 		else
 			ply:SetViewEntity(ply.ixScn)
+			ply:SetNetVar("ixScanning", true)
 		end
 	end
 

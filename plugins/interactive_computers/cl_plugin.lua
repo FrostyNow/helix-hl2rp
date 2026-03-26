@@ -1849,6 +1849,30 @@ function COMBINE:Init()
 		self:SetActiveTab("civil")
 	end
 
+	self.rosterSearch = self:Add("DTextEntry")
+	self.rosterSearch:SetPlaceholderText(L("interactiveComputerSearch"))
+	self.rosterSearch:SetFont("ixComputerDOSTiny")
+	self.rosterSearch:SetUpdateOnType(true)
+	self.rosterSearch.OnValueChange = function(entry)
+		self:PopulateRoster(entry:GetValue())
+	end
+
+	self.photoLogsTabButton = self:Add("DButton")
+	self.photoLogsTabButton:SetText(L("interactiveComputerPhotoLogs"))
+	self.photoLogsTabButton:SetFont("ixComputerDOSBody")
+	self.photoLogsTabButton:SetTextColor(COMBINE_TEXT)
+	self.photoLogsTabButton.DoClick = function()
+		self:SetActiveTab("photoLogs")
+	end
+
+	self.liveFeedTabButton = self:Add("DButton")
+	self.liveFeedTabButton:SetText(L("interactiveComputerLiveFeed"))
+	self.liveFeedTabButton:SetFont("ixComputerDOSBody")
+	self.liveFeedTabButton:SetTextColor(COMBINE_TEXT)
+	self.liveFeedTabButton.DoClick = function()
+		self:SetActiveTab("liveFeed")
+	end
+
 	self.rosterList = self:Add("DListView")
 	self.rosterList:SetHeaderHeight(0)
 	self.rosterList:SetDataHeight(24)
@@ -1869,6 +1893,49 @@ function COMBINE:Init()
 	self.rosterScrollDownButton:SetTextColor(COMBINE_TEXT)
 	BindScrollHoldButton(self.rosterScrollUpButton, function() return IsValid(self.rosterList) and self.rosterList.VBar or nil end, -72)
 	BindScrollHoldButton(self.rosterScrollDownButton, function() return IsValid(self.rosterList) and self.rosterList.VBar or nil end, 72)
+
+	self.photoList = self:Add("DListView")
+	self.photoList:SetHeaderHeight(0)
+	self.photoList:SetDataHeight(24)
+	self.photoList:AddColumn("TIME")
+	self.photoList:AddColumn("TYPE")
+	self.photoList.OnRowSelected = function(_, rowID, row)
+		self:ViewPhoto(row.ixPhotoData)
+	end
+
+	self.photoScrollUpButton = self:Add("DButton")
+	self.photoScrollUpButton:SetText("∧")
+	self.photoScrollUpButton:SetFont("ixComputerDOSBody")
+	self.photoScrollUpButton:SetTextColor(COMBINE_TEXT)
+
+	self.photoScrollDownButton = self:Add("DButton")
+	self.photoScrollDownButton:SetText("∨")
+	self.photoScrollDownButton:SetFont("ixComputerDOSBody")
+	self.photoScrollDownButton:SetTextColor(COMBINE_TEXT)
+	BindScrollHoldButton(self.photoScrollUpButton, function() return IsValid(self.photoList) and self.photoList.VBar or nil end, -72)
+	BindScrollHoldButton(self.photoScrollDownButton, function() return IsValid(self.photoList) and self.photoList.VBar or nil end, 72)
+
+	self.photoViewer = self:Add("DHTML")
+
+	self.cameraList = self:Add("DListView")
+	self.cameraList:SetHeaderHeight(0)
+	self.cameraList:SetDataHeight(24)
+	self.cameraList:AddColumn("CAMERA ID")
+	self.cameraList.OnRowSelected = function(_, rowID, row)
+		self.selectedCamera = row.ixCamera
+	end
+
+	self.cameraScrollUpButton = self:Add("DButton")
+	self.cameraScrollUpButton:SetText("∧")
+	self.cameraScrollUpButton:SetFont("ixComputerDOSBody")
+	self.cameraScrollUpButton:SetTextColor(COMBINE_TEXT)
+
+	self.cameraScrollDownButton = self:Add("DButton")
+	self.cameraScrollDownButton:SetText("∨")
+	self.cameraScrollDownButton:SetFont("ixComputerDOSBody")
+	self.cameraScrollDownButton:SetTextColor(COMBINE_TEXT)
+	BindScrollHoldButton(self.cameraScrollUpButton, function() return IsValid(self.cameraList) and self.cameraList.VBar or nil end, -72)
+	BindScrollHoldButton(self.cameraScrollDownButton, function() return IsValid(self.cameraList) and self.cameraList.VBar or nil end, 72)
 
 	self.objectivesEntry = self:Add("DTextEntry")
 	self.objectivesEntry:SetMultiline(true)
@@ -1975,9 +2042,13 @@ function COMBINE:UpdateVisibleState()
 
 	self.objectivesTabButton.ixActive = self.activeTab == "objectives"
 	self.civilDataTabButton.ixActive = self.activeTab == "civil"
+	self.photoLogsTabButton.ixActive = self.activeTab == "photoLogs"
+	self.liveFeedTabButton.ixActive = self.activeTab == "liveFeed"
 
 	self.objectivesTabButton:SetEnabled(isReady)
 	self.civilDataTabButton:SetEnabled(isReady)
+	self.photoLogsTabButton:SetEnabled(isReady)
+	self.liveFeedTabButton:SetEnabled(isReady)
 	self.personalLogButton:SetEnabled(isReady)
 	self.publicPanelButton:SetEnabled(isReady)
 
@@ -1985,12 +2056,24 @@ function COMBINE:UpdateVisibleState()
 	self.objectiveSaveButton:SetVisible(showObjectives and self.context.canEditObjectives == true)
 	self.objectivesEntry:SetEnabled(showObjectives and self.context.canEditObjectives == true)
 
+	self.rosterSearch:SetVisible(showCivil)
 	self.rosterList:SetVisible(showCivil)
 	self.rosterScrollUpButton:SetVisible(showCivil)
 	self.rosterScrollDownButton:SetVisible(showCivil)
 	self.dataEntry:SetVisible(showCivil)
 	self.dataSaveButton:SetVisible(showCivil and self.context.canEditData == true)
 	self.dataEntry:SetEnabled(showCivil and self.context.canEditData == true and self.selectedTarget != nil)
+
+	local showPhotos = isReady and self.activeTab == "photoLogs"
+	self.photoList:SetVisible(showPhotos)
+	self.photoScrollUpButton:SetVisible(showPhotos)
+	self.photoScrollDownButton:SetVisible(showPhotos)
+	self.photoViewer:SetVisible(showPhotos)
+
+	local showLive = isReady and self.activeTab == "liveFeed"
+	self.cameraList:SetVisible(showLive)
+	self.cameraScrollUpButton:SetVisible(showLive)
+	self.cameraScrollDownButton:SetVisible(showLive)
 end
 
 function COMBINE:UpdateStatus()
@@ -2018,7 +2101,35 @@ function COMBINE:UpdateStatus()
 		return
 	end
 
+	if (self.activeTab == "photoLogs") then
+		self.statusLabel:SetText(L("interactiveComputerPhotoLogs"))
+		return
+	end
+
+	if (self.activeTab == "liveFeed") then
+		self.statusLabel:SetText(L("interactiveComputerLiveFeed"))
+		return
+	end
+
 	self.statusLabel:SetText(L("interactiveComputerSelectModule"))
+end
+
+function COMBINE:ViewPhoto(photo)
+	if (!photo or !photo.data) then
+		self.photoViewer:SetHTML("")
+		return
+	end
+
+	local b64 = util.Base64Encode(util.Decompress(photo.data))
+	local html = string.format([[
+		<style>
+			body { margin: 0; padding: 0; background: #000; display: flex; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+			img { max-width: 100%%; max-height: 100%%; image-rendering: pixelated; border: 1px solid #73c8ff44; }
+		</style>
+		<body><img src="data:image/jpeg;base64,%s"></body>
+	]], b64)
+
+	self.photoViewer:SetHTML(html)
 end
 
 function COMBINE:Paint(width, height)
@@ -2039,6 +2150,17 @@ function COMBINE:Paint(width, height)
 		draw.SimpleText(L("interactiveComputerObjectives"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	elseif (IsTerminalReady(self) and self.activeTab == "civil") then
 		draw.SimpleText(L("interactiveComputerCivilData"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	elseif (IsTerminalReady(self) and self.activeTab == "liveFeed") then
+		draw.SimpleText(L("interactiveComputerLiveFeed"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+	end
+
+	if (IsTerminalReady(self) and self.activeTab == "liveFeed" and IsValid(self.entity) and self.entity.tex and IsValid(self.selectedCamera)) then
+		surface.SetMaterial(self.entity.mat)
+		surface.SetDrawColor(255, 255, 255, 255)
+		-- 512x256 aspect, but stretched to fit content area nicely
+		surface.DrawTexturedRect(editorX, top + 44, editorWidth, contentHeight - 62)
+		surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, 60)
+		surface.DrawOutlinedRect(editorX, top + 44, editorWidth, contentHeight - 62, 1)
 	end
 
 	if (!IsTerminalReady(self) or !self.activeTab) then
@@ -2065,7 +2187,11 @@ function COMBINE:PerformLayout(width, height)
 	or !IsValid(self.objectiveSaveButton) or !IsValid(self.dataSaveButton)
 	or !IsValid(self.personalLogButton) or !IsValid(self.publicPanelButton)
 	or !IsValid(self.rosterScrollUpButton) or !IsValid(self.rosterScrollDownButton)
-	or !IsValid(self.objectivesTabButton) or !IsValid(self.civilDataTabButton)) then
+	or !IsValid(self.rosterSearch)
+	or !IsValid(self.photoScrollUpButton) or !IsValid(self.photoScrollDownButton)
+	or !IsValid(self.cameraScrollUpButton) or !IsValid(self.cameraScrollDownButton)
+	or !IsValid(self.photoList) or !IsValid(self.photoViewer) or !IsValid(self.cameraList)
+	or !IsValid(self.objectivesTabButton) or !IsValid(self.civilDataTabButton) or !IsValid(self.photoLogsTabButton) or !IsValid(self.liveFeedTabButton)) then
 		return
 	end
 
@@ -2104,19 +2230,28 @@ function COMBINE:PerformLayout(width, height)
 	self.publicPanelButton:SetPos(navButtonX, navButtonY + 146)
 	self.publicPanelButton:SetSize(navButtonWidth, 34)
 
+	self.photoLogsTabButton:SetPos(navButtonX, navButtonY + 188)
+	self.photoLogsTabButton:SetSize(navButtonWidth, 34)
+
+	self.liveFeedTabButton:SetPos(navButtonX, navButtonY + 230)
+	self.liveFeedTabButton:SetSize(navButtonWidth, 34)
+
 	self.objectivesEntry:SetPos(contentX + 18, contentY + 44)
 	self.objectivesEntry:SetSize(contentWidth - 36, contentHeight - 104)
 
 	self.objectiveSaveButton:SetPos(contentX + contentWidth - 198, contentY + contentHeight - 46)
 	self.objectiveSaveButton:SetSize(180, 30)
 
-	self.rosterList:SetPos(contentX + 18, contentY + 44)
-	self.rosterList:SetSize(rosterWidth - 34, contentHeight - 62)
+	self.rosterSearch:SetPos(contentX + 18, contentY + 44)
+	self.rosterSearch:SetSize(rosterWidth - 34, 28)
 
-	self.rosterScrollUpButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 44)
+	self.rosterList:SetPos(contentX + 18, contentY + 76)
+	self.rosterList:SetSize(rosterWidth - 34, contentHeight - 94)
+
+	self.rosterScrollUpButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 76)
 	self.rosterScrollUpButton:SetSize(24, 24)
 
-	self.rosterScrollDownButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 74)
+	self.rosterScrollDownButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 106)
 	self.rosterScrollDownButton:SetSize(24, 24)
 
 	self.dataEntry:SetPos(editorX, contentY + 44)
@@ -2124,6 +2259,27 @@ function COMBINE:PerformLayout(width, height)
 
 	self.dataSaveButton:SetPos(contentX + contentWidth - 188, contentY + contentHeight - 46)
 	self.dataSaveButton:SetSize(170, 30)
+
+	self.photoList:SetPos(contentX + 18, contentY + 44)
+	self.photoList:SetSize(rosterWidth - 34, contentHeight - 62)
+
+	self.photoScrollUpButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 44)
+	self.photoScrollUpButton:SetSize(24, 24)
+
+	self.photoScrollDownButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 74)
+	self.photoScrollDownButton:SetSize(24, 24)
+
+	self.photoViewer:SetPos(editorX, contentY + 44)
+	self.photoViewer:SetSize(editorWidth, contentHeight - 62)
+
+	self.cameraList:SetPos(contentX + 18, contentY + 44)
+	self.cameraList:SetSize(rosterWidth - 34, contentHeight - 62)
+
+	self.cameraScrollUpButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 44)
+	self.cameraScrollUpButton:SetSize(24, 24)
+
+	self.cameraScrollDownButton:SetPos(contentX + 18 + rosterWidth - 26, contentY + 74)
+	self.cameraScrollDownButton:SetSize(24, 24)
 
 	self:UpdateVisibleState()
 end
@@ -2144,21 +2300,22 @@ function COMBINE:PopulateSelectedData()
 	self:UpdateStatus()
 end
 
-function COMBINE:LoadComputer(entity, _, powered, context)
-	self.entity = entity
-	self.context = context or {}
-	SetTerminalPowerState(self, powered)
+function COMBINE:PopulateRoster(query)
+	query = string.lower(tostring(query or ""))
 	local previousSelectionID = self.selectedTarget
 	self.rosterList:Clear()
 	self.selectedTarget = nil
 
 	for _, entry in ipairs(self.context.roster or {}) do
+		if (query != "" and !string.find(string.lower(entry.name), query, 1, true) and !string.find(entry.cid, query, 1, true)) then
+			continue
+		end
+
 		local status = entry.isOnline and "" or " [OFFLINE]"
 		local line = self.rosterList:AddLine(string.format("%s [#%s]%s", entry.name or "UNKNOWN", entry.cid or "00000", status))
 		
 		line.Paint = function(self, width, height)
 			local selected = self:IsSelected()
-
 			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
 			surface.DrawRect(0, 0, width, height)
 			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
@@ -2184,7 +2341,65 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 	if (self.selectedTarget) then
 		self:PopulateSelectedData()
 	end
+end
 
+function COMBINE:LoadComputer(entity, _, powered, context)
+	self.entity = entity
+	self.context = context or {}
+	SetTerminalPowerState(self, powered)
+
+	self.rosterSearch:SetText("")
+	self:PopulateRoster()
+
+	self.selectedCamera = nil
+	self.cameraList:Clear()
+	for _, camData in ipairs(self.context.cameras or {}) do
+		if (!IsValid(camData.ent)) then continue end
+		
+		local line = self.cameraList:AddLine(camData.name or string.format("C-i%d", camData.id))
+		line.Paint = function(self, width, height)
+			local selected = self:IsSelected()
+			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
+			surface.DrawRect(0, 0, width, height)
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
+			surface.DrawOutlinedRect(0, 0, width, height, 1)
+		end
+
+		if (line.Columns) then
+			for _, column in ipairs(line.Columns) do
+				column:SetTextColor(COMBINE_TEXT)
+				column:SetFont("ixComputerDOSTiny")
+			end
+		end
+
+		line.ixCamera = camData.ent
+	end
+
+	self.photoList:Clear()
+	for _, photo in ipairs(self.context.photoLogs or {}) do
+		local timestamp = os.date("%H:%M:%S", photo.time or 0)
+		local typeStr = photo.isSurveillance and L("SurveillanceCapture") or L("ScannerCapture")
+		local line = self.photoList:AddLine(timestamp, typeStr)
+
+		line.Paint = function(self, width, height)
+			local selected = self:IsSelected()
+			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
+			surface.DrawRect(0, 0, width, height)
+			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
+			surface.DrawOutlinedRect(0, 0, width, height, 1)
+		end
+
+		if (line.Columns) then
+			for _, column in ipairs(line.Columns) do
+				column:SetTextColor(COMBINE_TEXT)
+				column:SetFont("ixComputerDOSTiny")
+			end
+		end
+
+		line.ixPhotoData = photo
+	end
+
+	self.photoViewer:SetHTML("")
 	self.objectivesEntry:SetText((self.context.objectives and self.context.objectives.text) or "")
 	self.dataEntry:SetText("")
 	self.objectivesEntry:SetEnabled(self.context.canEditObjectives == true and IsTerminalReady(self))
@@ -2201,6 +2416,26 @@ function COMBINE:Think()
 	local wasBooting = IsBootSequenceActive(self)
 	UpdateBootSequence(self)
 
+	local cto = ix.plugin.Get("cto")
+	if (cto and IsValid(self.entity)) then
+		if (IsTerminalReady(self) and self.activeTab == "liveFeed" and IsValid(self.selectedCamera)) then
+			-- Ensure texture exists on entity
+			if (!self.entity.tex or !self.entity.mat) then
+				cto.terminalMaterialIdx = (cto.terminalMaterialIdx or 0) + 1
+				self.entity.tex = GetRenderTarget("ctouniquert" .. cto.terminalMaterialIdx, 512, 256, false)
+				self.entity.mat = CreateMaterial("ctouniquemat" .. cto.terminalMaterialIdx, "UnlitGeneric", {
+					["$basetexture"] = self.entity.tex,
+				})
+			end
+
+			-- Tell CTO to draw to this entity
+			self.entity:SetNWEntity("camera", self.selectedCamera)
+			cto.terminalsToDraw[self.entity] = true
+		else
+			cto.terminalsToDraw[self.entity] = nil
+		end
+	end
+
 	if (wasBooting != IsBootSequenceActive(self)) then
 		self:UpdateVisibleState()
 		self:UpdateStatus()
@@ -2209,6 +2444,11 @@ end
 
 function COMBINE:OnRemove()
 	if (IsValid(self.entity)) then
+		local cto = ix.plugin.Get("cto")
+		if (cto and cto.terminalsToDraw) then
+			cto.terminalsToDraw[self.entity] = nil
+		end
+
 		netstream.Start("ixInteractiveComputerEndUse", self.entity)
 	end
 

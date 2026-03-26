@@ -58,6 +58,49 @@ function PLUGIN:Tick()
 
 				ent.mat:SetTexture("$basetexture", ent.tex)
 				ent:SetSubMaterial(1, "!" .. ent.mat:GetName())
+			elseif (IsValid(camera) and camera:GetClass() == "ix_scanner") then
+				local camPos = camera:GetPos()
+				local camAngles = camera:GetAngles()
+				local pilot = camera:GetPilot()
+				local bScanning = IsValid(pilot) and pilot:GetNetVar("ixScanning")
+
+				render.PushRenderTarget(ent.tex)
+					if (bScanning) then
+						if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
+							render.RenderView({
+								origin = camPos + (camAngles:Forward() * 8),
+								angles = camAngles,
+								fov = 90,
+								aspect = 2,
+								x = 0,
+								y = 0,
+								w = 512,
+								h = 256,
+								drawviewmodel = false
+							})
+
+							ent.lastCamOutputTime = RealTime()
+						end
+					else
+						render.Clear(0, 0, 0, 255, false, true)
+					end
+
+					cam.Start2D()
+						local bulbColor = bScanning and Color(115, 200, 255) or Color(255, 0, 0)
+						local statusText = bScanning and "PILOTED" or "NO SIGNAL"
+
+						draw.SimpleText("<:: S-i" .. camera:EntIndex() .. " ::>", "BudgetLabel", 4, 6)
+						draw.SimpleText("<:: " .. statusText .. " ::>", "BudgetLabel", 4, 6 + draw.GetFontHeight("BudgetLabel"), bulbColor)
+						draw.SimpleText(camera:GetNetVar("ixScannerName", "SCN"), "BudgetLabel", 4, 252 - draw.GetFontHeight("BudgetLabel"), bulbColor)
+						
+						if (!bScanning) then
+							draw.SimpleText("CONNECTION LOST", "BudgetLabel", 256, 128, Color(255, 0, 0), 1, 1)
+						end
+					cam.End2D()
+				render.PopRenderTarget()
+
+				ent.mat:SetTexture("$basetexture", ent.tex)
+				ent:SetSubMaterial(1, "!" .. ent.mat:GetName())
 			else
 				ent:SetSubMaterial(1, "models/props_combine/combine_interface_disp")
 			end
