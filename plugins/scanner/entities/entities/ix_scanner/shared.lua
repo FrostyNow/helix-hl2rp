@@ -28,7 +28,7 @@ ENT.spotlightFar = 512
 ENT.spotlightFOV = 60
 ENT.spotlightLocalAngles = Angle(7.5, 0, 0)
 ENT.spotlightHDRColorScale = 0.67
-ENT.maxHealth = 100
+ENT.maxHealth = 30
 
 function ENT:SpawnFunction(ply, trace, className)
     local entity = ents.Create(className)
@@ -41,4 +41,18 @@ end
 
 function ENT:SetupDataTables()
     self:NetworkVar("Entity", 0, "Pilot")
+end
+
+function ENT:canOperate(ply)
+	if not IsValid(ply) or not ply:IsPlayer() then return false end
+
+	-- if (ply:IsAdmin()) then
+	-- 	return true
+	-- end
+
+	if (ply:IsCombine() and Schema and Schema.CanPlayerSeeCombineOverlay and Schema:CanPlayerSeeCombineOverlay(ply)) then
+		return true
+	end
+
+	return false
 end

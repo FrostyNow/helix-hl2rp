@@ -40,7 +40,7 @@ local function IsClassAllowedForMode(client, className, mode)
 	end
 
 	if (lowered == "overwatch") then
-		if (ix.plugin.Get("scanner") and IsValid(client:GetNetVar("ixScn"))) then
+	if (ix.plugin.Get("scanner") and IsValid(client:GetNetVar("ixScn"))) then
 			return true
 		end
 

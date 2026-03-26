@@ -11,6 +11,12 @@ net.Receive("ixScannerData", function(length, ply)
     local length = net.ReadUInt(16)
     local data = net.ReadData(length)
 
+    local pos = net.ReadVector()
+    local ang = net.ReadAngle()
+    local id = net.ReadString()
+    local trg = net.ReadString()
+    local zone = net.ReadString()
+
     local canCapture = false
     if (isSurveillance) then
         -- We trust the client if we're doing surveillance, 
@@ -40,6 +46,11 @@ net.Receive("ixScannerData", function(length, ply)
                 net.WriteBool(isSurveillance) 
                 net.WriteUInt(#data, 16)
                 net.WriteData(data, #data)
+                net.WriteVector(pos)
+                net.WriteAngle(ang)
+                net.WriteString(id)
+                net.WriteString(trg)
+                net.WriteString(zone)
             net.Send(receivers)
         end
 
@@ -47,7 +58,12 @@ net.Receive("ixScannerData", function(length, ply)
         table.insert(PLUGIN.photoHistory, 1, {
             data = data,
             isSurveillance = isSurveillance,
-            time = os.time()
+            time = os.time(),
+            pos = pos,
+            ang = ang,
+            id = id,
+            trg = trg,
+            zone = zone
         })
 
         if (#PLUGIN.photoHistory > 12) then

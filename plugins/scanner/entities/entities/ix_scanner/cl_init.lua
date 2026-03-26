@@ -79,7 +79,18 @@ net.Receive("ixScannerFlash", function()
 	end
 end)
 
+function ENT:Draw()
+	self:DrawModel()
+end
+
+ENT.DrawEntityInfo = true
+ENT.PopulateEntityInfo = true
+function ENT:OnShouldPopulateEntityInfo()
+	return true
+end
+
 function ENT:OnPopulateEntityInfo(tooltip)
+	-- print("Scanner OnPopulateEntityInfo called for " .. tostring(self)) -- Debug log
 	local isClawScanner = self:GetModel():find("shield_scanner")
 	local customName = self:GetNetVar("ixScannerName")
 

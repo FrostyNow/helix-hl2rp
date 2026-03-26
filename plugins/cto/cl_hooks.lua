@@ -67,8 +67,11 @@ function PLUGIN:Tick()
 				render.PushRenderTarget(ent.tex)
 					if (bScanning) then
 						if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
+							local oldNoDraw = camera:GetNoDraw()
+							camera:SetNoDraw(true)
+
 							render.RenderView({
-								origin = camPos + (camAngles:Forward() * 8),
+								origin = camPos + (camAngles:Forward() * 14),
 								angles = camAngles,
 								fov = 90,
 								aspect = 2,
@@ -78,6 +81,8 @@ function PLUGIN:Tick()
 								h = 256,
 								drawviewmodel = false
 							})
+
+							camera:SetNoDraw(oldNoDraw)
 
 							ent.lastCamOutputTime = RealTime()
 						end

@@ -28,7 +28,7 @@ if SERVER then
 	local jumpCooldown = {}
 
 	hook.Add("KeyPress", "JumpSoundsPlugin", function(ply, key)
-		if ply:IsValid() and key == IN_JUMP and ply:Alive() and ply:GetCharacter() and ply:IsOnGround() and ply:GetMoveType() ~= MOVETYPE_NOCLIP then
+		if ply:IsValid() and key == IN_JUMP and ply:Alive() and ply:GetCharacter() and ply:IsOnGround() and ply:GetMoveType() ~= MOVETYPE_NOCLIP and not IsValid(ply:GetNetVar("ixScn")) then
 
 			local soundCategory = (ply:GetCharacter():IsVortigaunt() and "vort") or (ply:IsCombine() and "combine") or "default"
 			local jumpSound = jumpSounds[soundCategory]
@@ -39,7 +39,7 @@ if SERVER then
 	end)
 
 	hook.Add("OnLand", "JumpSoundsPlugin", function(ply, water, vec)
-		if ply:IsValid() and ply:Alive() and ply:GetCharacter() and ply:IsOnGround() then
+		if ply:IsValid() and ply:Alive() and ply:GetCharacter() and ply:IsOnGround() and not IsValid(ply:GetNetVar("ixScn")) then
 			local chance = math.random(1, 10)
 
 			local soundCategory = (ply:GetCharacter():IsVortigaunt() and "vort") or (ply:IsCombine() and "combine") or "default"

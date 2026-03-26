@@ -1755,14 +1755,22 @@ end
 
 local function ApplyCombineStyling(frame)
 	StyleCombineListView(frame.rosterList)
+	StyleCombineListView(frame.photoList)
+	StyleCombineListView(frame.cameraList)
 	StyleCombineButton(frame.objectivesTabButton)
 	StyleCombineButton(frame.civilDataTabButton)
 	StyleCombineButton(frame.objectiveSaveButton)
 	StyleCombineButton(frame.dataSaveButton)
 	StyleCombineButton(frame.personalLogButton)
 	StyleCombineButton(frame.publicPanelButton)
+	StyleCombineButton(frame.photoLogsTabButton)
+	StyleCombineButton(frame.liveFeedTabButton)
 	StyleCombineButton(frame.rosterScrollUpButton)
 	StyleCombineButton(frame.rosterScrollDownButton)
+	StyleCombineButton(frame.photoScrollUpButton)
+	StyleCombineButton(frame.photoScrollDownButton)
+	StyleCombineButton(frame.cameraScrollUpButton)
+	StyleCombineButton(frame.cameraScrollDownButton)
 	frame.closeButton.Paint = function(_, width, height)
 		surface.SetDrawColor(0, 0, 0, 0)
 		surface.DrawRect(0, 0, width, height)
@@ -2115,8 +2123,17 @@ function COMBINE:UpdateStatus()
 end
 
 function COMBINE:ViewPhoto(photo)
-	if (!photo or !photo.data) then
+	if (!photo) then
 		self.photoViewer:SetHTML("")
+		return
+	end
+
+	if (!photo.data) then
+		self.photoViewer:SetHTML([[
+			<style>body { margin: 0; padding: 0; background: #000; color: #73c8ff; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }</style>
+			<body>LOADING DATA...</body>
+		]])
+		netstream.Start("ixInteractiveComputerRequestPhoto", self.entity, photo.time)
 		return
 	end
 
@@ -2154,8 +2171,13 @@ function COMBINE:Paint(width, height)
 		draw.SimpleText(L("interactiveComputerLiveFeed"), "ixComputerCombineBody", contentX + 18, top + 14, COMBINE_DIM, TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
 	end
 
-	if (IsTerminalReady(self) and self.activeTab == "liveFeed" and IsValid(self.entity) and self.entity.tex and IsValid(self.selectedCamera)) then
-		surface.SetMaterial(self.entity.mat)
+	if (IsTerminalReady(self) and self.activeTab == "liveFeed" and self.mat and IsValid(self.selectedCamera)) then
+		local factor = 0.24
+		local rosterWidth = math.floor(contentWidth * factor)
+		local editorX = contentX + rosterWidth + 16
+		local editorWidth = contentWidth - rosterWidth - 32
+
+		surface.SetMaterial(self.mat)
 		surface.SetDrawColor(255, 255, 255, 255)
 		-- 512x256 aspect, but stretched to fit content area nicely
 		surface.DrawTexturedRect(editorX, top + 44, editorWidth, contentHeight - 62)
@@ -2214,7 +2236,12 @@ function COMBINE:PerformLayout(width, height)
 	local navButtonWidth = navWidth - 24
 	local navButtonX = left + 12
 	local navButtonY = top + 40
-	local rosterWidth = math.floor(contentWidth * 0.36)
+	local factor = 0.36
+	if (self.activeTab == "liveFeed" or self.activeTab == "photoLogs") then
+		factor = 0.24
+	end
+
+	local rosterWidth = math.floor(contentWidth * factor)
 	local editorX = contentX + rosterWidth + 16
 	local editorWidth = contentWidth - rosterWidth - 32
 
@@ -2352,28 +2379,7 @@ function COMBINE:LoadComputer(entity, _, powered, context)
 	self:PopulateRoster()
 
 	self.selectedCamera = nil
-	self.cameraList:Clear()
-	for _, camData in ipairs(self.context.cameras or {}) do
-		if (!IsValid(camData.ent)) then continue end
-		
-		local line = self.cameraList:AddLine(camData.name or string.format("C-i%d", camData.id))
-		line.Paint = function(self, width, height)
-			local selected = self:IsSelected()
-			surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
-			surface.DrawRect(0, 0, width, height)
-			surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
-			surface.DrawOutlinedRect(0, 0, width, height, 1)
-		end
-
-		if (line.Columns) then
-			for _, column in ipairs(line.Columns) do
-				column:SetTextColor(COMBINE_TEXT)
-				column:SetFont("ixComputerDOSTiny")
-			end
-		end
-
-		line.ixCamera = camData.ent
-	end
+	self:RefreshCameraList()
 
 	self.photoList:Clear()
 	for _, photo in ipairs(self.context.photoLogs or {}) do
@@ -2417,22 +2423,35 @@ function COMBINE:Think()
 	UpdateBootSequence(self)
 
 	local cto = ix.plugin.Get("cto")
-	if (cto and IsValid(self.entity)) then
-		if (IsTerminalReady(self) and self.activeTab == "liveFeed" and IsValid(self.selectedCamera)) then
-			-- Ensure texture exists on entity
-			if (!self.entity.tex or !self.entity.mat) then
-				cto.terminalMaterialIdx = (cto.terminalMaterialIdx or 0) + 1
-				self.entity.tex = GetRenderTarget("ctouniquert" .. cto.terminalMaterialIdx, 512, 256, false)
-				self.entity.mat = CreateMaterial("ctouniquemat" .. cto.terminalMaterialIdx, "UnlitGeneric", {
-					["$basetexture"] = self.entity.tex,
-				})
-			end
+	if (cto) then
+		if (IsTerminalReady(self) and self.activeTab == "liveFeed") then
+			self:RefreshCameraList()
 
-			-- Tell CTO to draw to this entity
-			self.entity:SetNWEntity("camera", self.selectedCamera)
-			cto.terminalsToDraw[self.entity] = true
+			if (IsValid(self.selectedCamera)) then
+				-- Ensure texture exists on panel
+				if (!self.tex or !self.mat) then
+					cto.terminalMaterialIdx = (cto.terminalMaterialIdx or 0) + 1
+					self.tex = GetRenderTarget("ctouiunique" .. cto.terminalMaterialIdx, 512, 256, false)
+					self.mat = CreateMaterial("ctouiunique" .. cto.terminalMaterialIdx, "UnlitGeneric", {
+						["$basetexture"] = self.tex,
+					})
+
+					-- Mock entity methods so CTO can use the panel as a render target
+					self.GetNWEntity = function(_, key)
+						if (key == "camera") then
+							return self.selectedCamera
+						end
+					end
+					self.SetSubMaterial = function() end -- Dummy to prevent drawing on model
+				end
+
+				-- Tell CTO to draw to this panel
+				cto.terminalsToDraw[self] = true
+			else
+				cto.terminalsToDraw[self] = nil
+			end
 		else
-			cto.terminalsToDraw[self.entity] = nil
+			cto.terminalsToDraw[self] = nil
 		end
 	end
 
@@ -2443,12 +2462,16 @@ function COMBINE:Think()
 end
 
 function COMBINE:OnRemove()
-	if (IsValid(self.entity)) then
-		local cto = ix.plugin.Get("cto")
-		if (cto and cto.terminalsToDraw) then
+	local cto = ix.plugin.Get("cto")
+	if (cto and cto.terminalsToDraw) then
+		cto.terminalsToDraw[self] = nil
+
+		if (IsValid(self.entity)) then
 			cto.terminalsToDraw[self.entity] = nil
 		end
+	end
 
+	if (IsValid(self.entity)) then
 		netstream.Start("ixInteractiveComputerEndUse", self.entity)
 	end
 
@@ -2457,7 +2480,85 @@ function COMBINE:OnRemove()
 	end
 end
 
+function COMBINE:RefreshCameraList()
+	if (self.nextCameraRefresh and self.nextCameraRefresh > CurTime()) then
+		return
+	end
+
+	self.nextCameraRefresh = CurTime() + 1.5
+
+	local cameras = {}
+	for _, v in ipairs(ents.FindByClass("npc_combine_camera")) do
+		cameras[v] = "C-i" .. v:EntIndex()
+	end
+	
+	for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+		local pilot = v:GetPilot()
+		if (IsValid(pilot)) then
+			cameras[v] = v:GetNetVar("ixScannerName", "SCN-" .. v:EntIndex())
+		end
+	end
+	
+	local currentLines = self.cameraList:GetLines()
+	local needsRefresh = false
+	
+	if (#currentLines != table.Count(cameras)) then
+		needsRefresh = true
+	else
+		for _, line in ipairs(currentLines) do
+			if (!IsValid(line.ixCamera) or !cameras[line.ixCamera]) then
+				needsRefresh = true
+				break
+			end
+		end
+	end
+
+	if (needsRefresh) then
+		local previousSelection = self.selectedCamera
+		self.cameraList:Clear()
+		self.selectedCamera = nil
+
+		for ent, name in pairs(cameras) do
+			local line = self.cameraList:AddLine(name)
+			line.Paint = function(panel, width, height)
+				local selected = panel:IsSelected()
+				surface.SetDrawColor(selected and Color(24, 52, 84, 255) or Color(0, 0, 0, 0))
+				surface.DrawRect(0, 0, width, height)
+				surface.SetDrawColor(COMBINE_TEXT.r, COMBINE_TEXT.g, COMBINE_TEXT.b, selected and 90 or 18)
+				surface.DrawOutlinedRect(0, 0, width, height, 1)
+			end
+
+			if (line.Columns) then
+				for _, column in ipairs(line.Columns) do
+					column:SetTextColor(COMBINE_TEXT)
+					column:SetFont("ixComputerDOSTiny")
+				end
+			end
+
+			line.ixCamera = ent
+
+			if (ent == previousSelection) then
+				self.selectedCamera = ent
+				line:SetSelected(true)
+			end
+		end
+
+		self:UpdateStatus()
+	end
+end
+
 vgui.Register("ixInteractiveCombineTerminal", COMBINE, "DFrame")
+
+hook.Add("UpdateAnimation", "ixInteractiveComputerAnimationFix", function(ply, velocity, maxSeqGroundSpeed)
+	local terminal = ply:GetNetVar("ixUsingTerminal")
+	if (IsValid(terminal)) then
+		local targetPos = terminal:WorldSpaceCenter()
+		local aimAngles = (targetPos - ply:GetShootPos()):Angle()
+		
+		ply:SetPoseParameter("aim_pitch", math.NormalizeAngle(aimAngles.p))
+		ply:SetPoseParameter("aim_yaw", math.NormalizeAngle(aimAngles.y - ply:GetAngles().y))
+	end
+end)
 
 local CIVIC = {}
 
@@ -3273,6 +3374,28 @@ netstream.Hook("ixInteractiveComputerOpen", function(entity, data, powered, cont
 	end
 
 	OpenComputerUI(entity, data, powered, context)
+end)
+
+netstream.Hook("ixInteractiveComputerSendPhoto", function(photoData)
+	if (!IsValid(ix.gui.interactiveComputer) or !ix.gui.interactiveComputer.context or !ix.gui.interactiveComputer.context.photoLogs) then
+		return
+	end
+
+	-- Update cached photo data
+	for k, photo in ipairs(ix.gui.interactiveComputer.context.photoLogs) do
+		if (math.floor(photo.time) == math.floor(photoData.time)) then
+			photo.data = photoData.data
+			
+			-- If currently viewing this photo, refresh
+			if (ix.gui.interactiveComputer.activeTab == "photoLogs") then
+				local selected = ix.gui.interactiveComputer.photoList:GetSelected()
+				if (selected and selected[1] and selected[1].ixPhotoData == photo) then
+					ix.gui.interactiveComputer:ViewPhoto(photo)
+				end
+			end
+			break
+		end
+	end
 end)
 
 netstream.Hook("ixInteractiveComputerSync", function(entity, data, powered, context)

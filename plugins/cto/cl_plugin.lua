@@ -24,7 +24,7 @@ function PLUGIN:UpdateBiosignalLocations()
 
 	-- Clear active biosignals and expired lost biosignals.
 	for unit, data in pairs(self.biosignalLocations) do
-		if (!IsValid(unit) or !unit:IsCombine() or (!client:GetNetVar("IsBiosignalGone") and !unit:GetNetVar("IsBiosignalGone")) or curTime - data.time >= 120) then
+		if (!IsValid(unit) or (unit:IsPlayer() and !unit:IsCombine()) or (!client:GetNetVar("IsBiosignalGone") and !unit:GetNetVar("IsBiosignalGone")) or curTime - data.time >= 120) then
 			self.biosignalLocations[unit] = nil
 		end
 		

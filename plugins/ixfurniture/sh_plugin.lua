@@ -13,7 +13,25 @@ PLUGIN.FurnitureList = {
 	{model = "models/props_c17/canister01a.mdl", price = 50},
 	{model = "models/props_junk/wood_pallet001a.mdl", price = 30},
 	{model = "models/props_c17/FurnitureShelf001b.mdl", price = 150},
-	{model = "models/props_interiors/refrigerator01a.mdl", price = 800},
+	{model = "models/props_interiors/refrigerator01a.mdl", price = 400},
+	{model = "models/props_c17/FurnitureCupboard001a.mdl", price = 200},
+	{model = "models/props_c17/FurnitureDrawer001a.mdl", price = 400},
+	{model = "models/props_c17/FurnitureDrawer002a.mdl", price = 400},
+	{model = "models/props_c17/FurnitureDrawer003a.mdl", price = 400},
+	{model = "models/props_c17/FurnitureDresser001a.mdl", price = 400},
+	{model = "models/props_c17/FurnitureFireplace001a.mdl", price = 300},
+	{model = "models/props_c17/FurnitureFridge001a.mdl", price = 1000},
+	{model = "models/props_c17/FurnitureRadiator001a.mdl", price = 100},
+	{model = "models/props_c17/furnitureStove001a.mdl", price = 300},
+	{model = "models/props_c17/FurnitureTable001a.mdl", price = 250},
+	{model = "models/props_c17/FurnitureTable002a.mdl", price = 250},
+	{model = "models/props_c17/FurnitureTable003a.mdl", price = 250},
+	{model = "models/props_c17/FurnitureWashingmachine001a.mdl", price = 600},
+	{model = "models/props_lab/filecabinet02.mdl", price = 400},
+	{model = "models/props_wasteland/controlroom_filecabinet001a.mdl", price = 400},
+	{model = "models/props_wasteland/controlroom_filecabinet002a.mdl", price = 400},
+	{model = "models/props_wasteland/controlroom_storagecloset001a.mdl", price = 400},
+	{model = "models/props_wasteland/controlroom_storagecloset001b.mdl", price = 400},
 }
 
 -- Configs
@@ -250,7 +268,7 @@ if (CLIENT) then
 			ix.gui.furnitureMenu:Remove()
 		end
 
-		local frame = vgui.Create("ixFrame")
+		local frame = vgui.Create("DFrame")
 		frame:SetTitle(L("furnitureCatalog"))
 		frame:SetSize(450, 500)
 		frame:Center()

@@ -11,8 +11,10 @@ ITEM.factions = {FACTION_OTA}
 ITEM.functions.Use = {
 	name = "Place It",
 	icon = "icon16/cursor.png",
-	OnRun = function(item, player, client)
-		local ply = item.player
+	OnRun = function(item, player)
+		local ply = IsValid(player) and player or item.player
+		if (!IsValid(ply)) then return false end
+
 		ply:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
 
 		if ix.plugin.Get("scanner") then
@@ -34,8 +36,12 @@ ITEM.functions.Use = {
 			entity:Spawn()
 			entity:Activate()
 			entity:setClawScanner()
-			entity:SetNetVar("player", ply)
+			entity:SetNetVar("ixPlayer", ply)
+
+			local name = ix.plugin.Get("scanner"):GenerateUniqueScannerName(true)
+			entity:SetNetVar("ixScannerName", name)
 		else
+			ply:Notify("Spawning npc_shieldscanner instead of ix_scanner!") -- Debug
 			local ent = ents.Create("npc_shieldscanner")
 
 			for k, v in pairs(ents.GetAll()) do

@@ -5,16 +5,7 @@ local PICTURE_HEIGHT = PLUGIN.PICTURE_HEIGHT
 local PICTURE_WIDTH2 = PICTURE_WIDTH * 0.5
 local PICTURE_HEIGHT2 = PICTURE_HEIGHT * 0.5
 
-local font = ix.config.Get("font", "Roboto")
 
-surface.CreateFont("ixScannerFont", {
-	font = font,
-	antialias = false,
-	outline = true,
-	weight = 800,
-	extended,
-	size = 18
-})
 
 local view = {}
 local zoom = 2
@@ -22,6 +13,41 @@ local deltaZoom = zoom
 local nextClick = 0
 local hidden = false
 local data = {}
+
+local function ResetWeaponSelect(client)
+	if not IsValid(client) then return end
+
+	local weaponSelect = ix.plugin.Get("wepselect")
+	if not weaponSelect then return end
+
+	local weapons = client:GetWeapons()
+	local activeWeapon = client:GetActiveWeapon()
+	local activeIndex = 1
+
+	for i = 1, #weapons do
+		if weapons[i] == activeWeapon then
+			activeIndex = i
+			break
+		end
+	end
+
+	weaponSelect.index = activeIndex
+	weaponSelect.deltaIndex = activeIndex
+	weaponSelect.alpha = 0
+	weaponSelect.alphaDelta = 0
+	weaponSelect.fadeTime = 0
+	weaponSelect.infoAlpha = 0
+	weaponSelect.markup = nil
+end
+
+local function IsBlockedWeaponBind(bind)
+	bind = string.lower(bind)
+
+	return bind:find("invnext", 1, true)
+		or bind:find("invprev", 1, true)
+		or bind:find("slot", 1, true)
+		or bind:find("lastinv", 1, true)
+end
 
 local CLICK = "buttons/lightswitch2.wav"
 
@@ -43,22 +69,36 @@ function PLUGIN:CalcView(ply, origin, angles, fov)
 	if (IsValid(ix.gui.menu) or IsValid(ix.gui.characterMenu)) then return false end
 	if (LocalPlayer():GetNetVar("curCamera", false) or LocalPlayer():GetNetVar("curVisor", false)) then return end
 
-	local entity = ply:GetViewEntity()
+	local scanner = ply:GetNetVar("ixScn")
 
-	if (IsValid(ply.ixScn) and IsValid(entity) and entity == ply.ixScn) then
-		if not (input.IsKeyDown(KEY_C)) then
+	if (IsValid(scanner)) then
+		if (ply:GetViewEntity() != scanner) then
+			local aimAngles = ply:GetAimVector():Angle()
+			local targetPos = scanner:GetPos() - aimAngles:Forward() * 100 + aimAngles:Up() * 5
+			local tr = util.TraceLine({
+				start = scanner:GetPos(),
+				endpos = targetPos,
+				filter = {scanner, ply}
+			})
+
+			view.origin = tr.HitPos + tr.HitNormal * 5
+			view.angles = aimAngles
+			view.fov = fov
+
+			return view
+		elseif not (input.IsKeyDown(KEY_C)) then
+			view.origin = scanner:GetPos()
 			view.angles = ply:GetAimVector():Angle()
+
 			if (hidden) then
 				view.fov = fov - deltaZoom
-			else
-				view.fov = fov
-			end
 
-			if (hidden) then
 				if (math.abs(deltaZoom - zoom) > 5 and nextClick < RealTime()) then
 					nextClick = RealTime() + 0.05
 					ply:EmitSound("common/talk.wav", 50, 180)
 				end
+			else
+				view.fov = fov
 			end
 
 			return view
@@ -68,8 +108,13 @@ end
 
 function PLUGIN:InputMouseApply(command, x, y, angle)
 	if (hidden) then
-		zoom = math.Clamp(zoom + command:GetMouseWheel() * 1.5, 0, 40)
-		deltaZoom = Lerp(FrameTime() * 2, deltaZoom, zoom)
+		local wheel = command:GetMouseWheel()
+		if (wheel ~= 0) then
+			zoom = math.Clamp(zoom + wheel * 1.5, 0, 40)
+			deltaZoom = Lerp(FrameTime() * 2, deltaZoom, zoom)
+
+			ResetWeaponSelect(LocalPlayer())
+		end
 	end
 end
 
@@ -83,7 +128,9 @@ function PLUGIN:PreDrawOpaqueRenderables()
 		client:EmitSound(CLICK, 50, 120)
 	end
 
-	if (IsValid(client.ixScn) and IsValid(viewEntity) and viewEntity == client.ixScn) then
+	local scanner = client:GetNetVar("ixScn")
+
+	if (IsValid(scanner) and IsValid(viewEntity) and viewEntity == scanner) then
 		viewEntity:SetNoDraw(true)
 
 		if (self.lastViewEntity ~= viewEntity) then
@@ -95,6 +142,19 @@ function PLUGIN:PreDrawOpaqueRenderables()
 		hidden = true
 	elseif (hidden) then
 		hidden = false
+	end
+end
+
+function PLUGIN:Think()
+	local client = LocalPlayer()
+	if (IsValid(client:GetNetVar("ixScn"))) then
+		ResetWeaponSelect(client)
+	end
+end
+
+function PLUGIN:HUDShouldDraw(name)
+	if (name == "CHudWeaponSelection" and IsValid(LocalPlayer():GetNetVar("ixScn"))) then
+		return false
 	end
 end
 
@@ -124,7 +184,7 @@ function PLUGIN:HUDPaint()
 		draw.SimpleText("RE-CHARGING: "..percent.."%", "ixScannerFont", x, y - 24, Color(255 + glow, 100 + glow, 25, 250))
 	end
 
-	local scanner = self.lastViewEntity
+	local scanner = LocalPlayer():GetNetVar("ixScn")
 	local position = IsValid(scanner) and scanner:GetPos() or LocalPlayer():GetPos()
 	local angle = IsValid(scanner) and scanner:GetAngles() or LocalPlayer():GetAimVector():Angle()
 	local scannerName = IsValid(scanner) and scanner:GetNetVar("ixScannerName", L("scannerName")) or LocalPlayer():Name()
@@ -193,12 +253,26 @@ end
 
 function PLUGIN:PlayerBindPress(ply, bind, pressed)
 	bind = bind:lower()
-	if (bind:find("attack") and
-		pressed and
-		hidden and
-		IsValid(self.lastViewEntity)) then
-		self:takePicture()
-		return true
+
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		if (bind:find("impulse 100") and pressed) then
+			net.Start("ixScannerToggleFlashlight")
+			net.SendToServer()
+			return true
+		end
+
+		if (IsBlockedWeaponBind(bind)) then
+			ResetWeaponSelect(ply)
+			return true
+		end
+
+		if (bind:find("attack") and
+			pressed and
+			hidden and
+			IsValid(self.lastViewEntity)) then
+			self:takePicture()
+			return true
+		end
 	end
 end
 
@@ -208,5 +282,21 @@ function PLUGIN:PopulateCharacterInfo(client, character, tooltip)
 		panel:SetBackgroundColor(Color(100, 200, 255, 220))
 		panel:SetText(L("scanning"))
 		panel:SizeToContents()
+	end
+end
+function PLUGIN:ShouldDrawLocalPlayer(ply)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		return true
+	end
+end
+
+function PLUGIN:PrePlayerDraw(ply)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		ply:SetPoseParameter("aim_yaw", 0)
+		ply:SetPoseParameter("aim_pitch", 0)
+		ply:SetPoseParameter("head_yaw", 0)
+		ply:SetPoseParameter("head_pitch", 0)
+		ply:SetPoseParameter("body_yaw", 0)
+		ply:SetPoseParameter("spine_yaw", 0)
 	end
 end

@@ -106,6 +106,8 @@ local function GetExcludedFactions()
 	local excluded = {}
 	for _, v in pairs(ix.faction.indices) do
 		if (v.isCombine or v.name == "Administrator" or v.name == "Metropolice Force" or v.name == "Overwatch Transhuman Arm") then
+			excluded[v.index] = true
+			excluded[v.uniqueID] = true
 			excluded[v.name] = true
 		end
 	end
@@ -114,6 +116,16 @@ end
 
 function PLUGIN:BuildCombinePayload(client, callback)
 	local scannerPlugin = ix.plugin.Get("scanner")
+	local photoHistory = {}
+	if (scannerPlugin and scannerPlugin.photoHistory) then
+		for _, v in ipairs(scannerPlugin.photoHistory) do
+			photoHistory[#photoHistory + 1] = {
+				isSurveillance = v.isSurveillance,
+				time = v.time
+			}
+		end
+	end
+
 	local payload = {
 		combineTerminal = true,
 		civicData = self:GetCivicPanelData(),
@@ -123,7 +135,7 @@ function PLUGIN:BuildCombinePayload(client, callback)
 		objectives = Schema and Schema.CombineObjectives or {},
 		journalData = self:GetCombineJournalData(client),
 		roster = {},
-		photoLogs = scannerPlugin and scannerPlugin.photoHistory or {},
+		photoLogs = photoHistory,
 		cameras = {}
 	}
 
@@ -156,7 +168,7 @@ function PLUGIN:BuildCombinePayload(client, callback)
 			continue
 		end
 
-		if (excluded[character:GetFaction().name]) then
+		if (excluded[character:GetFaction()]) then
 			continue
 		end
 
@@ -665,6 +677,7 @@ function PLUGIN:OpenComputer(client, entity)
 	storageEntity.ixActiveUser = client
 	entity.ixActiveUser = client
 	entity.ixSessionStorageEntity = storageEntity
+	client:SetNetVar("ixUsingTerminal", entity)
 
 	if (self:IsCivicComputer(entity)) then
 		netstream.Start(client, "ixInteractiveComputerOpen", entity, entity:GetComputerData(), entity:GetPowered(), self:BuildCivicPayload(client))
@@ -700,11 +713,19 @@ function PLUGIN:ReleaseComputerUser(entity, client)
 	end
 
 	if (IsValid(primaryEntity)) then
+		if (IsValid(primaryEntity.ixActiveUser)) then
+			primaryEntity.ixActiveUser:SetNetVar("ixUsingTerminal", nil)
+		end
+
 		primaryEntity.ixActiveUser = nil
 		primaryEntity.ixSessionStorageEntity = nil
 	end
 
 	if (IsValid(storageEntity)) then
+		if (IsValid(storageEntity.ixActiveUser)) then
+			storageEntity.ixActiveUser:SetNetVar("ixUsingTerminal", nil)
+		end
+
 		storageEntity.ixActiveUser = nil
 		self:ClearAccessSession(storageEntity, client)
 	end
@@ -1315,29 +1336,20 @@ netstream.Hook("ixInteractiveComputerSaveCombineJournal", function(client, entit
 	netstream.Start(client, "ixInteractiveComputerSyncCombineJournal", entity, normalized, PLUGIN:BuildOpenContext(client, entity))
 end)
 
-function PLUGIN:TryBypassSecurity(client, entity)
+
+netstream.Hook("ixInteractiveComputerRequestPhoto", function(client, entity, timestamp)
 	local canUse, failMessage = IsComputerAccessible(client, entity)
-	if (!canUse) then
-		client:NotifyLocalized(failMessage)
-		return false
+	if (!canUse) then return end
+
+	local scannerPlugin = ix.plugin.Get("scanner")
+	if (!scannerPlugin or !scannerPlugin.photoHistory) then return end
+
+	-- Find by timestamp (rounding to nearest second for network tolerance)
+	local searchTime = math.floor(timestamp)
+	for _, v in ipairs(scannerPlugin.photoHistory) do
+		if (math.floor(v.time) == searchTime) then
+			netstream.Start(client, "ixInteractiveComputerSendPhoto", v)
+			break
+		end
 	end
-
-	entity = self:ResolveComputerEntity(entity)
-
-	if (!entity:IsCombineTerminal()) then
-		client:NotifyLocalized("interactiveComputerInvalidEmpTarget")
-		return false
-	end
-
-	if (entity:IsSecurityBypassed()) then
-		client:NotifyLocalized("interactiveComputerSecurityAlreadyBypassed")
-		return false
-	end
-
-	entity:SetSecurityBypass(SECURITY_BYPASS_DURATION)
-	entity:EmitSound("ambient/machines/combine_terminal_idle2.wav", 65, 110, 0.7)
-	entity:EmitSound("buttons/combine_button1.wav", 60, 100, 0.7)
-	client:NotifyLocalized("interactiveComputerSecurityBypassed")
-
-	return true
-end
+end)

@@ -55,7 +55,7 @@ end
 function PLUGIN:DoPostBiosignalLoss(client)
 	client:SetNetVar("IsBiosignalGone", true)
 
-	local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+	local location = (client.GetAreaName and client:GetAreaName() != "") and client:GetAreaName() or L("unknown location", client)
 	local unitID = Schema:GetCombineUnitID(client)
 
 	-- Alert all other units.
@@ -80,7 +80,7 @@ end
 -- scanner plugin support
 function PLUGIN:DoPostScannerLoss(scanner)
 	local pilot = scanner:GetPilot()
-	local location = scanner:GetAreaName() != "" and scanner:GetAreaName() or "unknown location"
+	local location = (IsValid(pilot) and pilot.GetAreaName and pilot:GetAreaName() != "") and pilot:GetAreaName() or "unknown location"
 	local scannerID = scanner:GetNetVar("ixScannerName", "SCN")
 
 	-- Alert all other units.
@@ -100,7 +100,7 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 			if (bEnable) then
 				client:SetNetVar("IsBiosignalGone", false)
 
-				local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+				local location = (client.GetAreaName and client:GetAreaName() != "") and client:GetAreaName() or L("unknown location", client)
 
 				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 45)) -- Alert this unit.
 

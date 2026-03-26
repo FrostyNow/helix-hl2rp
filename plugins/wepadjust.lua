@@ -213,6 +213,12 @@ function PLUGIN:InitializedPlugins()
 		swep.MinDamage = 5
 		swep.MaxDamage = 8
 	end
+
+	// etc
+	local swep = weapons.GetStored("weapon_ezt_mp5k")
+	if (swep) then
+		swep.Primary.DefaultClip = 0
+	end
 end
 
 local function GetMeleeClass(attacker, inflictor)

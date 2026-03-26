@@ -29,7 +29,7 @@ function PLUGIN:createScanner(ply, isClawScanner)
 	entity:SetAngles(ply:GetAngles())
 	entity:Spawn()
 	entity:Activate()
-	entity:SetNetVar("player", ply)
+	entity:SetNetVar("ixPlayer", ply)
 
 	if (isClawScanner) then
 		entity:setClawScanner()
@@ -96,7 +96,7 @@ function PLUGIN:CanPlayerReceiveScan(ply, photographer)
 end
 
 function PLUGIN:PlayerSwitchFlashlight(ply, enabled)
-	local scanner = ply.ixScn
+	local scanner = ply:GetNetVar("ixScn")
 	if (not IsValid(scanner)) then return end
 
 	if ((scanner.nextLightToggle or 0) >= CurTime()) then return false end
@@ -174,5 +174,41 @@ end
 function PLUGIN:SetupPlayerVisibility(ply)
 	if (IsValid(ply.ixScn)) then
 		AddOriginToPVS(ply.ixScn:GetPos())
+	end
+end
+
+function PLUGIN:CanPlayerHold(ply, entity)
+	if (entity:GetClass() == "ix_scanner") then
+		return false
+	end
+end
+
+if (SERVER) then
+	util.AddNetworkString("ixScannerToggleFlashlight")
+
+	net.Receive("ixScannerToggleFlashlight", function(len, ply)
+		local scanner = ply:GetNetVar("ixScn")
+
+		if (IsValid(scanner)) then
+			if ((scanner.nextLightToggle or 0) >= CurTime()) then return end
+			scanner.nextLightToggle = CurTime() + 0.5
+
+			local pitch
+			if (scanner:isSpotlightOn()) then
+				scanner:disableSpotlight()
+				pitch = 240
+			else
+				scanner:enableSpotlight()
+				pitch = 250
+			end
+
+			scanner:EmitSound("npc/turret_floor/click1.wav", 50, pitch)
+		end
+	end)
+end
+
+function PLUGIN:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		return true
 	end
 end

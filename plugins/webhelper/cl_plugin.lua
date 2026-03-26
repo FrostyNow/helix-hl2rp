@@ -86,7 +86,7 @@ local function PopulateLoreTab(container)
     local html = canvas:Add("DHTML")
     html:Dock(FILL)
 
-    local text = PLUGIN.loreTranslations[ix.lang.GetActual("language")] or PLUGIN.loreTranslations.english
+    local text = PLUGIN.loreTranslations[ix.option.Get("language", "english")] or PLUGIN.loreTranslations.english
     html:SetHTML(text)
 end
 

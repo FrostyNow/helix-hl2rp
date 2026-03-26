@@ -11,8 +11,10 @@ ITEM.classes = {CLASS_MPU, CLASS_EMP}
 ITEM.functions.Use = {
 	name = "Place It",
 	icon = "icon16/cursor.png",
-	OnRun = function(item, player, client)
-		local ply = item.player
+	OnRun = function(item, player)
+		local ply = IsValid(player) and player or item.player
+		if (!IsValid(ply)) then return false end
+
 		ply:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
 
 		if ix.plugin.Get("scanner") then
@@ -33,8 +35,19 @@ ITEM.functions.Use = {
 			entity:SetAngles(ply:GetAngles())
 			entity:Spawn()
 			entity:Activate()
-			entity:SetNetVar("player", ply)
+			entity:SetNetVar("ixPlayer", player or ply)
+
+			local name = ix.plugin.Get("scanner"):GenerateUniqueScannerName(false)
+			entity:SetNetVar("ixScannerName", name)
+			
+			if (IsValid(player or ply)) then
+				(player or ply):Notify("SPAWNED: ix_scanner (" .. name .. ")")
+			end
 		else
+			if (IsValid(player or ply)) then
+				(player or ply):Notify("SPAWNED: npc_cscanner (PLUGIN NOT FOUND)")
+			end
+			ply:Notify("Spawning npc_cscanner instead of ix_scanner!") -- Debug
 			local ent = ents.Create("npc_cscanner")
 
 			for k, v in pairs(ents.GetAll()) do

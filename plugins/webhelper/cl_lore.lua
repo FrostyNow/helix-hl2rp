@@ -1,14 +1,14 @@
 local loreStyles = [[
 <style>
     body {
-        background-color: transparent;
-        color: #f0f0f0;
+        background-color: #0c0d10;
+        color: #e0e0e0;
         font-family: 'Malgun Gothic', 'Inter', 'Segoe UI', sans-serif;
-        line-height: 1.6;
-        padding: 40px;
+        line-height: 1.8;
+        padding: 50px 80px;
         margin: 0;
         -webkit-font-smoothing: antialiased;
-        overflow-y: scroll;
+        overflow-y: auto;
     }
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -16,101 +16,85 @@ local loreStyles = [[
     ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
     .content {
-        max-width: 850px;
-        margin: 0 auto;
-        animation: fadeIn 0.4s ease-out;
+        animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
     }
     @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
+        from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
     h1 {
         color: #fff;
-        font-size: 32px;
-        font-weight: 500;
-        margin-bottom: 30px;
-        letter-spacing: -0.5px;
+        font-size: 36px;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 40px;
+        letter-spacing: -1px;
+        border-left: 4px solid #bf394b;
+        padding-left: 20px;
     }
     .divider {
         height: 1px;
-        background: rgba(255, 255, 255, 0.1);
-        margin: 40px 0;
+        background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), transparent);
+        margin: 50px 0;
     }
     .paragraph {
-        margin-bottom: 24px;
-        color: #ccc;
-        font-size: 16px;
+        margin-bottom: 30px;
+        color: #d1d1d1;
+        font-size: 17px;
         text-align: justify;
+        word-break: keep-all;
+        text-indent: 1.5em;
     }
     h2 {
         color: #fff;
-        font-size: 20px;
+        font-size: 22px;
         font-weight: 600;
-        margin-top: 60px;
-        margin-bottom: 25px;
+        margin-top: 20px;
+        margin-bottom: 30px;
         text-transform: uppercase;
-        letter-spacing: 1px;
-        opacity: 0.9;
+        letter-spacing: 2px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 15px;
+        display: inline-block;
     }
     .term-list {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 15px;
     }
     .term-item {
-        padding: 20px;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 4px;
-        transition: background 0.2s ease;
+        padding: 24px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.04);
+        border-radius: 8px;
+        transition: all 0.3s ease;
     }
     .term-item:hover {
-        background: rgba(255, 255, 255, 0.05);
+        background: rgba(255, 255, 255, 0.04);
+        border-color: rgba(255, 255, 255, 0.1);
+        transform: translateX(5px);
     }
     .term-name {
         color: #fff;
-        font-weight: 600;
-        font-size: 17px;
+        font-weight: 700;
+        font-size: 18px;
         display: block;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
     }
     .term-content {
-        color: #aaa;
-        font-size: 14px;
-        line-height: 1.5;
+        color: #b0b0b0;
+        font-size: 15px;
+        line-height: 1.6;
     }
-    .breen {
-        color: #967daf;
-        font-weight: 600;
-    }
-    .overwatch {
-        color: #bf394b;
-        font-weight: 600;
-    }
-    .ota {
-        color: #b56e3c;
-        font-weight: 600;
-    }
-    .cp {
-        color: #5d79ad;
-        font-weight: 600;
-    }
-    .cwu {
-        color: #908f53;
-        font-weight: 600;
-    }
-    .conscript {
-        color: #8fa398;
-        font-weight: 600;
-    }
-    .vort {
-        color: #4d9e9a;
-        font-weight: 600;
-    }
-    .rebel {
-        color: #f37b21;
-        font-weight: 600;
-    }
+    .breen { color: #d6b3ff; font-weight: 600; }
+    .overwatch { color: #ff4d61; font-weight: 600; }
+    .ota { color: #ff9d5c; font-weight: 600; }
+    .cp { color: #7da5f5; font-weight: 600; }
+    .cwu { color: #e6e385; font-weight: 600; }
+    .conscript { color: #bad1c5; font-weight: 600; }
+    .vort { color: #72dbd6; font-weight: 600; }
+    .rebel { color: #ff9d52; font-weight: 600; }
+    .lambda { color: #ff9d52; font-weight: 800; }
 </style>
 ]]
 

@@ -145,7 +145,7 @@ end
 function PLUGIN:OnCharacterFallover(client, entity, bFallenOver)
 	if (client:IsCombine() and !client:GetNetVar("IsBiosignalGone")) then
 		if (bFallenOver) then
-			local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+			local location = (client.GetAreaName and client:GetAreaName() != "") and client:GetAreaName() or L("unknown location", client)
 			local unitID = Schema:GetCombineUnitID(client)
 
 			Schema:AddCombineDisplayMessage("@DownloadingTrauma", Color(255, 255, 255, 255))

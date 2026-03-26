@@ -72,8 +72,8 @@ function PLUGIN:GenerateUniqueScannerName(isClaw)
 end
 
 if ( CLIENT ) then
-	PLUGIN.PICTURE_WIDTH = 580
-	PLUGIN.PICTURE_HEIGHT = 420
+	PLUGIN.PICTURE_WIDTH = 700
+	PLUGIN.PICTURE_HEIGHT = 525
 end
 
 ix.util.Include("sv_photos.lua")
@@ -141,6 +141,42 @@ function PLUGIN:GetCharacterName(ply, chatType)
 	end
 end
 
+function PLUGIN:SetupMove(ply, mv, cmd)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		mv:SetForwardSpeed(0)
+		mv:SetSideSpeed(0)
+		mv:SetVelocity(vector_origin)
+	end
+end
+
+function PLUGIN:CalcMainActivity(ply, velocity)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		return ply:GetSequenceActivity(ply:LookupSequence("idle_all_01") or 0), -1
+	end
+end
+
+function PLUGIN:UpdateAnimation(ply, velocity, maxSeqGroundSpeed)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		ply:SetPoseParameter("move_x", 0)
+		ply:SetPoseParameter("move_y", 0)
+		ply:SetPoseParameter("aim_yaw", 0)
+		ply:SetPoseParameter("aim_pitch", 0)
+		ply:SetPoseParameter("head_yaw", 0)
+		ply:SetPoseParameter("head_pitch", 0)
+		ply:SetPoseParameter("body_yaw", 0)
+		ply:SetPoseParameter("spine_yaw", 0)
+		ply:SetIK(false)
+
+		return true
+	end
+end
+
+function PLUGIN:CanPlayerRaiseWeapon(ply)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		return false
+	end
+end
+
 function PLUGIN:InitializedChatClasses()
 	local proximityClasses = {"ic", "me", "it", "w", "y", "looc", "roll"}
 
@@ -153,14 +189,7 @@ function PLUGIN:InitializedChatClasses()
 
 				local speakPos = IsValid(speakerScanner) and speakerScanner:GetPos() or speaker:GetPos()
 				local listenPos = IsValid(listenerScanner) and listenerScanner:GetPos() or listener:GetPos()
-				local range = (isnumber(this.range) and this.range or ix.config.Get("chatRange", 280)) ^ 2
-
-				-- yells and rolls use multiplier (square of distance multiplier)
-				if (id == "y" or id == "me" or id == "it" or id == "roll") then
-					range = range * 4 -- typical helix 2x distance squared
-				elseif (id == "w") then
-					range = range * 0.0625 -- 0.25 distance squared
-				end
+				local range = isnumber(this.range) and this.range or (ix.config.Get("chatRange", 280) ^ 2)
 
 				return (speakPos - listenPos):LengthSqr() <= range
 			end

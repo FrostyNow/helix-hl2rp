@@ -30,7 +30,7 @@ function ENT:ejectPilot()
 	if (not IsValid(pilot)) then return end
 
 	pilot:SetMoveType(MOVETYPE_WALK)
-	pilot:UnSpectate()
+	pilot:SetViewEntity(NULL)
 	pilot:DrawViewModel(true)
 	pilot:CrosshairEnable()
 	pilot:SetNetVar("ixScanning", nil)
@@ -47,13 +47,15 @@ function ENT:setPilot(ply)
 	self:ejectPilot()
 	self:SetPilot(ply)
 
-	ply:Spectate(OBS_MODE_CHASE)
-	ply:SpectateEntity(self)
+	ply:SelectWeapon("ix_hands")
+	ply:SetNetVar("raised", false)
 	ply:DrawViewModel(false)
 	ply:CrosshairEnable()
 	ply:Flashlight(false)
-	ply:SetNetVar("ixScanning", true)
+	ply:SetNetVar("flashlight", false)
+	ply:SetNetVar("ixScanning", false)
 	ply:SetNetVar("ixScn", self)
+	ply.ixScn = self -- Ensure the player has the member variable for KeyPress toggles!
 
 	ply:SetMoveType(MOVETYPE_NONE)
 end
@@ -158,12 +160,22 @@ function ENT:Initialize()
 		self:SetNetVar("ixScannerName", PLUGIN:GenerateUniqueScannerName(false))
 	end
 
-	self.targetDir = vector_origin
+	self.targetDir = Vector(0, 0, 0)
+	self.noise = Vector(0, 0, 0)
+	self.faceAngles = Angle(0, 0, 0)
+	self.accelAnglular = Vector(0, 0, 0)
+	
 	self.health = self.maxHealth
+	self:SetMaxHealth(self.maxHealth)
+	self:SetHealth(self.maxHealth)
 end
 
 function ENT:setClawScanner()
 	self:SetModel("models/shield_scanner.mdl")
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:GetPhysicsObject():EnableMotion(true)
+	self:GetPhysicsObject():Wake()
+	self:GetPhysicsObject():EnableGravity(false)
 	self:PrecacheGibs()
 	self:ResetSequence("hoverclosed")
 
@@ -209,10 +221,28 @@ end
 function ENT:handlePilotMove()
 	local still = true
 	local pilot = self:GetPilot()
+	local angles = pilot:EyeAngles()
+	local forward = angles:Forward()
+	local right = angles:Right()
 
 	if (pilot:KeyDown(IN_FORWARD)) then
 		self.accelXY = Lerp(0.1, self.accelXY, 10)
-		self.targetDir = self.targetDir + pilot:GetAimVector()
+		self.targetDir = self.targetDir + forward
+		still = false
+	end
+	if (pilot:KeyDown(IN_BACK)) then
+		self.accelXY = Lerp(0.1, self.accelXY, 10)
+		self.targetDir = self.targetDir - forward
+		still = false
+	end
+	if (pilot:KeyDown(IN_MOVELEFT)) then
+		self.accelXY = Lerp(0.1, self.accelXY, 10)
+		self.targetDir = self.targetDir - right
+		still = false
+	end
+	if (pilot:KeyDown(IN_MOVERIGHT)) then
+		self.accelXY = Lerp(0.1, self.accelXY, 10)
+		self.targetDir = self.targetDir + right
 		still = false
 	end
 	if (pilot:KeyDown(IN_JUMP)) then
@@ -225,12 +255,13 @@ function ENT:handlePilotMove()
 		self.targetDir = self.targetDir - Vector(0, 0, 1)
 		still = false
 	end
+
 	if (still) then
 		self.accelXY = Lerp(0.5, self.accelXY, 0)
 		self.accelZ = Lerp(0.5, self.accelZ, 0)
 	end
 
-	-- pilot:SetPos(self:GetPos()) -- 본체 이동 제거: 캐릭터가 원래 위치에 남도록 함
+	-- pilot:SetPos(self:GetPos())
 end
 
 function ENT:discourageHitGround()
@@ -402,28 +433,20 @@ function ENT:doDamageSound()
 end
 
 function ENT:OnTakeDamage(dmgInfo)
+	if (self.bDead) then return end
+
+	local damage = dmgInfo:GetDamage()
 	self.lastHealth = self.health
-	self.health = self.health - dmgInfo:GetDamage()
+	self.health = self.health - damage
+	self:SetHealth(self.health)
 
 	if (self.health <= 0) then
+		self.bDead = true
 		self:die(dmgInfo)
 	else
 		-- 파일럿 체력에는 영향 없음
 		self:doDamageSound()
 	end
-end
-
-function ENT:canOperate(ply)
-	if not IsValid(ply) or not ply:IsPlayer() then return false end
-
-	local char = ply:GetCharacter()
-	local inv = char and char:GetInventory()
-
-	if ply:IsCombine() and Schema and Schema.CanPlayerSeeCombineOverlay and Schema:CanPlayerSeeCombineOverlay(ply) then
-		return true
-	end
-
-	return false
 end
 
 function ENT:Use(activator, caller)

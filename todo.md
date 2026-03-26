@@ -1,12 +1,23 @@
 # 이 파일은 메모용이므로 읽지 말 것/내 허락도 없이 바로 작업하지도 마
 
 # 테스트
-- 농사 플러그인 테스트
 - 가구 배치 테스트
-- 스캐너/카메라 테스트
-- 시민 데이터 검색 기능
+- 새로운 애드온
 - 기동대 인식 테스트
 - 웹셀렉트 테스트
+
+스캐너를 조종 중일 때 스캐너가 채팅으로 보이스를 치거나, 마이크 보이스를 사용하면 소리가 스캐너에서 나오게 해줄래? 그리고 스캐너 사용 중에 ic로는 combine 같은 기존 보이스는 안되게 해줘. 단, 그 외 채팅 계열은 스캐너 기준이 아니라 플레이어 캐릭터 기준으로 플레이어 캐릭터 이름으로 나가게 해줘.
+
+조건 요약
+1. 스캐너 조종 중 ic 채팅은 스캐너 위치에서 출력한다.
+2. 스캐너 조종 중 ic 채팅으로 combine 보이스를 사용할 수 없다, overwatch 보이스는 되며 스캐너 위치에서 소리를 낸다.
+3. 스캐너 조종 중 radio 계열 채팅은 플레이어 캐릭터 위치에서 출력하고, 음성도 그 위치에서 출력한다.
+4. 스캐너 조종 중 마이크 보이스는 스캐너 위치에서 출력한다.
+
+[ERROR] gamemodes/ixhl2rp/plugins/ixfurniture/sh_plugin.lua:298: attempt to call method 'SetBackgroundColor' (a nil value)
+  1. func - gamemodes/ixhl2rp/plugins/ixfurniture/sh_plugin.lua:298
+   2. unknown - lua/includes/extensions/net.lua:34
+
 
 # 우선순위 높음
 - 사업 메뉴 접근을 허가하는 근처 엔티티

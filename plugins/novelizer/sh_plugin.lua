@@ -73,6 +73,7 @@ ix.lang.AddTable("english", {
 	novelizerNewspaperProp = "newspaper",
 	novelizerRadioProp = "radio",
 	novelizerTVProp = "television",
+	novelizerScanner = "scanner",
 	novelizerBucketFire = "bucket fire",
 	novelizerBonfire = "bonfire",
 	novelizerBreachCharge = "breaching charge",
@@ -657,6 +658,7 @@ ix.lang.AddTable("korean", {
 	novelizerNewspaperProp = "신문",
 	novelizerRadioProp = "라디오",
 	novelizerTVProp = "TV",
+	novelizerScanner = "스캐너",
 	novelizerBucketFire = "양동이 화로",
 	novelizerBonfire = "모닥불",
 	novelizerBreachCharge = "폭파 장치",
@@ -1511,6 +1513,7 @@ local modelSubjectPhrases = {
 	{patterns = {"newspaper"}, phrase = "novelizerNewspaperProp"},
 	{patterns = {"radio"}, phrase = "novelizerRadioProp"},
 	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"},
+	{patterns = {"scanner"}, phrase = "novelizerScanner"},
 	{patterns = {"shipment"}, phrase = "novelizerShipment"}
 }
 
