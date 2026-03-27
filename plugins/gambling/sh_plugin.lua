@@ -16,39 +16,39 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ix.util.Include("sv_hooks.lua")
 
-ix.config.Add("gamblingPrice", 30, "How many tokens should it cost to spin the slot machine?", nil, {
-	category = "Slot Machine",
-	data = {min = 1, max = 100},
-})
-
-ix.config.Add("jackpotChance", 100, "The chance of a jackpot occurring, where 1 in N spins results in a win.", nil, {
+ix.config.Add("gamblingPrice", 50, "How many tokens should it cost to spin the slot machine?", nil, {
 	category = "Slot Machine",
 	data = {min = 1, max = 500},
 })
 
-ix.config.Add("singleBarDollarSign", 100, "Tokens earned for Single Bar or Dollar Sign jackpot.", nil, {
+ix.config.Add("jackpotChance", 150, "The chance of a jackpot occurring, where 1 in N spins results in a win.", nil, {
 	category = "Slot Machine",
-	data = {min = 1, max = 1000},
+	data = {min = 1, max = 500},
 })
 
-ix.config.Add("horseShoeDoubleBar", 250, "Tokens earned for Horse Shoe or Double Bar jackpot.", nil, {
-	category = "Slot Machine",
-	data = {min = 1, max = 1000},
-})
-
-ix.config.Add("tripleBarClover", 500, "Tokens earned for Triple Bar or Clover jackpot.", nil, {
-	category = "Slot Machine",
-	data = {min = 1, max = 1000},
-})
-
-ix.config.Add("luckySevenDiamond", 1000, "Tokens earned for Lucky 7 or Diamond jackpot.", nil, {
+ix.config.Add("singleBarDollarSign", 350, "Tokens earned for Single Bar or Dollar Sign jackpot.", nil, {
 	category = "Slot Machine",
 	data = {min = 1, max = 2000},
 })
 
-ix.config.Add("gamblingSymbolPayout", 12, "Tokens earned per matching symbol for non-jackpot wins.", nil, {
+ix.config.Add("horseShoeDoubleBar", 400, "Tokens earned for Horse Shoe or Double Bar jackpot.", nil, {
 	category = "Slot Machine",
-	data = {min = 1, max = 50},
+	data = {min = 1, max = 3000},
+})
+
+ix.config.Add("tripleBarClover", 1000, "Tokens earned for Triple Bar or Clover jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 5000},
+})
+
+ix.config.Add("lucky7Diamond", 5000, "Tokens earned for Lucky 7 or Diamond jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 10000},
+})
+
+ix.config.Add("gamblingSymbolPayout", 20, "Tokens earned per matching symbol for non-jackpot wins.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 100},
 })
 
 ix.lang.AddTable("english", {

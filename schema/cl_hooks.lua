@@ -507,7 +507,7 @@ function Schema:UpdateCharacterInfo(panel)
 end
 
 function Schema:BuildBusinessMenu(panel)
-	return ix.config.Get("allowBusiness", true)
+	return self:CanPlayerUseBusiness(LocalPlayer())
 end
 
 function Schema:PopulateHelpMenu(tabs)

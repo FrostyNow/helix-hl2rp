@@ -64,7 +64,7 @@ do
 		itemLost = "You've lost item %s.",
 		moneyLost = "You've lost %s.",
 		corpseName = "%s's Belongings",
-		search = "Search",
+		searchCorpse = "Search",
 		revive = "Revive",
 		reviveNotify = "You have revived %s using %s.",
 		noHealItem = "You don't have medical items for revival.",
@@ -77,7 +77,7 @@ do
 		itemLost = "당신은 %s(을)를 잃었습니다.",
 		moneyLost = "당신은 %s(을)를 잃었습니다.",
 		corpseName = "%s의 소지품",
-		search = "수색하기",
+		searchCorpse = "수색하기",
 		revive = "소생시키기",
 		reviveNotify = "%s(을)를 사용하여 %s(을)를 소생시켰습니다.",
 		noHealItem = "소생에 필요한 의료 도구가 없습니다.",
@@ -100,7 +100,7 @@ if (CLIENT) then
 				local options = {}
 
 				if (this:GetNetVar("ixInventory")) then
-					options[L"search"] = function()
+					options[L"searchCorpse"] = function()
 						return true
 					end
 				end
@@ -535,7 +535,7 @@ if (SERVER) then
 		local invID = entity:GetNetVar("ixInventory")
 		local target = entity:GetNetVar("player")
 
-		local isSearch = (option == L("search", client))
+		local isSearch = (option == L("searchCorpse", client))
 		local isRevive = (option == L("revive", client))
 
 		if (invID and isSearch) then

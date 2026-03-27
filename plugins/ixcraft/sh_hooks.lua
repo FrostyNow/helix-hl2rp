@@ -14,12 +14,15 @@ if SERVER then
 
 		for _, v in ipairs(ents.GetAll()) do
 			local class = v:GetClass()
+			local phys = v:GetPhysicsObject()
+
 			if (class == "ix_station" or string.match(class, "^ix_station_")) then
 				data[#data + 1] = {
 					class = class,
 					pos = v:GetPos(),
 					angles = v:GetAngles(),
-					stationID = v:GetStationID()
+					stationID = v:GetStationID(),
+					isFrozen = (phys:IsValid() and !phys:IsMoveable())
 				}
 			end
 		end
@@ -43,9 +46,12 @@ if SERVER then
 						entity:SetStationID(v.stationID)
 					end
 
-					local phys = entity:GetPhysicsObject()
-					if (IsValid(phys)) then
-						phys:EnableMotion(false)
+					if (v.isFrozen) then
+						local phys = entity:GetPhysicsObject()
+
+						if (phys:IsValid()) then
+							phys:EnableMotion(false)
+						end
 					end
 				end
 			end

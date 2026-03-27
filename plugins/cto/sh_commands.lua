@@ -248,3 +248,39 @@ do
 
 	ix.command.Add("Request", COMMAND)
 end
+
+do
+	local COMMAND = {}
+	COMMAND.description = "Identifies potentially stuck entities causing physics lag."
+	COMMAND.adminOnly = true
+
+	function COMMAND:OnRun(client)
+		local count = 0
+		local stuckEntities = {}
+
+		for _, v in ipairs(ents.GetAll()) do
+			local phys = v:GetPhysicsObject()
+			if (IsValid(phys) and !phys:IsAsleep() and !v:IsPlayer()) then
+				-- Check for high velocity in objects that should be stationary
+				-- or objects that are vibrating intensely (jitter)
+				local vel = v:GetVelocity():Length()
+				if (vel > 5) then
+					local pos = v:GetPos()
+					-- If it's "stuck" it usually doesn't move much in world space despite high velocity
+					timer.Simple(0.1, function()
+						if (IsValid(v)) then
+							local newPos = v:GetPos()
+							if (pos:DistToSqr(newPos) < 1) then -- High velocity but didn't move 1 inch
+								client:Notify("Potential stuck entity: " .. v:GetClass() .. " (#" .. v:EntIndex() .. ") at " .. tostring(v:GetPos()))
+							end
+						end
+					end)
+				end
+			end
+		end
+
+		return "Scanning for stuck entities... Check your notifications."
+	end
+
+	ix.command.Add("FindStuck", COMMAND)
+end

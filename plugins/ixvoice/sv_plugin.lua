@@ -4,9 +4,9 @@ resource.AddWorkshop("2291046370") -- the content addon
 
 -- Redundant constants and functions moved to sh_plugin.lua
 
-function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers, rawText)
+function PLUGIN:PlayerMessageSend(speaker, chatType, text, anonymous, receivers, rawText)
 	if (chatType == "ic" or chatType == "w" or chatType == "y" or chatType == "dispatch" or chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper" or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell" or chatType == "radio_eavesdrop_whisper" or chatType == "broadcast" or chatType == "request" or chatType == "request_eavesdrop") then
-		local class = self.voices.GetClass(speaker)
+		local class = Schema.voices.GetClass(speaker)
 		local mode = self:GetModeFromChatType(chatType)
 		
 		for _, definition in ipairs(class) do
@@ -14,7 +14,7 @@ function Schema:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 				continue
 			end
 
-			local sounds, message = self.voices.GetVoiceList(definition, rawText)
+			local sounds, message = Schema.voices.GetVoiceList(definition, rawText)
 
 			if (sounds) then
 				local volume = 80

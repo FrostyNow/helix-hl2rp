@@ -4,72 +4,90 @@ local PLUGIN = PLUGIN
 -- Yuck. No wonder Clockwork had low FPS, with plugins like these.
 function PLUGIN:Tick()
 	local curTime = CurTime()
-	local networkedCameraData = {}
 	
+	local allPlayers = player.GetAll()
+	local receivers = {}
+	for i = 1, #allPlayers do
+		local ply = allPlayers[i]
+		if (ply:IsCombine() and !ply:GetNetVar("IsBiosignalGone")) then
+			receivers[#receivers + 1] = ply
+		end
+	end
+
 	if (!self.nextCameraTick or curTime >= self.nextCameraTick) then
+		self.nextCameraTick = curTime + 1
+		local networkedCameraData = {}
+		local bChanged = false
+		local walkSpeed = ix.config.Get("walkSpeed")
+
 		for combineCamera, data in pairs(self.cameraData) do
 			if (!IsValid(combineCamera)) then
 				self.cameraData[combineCamera] = nil
+				bChanged = true
 			elseif (self:isCameraEnabled(combineCamera)) then
 				local camPos = combineCamera:GetPos()
 
 				for client, _ in pairs(data) do
 					if (!IsValid(client)) then
 						data[client] = nil
+						bChanged = true
 					else
-						if (!self:CanCombineIdentifyTarget(client) or camPos:Distance(client:GetPos()) > 450 or !combineCamera:IsLineOfSightClear(client)) then
-							data[client] = nil
-						elseif (!self:CanFlagTargetForViolation(client)) then
-							data[client] = nil
-						elseif (#data[client] < 1) then
-							local violations = {}
-							local walkSpeed = ix.config.Get("walkSpeed")
-							if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (walkSpeed * walkSpeed)) then
-								violations[#violations + 1] = self.VIOLATION_RUNNING
-							end
-							
-							if (!client:OnGround() and client:WaterLevel() <= 0) then
-								violations[#violations + 1] = self.VIOLATION_JUMPING
-							end
+						-- Throttle traces: only check every second for each client
+						if ((client.ixNextCamTrace or 0) < curTime) then
+							client.ixNextCamTrace = curTime + 1
 
-							if (client:Crouching()) then
-								violations[#violations + 1] = self.VIOLATION_CROUCHING
-							end
+							if (camPos:Distance(client:GetPos()) > 450 or !combineCamera:IsLineOfSightClear(client)) then
+								data[client] = nil
+								bChanged = true
+							elseif (!self:CanCameraTrackTarget(client)) then
+								data[client] = nil
+								bChanged = true
+							elseif (#data[client] < 1) then
+								local violations = {}
+								if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (walkSpeed * walkSpeed)) then
+									violations[#violations + 1] = self.VIOLATION_RUNNING
+								end
+								
+								if (!client:OnGround() and client:WaterLevel() <= 0) then
+									violations[#violations + 1] = self.VIOLATION_JUMPING
+								end
 
-							if (client:GetLocalVar("ragdoll")) then
-								violations[#violations + 1] = self.VIOLATION_FALLEN_OVER
-							end
+								if (client:Crouching()) then
+									violations[#violations + 1] = self.VIOLATION_CROUCHING
+								end
 
-							if (self:IsSuspectedViolentAct(client)) then
-								violations[#violations + 1] = self.VIOLATION_SUSPECTED_VIOLENCE
-							end
+								if (client:GetLocalVar("ragdoll")) then
+									violations[#violations + 1] = self.VIOLATION_FALLEN_OVER
+								end
 
-							if (self:IsVisibleWeaponViolation(client)) then
-								violations[#violations + 1] = self.VIOLATION_RAISED_WEAPON
-							end
+								if (self:IsSuspectedViolentAct(client)) then
+									violations[#violations + 1] = self.VIOLATION_SUSPECTED_VIOLENCE
+								end
 
-							if (client:GetNetVar("isSearchingLoot")) then
-								violations[#violations + 1] = self.VIOLATION_SEARCHING_TRASH
-							end
+								if (self:IsVisibleWeaponViolation(client)) then
+									violations[#violations + 1] = self.VIOLATION_RAISED_WEAPON
+								end
 
-							if (self:HasMultipleCIDs(client)) then
-								violations[#violations + 1] = self.VIOLATION_MULTIPLE_CIDS
-							end
+								if (client:GetNetVar("isSearchingLoot")) then
+									violations[#violations + 1] = self.VIOLATION_SEARCHING_TRASH
+								end
 
-							if (!client:IsCombine() and !self:PlayerHasCID(client)) then
-								violations[#violations + 1] = self.VIOLATION_MISSING_CID
-							end
+								if (self:HasMultipleCIDs(client)) then
+									violations[#violations + 1] = self.VIOLATION_MULTIPLE_CIDS
+								end
 
-							if (#violations > 0) then
-								data[client] = violations
+								if (#violations > 0) then
+									data[client] = violations
+									bChanged = true
 
-								combineCamera:Fire("SetIdle")
-								combineCamera:Fire("SetAngry")
+									combineCamera:Fire("SetIdle")
+									combineCamera:Fire("SetAngry")
 
-								Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
+									Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
 
-								if (ix.plugin.Get("scanner")) then
-									self:RequestSurveillancePhoto(combineCamera)
+									if (ix.plugin.Get("scanner")) then
+										self:RequestSurveillancePhoto(combineCamera)
+									end
 								end
 							end
 						end
@@ -82,36 +100,38 @@ function PLUGIN:Tick()
 			end
 		end
 
-		local receivers = {}
-
-		for _, player in ipairs(player.GetAll()) do
-			if (player:IsCombine() and !player:GetNetVar("IsBiosignalGone")) then
-				receivers[#receivers + 1] = player
-			end
+		if (#receivers > 0) then
+			net.Start("UpdateBiosignalCameraData")
+				net.WriteUInt(table.Count(networkedCameraData), 8)
+				for entIndex, data in pairs(networkedCameraData) do
+					net.WriteUInt(entIndex, 16)
+					if (data == 0) then
+						net.WriteBool(false)
+					else
+						net.WriteBool(true)
+						net.WriteUInt(table.Count(data), 8)
+						for client, violations in pairs(data) do
+							net.WriteUInt(IsValid(client) and client:EntIndex() or 0, 8)
+							net.WriteUInt(#violations, 4)
+							for _, violation in ipairs(violations) do
+								net.WriteUInt(violation, 4)
+							end
+						end
+					end
+				end
+			net.Send(receivers)
 		end
-
-		net.Start("UpdateBiosignalCameraData")
-			net.WriteTable(networkedCameraData)
-		net.Send(receivers)
-
-		self.nextCameraTick = curTime + 1
 	end
 
 	if (!self.nextBiosignalUpdate or curTime >= self.nextBiosignalUpdate) then
-		local receivers = {}
+		self.nextBiosignalUpdate = curTime + math.random(5, 10) -- Increased interval for objectives
 
-		for _, player in ipairs(player.GetAll()) do
-			if (player:IsCombine() and !player:GetNetVar("IsBiosignalGone")) then
-				receivers[#receivers + 1] = player
-			end
+		if (#receivers > 0) then
+			net.Start("RecalculateHUDObjectives")
+				net.WriteString(self.socioStatus)
+				net.WriteTable(Schema.CombineObjectives)
+			net.Send(receivers)
 		end
-
-		net.Start("RecalculateHUDObjectives")
-			net.WriteString(self.socioStatus)
-			net.WriteTable(Schema.CombineObjectives)
-		net.Send(receivers)
-
-		self.nextBiosignalUpdate = curTime + math.random(1, 3)
 	end
 end
 

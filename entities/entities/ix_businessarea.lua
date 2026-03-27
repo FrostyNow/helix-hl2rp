@@ -7,6 +7,7 @@ ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.PhysgunDisable = true
 ENT.bNoPersist = true
+ENT.PopulateEntityInfo = true
 
 ix.lang.AddTable("english", {
 	businessDispenserDesc = "This device allows to get various items.",
@@ -42,12 +43,12 @@ if (SERVER) then
 	function ENT:Initialize()
 		self:SetModel("models/props_junk/watermelon01.mdl")
 		self:SetSolid(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
+		-- self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:DrawShadow(false)
 		self:SetUseType(SIMPLE_USE)
 		self:SetFactions("[]")
 		self:SetClasses("[]")
-		self:SetDisplayName(self.PrintName)
+		self:SetDisplayName("Combine Dispenser")
 
 		self.dispenser = ents.Create("prop_dynamic")
 		self.dispenser:SetModel("models/props_combine/combine_dispenser.mdl")
@@ -63,6 +64,33 @@ if (SERVER) then
 			physics:EnableMotion(false)
 			physics:Sleep()
 		end
+
+		-- Small delay to wait for area plugin data
+		timer.Simple(0.5, function()
+			if (IsValid(self)) then
+				self:UpdateAreaID()
+				
+				timer.Simple(0.5, function()
+					if (IsValid(self)) then
+						Schema:UpdateBusinessAreaCache()
+					end
+				end)
+			end
+		end)
+	end
+
+	function ENT:UpdateAreaID()
+		local entityPos = self:GetPos()
+		local areaID = ""
+
+		for id, info in pairs(ix.area.stored) do
+			if (entityPos:WithinAABox(info.startPosition, info.endPosition)) then
+				areaID = id
+				break
+			end
+		end
+
+		self:SetNetVar("AreaID", areaID)
 	end
 
 	function ENT:Use(client)
@@ -85,19 +113,21 @@ if (SERVER) then
 			
 			client:NotifyLocalized("businessAreaUpdated")
 			Schema:SaveBusinessAreas()
+			Schema:UpdateBusinessAreaCache()
 		end
 	end)
 
 	function ENT:OnRemove()
 		if (!ix.shuttingDown) then
 			Schema:SaveBusinessAreas()
+			Schema:UpdateBusinessAreaCache()
 		end
 	end
 else
-	function ENT:PopulateEntityInfo(tooltip)
+	function ENT:OnPopulateEntityInfo(tooltip)
 		local title = tooltip:AddRow("name")
 		title:SetImportant()
-		title:SetText(self:GetDisplayName())
+		title:SetText(L(self:GetDisplayName()))
 		title:SizeToContents()
 
 		local description = tooltip:AddRow("description")
@@ -116,7 +146,7 @@ else
 		end
 
 		for _, v in ipairs(classes) do
-			local class = ix.class.indices[v]
+			local class = ix.class.list[tonumber(v) or v]
 			if (class) then
 				allowedNames[#allowedNames + 1] = L(class.name)
 			end
@@ -131,20 +161,20 @@ else
 	end
 
 	function ENT:Draw()
-		local position, angles = self:GetPos(), self:GetAngles()
+		-- local position, angles = self:GetPos(), self:GetAngles()
 
-		angles:RotateAroundAxis(angles:Forward(), 90)
-		angles:RotateAroundAxis(angles:Right(), 270)
+		-- angles:RotateAroundAxis(angles:Forward(), 90)
+		-- angles:RotateAroundAxis(angles:Right(), 270)
 
-		cam.Start3D2D(position + self:GetForward() * 7.6 + self:GetRight() * 8.5 + self:GetUp() * 3, angles, 0.1)
-			surface.SetDrawColor(color_black)
-			surface.DrawRect(10, 16, 153, 40)
+		-- cam.Start3D2D(position + self:GetForward() * 7.6 + self:GetRight() * 8.5 + self:GetUp() * 3, angles, 0.1)
+		-- 	surface.SetDrawColor(color_black)
+		-- 	surface.DrawRect(10, 16, 153, 40)
 
-			surface.SetDrawColor(60, 60, 60)
-			surface.DrawOutlinedRect(9, 16, 155, 40)
+		-- 	surface.SetDrawColor(60, 60, 60)
+		-- 	surface.DrawOutlinedRect(9, 16, 155, 40)
 
-			draw.SimpleText("BUSINESS", "ixRationDispenser", 86, 36, Color(0, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-		cam.End3D2D()
+		-- 	draw.SimpleText("BUSINESS", "ixRationDispenser", 86, 36, Color(0, 255, 255), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+		-- cam.End3D2D()
 	end
 
 	net.Receive("ixBusinessAreaConfig", function()
@@ -156,7 +186,7 @@ else
 		local classes = util.JSONToTable(classesRaw)
 
 		local frame = vgui.Create("DFrame")
-		frame:SetSize(400, 500)
+		frame:SetSize(400, 600)
 		frame:Center()
 		frame:MakePopup()
 		frame:SetTitle("Business Area Config")
@@ -165,35 +195,49 @@ else
 		scroll:Dock(FILL)
 		scroll:DockMargin(10, 10, 10, 10)
 
-		local function AddSection(name)
-			local label = vgui.Create("DLabel", scroll)
-			label:SetText(name)
-			label:SetFont("ixMediumFont")
-			label:Dock(TOP)
-			label:DockMargin(0, 10, 0, 5)
-			label:SetTextColor(color_white)
-		end
-
-		AddSection("Allowed Factions")
 		local factionChecks = {}
-		for k, v in pairs(ix.faction.indices) do
-			local check = vgui.Create("DCheckBoxLabel", scroll)
-			check:SetText(v.name)
-			check:SetValue(table.HasValue(factions, k))
-			check:Dock(TOP)
-			check:DockMargin(5, 2, 5, 2)
-			factionChecks[k] = check
-		end
-
-		AddSection("Allowed Classes")
 		local classChecks = {}
-		for k, v in pairs(ix.class.indices) do
-			local check = vgui.Create("DCheckBoxLabel", scroll)
-			check:SetText(v.name)
-			check:SetValue(table.HasValue(classes, k))
-			check:Dock(TOP)
-			check:DockMargin(5, 2, 5, 2)
-			classChecks[k] = check
+
+		for _, v in pairs(ix.faction.indices) do
+			local panel = scroll:Add("DPanel")
+			panel:Dock(TOP)
+			panel:DockPadding(4, 4, 4, 4)
+			panel:DockMargin(0, 0, 0, 4)
+
+			local factionCheck = panel:Add("DCheckBoxLabel")
+			factionCheck:Dock(TOP)
+			factionCheck:SetText(L(v.name))
+			factionCheck:SetValue(table.HasValue(factions, v.index))
+			factionCheck:DockMargin(0, 0, 0, 4)
+			factionChecks[v.index] = factionCheck
+
+			local factionClasses = {}
+			local currentTall = factionCheck:GetTall() + 8 -- Initial height with padding
+
+			for _, v2 in pairs(ix.class.list) do
+				if (v2.faction == v.index) then
+					local classCheck = panel:Add("DCheckBoxLabel")
+					classCheck:Dock(TOP)
+					classCheck:DockMargin(16, 0, 0, 4)
+					classCheck:SetText(L(v2.name))
+					classCheck:SetValue(table.HasValue(classes, v2.index))
+					classCheck:SetTextColor(Color(220, 220, 220))
+					classCheck:SizeToContents()
+					classChecks[v2.index] = classCheck
+					table.insert(factionClasses, classCheck)
+					
+					currentTall = currentTall + classCheck:GetTall() + 4
+				end
+			end
+
+			-- Recursive logic: Checking faction checks all classes
+			factionCheck.OnChange = function(this, state)
+				for _, classCheck in ipairs(factionClasses) do
+					classCheck:SetChecked(state)
+				end
+			end
+
+			panel:SetTall(currentTall)
 		end
 
 		local save = vgui.Create("DButton", frame)
@@ -226,42 +270,3 @@ else
 		end
 	end)
 end
-
-properties.Add("businessarea_setname", {
-	MenuLabel = "Set Name",
-	Order = 400,
-	MenuIcon = "icon16/tag_blue_edit.png",
-
-	Filter = function(self, entity, client)
-		if (entity:GetClass() != "ix_businessarea") then return false end
-		if (!client:IsAdmin()) then return false end
-
-		return true
-	end,
-
-	Action = function(self, entity)
-		Derma_StringRequest("Set Name", "Enter the new name for the device.", entity:GetDisplayName(), function(text)
-			self:MsgStart()
-				net.WriteEntity(entity)
-				net.WriteString(text)
-			self:MsgEnd()
-		end)
-	end,
-
-	Receive = function(self, length, client)
-		local entity = net.ReadEntity()
-
-		if (!IsValid(entity) or !client:IsAdmin()) then return end
-		if (!self:Filter(entity, client)) then return end
-
-		local name = net.ReadString()
-
-		if (name:len() != 0) then
-			entity:SetDisplayName(name)
-		else
-			entity:SetDisplayName(self.PrintName)
-		end
-		
-		Schema:SaveBusinessAreas()
-	end
-})

@@ -105,6 +105,38 @@ function Schema:SaveMachines()
 	ix.data.Set("machines", data)
 end
 
+local lastCacheUpdate = 0
+function Schema:UpdateBusinessAreaCache()
+	if (lastCacheUpdate > CurTime()) then
+		return
+	end
+	lastCacheUpdate = CurTime() + 1 -- Debounce 1s
+
+	local cache = {}
+	for _, v in ipairs(ents.FindByClass("ix_businessarea")) do
+		local areaID = v:GetNetVar("AreaID", "")
+
+		if (areaID != "") then
+			cache[areaID] = cache[areaID] or {factions = {}, classes = {}}
+			
+			local factions = util.JSONToTable(v:GetFactions() or "[]")
+			local classes = util.JSONToTable(v:GetClasses() or "[]")
+
+			for _, faction in ipairs(factions) do
+				cache[areaID].factions[tostring(faction)] = true
+				cache[areaID].factions[tonumber(faction)] = true
+			end
+
+			for _, class in ipairs(classes) do
+				cache[areaID].classes[tostring(class)] = true
+				cache[areaID].classes[tonumber(class)] = true
+			end
+		end
+	end
+
+	SetNetVar("ixBusinessAccess", cache)
+end
+
 function Schema:LoadBusinessAreas()
 	for _, v in ipairs(ix.data.Get("businessAreas") or {}) do
 		local entity = ents.Create("ix_businessarea")
@@ -119,6 +151,11 @@ function Schema:LoadBusinessAreas()
 			entity:Activate()
 		end
 	end
+
+	-- Small delay to ensure areas are initialized
+	timer.Simple(1, function()
+		Schema:UpdateBusinessAreaCache()
+	end)
 end
 
 function Schema:SaveBusinessAreas()

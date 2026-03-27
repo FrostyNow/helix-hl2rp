@@ -14,7 +14,7 @@ ENT.RenderGroup = RENDERGROUP_BOTH
 if (CLIENT) then
 	local genericFont = ix.config.Get("genericFont")
 	surface.CreateFont("ix_NotiBoardFont", {
-		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
+		font = "NanumBarunGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 27,
 		weight = 500,
 		antialias = true,
@@ -22,7 +22,7 @@ if (CLIENT) then
 	})
 
 	surface.CreateFont("ix_NotiBoardFont2", {
-		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
+		font = "NanumBarunGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 27,
 		weight = 500,
 		antialias = true,
@@ -31,7 +31,7 @@ if (CLIENT) then
 	})
 
 	surface.CreateFont("ix_NotiBoardTitle", {
-		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
+		font = "NanumBarunGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 33,
 		weight = 1000,
 		antialias = true,
@@ -39,7 +39,7 @@ if (CLIENT) then
 	})
 
 	surface.CreateFont("ix_NotiBoardTitle2", {
-		font = "NanumGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
+		font = "NanumBarunGothic" or "Malgun Gothic" or "Inter" or "Segoe UI" or genericFont,
 		size = 33,
 		weight = 1000,
 		antialias = true,

@@ -21,11 +21,14 @@ if (SERVER) then
 
 		for _, class in ipairs(entities) do
 			for _, v in ipairs(ents.FindByClass(class)) do
+				local phys = v:GetPhysicsObject()
+
 				data[#data + 1] = {
 					class = class,
 					pos = v:GetPos(),
 					angles = v:GetAngles(),
-					color = v:GetColor()
+					color = v:GetColor(),
+					isFrozen = (phys:IsValid() and !phys:IsMoveable())
 				}
 			end
 		end
@@ -43,6 +46,14 @@ if (SERVER) then
 				entity:SetAngles(v.angles)
 				entity:SetColor(v.color)
 				entity:Spawn()
+
+				if (v.isFrozen) then
+					local phys = entity:GetPhysicsObject()
+
+					if (phys:IsValid()) then
+						phys:EnableMotion(false)
+					end
+				end
 			end
 		end
 	end

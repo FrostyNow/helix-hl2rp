@@ -17,7 +17,10 @@ function ENT:Think()
 		self:CreateTexMat()
 	end
 
-	PLUGIN.terminalsToDraw[self] = LocalPlayer():IsLineOfSightClear(self)
+	if ((self.nextTrace or 0) < CurTime()) then
+		PLUGIN.terminalsToDraw[self] = LocalPlayer():IsLineOfSightClear(self)
+		self.nextTrace = CurTime() + 0.1
+	end
 end
 
 function ENT:Draw()

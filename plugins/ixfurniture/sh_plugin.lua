@@ -51,13 +51,13 @@ end
 
 -- Check if a position is within a furniture-enabled area
 function PLUGIN:IsInZone(pos)
-	if (!ix.area) then return true end
+	if (!ix.area or !ix.area.stored) then return true end
 
-	local areaID = ix.area.GetPos(pos)
-	if (areaID) then
-		local area = ix.area.stored[areaID]
-		if (area and area.properties and area.properties.furniture) then
-			return true
+	for _, v in pairs(ix.area.stored) do
+		if (pos:WithinAABox(v.startPosition, v.endPosition)) then
+			if (v.properties and v.properties.furniture) then
+				return true
+			end
 		end
 	end
 
