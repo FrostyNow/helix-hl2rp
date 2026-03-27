@@ -134,8 +134,10 @@ function PANEL:SetVisible(bValue, bForce)
 	})
 end
 
-function PANEL:Update(text)
-	local classes = Schema.voices.GetClass(LocalPlayer())
+function PANEL:Update(text, chatClass)
+	local allAvailableClasses = Schema.voices.GetClass(LocalPlayer())
+	local voicePlugin = ix.plugin.Get("ixvoice")
+	local mode = voicePlugin and voicePlugin:GetModeFromChatType(chatClass) or "normal"
 	
 	self.voiceIndex = 0 
 	self.voices = {}
@@ -151,7 +153,11 @@ function PANEL:Update(text)
 		local results = {}
 		local searchLower = string.lower(search)
 
-		for _, class in ipairs(classes) do
+		for _, class in ipairs(allAvailableClasses) do
+			if (voicePlugin and !voicePlugin:IsClassAllowedForMode(LocalPlayer(), class, mode)) then
+				continue
+			end
+
 			local stored = Schema.voices.stored[string.lower(class)]
 			if (stored) then
 				for key, info in pairs(stored) do
@@ -294,7 +300,24 @@ function PLUGIN:ChatTextChanged(text)
 	
 	-- We only show it if the player is typing an IC chat
 	local chatClassCommand = ix.gui.chat:GetTextEntryChatClass(text)
-	if (chatClassCommand and chatClassCommand != "ic" and chatClassCommand != "w" and chatClassCommand != "y" and chatClassCommand != "radio") then
+	local allowedChatClasses = {
+		["ic"] = true,
+		["me"] = true,
+		["y"] = true,
+		["w"] = true,
+		["yell"] = true,
+		["whisper"] = true,
+		["radio"] = true,
+		["radio_yell"] = true,
+		["radio_whisper"] = true,
+		["radio_eavesdrop"] = true,
+		["radio_eavesdrop_yell"] = true,
+		["radio_eavesdrop_whisper"] = true,
+		["dispatch"] = true,
+		["broadcast"] = true,
+	}
+
+	if (chatClassCommand and !allowedChatClasses[chatClassCommand]) then
 		if (voiceAutocomplete:IsVisible()) then
 			voiceAutocomplete:SetVisible(false)
 		end
@@ -327,7 +350,7 @@ function PLUGIN:ChatTextChanged(text)
 		return
 	end
 
-	voiceAutocomplete:Update(matchText)
+	voiceAutocomplete:Update(matchText, chatClassCommand)
 	
 	if (#voiceAutocomplete:GetVoices() > 0) then
 		voiceAutocomplete:SetVisible(true)

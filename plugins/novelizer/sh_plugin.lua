@@ -1217,21 +1217,21 @@ ix.option.Add("novelizerAutoActions", ix.type.bool, true, {
 })
 
 ix.config.Add("novelizerEnableIt", true, "Whether novelizer should emit ambient /it lines for nearby machinery and systems.", nil, {
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizerUse3DText", false, "Whether novelizer should show temporary 3D text for /it lines instead of chat lines.", nil, {
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizer3DTextDuration", 4.5, "How long temporary 3D novelizer text stays visible.", nil, {
 	data = {min = 1, max = 12},
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizerIdleItCooldown", DEFAULT_IT_COOLDOWN, "Base cooldown for idle entity /it narration. Actual delay is randomized by about +/- 5 seconds.", nil, {
 	data = {min = 10, max = 300},
-	category = "chat"
+	category = "Novelizer"
 })
 
 local function GetChatRange()

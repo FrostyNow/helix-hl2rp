@@ -1,7 +1,6 @@
 ITEM.name = "Base Container Furniture"
 ITEM.description = "A cool description"
 ITEM.price = 50
-ITEM.flag = ""
 ITEM.category = "Containers"
 ITEM.width = 2
 ITEM.height = 2

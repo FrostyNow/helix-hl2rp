@@ -214,6 +214,8 @@ LANGUAGE = {
 	recipeScrapPotLargeDesc = "대형 냄비를 분해하여 파편을 추출합니다.",
 	["Scrap Watering Can"] = "물뿌리개 분해",
 	recipeScrapWateringCanDesc = "물뿌리개를 분해합니다.",
+	["Scrap Request Device"] = "신고 장치 분해",
+	recipeScrapRequestDeviceDesc = "신고 장치를 분해하여 부품을 추출합니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",

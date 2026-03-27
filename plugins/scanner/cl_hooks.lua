@@ -146,6 +146,14 @@ function PLUGIN:PreDrawOpaqueRenderables()
 end
 
 function PLUGIN:Think()
+	for _, v in ipairs(player.GetAll()) do
+		local scanner = v:GetNetVar("ixScn")
+
+		if (IsValid(scanner)) then
+			v:SetVoicePosition(scanner:GetPos())
+		end
+	end
+
 	local client = LocalPlayer()
 	if (IsValid(client:GetNetVar("ixScn"))) then
 		ResetWeaponSelect(client)
@@ -279,7 +287,7 @@ end
 function PLUGIN:PopulateCharacterInfo(client, character, tooltip)
 	if IsValid(client) and IsValid(character) and client:GetNetVar("ixScanning") then
 		local panel = tooltip:AddRowAfter("name", "scanner")
-		panel:SetBackgroundColor(Color(100, 200, 255, 220))
+		panel:SetBackgroundColor(Color(43, 64, 116, 220))
 		panel:SetText(L("scanning"))
 		panel:SizeToContents()
 	end
@@ -298,5 +306,13 @@ function PLUGIN:PrePlayerDraw(ply)
 		ply:SetPoseParameter("head_pitch", 0)
 		ply:SetPoseParameter("body_yaw", 0)
 		ply:SetPoseParameter("spine_yaw", 0)
+	end
+end
+
+function PLUGIN:GetChatSpeakPos(speaker, chatType)
+	local scanner = speaker:GetNetVar("ixScn")
+
+	if (IsValid(scanner)) then
+		return scanner:GetPos()
 	end
 end

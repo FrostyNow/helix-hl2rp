@@ -6,6 +6,9 @@ ITEM.isStackable = true
 ITEM.price = 2
 
 function ITEM:GetModel()
+	local customModel = self:GetData("customModel")
+	if (customModel) then return customModel end
+
 	local models = {
 		"models/props_junk/garbage_plasticbox001a.mdl",
 		"models/props_junk/garbage_plasticbox001b.mdl",
@@ -17,5 +20,7 @@ function ITEM:GetModel()
 end
 
 function ITEM:OnInstanced(invID, x, y, item)
-	item:SetData("model", math.random(1, 4))
+	if (!item:GetData("model")) then
+		item:SetData("model", math.random(1, 4))
+	end
 end

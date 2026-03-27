@@ -16,58 +16,65 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 ix.util.Include("sv_hooks.lua")
 
-ix.config.Add("gamblingPrice", 13, "How many token should cost a slot spin?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 13},
+ix.config.Add("gamblingPrice", 30, "How many tokens should it cost to spin the slot machine?", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 100},
 })
 
-ix.config.Add("jackpotChance", 32, "How many chance you have to get a jackpot?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 32},
+ix.config.Add("jackpotChance", 100, "The chance of a jackpot occurring, where 1 in N spins results in a win.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 500},
 })
 
-ix.config.Add("singleBarDollarSign", 50, "How many tokens you get having a Single Bar or a Dollar Sign?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 50},
+ix.config.Add("singleBarDollarSign", 100, "Tokens earned for Single Bar or Dollar Sign jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 1000},
 })
 
-ix.config.Add("horseShoeDoubleBar", 100, "How many tokens you get having a Horse Shoe or a Double Bar?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 100},
+ix.config.Add("horseShoeDoubleBar", 250, "Tokens earned for Horse Shoe or Double Bar jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 1000},
 })
 
-ix.config.Add("tripleBarClover", 200, "How many tokens you get having a Triple Bar or a Clover?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 200},
+ix.config.Add("tripleBarClover", 500, "Tokens earned for Triple Bar or Clover jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 1000},
 })
 
-ix.config.Add("luckySevenDiamond", 500, "How many tokens you get having a Lucky 7 or a Diamond?", nil, {
-    category = "Slot Machine",
-    data = {min = 1, max = 500},
+ix.config.Add("luckySevenDiamond", 1000, "Tokens earned for Lucky 7 or Diamond jackpot.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 2000},
+})
+
+ix.config.Add("gamblingSymbolPayout", 12, "Tokens earned per matching symbol for non-jackpot wins.", nil, {
+	category = "Slot Machine",
+	data = {min = 1, max = 50},
 })
 
 ix.lang.AddTable("english", {
-    notEnoughMoney = "You don't have enough money!",
-    gamblePayout = "Your payout is %s",
-    slotMachineDesc = "A slot machine that can be used for gambling.",
+	notEnoughMoney = "You don't have enough money!",
+	gamblePayout = "Your payout is %s",
+	slotMachineDesc = "A slot machine that can be used for gambling.",
+	price = "Price",
 })
 
 ix.lang.AddTable("korean", {
-    notEnoughMoney = "돈이 부족합니다!",
-    gamblePayout = "당신의 페이아웃은 %s 입니다.",
-    ["Slot Machine"] = "슬롯머신",
-    slotMachineDesc = "도박을 할 수 있는 슬롯머신입니다.",
+	notEnoughMoney = "돈이 부족합니다!",
+	gamblePayout = "당신의 페이아웃은 %s 입니다.",
+	["Slot Machine"] = "슬롯머신",
+	slotMachineDesc = "도박을 할 수 있는 슬롯머신입니다.",
+	price = "비용",
 })
 
 ix.command.Add("SlotMachineAdd", {
-    adminOnly = true,
-    description = "Add a slot machine at your target position.",
-    OnRun = function(self, client)
-        local trace = client:GetEyeTraceNoCursor()
-        local entity = scripted_ents.Get("ix_slot_machine"):SpawnFunction(client, trace)
-    
-        if ( IsValid(entity) ) then
-            client:NotifyLocalized("You have added a slot machine.")
-        end
-    end
+	adminOnly = true,
+	description = "Add a slot machine at your target position.",
+	OnRun = function(self, client)
+		local trace = client:GetEyeTraceNoCursor()
+		local entity = scripted_ents.Get("ix_slot_machine"):SpawnFunction(client, trace)
+	
+		if ( IsValid(entity) ) then
+			-- client:NotifyLocalized("You have added a slot machine.")
+		end
+	end
 })

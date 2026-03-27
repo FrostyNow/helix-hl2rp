@@ -165,6 +165,14 @@ function PLUGIN:CanPlayerSay(ply, chatType, message, anonymous)
 	end
 end
 
+function PLUGIN:PlayerCanHearPlayersVoice(listener, talker)
+	local scanner = talker:GetNetVar("ixScn")
+
+	if (IsValid(scanner)) then
+		return true, true
+	end
+end
+
 function PLUGIN:GetListeningPos(ply)
 	if (IsValid(ply.ixScn)) then
 		return ply.ixScn:GetPos()

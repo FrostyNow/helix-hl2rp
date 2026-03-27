@@ -269,34 +269,97 @@ if (CLIENT) then
 		end
 
 		local frame = vgui.Create("DFrame")
-		frame:SetTitle(L("furnitureCatalog"))
-		frame:SetSize(450, 500)
+		frame:SetTitle("")
+		frame:SetSize(500, 600)
 		frame:Center()
 		frame:MakePopup()
+		frame:ShowCloseButton(false) -- Using a custom close button
 		ix.gui.furnitureMenu = frame
+
+		-- Premium styling for the main frame
+		frame.Paint = function(s, w, h)
+			-- Main background with a dark, modern tone
+			surface.SetDrawColor(25, 25, 30, 240)
+			surface.DrawRect(0, 0, w, h)
+
+			-- Header with a slightly lighter color
+			surface.SetDrawColor(40, 40, 45, 255)
+			surface.DrawRect(0, 0, w, 40)
+
+			-- Vertically centered title
+			draw.SimpleText(L("furnitureCatalog"):upper(), "ixMediumFont", 15, 20, Color(255, 255, 255, 180), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+
+			-- Subtle border
+			surface.SetDrawColor(60, 60, 70, 255)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+
+		-- Custom close button
+		local close = frame:Add("DButton")
+		close:SetSize(40, 40)
+		close:SetPos(frame:GetWide() - 40, 0)
+		close:SetText("✕")
+		close:SetFont("ixMediumFont")
+		close:SetTextColor(Color(200, 200, 200))
+		close.Paint = function(s, w, h)
+			if (s:IsHovered()) then
+				-- Hover effect for the close button
+				surface.SetDrawColor(200, 50, 50, 150)
+				surface.DrawRect(0, 0, w, h)
+			end
+		end
+		close.DoClick = function()
+			frame:Remove()
+		end
 
 		local scroll = frame:Add("DScrollPanel")
 		scroll:Dock(FILL)
-		scroll:DockMargin(5, 5, 5, 5)
+		scroll:DockMargin(10, 50, 10, 10)
+
+		-- Styling the scrollbar for a cleaner look
+		local bar = scroll:GetVBar()
+		bar:SetWide(4)
+		bar.Paint = function() end
+		bar.btnUp.Paint = function() end
+		bar.btnDown.Paint = function() end
+		bar.btnGrip.Paint = function(s, w, h)
+			surface.SetDrawColor(100, 100, 110, 150)
+			surface.DrawRect(0, 0, w, h)
+		end
 
 		local grid = scroll:Add("DIconLayout")
 		grid:Dock(TOP)
-		grid:SetSpaceX(5)
-		grid:SetSpaceY(5)
+		grid:SetSpaceX(10)
+		grid:SetSpaceY(10)
 
 		for k, v in ipairs(PLUGIN.FurnitureList) do
 			local icon = grid:Add("SpawnIcon")
-			icon:SetSize(100, 100)
+			icon:SetSize(110, 110)
 			icon:SetModel(v.model)
 			icon:SetTooltip(L("furniturePrice", ix.currency.Get(v.price)))
-			
+
+			-- Smooth hover effect for icons
+			icon.PaintOver = function(s, w, h)
+				if (s:IsHovered()) then
+					surface.SetDrawColor(255, 255, 255, 5)
+					surface.DrawRect(0, 0, w, h)
+					surface.SetDrawColor(100, 200, 255, 200)
+					surface.DrawOutlinedRect(0, 0, w, h)
+				end
+			end
+
 			local label = icon:Add("DLabel")
 			label:SetText(ix.currency.Get(v.price))
 			label:SetFont("ixSmallFont")
 			label:Dock(BOTTOM)
 			label:SetContentAlignment(5)
-			label:SetBackgroundColor(Color(0, 0, 0, 200))
-			label:SetPaintBackground(true)
+			label:SetTall(20)
+			-- Definitive fix for the SetBackgroundColor error:
+			-- We use Paint to draw the background safely and elegantly.
+			label.Paint = function(s, w, h)
+				surface.SetDrawColor(0, 0, 0, 180)
+				surface.DrawRect(0, 0, w, h)
+			end
 
 			icon.DoClick = function()
 				if (!LocalPlayer():GetCharacter():HasMoney(v.price)) then

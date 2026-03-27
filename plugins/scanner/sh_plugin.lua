@@ -46,7 +46,7 @@ PLUGIN.callsigns = {
 function PLUGIN:GenerateUniqueScannerName(isClaw)
 	local prefix = isClaw and "OTA.SHIELD-" or "c17:MPF-SCN."
 	local callsign = table.Random(self.callsigns)
-	local digit = math.random(0, 9)
+	local digit = math.random(1, 9)
 	local name = prefix .. callsign .. ":" .. digit
 
 	-- Prevent duplicated name
@@ -138,6 +138,14 @@ function PLUGIN:GetCharacterName(ply, chatType)
 	local scanner = ply:GetNetVar("ixScn")
 	if (IsValid(scanner) and (chatType == "ic" or chatType == "me" or chatType == "it" or chatType == "y" or chatType == "w" or chatType == "yell" or chatType == "whisper")) then
 		return scanner:GetNetVar("ixScannerName", "Combine Scanner")
+	end
+end
+
+function PLUGIN:GetCharacterColor(ply)
+	local scanner = ply:GetNetVar("ixScn")
+
+	if (IsValid(scanner)) then
+		return Color(43, 64, 116)
 	end
 end
 

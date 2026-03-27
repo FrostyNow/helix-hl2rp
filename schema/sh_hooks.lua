@@ -19,6 +19,40 @@ function Schema:CanPlayerUseBusiness(client, uniqueID)
 		return true
 	end
 
+	local bInAllowedZone = false
+	local myFaction = client:Team()
+	local myClass = character:GetClass()
+	local currentArea = client:GetArea() -- Returns area ID
+
+	if (currentArea and currentArea != "") then
+		for _, entity in ipairs(ents.FindByClass("ix_businessarea")) do
+			local entityPos = entity:GetPos()
+			local entityArea = ""
+
+			-- Dynamically check which area the entity is in
+			for id, info in pairs(ix.area.stored) do
+				if (entityPos:WithinAABox(info.startPosition, info.endPosition)) then
+					entityArea = id
+					break
+				end
+			end
+
+			if (entityArea == currentArea) then
+				local allowedFactions = util.JSONToTable(entity:GetFactions() or "[]")
+				local allowedClasses = util.JSONToTable(entity:GetClasses() or "[]")
+
+				if (table.HasValue(allowedFactions, myFaction) or (myClass and table.HasValue(allowedClasses, myClass))) then
+					bInAllowedZone = true
+					break
+				end
+			end
+		end
+	end
+
+	if (!bInAllowedZone) then
+		return false
+	end
+
 	local hasExplicitRestriction = itemTable.factions or itemTable.classes or itemTable.flag
 
 	if (!hasExplicitRestriction) then

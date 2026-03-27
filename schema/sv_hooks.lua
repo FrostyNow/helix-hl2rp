@@ -5,6 +5,7 @@ function Schema:LoadData()
 	self:LoadCombineLocks()
 	self:LoadForceFields()
 	self:LoadMachines()
+	self:LoadBusinessAreas()
 
 	Schema.CombineObjectives = ix.data.Get("combineObjectives", {}, false, true)
 end
@@ -15,6 +16,7 @@ function Schema:SaveData()
 	self:SaveCombineLocks()
 	self:SaveForceFields()
 	self:SaveMachines()
+	self:SaveBusinessAreas()
 end
 
 function Schema:PlayerSwitchFlashlight(client, enabled)
@@ -627,12 +629,18 @@ function Schema:CanPlayerUseCharacter(client, character)
 		local requiredFlag = (faction.uniqueID == "metropolice") and "M" or (faction.uniqueID == "conscript") and "C" or nil
 
 		-- If they have the flag, allow it (will bypass whitelist via sh_schema override)
-		if (requiredFlag and character:HasFlags(requiredFlag)) then
+		if (requiredFlag and (character:HasFlags(requiredFlag) or client:HasFlags(requiredFlag))) then
 			return true
 		end
 
 		-- If they don't have the flag, we still allow it so PrePlayerLoadedCharacter can revert them
 		-- instead of leaving them with a character they can never select.
+		return true
+	end
+end
+
+function Schema:CanPlayerHold(ply, entity)
+	if (ply:GetCharacter() and entity:GetClass() == "npc_turret_floor" and entity:GetRelationship(ply) == D_LI) then
 		return true
 	end
 end
