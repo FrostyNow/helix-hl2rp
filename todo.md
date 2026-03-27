@@ -6,10 +6,7 @@
 - 기동대 인식 테스트
 - 웹셀렉트 테스트
 
-[ERROR] gamemodes/ixhl2rp/plugins/ixfurniture/sh_plugin.lua:56: attempt to call field 'GetPos' (a nil value)
-  1. IsInZone - gamemodes/ixhl2rp/plugins/ixfurniture/sh_plugin.lua:56
-   2. v - gamemodes/ixhl2rp/plugins/ixfurniture/sh_plugin.lua:421
-    3. unknown - gamemodes/helix/gamemode/core/libs/sh_plugin.lua:347 (x70)
+
 
 
 # 우선순위 높음
