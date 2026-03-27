@@ -53,13 +53,15 @@ function PLUGIN:GenerateUniqueScannerName(isClaw)
 	if (SERVER) then
 		local bUnique = false
 		local attempts = 0
+		local scanners = ents.FindByClass("ix_scanner")
+
 		while (!bUnique and attempts < 20) do
 			bUnique = true
-			for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+			for _, v in ipairs(scanners) do
 				if (v:GetNetVar("ixScannerName") == name) then
 					bUnique = false
 					callsign = table.Random(self.callsigns)
-					digit = math.random(0, 9)
+					digit = math.random(1, 9)
 					name = prefix .. callsign .. ":" .. digit
 					break
 				end
@@ -72,8 +74,8 @@ function PLUGIN:GenerateUniqueScannerName(isClaw)
 end
 
 if ( CLIENT ) then
-	PLUGIN.PICTURE_WIDTH = 700
-	PLUGIN.PICTURE_HEIGHT = 525
+	PLUGIN.PICTURE_WIDTH = 580
+	PLUGIN.PICTURE_HEIGHT = 420
 end
 
 ix.util.Include("sv_photos.lua")

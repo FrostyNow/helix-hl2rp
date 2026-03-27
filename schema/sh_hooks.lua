@@ -1,3 +1,58 @@
+-- Business Area Access logic is now handled via global NetVars for maximum reliability.
+
+function Schema:IsPlayerInBusinessArea(client)
+	local character = IsValid(client) and client:GetCharacter()
+	if (!character) then return false end
+
+	local myFaction = client:Team()
+	local myClass = character:GetClass()
+	local currentArea = client:GetArea()
+	local accessCache = (GetNetVar or (ix.net and ix.net.GetNetVar))("ixBusinessAccess", {})
+
+	-- 1. Check by Area (Primary)
+	if (currentArea and currentArea != "" and accessCache[currentArea]) then
+		local info = accessCache[currentArea]
+		
+		-- If the dispenser has no faction/class restrictions, it's a public dispenser.
+		if (!next(info.factions) and !next(info.classes)) then
+			return true
+		end
+
+		-- Otherwise, check if the player matches the dispenser's restrictions.
+		-- Using string keys to ensure consistency after network transmission.
+		if (info.factions[tostring(myFaction)] or info.factions[myFaction] or
+			(myClass and (info.classes[tostring(myClass)] or info.classes[myClass]))) then
+			return true
+		end
+	end
+
+	-- 2. Proximity Fallback (Check near entities if area system fails or player isn't in an area plugin boundary)
+	-- This works on client only for entities in PVS, and on server for all entities.
+	for _, v in ipairs(ents.FindByClass("ix_businessarea")) do
+		if (client:GetPos():DistToSqr(v:GetPos()) < 100000) then -- ~316 units
+			local factionsRaw = v:GetFactions() or "[]"
+			local classesRaw = v:GetClasses() or "[]"
+			
+			if (factionsRaw == "[]" and classesRaw == "[]") then
+				return true
+			end
+
+			local factions = util.JSONToTable(factionsRaw)
+			if (table.HasValue(factions, myFaction) or table.HasValue(factions, tostring(myFaction))) then
+				return true
+			end
+
+			if (myClass) then
+				local classes = util.JSONToTable(classesRaw)
+				if (table.HasValue(classes, myClass) or table.HasValue(classes, tostring(myClass))) then
+					return true
+				end
+			end
+		end
+	end
+
+	return false
+end
 
 function Schema:CanPlayerUseBusiness(client, uniqueID)
 	if (!ix.config.Get("allowBusiness", true)) then
@@ -5,100 +60,177 @@ function Schema:CanPlayerUseBusiness(client, uniqueID)
 	end
 
 	local character = IsValid(client) and client:GetCharacter()
-	local itemTable = ix.item.list[uniqueID]
-
-	if (!character or !itemTable) then
+	if (!character) then
 		return false
 	end
 
-	if (itemTable.noBusiness) then
-		return false
-	end
-
+	-- Admin override (See everything everywhere)
 	if (client:IsAdmin()) then
 		return true
 	end
 
-	local bInAllowedZone = false
 	local myFaction = client:Team()
 	local myClass = character:GetClass()
-	local currentArea = client:GetArea() -- Returns area ID
 
-	if (currentArea and currentArea != "") then
-		for _, entity in ipairs(ents.FindByClass("ix_businessarea")) do
-			local entityPos = entity:GetPos()
-			local entityArea = ""
+	-- 1. Identify context (Area cache or Proximity fallback)
+	local currentArea = client:GetArea()
+	local accessCache = (GetNetVar or (ix.net and ix.net.GetNetVar))("ixBusinessAccess", {})
+	local info = nil
 
-			-- Dynamically check which area the entity is in
-			for id, info in pairs(ix.area.stored) do
-				if (entityPos:WithinAABox(info.startPosition, info.endPosition)) then
-					entityArea = id
-					break
+	if (currentArea and currentArea != "" and accessCache[currentArea]) then
+		info = accessCache[currentArea]
+	end
+
+	if (!info) then
+		for _, v in ipairs(ents.FindByClass("ix_businessarea")) do
+			if (client:GetPos():DistToSqr(v:GetPos()) < 100000) then
+				info = { factions = {}, classes = {} }
+				local fRaw = v:GetFactions() or "[]"
+				local cRaw = v:GetClasses() or "[]"
+				
+				for _, f in ipairs(util.JSONToTable(fRaw)) do 
+					info.factions[tostring(f)] = true 
+					info.factions[tonumber(f)] = true 
 				end
-			end
-
-			if (entityArea == currentArea) then
-				local allowedFactions = util.JSONToTable(entity:GetFactions() or "[]")
-				local allowedClasses = util.JSONToTable(entity:GetClasses() or "[]")
-
-				if (table.HasValue(allowedFactions, myFaction) or (myClass and table.HasValue(allowedClasses, myClass))) then
-					bInAllowedZone = true
-					break
+				for _, c in ipairs(util.JSONToTable(cRaw)) do 
+					info.classes[tostring(c)] = true 
+					info.classes[tonumber(c)] = true 
 				end
+				break
 			end
 		end
 	end
 
-	if (!bInAllowedZone) then
+	if (!info) then
 		return false
 	end
 
-	local hasExplicitRestriction = itemTable.factions or itemTable.classes or itemTable.flag
+	-- 2. Tab Visibility Check (uniqueID is nil)
+	if (!uniqueID) then
+		local bIsRestrictedShop = next(info.factions) or next(info.classes)
+		if (!bIsRestrictedShop) then return true end
 
-	if (!hasExplicitRestriction) then
+		-- Allow if player's faction matches OR player's class matches
+		local sFaction = tostring(myFaction)
+		local nFaction = tonumber(myFaction)
+		local sClass = myClass and tostring(myClass)
+		local nClass = myClass and tonumber(myClass)
+
+		if (info.factions[sFaction] or (nFaction and info.factions[nFaction]) or
+			(myClass and (info.classes[sClass] or (nClass and info.classes[nClass])))) then
+			return true
+		end
+
 		return false
 	end
 
-	if (itemTable.factions) then
-		local allowed = false
-
-		if (istable(itemTable.factions)) then
-			for _, factionID in pairs(itemTable.factions) do
-				if (client:Team() == factionID) then
-					allowed = true
-					break
-				end
-			end
-		else
-			allowed = client:Team() == itemTable.factions
-		end
-
-		if (!allowed) then
-			return false
-		end
+	-- 3. Item-Specific Strict Filtering
+	local itemTable = ix.item.list[uniqueID]
+	if (!itemTable or itemTable.noBusiness) then
+		return false
 	end
 
-	if (itemTable.classes) then
-		local allowed = false
+	local itemFactions = itemTable.factions or itemTable.faction
+	local itemClasses = itemTable.classes or itemTable.class
 
-		if (istable(itemTable.classes)) then
-			for _, classID in pairs(itemTable.classes) do
-				if (character:GetClass() == classID) then
-					allowed = true
-					break
-				end
-			end
-		else
-			allowed = character:GetClass() == itemTable.classes
-		end
-
-		if (!allowed) then
-			return false
-		end
+	-- Strict filtering: Items with no restrictions are hidden from restricted shops
+	if (!itemFactions and !itemClasses and !itemTable.flag) then
+		return false
 	end
 
+	-- Flag check
 	if (itemTable.flag and !character:HasFlags(itemTable.flag)) then
 		return false
+	end
+
+	-- Personal Requirement Check: Allowed if (No faction/class restrictions) OR (Matches faction) OR (Matches class)
+	local bAllowed = true
+	if (itemFactions or itemClasses) then
+		bAllowed = false
+		
+		if (itemFactions) then
+			local bFactionMatch = false
+			if (istable(itemFactions)) then
+				for _, f in pairs(itemFactions) do if (myFaction == f or tostring(myFaction) == tostring(f)) then bFactionMatch = true break end end
+			else
+				bFactionMatch = (myFaction == itemFactions or tostring(myFaction) == tostring(itemFactions))
+			end
+			if (bFactionMatch) then bAllowed = true end
+		end
+
+		if (!bAllowed and itemClasses) then
+			local bClassMatch = false
+			if (istable(itemClasses)) then
+				for _, c in pairs(itemClasses) do if (myClass == c or tostring(myClass) == tostring(c)) then bClassMatch = true break end end
+			else
+				bClassMatch = (myClass == itemClasses or tostring(myClass) == tostring(itemClasses))
+			end
+			if (bClassMatch) then bAllowed = true end
+		end
+	end
+
+	if (!bAllowed) then return false end
+
+	-- Shop Compatibility Check
+	local bIsRestrictedShop = next(info.factions) or next(info.classes)
+	if (bIsRestrictedShop) then
+		local bShopServesItem = false
+
+		-- A shop serves an item if:
+		-- 1. The item's FACTION is explicitly allowed in the shop.
+		if (itemFactions) then
+			local factions = istable(itemFactions) and itemFactions or {itemFactions}
+			for _, f in pairs(factions) do
+				if (info.factions[tostring(f)] or (tonumber(f) and info.factions[tonumber(f)])) then
+					bShopServesItem = true
+					break
+				end
+			end
+		end
+
+		-- 2. The item's CLASS is explicitly allowed in the shop.
+		if (!bShopServesItem and itemClasses) then
+			local classes = istable(itemClasses) and itemClasses or {itemClasses}
+			for _, c in pairs(classes) do
+				if (info.classes[tostring(c)] or (tonumber(c) and info.classes[tonumber(c)])) then
+					bShopServesItem = true
+					break
+				end
+			end
+		end
+
+		-- 3. INHERITANCE: Shop is for a Faction, Item is for a Class within that Faction.
+		if (!bShopServesItem and itemClasses) then
+			local classes = istable(itemClasses) and itemClasses or {itemClasses}
+			for _, c in pairs(classes) do
+				local classInfo = ix.class.list[tonumber(c) or c]
+				if (classInfo and (info.factions[tostring(classInfo.faction)] or (tonumber(classInfo.faction) and info.factions[tonumber(classInfo.faction)]))) then
+					bShopServesItem = true
+					break
+				end
+			end
+		end
+
+		-- 4. REVERSE INHERITANCE: Shop is for a Class, Item is for the Parent Faction of that Class.
+		-- (e.g., A CWU-only shop should still show generic Citizen items).
+		if (!bShopServesItem and itemFactions) then
+			local factions = istable(itemFactions) and itemFactions or {itemFactions}
+			for _, f in pairs(factions) do
+				-- Check if any of the shop's allowed classes belong to this faction
+				for classID, _ in pairs(info.classes) do
+					local classInfo = ix.class.list[tonumber(classID) or classID]
+					if (classInfo and (tostring(classInfo.faction) == tostring(f))) then
+						bShopServesItem = true
+						break
+					end
+				end
+				if (bShopServesItem) then break end
+			end
+		end
+
+		if (!bShopServesItem) then
+			return false
+		end
 	end
 
 	return true
@@ -524,3 +656,10 @@ function Schema:GetDefaultAttributePoints(client, payloadOrCount)
 	end
 end
 
+function Schema:CanProperty(client, property, entity)
+	local class = IsValid(entity) and entity:GetClass()
+	
+	if (!client:IsAdmin() and class and property == "toggle_physgun") then
+		return false
+	end
+end

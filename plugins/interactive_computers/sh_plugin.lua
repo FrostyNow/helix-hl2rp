@@ -3,6 +3,7 @@ local PLUGIN = PLUGIN
 PLUGIN.name = "Interactive Computers"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds interactive computer terminals with DOS-style journal storage."
+PLUGIN.entities = PLUGIN.entities or {}
 
 PLUGIN.license = [[
 Copyright © 2026 Frosty
@@ -516,10 +517,13 @@ function PLUGIN:IsCombineModel(model)
 end
 
 function PLUGIN:GetComputerDefinition(identifier)
-	identifier = string.lower(identifier or "")
+	identifier = string.lower(string.Replace(identifier or "", "\\", "/"))
 
 	for _, definition in ipairs(self.entityDefinitions) do
-		if (definition.class == identifier or definition.model == identifier) then
+		local class = string.lower(definition.class or "")
+		local model = string.lower(string.Replace(definition.model or "", "\\", "/"))
+
+		if (class == identifier or model == identifier) then
 			return definition
 		end
 	end
@@ -589,8 +593,8 @@ function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 	local bestCandidate
 	local bestDistance = math.huge
 
-	for _, candidate in ipairs(ents.GetAll()) do
-		if (!self:IsSupportComputer(candidate)) then
+	for _, candidate in pairs(self.entities) do
+		if (!IsValid(candidate) or !self:IsSupportComputer(candidate)) then
 			continue
 		end
 
@@ -704,7 +708,7 @@ function PLUGIN:HasCombineTerminalAccess(client)
 		return false
 	end
 
-	if (client:IsCombine()) then
+	if (client:IsCombine() or client:IsAdmin()) then
 		return true
 	end
 
@@ -875,8 +879,8 @@ end
 function PLUGIN:FindComputerByID(computerID)
 	computerID = tonumber(computerID)
 
-	for _, entity in ipairs(ents.GetAll()) do
-		if (self:IsPrimaryComputerEntity(entity) and entity:GetComputerID() == computerID) then
+	for _, entity in pairs(self.entities) do
+		if (IsValid(entity) and self:IsPrimaryComputerEntity(entity) and entity:GetComputerID() == computerID) then
 			return entity
 		end
 	end
@@ -908,6 +912,16 @@ function PLUGIN:RegisterSpawnableEntities()
 	end
 
 	self.computersRegistered = true
+end
+
+function PLUGIN:CanProperty(client, property, entity)
+	local class = IsValid(entity) and entity:GetClass()
+
+	if (class == "ix_interactive_computer") then
+		if (property == "remover" or property == "ignite" or property == "extinguish" or property == "drive" or property == "rb655_dissolve") then
+			return false
+		end
+	end
 end
 
 ix.util.Include("sv_plugin.lua")

@@ -244,6 +244,22 @@ function PLUGIN:CanFlagTargetForViolation(target)
 	return self:CanCombineIdentifyTarget(target)
 end
 
+function PLUGIN:CanCameraTrackTarget(target)
+	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
+		return false
+	end
+
+	if (target:IsCombine()) then
+		return !target:GetNetVar("IsBiosignalGone", false)
+	end
+
+	if (self.weaponViolationFactionWhitelist[target:Team()]) then
+		return false
+	end
+
+	return true
+end
+
 function PLUGIN:IsVisibleWeaponViolation(target)
 	if (!IsValid(target) or !target:IsPlayer()) then
 		return false
@@ -296,6 +312,10 @@ if (SERVER) then
 	end
 
 	function PLUGIN:LoadData()
+		for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+			v:Remove()
+		end
+
 		local data = ix.data.Get("camera_terminals") or {}
 
 		for _, v in ipairs(data) do

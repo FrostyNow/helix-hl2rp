@@ -35,11 +35,14 @@ function PLUGIN:UpdateBiosignalLocations()
 	if (!client:GetNetVar("IsBiosignalGone", false)) then
 		for _, v in pairs(player.GetAll()) do
 			if (v:IsCombine() and v != client and !v:GetNetVar("IsBiosignalGone", false) and v:Alive()) then
-				local physBone = v:LookupBone("ValveBiped.Bip01_Head1")
+				if (!v.headBone) then
+					v.headBone = v:LookupBone("ValveBiped.Bip01_Head1")
+				end
+
 				local position = nil
 
-				if (physBone) then
-					local bonePosition = v:GetBonePosition(physBone)
+				if (v.headBone) then
+					local bonePosition = v:GetBonePosition(v.headBone)
 
 					if (bonePosition) then
 						position = bonePosition + Vector(0, 0, 16)
@@ -112,14 +115,41 @@ net.Receive("ixCTOPlayLocalSoundQueue", function()
 end)
 
 net.Receive("UpdateBiosignalCameraData", function()
-	local data = net.ReadTable()
+	local count = net.ReadUInt(8)
 	local newCameraData = {}
 	
-	for entIndex, players in pairs(data) do
-		local combineCamera = Entity(entIndex)
-		
-		if (IsValid(combineCamera)) then
-			newCameraData[combineCamera] = players
+	for i = 1, count do
+		local entIndex = net.ReadUInt(16)
+		local bHasData = net.ReadBool()
+
+		if (bHasData) then
+			local players = {}
+			local playerCount = net.ReadUInt(8)
+
+			for j = 1, playerCount do
+				local clientIndex = net.ReadUInt(8)
+				local vioCount = net.ReadUInt(4)
+				local violations = {}
+
+				for k = 1, vioCount do
+					violations[#violations + 1] = net.ReadUInt(4)
+				end
+
+				local client = Entity(clientIndex)
+				if (IsValid(client)) then
+					players[client] = violations
+				end
+			end
+
+			local combineCamera = Entity(entIndex)
+			if (IsValid(combineCamera)) then
+				newCameraData[combineCamera] = players
+			end
+		else
+			local combineCamera = Entity(entIndex)
+			if (IsValid(combineCamera)) then
+				newCameraData[combineCamera] = 0
+			end
 		end
 	end
 	

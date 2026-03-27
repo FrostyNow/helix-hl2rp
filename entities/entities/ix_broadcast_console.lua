@@ -33,8 +33,8 @@ if (SERVER) then
 
 	function ENT:Initialize()
 		self:SetModel("models/props_combine/combine_interface001.mdl")
+		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetSolid(SOLID_VPHYSICS)
-		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:DrawShadow(true)
 		self:SetUseType(SIMPLE_USE)
 

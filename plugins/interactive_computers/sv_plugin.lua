@@ -2,6 +2,7 @@ local PLUGIN = PLUGIN
 
 PLUGIN.storedComputers = PLUGIN.storedComputers or {}
 PLUGIN.nextComputerID = PLUGIN.nextComputerID or 1
+PLUGIN.entities = PLUGIN.entities or {}
 
 local MAX_USE_DISTANCE_SQR = 160 * 160
 local SECURITY_BYPASS_DURATION = 300
@@ -114,6 +115,9 @@ local function GetExcludedFactions()
 	return excluded
 end
 
+PLUGIN.lastRosterUpdate = 0
+PLUGIN.rosterCache = {}
+
 function PLUGIN:BuildCombinePayload(client, callback)
 	local scannerPlugin = ix.plugin.Get("scanner")
 	local photoHistory = {}
@@ -121,7 +125,12 @@ function PLUGIN:BuildCombinePayload(client, callback)
 		for _, v in ipairs(scannerPlugin.photoHistory) do
 			photoHistory[#photoHistory + 1] = {
 				isSurveillance = v.isSurveillance,
-				time = v.time
+				time = v.time,
+				pos = v.pos,
+				ang = v.ang,
+				id = v.id,
+				trg = v.trg,
+				zone = v.zone
 			}
 		end
 	end
@@ -131,7 +140,7 @@ function PLUGIN:BuildCombinePayload(client, callback)
 		civicData = self:GetCivicPanelData(),
 		canAccessCombine = true,
 		canEditObjectives = hook.Run("CanPlayerEditObjectives", client) == true,
-		canEditData = client:IsCombine(),
+		canEditData = client:IsCombine() or client:IsAdmin(),
 		objectives = Schema and Schema.CombineObjectives or {},
 		journalData = self:GetCombineJournalData(client),
 		roster = {},
@@ -158,78 +167,89 @@ function PLUGIN:BuildCombinePayload(client, callback)
 		end
 	end
 
-	local excluded = GetExcludedFactions()
-	local onlineRoster = {}
-
-	for _, target in ipairs(player.GetAll()) do
-		local character = target:GetCharacter()
-
-		if (!IsValid(target) or !character or target:IsCombine() or target:Team() == FACTION_ADMIN) then
-			continue
-		end
-
-		if (excluded[character:GetFaction()]) then
-			continue
-		end
-
-		local combineData = character:GetData("combineData") or {}
-		payload.roster[#payload.roster + 1] = {
-			target = target,
-			id = character:GetID(),
-			name = character:GetName(),
-			cid = character:GetData("cid", "00000"),
-			data = combineData,
-			isOnline = true,
-			hasContent = (combineData.text and string.Trim(combineData.text or "") != "") == true
-		}
-		onlineRoster[character:GetID()] = true
-	end
-
-	local query = mysql:Select("ix_characters")
-	query:Select("id")
-	query:Select("name")
-	query:Select("faction")
-	query:Select("data")
-	query:Callback(function(result)
-		if (istable(result)) then
-			for _, row in ipairs(result) do
-				local id = tonumber(row.id)
-				if (onlineRoster[id] or excluded[row.faction]) then
-					continue
-				end
-
-				local data = util.JSONToTable(row.data or "[]")
-				local combineData = data.combineData or {}
-				payload.roster[#payload.roster + 1] = {
-					target = id,
-					id = id,
-					name = row.name,
-					cid = data.cid or "00000",
-					data = combineData,
-					isOnline = false,
-					hasContent = (combineData.text and string.Trim(combineData.text or "") != "") == true
-				}
-			end
-		end
-
-		table.sort(payload.roster, function(a, b)
-			if (a.isOnline != b.isOnline) then
-				return a.isOnline
-			end
-
-			if (a.hasContent != b.hasContent) then
-				return a.hasContent
-			end
-
-			return (a.name or "") < (b.name or "")
-		end)
+	-- Return cached roster if it's fresh enough (60 seconds)
+	if (self.lastRosterUpdate > CurTime()) then
+		payload.roster = self.rosterCache
 
 		if (callback) then
 			callback(payload)
 		end
+		return
+	end
+
+	local excluded = GetExcludedFactions()
+
+	-- Database query to include offline characters
+	local query = mysql:Select("ix_characters")
+	query:Select("id")
+	query:Select("name")
+	query:Select("data")
+	query:Select("faction")
+	query:Where("schema", Schema.folder)
+	
+	query:Callback(function(result)
+		if (!callback) then return end
+		
+		if (istable(result)) then
+			local onlineCharacters = {}
+			for _, v in ipairs(player.GetAll()) do
+				local char = v:GetCharacter()
+				if (char) then
+					onlineCharacters[char:GetID()] = v
+				end
+			end
+
+			local roster = {}
+
+			for _, row in ipairs(result) do
+				local faction = row.faction
+				if (excluded[faction]) then
+					continue
+				end
+
+				local charData = util.JSONToTable(row.data or "{}")
+				-- Skip banned characters (Helix offline bans plugin standard)
+				if (charData.banned) then
+					continue
+				end
+
+				local charID = tonumber(row.id)
+				local onlinePlayer = onlineCharacters[charID]
+				local combineData = (IsValid(onlinePlayer) and onlinePlayer:GetCharacter():GetData("combineData")) or (charData.combineData or {})
+
+				roster[#roster + 1] = {
+					target = onlinePlayer,
+					id = charID,
+					name = row.name,
+					cid = charData.cid or "00000",
+					data = combineData,
+					isOnline = IsValid(onlinePlayer),
+					hasContent = (combineData.text and string.Trim(combineData.text or "") != "") == true
+				}
+			end
+
+			table.sort(roster, function(a, b)
+				if (a.isOnline != b.isOnline) then
+					return a.isOnline
+				end
+
+				if (a.hasContent != b.hasContent) then
+					return a.hasContent
+				end
+
+				return (a.name or "") < (b.name or "")
+			end)
+
+			self.rosterCache = roster
+			self.lastRosterUpdate = CurTime() + 60
+			payload.roster = roster
+		end
+
+		callback(payload)
 	end)
 	query:Execute()
 end
+
 
 function PLUGIN:GetCivicPanelData()
 	return NormalizeCivicPanelData(self, ix.data.Get("interactiveComputerCivicPanel", {}, false, true))
@@ -265,8 +285,8 @@ function PLUGIN:UpdateComputerVisualState(entity, state)
 
 	self:SetEntitySkinForState(entity, definition and definition.skins, state)
 	
-	for _, candidate in ipairs(ents.GetAll()) do
-		if (!self:IsSupportComputer(candidate)) then
+	for _, candidate in pairs(self.entities) do
+		if (!IsValid(candidate) or !self:IsSupportComputer(candidate)) then
 			continue
 		end
 
@@ -281,8 +301,8 @@ function PLUGIN:UpdateComputerVisualState(entity, state)
 end
 
 function PLUGIN:RefreshInteractiveComputerVisualStates()
-	for _, entity in ipairs(ents.GetAll()) do
-		if (!self:IsInteractiveComputer(entity)) then
+	for _, entity in pairs(self.entities) do
+		if (!IsValid(entity) or !self:IsInteractiveComputer(entity)) then
 			continue
 		end
 
@@ -602,7 +622,7 @@ function PLUGIN:GenerateComputerID()
 	return computerID
 end
 
-function PLUGIN:CreateComputer(position, angles, model, data, powered, forcedID)
+function PLUGIN:CreateComputer(position, angles, model, data, powered, forcedID, bDropToFloor)
 	local definition = self:GetComputerDefinition(model or "")
 	local className = definition and definition.class or "ix_interactive_computer"
 	model = string.lower((definition and definition.model) or model or self.defaultModel)
@@ -617,11 +637,15 @@ function PLUGIN:CreateComputer(position, angles, model, data, powered, forcedID)
 	end
 
 	entity.ixModelOverride = model
+	entity:SetComputerModel(model) -- Ensure the model is applied after setting ixModelOverride
 	entity:SetPos(position)
 	entity:SetAngles(angles)
 	entity:Spawn()
 	entity:Activate()
-	entity:DropToFloor()
+
+	if (bDropToFloor) then
+		entity:DropToFloor()
+	end
 
 	local computerID = tonumber(forcedID) or self:GenerateComputerID()
 
@@ -734,8 +758,8 @@ end
 function PLUGIN:SaveData()
 	local data = {}
 
-	for _, entity in ipairs(ents.GetAll()) do
-		if (!PLUGIN:IsPrimaryComputerEntity(entity)) then
+	for _, entity in pairs(self.entities) do
+		if (!IsValid(entity) or !PLUGIN:IsPrimaryComputerEntity(entity)) then
 			continue
 		end
 
@@ -779,7 +803,7 @@ function PLUGIN:LoadData()
 			self:NormalizeData(computerData.data),
 			computerData.powered,
 			computerData.computerID,
-			computerData.movable
+			false -- Do NOT drop to floor when loading, to keep z-pos (especially on containers)
 		)
 
 		if (IsValid(entity)) then
@@ -799,17 +823,33 @@ end
 
 function PLUGIN:EntityRemoved(entity)
 	if (!ix.shuttingDown and PLUGIN:IsPrimaryComputerEntity(entity)) then
+		self.entities[entity:EntIndex()] = nil
 		self:SaveData()
 	elseif (!ix.shuttingDown and PLUGIN:IsSupportComputer(entity)) then
+		self.entities[entity:EntIndex()] = nil
 		self:SaveData()
 	end
 end
 
 function PLUGIN:PlayerDisconnected(client)
-	for _, entity in ipairs(ents.GetAll()) do
-		if (self:IsPrimaryComputerEntity(entity) and entity.ixActiveUser == client) then
+	for _, entity in pairs(self.entities) do
+		if (IsValid(entity) and self:IsPrimaryComputerEntity(entity) and entity.ixActiveUser == client) then
 			entity.ixActiveUser = nil
 			self:ClearAccessSession(entity, client)
+		end
+	end
+end
+
+function PLUGIN:OnEntityCreated(entity)
+	if (self:IsComputerEntity(entity)) then
+		self.entities[entity:EntIndex()] = entity
+	end
+end
+
+function PLUGIN:InitPostEntity()
+	for _, entity in ipairs(ents.GetAll()) do
+		if (self:IsComputerEntity(entity)) then
+			self.entities[entity:EntIndex()] = entity
 		end
 	end
 end
@@ -1083,6 +1123,7 @@ netstream.Hook("ixInteractiveComputerUpdateObjectives", function(client, entity,
 	Schema.CombineObjectives = data
 	Schema:AddCombineDisplayMessage("@cViewObjectivesFiller", nil, client, date:spanseconds())
 
+	PLUGIN.lastRosterUpdate = 0
 	PLUGIN:BuildOpenContext(client, entity, function(payload)
 		if (IsValid(client) and IsValid(entity)) then
 			netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), payload)
@@ -1252,14 +1293,20 @@ netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, targe
 		return
 	end
 
-	if (!IsValid(target) or !target:IsPlayer() or !target:GetCharacter()) then
-		-- If target is not a valid player, assume it's a character ID for offline editing
-		if (type(target) != "number") then
-			return
-		end
+	local charID = tonumber(target) or (IsValid(target) and target:GetCharacter() and target:GetCharacter():GetID())
+	if (!charID) then
+		return
 	end
 
-	if (!hook.Run("CanPlayerEditData", client, target)) then
+	local targetChar = ix.char.loaded[charID]
+	local targetPlayer = targetChar and targetChar:GetPlayer()
+
+	if (IsValid(targetPlayer)) then
+		if (!hook.Run("CanPlayerEditData", client, targetPlayer)) then
+			client:NotifyLocalized("noPerm")
+			return
+		end
+	elseif (!client:IsCombine() and !client:IsAdmin()) then
 		client:NotifyLocalized("noPerm")
 		return
 	end
@@ -1271,6 +1318,7 @@ netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, targe
 
 	local function Sync()
 		if (IsValid(client) and IsValid(entity)) then
+			PLUGIN.lastRosterUpdate = 0
 			PLUGIN:BuildOpenContext(client, entity, function(payload)
 				if (IsValid(client) and IsValid(entity)) then
 					netstream.Start(client, "ixInteractiveComputerSync", entity, entity:GetComputerData(), entity:GetPowered(), payload)

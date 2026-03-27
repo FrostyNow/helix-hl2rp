@@ -14,7 +14,38 @@ net.Receive("ixScannerData", function(length, ply)
     local pos = net.ReadVector()
     local ang = net.ReadAngle()
     local id = net.ReadString()
-    local trg = net.ReadString()
+    
+    local trg = "NONE"
+    if (isSurveillance) then
+        local targetEnt = net.ReadEntity()
+
+        if (IsValid(targetEnt)) then
+            if (targetEnt:IsPlayer()) then
+                local char = targetEnt:GetCharacter()
+
+                if (char) then
+                    local inventory = char:GetInventory()
+                    local cidItem = inventory and inventory:HasItem("cid")
+
+                    if (cidItem) then
+                        trg = cidItem:GetData("name", targetEnt:Name())
+                    else
+                        local faction = ix.faction.Get(targetEnt:Team())
+                        trg = faction and faction.name or targetEnt:Name()
+                    end
+                else
+                    trg = targetEnt:Name()
+                end
+            else
+                trg = targetEnt:GetClass()
+            end
+        elseif (targetEnt and targetEnt:IsWorld()) then
+            trg = "WORLD"
+        end
+    else
+        trg = net.ReadString()
+    end
+
     local zone = net.ReadString()
 
     local canCapture = false

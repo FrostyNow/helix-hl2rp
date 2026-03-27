@@ -146,15 +146,8 @@ function PLUGIN:PreDrawOpaqueRenderables()
 end
 
 function PLUGIN:Think()
-	for _, v in ipairs(player.GetAll()) do
-		local scanner = v:GetNetVar("ixScn")
-
-		if (IsValid(scanner)) then
-			v:SetVoicePosition(scanner:GetPos())
-		end
-	end
-
 	local client = LocalPlayer()
+
 	if (IsValid(client:GetNetVar("ixScn"))) then
 		ResetWeaponSelect(client)
 	end

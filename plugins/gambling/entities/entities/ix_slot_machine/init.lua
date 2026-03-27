@@ -53,7 +53,6 @@ function ENT:Initialize()
 		self:SetCollisionGroup(COLLISION_GROUP_PUSHTOBEGONE)
 	end
 
-	self:SetDrawRLMetaData(true)
 	self:SetCustomCollisionCheck(true)
 	self:DrawShadow(true)
 
@@ -90,14 +89,14 @@ function ENT:Initialize()
 	self.spin_3:SetSkin(10) -- horse shoe
 	self.spin_3:SetModelScale(size,0)
 
-	self.Entity.Is_playing = true
+	self.Is_playing = true
 end
 
 
 function ENT:Use(client)
 	local character = client:GetCharacter()
 
-	if self.Entity.Is_playing == false then return end
+	if self.Is_playing == false then return end
 
 	if (!character:HasMoney(ix.config.Get("gamblingPrice", 13))) then
 		client:NotifyLocalized("notEnoughMoney")
@@ -105,7 +104,7 @@ function ENT:Use(client)
 	end
 
 	timer.Create("spin_all_wheels"..self:EntIndex( ), 0, 1, function()
-		self.Entity.Is_playing = false
+		self.Is_playing = false
 		character:TakeMoney(ix.config.Get("gamblingPrice", 13))
 		self:EmitSound("ambient/levels/labs/coinslot1.wav", 60, 100)
 		self:EmitSound("spin.wav", 60, 100)
@@ -120,7 +119,7 @@ function ENT:Use(client)
 		self.lucky = math.random(1, ix.config.Get("jackpotChance", 32))
 
 
-		chance = ix.config.Get("jackpotChance", 32) / 2
+		local chance = ix.config.Get("jackpotChance", 32) / 2
 		if self.lucky == math.Round(chance) then
 
 			self.pick_one = math.Rand(1,12)
@@ -200,7 +199,7 @@ function ENT:Use(client)
 		end
 
 		self.payout = 0
-		self.Entity.Is_playing = true
+		self.Is_playing = true
 		self.jackpot = false
 
 	end)

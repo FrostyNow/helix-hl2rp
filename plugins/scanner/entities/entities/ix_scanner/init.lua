@@ -285,7 +285,24 @@ function ENT:Think()
 		self:handlePilotMove()
 	end
 
-	self:discourageHitGround()
+	-- Run trace every 0.25s for efficiency
+	if ((self.nextGroundTrace or 0) < CurTime()) then
+		local trace = util.TraceLine({
+			start = self:GetPos(),
+			endpos = self:GetPos() - self.minHoverHeight,
+			filter = {self, self:GetPilot()}
+		})
+
+		if (trace.Hit) then
+			self.groundPush = self.minHoverPush.z
+		else
+			self.groundPush = 0
+		end
+
+		self.nextGroundTrace = CurTime() + 0.25
+	end
+
+	self.targetDir.z = self.targetDir.z + (self.groundPush or 0)
 	self.targetDir:Normalize()
 
 	self:NextThink(CurTime())

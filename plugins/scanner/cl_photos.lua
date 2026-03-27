@@ -60,6 +60,35 @@ ix.lang.AddTable("korean", {
 	ScannerCapture = "스캐너 촬영",
 })
 
+local function DrawCombineOverlay(w, h)
+	surface.SetDrawColor(255, 255, 255, 100)
+	local len = 80
+	-- Brackets
+	surface.DrawLine(0, 0, len, 0)
+	surface.DrawLine(0, 0, 0, len)
+	surface.DrawLine(w - 1, 0, w - len, 0)
+	surface.DrawLine(w - 1, 0, w - 1, len)
+	surface.DrawLine(0, h - 1, len, h - 1)
+	surface.DrawLine(0, h - 1, 0, h - len)
+	surface.DrawLine(w - 1, h - 1, w - len, h - 1)
+	surface.DrawLine(w - 1, h - 1, w - 1, h - len)
+
+	-- Center cross
+	surface.SetDrawColor(255, 255, 255, 40)
+	surface.DrawLine(w * 0.5 - 10, h * 0.5, w * 0.5 + 10, h * 0.5)
+	surface.DrawLine(w * 0.5, h * 0.5 - 10, w * 0.5, h * 0.5 + 10)
+
+	-- Scanlines
+	surface.SetDrawColor(0, 0, 0, 50)
+	for i = 0, h, 4 do
+		surface.DrawRect(0, i, w, 1)
+	end
+
+	-- Red Tint
+	surface.SetDrawColor(255, 0, 0, 15)
+	surface.DrawRect(0, 0, w, h)
+end
+
 function PLUGIN:PostRender()
 	if (self.surveillanceRequest) then
 		local camera = self.surveillanceRequest
@@ -105,6 +134,10 @@ function PLUGIN:PostRender()
 				drawviewmodel = false
 			})
 
+			cam.Start2D()
+				DrawCombineOverlay(SURVEILLANCE_WIDTH, SURVEILLANCE_HEIGHT)
+			cam.End2D()
+
 			local captured = render.Capture({
 				format = "jpeg",
 				h = SURVEILLANCE_HEIGHT,
@@ -130,18 +163,9 @@ function PLUGIN:PostRender()
 				endpos = camPos + (boneAngles:Forward() * 10000),
 				filter = camera
 			})
-			local target = "NONE"
-
+			local target = NULL
 			if (trace.Hit) then
-				if (IsValid(trace.Entity)) then
-					if (trace.Entity:IsPlayer()) then
-						target = trace.Entity:Name()
-					else
-						target = trace.Entity:GetClass()
-					end
-				else
-					target = "WORLD"
-				end
+				target = trace.Entity
 			end
 
 			local zone = GetAreaAtPos(camPos)
@@ -153,7 +177,7 @@ function PLUGIN:PostRender()
 				net.WriteVector(camPos)
 				net.WriteAngle(boneAngles)
 				net.WriteString("CAM-" .. camera:EntIndex())
-				net.WriteString(target)
+				net.WriteEntity(target)
 				net.WriteString(zone)
 			net.SendToServer()
 		end
@@ -165,8 +189,8 @@ function PLUGIN:PostRender()
 			h = PICTURE_HEIGHT,
 			w = PICTURE_WIDTH,
 			quality = 75,
-			x = ScrW() * 0.5 - PICTURE_WIDTH2,
-			y = ScrH() * 0.5 - PICTURE_HEIGHT2
+			x = ScrW() * 0.5 - PICTURE_WIDTH * 0.5,
+			y = ScrH() * 0.5 - PICTURE_HEIGHT * 0.5
 		})
 
 		if (not captured) then 
@@ -229,19 +253,11 @@ net.Receive("ixScannerData", function()
 
 	if (not data) then return end
 
-	if (isSurveillance) then
-		ix.util.EmitQueuedSounds(LocalPlayer(), {
-			"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
-			"npc/overwatch/radiovoice/preparevisualdownload.wav",
-			"npc/metropolice/vo/off" .. math.random(1, 4) .. ".wav"
-		}, 0, 0.1, 0)
-	else
-		ix.util.EmitQueuedSounds(LocalPlayer(), {
-			"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
-			"npc/overwatch/radiovoice/visualidentificationat.wav",
-			"npc/metropolice/vo/off" .. math.random(1, 4) .. ".wav"
-		}, 0, 0.1, 0)
-	end
+	ix.util.EmitQueuedSounds(LocalPlayer(), {
+		"npc/metropolice/vo/on" .. math.random(1, 2) .. ".wav",
+		"npc/overwatch/radiovoice/preparevisualdownload.wav",
+		"npc/metropolice/vo/off" .. math.random(1, 4) .. ".wav"
+	}, 0, 0.1, 0)
 
 	if (IsValid(CURRENT_PHOTO)) then
 		local panel = CURRENT_PHOTO
@@ -293,7 +309,8 @@ net.Receive("ixScannerData", function()
 				y = y + 16
 				draw.SimpleText("ID  ("..tostring(id)..")", "ixScannerFont", 8, y, color_white)
 				y = y + 16
-				draw.SimpleText("TRG ("..tostring(trg)..")", "ixScannerFont", 8, y, color_white)
+				local displayTarget = isSurveillance and L(trg) or trg
+				draw.SimpleText("TRG ("..tostring(displayTarget)..")", "ixScannerFont", 8, y, color_white)
 				y = y + 16
 				draw.SimpleText("ZONE("..tostring(zone)..")", "ixScannerFont", 8, y, color_white)
 			end
@@ -357,7 +374,7 @@ concommand.Add("ix_scanner_photocache", function()
 			button:DockMargin(4, 4, 4, 0)
 			button:SetText(os.date("%X - %d/%m/%Y", v.time))
 			button.DoClick = function()
-				local width, height = 700, 525
+				local width, height = 580, 420
 
 				local frame2 = vgui.Create("DFrame")
 				frame2:SetSize(width + 8, height + 8)
@@ -371,7 +388,7 @@ concommand.Add("ix_scanner_photocache", function()
 				frame2.body:DockMargin(4, 4, 4, 4)
 
 					if (v.isSurveillance) then
-						local function DrawSurveillanceText()
+						local function DrawSurveillanceText(panel)
 							if (IsValid(frame2)) then
 								local y = 4 + 18
 								if (v.pos) then
@@ -384,12 +401,13 @@ concommand.Add("ix_scanner_photocache", function()
 								y = y + 16
 								draw.SimpleText("ID  ("..tostring(v.id)..")", "ixScannerFont", 8, y, color_white)
 								y = y + 16
-								draw.SimpleText("TRG ("..tostring(v.trg)..")", "ixScannerFont", 8, y, color_white)
+								local displayTarget = v.isSurveillance and L(v.trg) or v.trg
+								draw.SimpleText("TRG ("..tostring(displayTarget)..")", "ixScannerFont", 8, y, color_white)
 								y = y + 16
 								draw.SimpleText("ZONE("..tostring(v.zone)..")", "ixScannerFont", 8, y, color_white)
 							end
 						end
-						frame2.PaintOver = DrawSurveillanceText
+						frame2.body.PaintOver = DrawSurveillanceText
 					end
 			end
 		end
@@ -403,16 +421,20 @@ net.Receive("ixSurveillancePhotoRequest", function()
 	local camera = net.ReadEntity()
 	if (!IsValid(camera)) then return end
 
-	-- 해당 카메라를 출력 중인 터미널이 있는지 확인 (이미 렌더링 중인 자원 활용)
 	local cto = ix.plugin.Get("cto")
 	if (cto and cto.terminalsToDraw) then
 		for terminal, bDraw in pairs(cto.terminalsToDraw) do
 			if (IsValid(terminal) and bDraw and terminal:GetNWEntity("camera") == camera and terminal.tex) then
 				render.PushRenderTarget(terminal.tex)
+				
+				cam.Start2D()
+					DrawCombineOverlay(PICTURE_WIDTH, PICTURE_HEIGHT)
+				cam.End2D()
+
 				local captured = render.Capture({
 					format = "jpeg",
-					h = PICTURE_HEIGHT,
-					w = PICTURE_WIDTH,
+					h = 525,
+					w = 700,
 					quality = 80,
 					x = 0,
 					y = 0
@@ -431,18 +453,9 @@ net.Receive("ixSurveillancePhotoRequest", function()
 						endpos = camPos + (camAng:Forward() * 10000),
 						filter = camera
 					})
-					local target = "NONE"
-
+					local target = NULL
 					if (trace.Hit) then
-						if (IsValid(trace.Entity)) then
-							if (trace.Entity:IsPlayer()) then
-								target = trace.Entity:Name()
-							else
-								target = trace.Entity:GetClass()
-							end
-						else
-							target = "WORLD"
-						end
+						target = trace.Entity
 					end
 
 					local zone = GetAreaAtPos(camPos)
@@ -454,7 +467,7 @@ net.Receive("ixSurveillancePhotoRequest", function()
 						net.WriteVector(camPos)
 						net.WriteAngle(camAng)
 						net.WriteString("CAM-" .. camera:EntIndex())
-						net.WriteString(target)
+						net.WriteEntity(target)
 						net.WriteString(zone)
 					net.SendToServer()
 					return
@@ -463,6 +476,5 @@ net.Receive("ixSurveillancePhotoRequest", function()
 		end
 	end
 
-	-- 터미널이 없으면 백그라운드에서 직접 1컷 렌더링 요청
 	PLUGIN.surveillanceRequest = camera
 end)

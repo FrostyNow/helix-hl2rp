@@ -32,7 +32,11 @@ function ENT:SpawnFunction(client, trace, className)
 	local entity = plugin:CreateComputer(
 		trace.HitPos + trace.HitNormal * 16,
 		Angle(0, client:EyeAngles().y - 90, 0),
-		className or self:GetClass()
+		className or self:GetClass(),
+		nil,
+		nil,
+		nil,
+		true
 	)
 
 	if (IsValid(entity)) then
@@ -149,28 +153,45 @@ end
 
 function ENT:Think()
 	local plugin = ix.plugin.Get("interactive_computers")
-	if (plugin and plugin:IsSupportComputer(self)) then
+	if (!plugin) then
+		return
+	end
+
+	if (plugin:IsSupportComputer(self)) then
 		self:NextThink(CurTime() + SUPPORT_CHECK_INTERVAL)
 		return true
 	end
 
-	if (plugin and self:GetPowered() and !plugin:IsComputerAssemblyValid(self)) then
-		if (!self:IsCombineTerminal() and plugin.HandleGeneralAssemblyFailure) then
-			plugin:HandleGeneralAssemblyFailure(self)
-		else
-			self:SetNetVar("assemblyError", true)
-			plugin:UpdateComputerVisualState(self, "error")
-			self:SetPowered(false)
+	local bPowered = self:GetPowered()
+	local bValid = plugin:IsComputerAssemblyValid(self)
+	local bHasError = !bValid
+
+	if (bPowered) then
+		if (bHasError) then
+			if (!self:IsCombineTerminal() and plugin.HandleGeneralAssemblyFailure) then
+				plugin:HandleGeneralAssemblyFailure(self)
+			else
+				if (self:GetNetVar("assemblyError") != true) then
+					self:SetNetVar("assemblyError", true)
+					plugin:UpdateComputerVisualState(self, "error")
+				end
+				self:SetPowered(false)
+			end
+		elseif (self:GetNetVar("assemblyError") != false) then
+			self:SetNetVar("assemblyError", false)
+			plugin:UpdateComputerVisualState(self, "on")
 		end
-	elseif (plugin and !self:GetPowered()) then
-		local hasError = !plugin:IsComputerAssemblyValid(self)
-		self:SetNetVar("assemblyError", hasError)
-		plugin:UpdateComputerVisualState(self, hasError and "error" or "off")
+	else
+		if (self:GetNetVar("assemblyError") != bHasError) then
+			self:SetNetVar("assemblyError", bHasError)
+			plugin:UpdateComputerVisualState(self, bHasError and "error" or "off")
+		end
 	end
 
 	self:NextThink(CurTime() + ACTIVE_CHECK_INTERVAL)
 	return true
 end
+
 
 function ENT:Use(activator)
 	if (!IsValid(activator) or !activator:IsPlayer()) then
