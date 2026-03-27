@@ -3,9 +3,9 @@ RECIPE.description = "recipeNoodlesDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/mosi/fallout4/props/food/noodles.mdl"
 RECIPE.requirements = {
-	["flour"] = 1,
+	["dough"] = 1,
 	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1, ["bacon"] = 1, ["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineralwater"] = 1}},
+	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {

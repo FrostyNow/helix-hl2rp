@@ -1,6 +1,7 @@
 ITEM.name = "Dried vegetables"
 ITEM.model = "models/hls/hawke/metal_box_1.mdl"
 ITEM.description = "itemDriedVegetablesDesc"
+ITEM.classes = {CLASS_CWU}
 ITEM.price = 3
 ITEM.skin = 1
 ITEM.isjunk = true

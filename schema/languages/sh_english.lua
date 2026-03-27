@@ -144,6 +144,7 @@ LANGUAGE = {
 
 	suitcaseDesc = "A small suitcase.",
 	bagDesc = "A small bag.",
+	duffleBagDesc = "A large bag.",
 	combineLockDesc = "A metal apparatus applied to doors.",
 	prepareDetonation = "Preparing detonation...",
 	metropoliceSupplementsDesc = "A tinned can containing a good portion of your daily nutrients.",
@@ -174,13 +175,14 @@ LANGUAGE = {
 	itemEMPDesc = "An EMP Tool, which can be used against combine technology!",
 	empOverloadDoorSucceed = "You have successfully overloaded the door.",
 	empOverloadDoorFailed = "You need to look at a overloadable door to use the EMP!",
+	empOverloadTurretSucceed = "You have successfully hacked the turret.",
 	empOverloadCameraSucceed = "You have successfully overloaded the camera.",
 	empOverloadCameraFailed = "You need to look at a overloadable camera to use the EMP!",
 	empFailed = "The EMP attempt failed.",
 	empBroken = "The EMP Tool has broken!",
 	empOverloading = "Overloading...",
 	empUseAction = "Use",
-	empInvalidTarget = "You must aim at either a door lock or a Combine terminal.",
+	empInvalidTarget = "You must aim at either a locked door, sentry gun, or a Combine terminal.",
 	empInstabilityLevel = "Instability Level",
 
 	bookDesc = "A readable book.",
@@ -214,6 +216,8 @@ LANGUAGE = {
 	itemCameraDesc = "An uncommon junk item in the form of a small, rusted box camera with a large flash.",
 	itemButtercupToyDesc = "A smaller variant of the pre-War robotic horse Giddyup Buttercup.",
 	itemTelephoneDesc = "A light green telephone with a rotary dial.",
+	itemAshtrayDesc = "A round metal ashtray.",
+	itemPotLargeDesc = "A large pot used to cook large amounts of food.",
 	itemFryingPanDesc = "A shallow, flat cooking pan with a long handle.",
 	itemCookingPanDesc = "A large, flat bottomed pan with a wooden handle, usually found in kitchens.",
 	itemGasCanisterDesc = "A bright red metal gasoline canister covered in rust, containing some amount of gas.",
@@ -276,6 +280,19 @@ LANGUAGE = {
 	itemResinDesc = "A piece of material used for 3D printing objects.",
 	itemCombineSteelDesc = "A piece of exotic steel that is used to make Combine equipment.",
 	itemTeaCupDesc = "A tea cup used for drinking tea.",
+	itemEmptyVialDesc = "An empty vial that once contained a Antlion Grub.",
+	itemPlasticBoxJunkDesc = "A discarded plastic box.",
+	itemSprayCanDesc = "A spray can with some writing on it.",
+	itemForkDesc = "A fork for eating.",
+	itemTableKnifeDesc = "A table knife for eating.",
+	itemWrenchJunkDesc = "A wrench for tools.",
+	itemHandsetDesc = "A handset pulled from a phone.",
+	itemCombineCoinDesc = "A silver coin with C on it.",
+	itemTheTerminalDesc = "A newspaper titled 'The Terminal'.",
+	itemWastePaperDesc = "A bunch of crumpled waste paper.",
+	itemVendingStockDesc = "A crate containing various drinks for restocking vending machines. Bring it close to a machine to refill it.",
+	itemFlareDesc = "A flare that can be used to signal for help.",
+	shovelDesc = "A shovel used for digging and farming.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",
@@ -324,7 +341,6 @@ LANGUAGE = {
 	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock.",
 	
 	broadcastConsole = "Broadcast Console",
-	["Broadcast Console"] = "Broadcast Console",
 	broadcastConsoleDesc = "A console used to make public announcements.",
 	broadcastConsoleUse = "Type /Broadcast to make an announcement.",
 
@@ -341,3 +357,5 @@ LANGUAGE = {
 	cmdHUDReset = "Reset your Combine HUD positions to defaults.",
 	hudResetMessage = "Your HUD positions have been reset.",
 }
+
+

@@ -47,7 +47,8 @@ function Schema:SaveVendingMachines()
 				pos = v:GetPos(),
 				angles = v:GetAngles(),
 				class = v:GetClass(),
-				stock = v:GetAllStock()
+				stock = v:GetAllStock(),
+				skin = v:GetSkin()
 			}
 		end
 	end
@@ -104,6 +105,38 @@ function Schema:SaveMachines()
 	ix.data.Set("machines", data)
 end
 
+function Schema:LoadBusinessAreas()
+	for _, v in ipairs(ix.data.Get("businessAreas") or {}) do
+		local entity = ents.Create("ix_businessarea")
+
+		if (IsValid(entity)) then
+			entity:SetPos(v.pos)
+			entity:SetAngles(v.angles)
+			entity:Spawn()
+			entity:SetFactions(v.factions or "[]")
+			entity:SetClasses(v.classes or "[]")
+			entity:SetDisplayName(v.displayName or "Combine Dispenser")
+			entity:Activate()
+		end
+	end
+end
+
+function Schema:SaveBusinessAreas()
+	local data = {}
+
+	for _, v in ipairs(ents.FindByClass("ix_businessarea")) do
+		data[#data + 1] = {
+			pos = v:GetPos(),
+			angles = v:GetAngles(),
+			factions = v:GetFactions(),
+			classes = v:GetClasses(),
+			displayName = v:GetDisplayName()
+		}
+	end
+
+	ix.data.Set("businessAreas", data)
+end
+
 -- data loading
 function Schema:LoadRationDispensers()
 	for _, v in ipairs(ix.data.Get("rationDispensers") or {}) do
@@ -128,6 +161,7 @@ function Schema:LoadVendingMachines()
 				entity:SetAngles(v.angles)
 				entity:Spawn()
 				entity:SetStock(v.stock)
+				entity:SetSkin(v.skin or 0)
 				entity:Activate()
 			end
 		end

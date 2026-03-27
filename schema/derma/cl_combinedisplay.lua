@@ -16,7 +16,7 @@ function PANEL:Init()
 
 	self.lines = {}
 
-	self:SetMaxLines(6)
+	self:SetMaxLines(12)
 	self:SetFont("BudgetLabel")
 
 	-- Default position
@@ -37,6 +37,7 @@ function PANEL:AddLine(text, color, expireTime, ...)
 		for k, info in ipairs(self.lines) do
 			if (info.expireTime != 0) then
 				table.remove(self.lines, k)
+				break -- Only remove the oldest expiring line
 			end
 		end
 	end
@@ -53,7 +54,7 @@ function PANEL:AddLine(text, color, expireTime, ...)
 		text = "<:: " .. text,
 		background = Color(background.r, background.g, background.b, background.a or DEFAULT_BACKGROUND.a),
 		textColor = DEFAULT_TEXT_COLOR,
-		expireTime = (expireTime != 0 and (CurTime() + (expireTime or 10)) or 0),
+		expireTime = (expireTime != 0 and (CurTime() + (expireTime or 20)) or 0),
 		character = 1
 	}
 

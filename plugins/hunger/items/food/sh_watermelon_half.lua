@@ -1,0 +1,9 @@
+ITEM.name = "Watermelon Half"
+ITEM.model = "models/willardnetworks/food/watermelon_half.mdl"
+ITEM.description = "itemWatermelonHalfDesc"
+ITEM.price = 20
+ITEM.hunger = 5
+ITEM.thirst = 10
+ITEM.heal = 2
+ITEM.usenum = 2
+ITEM.empty = "watermelon_slice"

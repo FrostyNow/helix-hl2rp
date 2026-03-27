@@ -6,7 +6,7 @@ RECIPE.requirements = {
 	["bread"] = 1,
 	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
 	["cheese_slice"] = {amount = 1, substitutes = {["blue_cheese"] = 1, ["misc_dried_spices"] = 1}},
-	["tomato"] = {amount = 1, substitutes = {["misc_dried_vegetable"] = 1}},
+	["tomato"] = {amount = 1, substitutes = {["sauce"] = 1, ["misc_dried_vegetable"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {

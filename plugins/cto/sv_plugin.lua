@@ -55,7 +55,7 @@ end
 function PLUGIN:DoPostBiosignalLoss(client)
 	client:SetNetVar("IsBiosignalGone", true)
 
-	local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+	local location = (client.GetAreaName and client:GetAreaName() != "") and client:GetAreaName() or L("unknown location", client)
 	local unitID = Schema:GetCombineUnitID(client)
 
 	-- Alert all other units.
@@ -77,6 +77,17 @@ function PLUGIN:DoPostBiosignalLoss(client)
 	end
 end
 
+-- scanner plugin support
+function PLUGIN:DoPostScannerLoss(scanner)
+	local pilot = scanner:GetPilot()
+	local location = (IsValid(pilot) and pilot.GetAreaName and pilot:GetAreaName() != "") and pilot:GetAreaName() or "unknown location"
+	local scannerID = scanner:GetNetVar("ixScannerName", "SCN")
+
+	-- Alert all other units.
+	Schema:AddCombineDisplayMessage("@DownloadingLostBiosignal", Color(0, 180, 255, 45))
+	Schema:AddCombineDisplayMessage("@BiosignalLostForUnit", Color(255, 0, 0, 45), scannerID, location)
+end
+
 function PLUGIN:SetPlayerBiosignal(client, bEnable)
 	if (client:IsCombine()) then
 		local isDisabledAlready = client:GetNetVar("IsBiosignalGone")
@@ -89,7 +100,7 @@ function PLUGIN:SetPlayerBiosignal(client, bEnable)
 			if (bEnable) then
 				client:SetNetVar("IsBiosignalGone", false)
 
-				local location = client:GetAreaName() != "" and client:GetAreaName() or L("unknown location", client)
+				local location = (client.GetAreaName and client:GetAreaName() != "") and client:GetAreaName() or L("unknown location", client)
 
 				client:AddCombineDisplayMessage("@ConnectionRestored", Color(0, 255, 0, 45)) -- Alert this unit.
 
@@ -145,4 +156,48 @@ function PLUGIN:DispatchRequestSignal(client, text)
 	net.Send(players)
 
 	Schema:AddCombineDisplayMessage("@AssistanceRequestRecv", Color(175, 125, 100, 45))
+end
+
+function PLUGIN:RequestSurveillancePhoto(camera)
+	if ((camera.ixNextPhotoRequest or 0) > CurTime()) then
+		return
+	end
+
+	camera.ixNextPhotoRequest = CurTime() + 15
+
+	local receiver
+	local bestReceiver
+
+	-- Find nearest camera terminal first for sake of resource friendship
+	for _, v in ipairs(ents.FindByClass("ix_ctocameraterminal")) do
+		if (v:GetNWEntity("camera") == camera) then
+			for _, client in ipairs(player.GetAll()) do
+				if (client:IsCombine() and !client:GetNetVar("IsBiosignalGone", false) and client:GetPos():DistToSqr(v:GetPos()) <= 250 * 250) then
+					bestReceiver = client
+					break
+				end
+			end
+		end
+
+		if (bestReceiver) then break end
+	end
+
+	if (bestReceiver) then
+		receiver = bestReceiver
+	else
+		for _, v in ipairs(player.GetAll()) do
+			if (v:IsCombine() and !v:GetNetVar("IsBiosignalGone", false)) then
+				if (!v.ixScn and !v:GetNetVar("ixScanning")) then
+					receiver = v
+					break
+				end
+			end
+		end
+	end
+
+	if (receiver) then
+		net.Start("ixSurveillancePhotoRequest")
+			net.WriteEntity(camera)
+		net.Send(receiver)
+	end
 end

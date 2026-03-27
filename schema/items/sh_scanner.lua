@@ -6,35 +6,74 @@ ITEM.category = "Utility"
 ITEM.width = 2
 ITEM.height = 2
 ITEM.price = 100
+ITEM.classes = {CLASS_MPU, CLASS_EMP}
 
 ITEM.functions.Use = {
 	name = "Place It",
 	icon = "icon16/cursor.png",
-	OnRun = function(item, player, client)
-		item.player:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
-			
-		local ent = ents.Create("npc_cscanner")
+	OnRun = function(item, player)
+		local ply = IsValid(player) and player or item.player
+		if (!IsValid(ply)) then return false end
 
-		for k, v in pairs(ents.GetAll()) do
-			if(v:IsPlayer()) then
-				if(v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
-					ent:AddEntityRelationship(v, D_LI, 99)
-				else
-					ent:AddEntityRelationship(v, D_HT, 99)
+		ply:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
+
+		if ix.plugin.Get("scanner") then
+
+			if IsValid(ply.ixScn) then
+				ply:NotifyLocalized("scannerAlreadyOperating")
+				return false
+			end
+
+			ply:EmitSound("npc/turret_floor/deploy.wav", 75, 200)
+
+			local spawnPos = ply:EyePos() + ply:GetAimVector() * 80
+
+			local entity = ents.Create("ix_scanner")
+			if not IsValid(entity) then return false end
+
+			entity:SetPos(spawnPos)
+			entity:SetAngles(ply:GetAngles())
+			entity:Spawn()
+			entity:Activate()
+			entity:SetNetVar("ixPlayer", player or ply)
+
+			local name = ix.plugin.Get("scanner"):GenerateUniqueScannerName(false)
+			entity:SetNetVar("ixScannerName", name)
+			
+			if (IsValid(player or ply)) then
+				(player or ply):Notify("SPAWNED: ix_scanner (" .. name .. ")")
+			end
+		else
+			if (IsValid(player or ply)) then
+				(player or ply):Notify("SPAWNED: npc_cscanner (PLUGIN NOT FOUND)")
+			end
+			ply:Notify("Spawning npc_cscanner instead of ix_scanner!") -- Debug
+			local ent = ents.Create("npc_cscanner")
+
+			for k, v in pairs(ents.GetAll()) do
+				if v:IsPlayer() then
+					if v:IsCombine() then
+						ent:AddEntityRelationship(v, D_LI, 99)
+					else
+						ent:AddEntityRelationship(v, D_HT, 99)
+					end
 				end
 			end
-		end
 
-		ent:SetPos(item.player:EyePos() + ( item.player:GetAimVector() * 100))
-		ent:SetAngles(item.player:GetAngles())
-		ent:Spawn()
+			ent:SetPos(ply:EyePos() + ( ply:GetAimVector() * 100))
+			ent:SetAngles(ply:GetAngles())
+			ent:Spawn()
+		end
 
 		return true
 	end,
 	OnCanRun = function(item)
 		local client = item.player
+		if not IsValid(client) then return false end
+		if IsValid(item.entity) then return false end
+		if item.invID ~= client:GetCharacter():GetInventory():GetID() then return false end
 
-		return !IsValid(item.entity) and IsValid(client) and item.invID == client:GetCharacter():GetInventory():GetID() and (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT or client:GetCharacter():GetInventory():HasItem("comkey"))
+		return client:IsCombine() or client:GetCharacter():GetInventory():HasItem("comkey")
 	end
 }
 

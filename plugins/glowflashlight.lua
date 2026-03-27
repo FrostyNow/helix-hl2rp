@@ -176,8 +176,8 @@ if ( SERVER ) then
 			return false
 		end
 
-		if (IsValid(client.ixScn)) then
-			return
+		if (ix.plugin.Get("scanner") and IsValid(client.ixScn)) then
+			return false
 		end
 
 		if (Schema and Schema.CanPlayerUseFlashlight and Schema:CanPlayerUseFlashlight(client)) then

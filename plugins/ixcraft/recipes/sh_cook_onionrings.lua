@@ -4,7 +4,7 @@ RECIPE.category = "Food"
 RECIPE.model = "models/dead rising 2/onion_rings.mdl"
 RECIPE.requirements = {
 	["onion"] = 1,
-	["flour"] = 1,
+	["dough"] = 1,
 	["vegetable_oil"] = 1,
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }

@@ -167,6 +167,7 @@ if (SERVER) then
 		local entity = ents.Create("ix_forcefield")
 		entity:SetPos(pos + normal * 15 + Vector(0, 0, (spawnZ - pos.z) + 40))
 		entity:SetAngles(angles:SnapTo("y", 90))
+		entity:SetSkin(1)
 		entity:Spawn()
 		entity:Activate()
 

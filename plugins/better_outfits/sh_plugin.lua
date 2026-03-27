@@ -363,7 +363,7 @@ function PLUGIN:IsModelOverridden(character)
 	if (!character) then return false end
 
 	for k, v in pairs(character:GetData()) do
-		if (isstring(k) and k:sub(1, 8) == "oldModel" and v != nil) then
+		if (isstring(k) and k:sub(1, 8) == "oldModel" and k != "oldModelBase" and v != nil) then
 			return true
 		end
 	end
@@ -582,6 +582,17 @@ function PLUGIN:CharacterVarChanged(character, key, oldValue, value)
 		local client = character:GetPlayer()
 
 		if (IsValid(client)) then
+			-- Update base model tracking if we're not currently disguised by an outfit.
+			-- This ensures that CharSetModel (when not wearing a suit) becomes the new base.
+			if (!self:HasEquippedModelChangingOutfit(character)) then
+				character:SetData("oldModelBase", value)
+
+				-- Compatibility with bodygroupmanager's 'Restore' functionality
+				if (character:GetData("originalAppearanceModel") != nil) then
+					character:SetData("originalAppearanceModel", value)
+				end
+			end
+
 			local inventory = ResolveCharacterInventory(character)
 
 			if (inventory) then

@@ -35,19 +35,27 @@ function ENT:SpawnFunction(client, trace)
 end
 
 function ENT:Initialize()
-	self.Entity:SetModel( "models/props/slotmachine/slotmachinefinal.mdl" )
-	self.Entity:PhysicsInit( SOLID_VPHYSICS )
-	self.Entity:SetMoveType( MOVETYPE_VPHYSICS )
-	self.Entity:SetSolid( SOLID_VPHYSICS )
-	self.Entity:SetUseType( SIMPLE_USE )
-	size = 1.5
-	self.Entity:SetModelScale(size,0)
+	self:SetModel("models/props/slotmachine/slotmachinefinal.mdl")
+	self:PhysicsInit(SOLID_VPHYSICS)
+	self:SetMoveType(MOVETYPE_VPHYSICS)
+	self:SetSolid(SOLID_VPHYSICS)
+	self:SetUseType(SIMPLE_USE)
 
-	local phys = self.Entity:GetPhysicsObject()
-	if (phys:IsValid()) then
+	local size = 1.5
+	self:SetModelScale(size, 0)
+
+	local phys = self:GetPhysicsObject()
+	if (IsValid(phys)) then
 		phys:Wake()
-        phys:SetMass( 100 )
+		phys:SetMass(100)
+	else
+		self:PhysicsInitBox(self:OBBMins() * size, self:OBBMaxs() * size)
+		self:SetCollisionGroup(COLLISION_GROUP_PUSHTOBEGONE)
 	end
+
+	self:SetDrawRLMetaData(true)
+	self:SetCustomCollisionCheck(true)
+	self:DrawShadow(true)
 
 	self.spin_1 = ents.Create("prop_scalable")
 	self.spin_1:SetPos(self:GetPos() + Vector(-17.5, -1, -7))
@@ -147,45 +155,47 @@ function ENT:Use(client)
 
 	self.payout = 0
 
-		if self.spin_1:GetSkin() == 1 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 3 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 4 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 5 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 8 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 9 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 10 then self.payout = self.payout + 5 end
-		if self.spin_1:GetSkin() == 12 then self.payout = self.payout + 5 end
+		local symbolPayout = ix.config.Get("gamblingSymbolPayout", 12)
 
-		if self.spin_2:GetSkin() == 1 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 3 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 4 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 5 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 8 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 9 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 10 then self.payout = self.payout + 5 end
-		if self.spin_2:GetSkin() == 12 then self.payout = self.payout + 5 end
+		if self.spin_1:GetSkin() == 1 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 3 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 4 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 5 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 8 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 9 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 10 then self.payout = self.payout + symbolPayout end
+		if self.spin_1:GetSkin() == 12 then self.payout = self.payout + symbolPayout end
 
-		if self.spin_3:GetSkin() == 1 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 3 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 4 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 5 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 8 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 9 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 10 then self.payout = self.payout + 5 end
-		if self.spin_3:GetSkin() == 12 then self.payout = self.payout + 5 end
+		if self.spin_2:GetSkin() == 1 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 3 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 4 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 5 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 8 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 9 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 10 then self.payout = self.payout + symbolPayout end
+		if self.spin_2:GetSkin() == 12 then self.payout = self.payout + symbolPayout end
 
-		if self.jackpot == true and self.spin_3:GetSkin() == 1 then  self.payout = ix.config.Get("tripleBarClover", 200) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 3 then  self.payout = ix.config.Get("singleBarDollarSign", 50) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 4 then  self.payout = ix.config.Get("lucky7Diamond", 500) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 5 then  self.payout = ix.config.Get("horseShoeDoubleBar", 100) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 8 then  self.payout = ix.config.Get("tripleBarClover", 200) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 9 then  self.payout = ix.config.Get("lucky7Diamond", 500) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 10 then self.payout = ix.config.Get("horseShoeDoubleBar", 100) end
-		if self.jackpot == true and self.spin_3:GetSkin() == 12 then self.payout = ix.config.Get("singleBarDollarSign", 50) end
+		if self.spin_3:GetSkin() == 1 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 3 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 4 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 5 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 8 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 9 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 10 then self.payout = self.payout + symbolPayout end
+		if self.spin_3:GetSkin() == 12 then self.payout = self.payout + symbolPayout end
 
-		if self.payout > ix.config.Get("singleBarDollarSign", 50) - 1 then self:EmitSound("jackpot.wav", 60, 100) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 1 then  self.payout = ix.config.Get("tripleBarClover", 500) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 3 then  self.payout = ix.config.Get("singleBarDollarSign", 100) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 4 then  self.payout = ix.config.Get("lucky7Diamond", 1000) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 5 then  self.payout = ix.config.Get("horseShoeDoubleBar", 250) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 8 then  self.payout = ix.config.Get("tripleBarClover", 500) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 9 then  self.payout = ix.config.Get("lucky7Diamond", 1000) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 10 then self.payout = ix.config.Get("horseShoeDoubleBar", 250) end
+		if self.jackpot == true and self.spin_3:GetSkin() == 12 then self.payout = ix.config.Get("singleBarDollarSign", 100) end
 
-		if self.payout > 9 then self:EmitSound("payout.wav", 60, 100) character:GiveMoney(self.payout)
+		if self.payout > ix.config.Get("singleBarDollarSign", 100) - 1 then self:EmitSound("jackpot.wav", 60, 100) end
+
+		if self.payout > 0 then self:EmitSound("payout.wav", 60, 100) character:GiveMoney(self.payout)
 			client:NotifyLocalized("gamblePayout", ix.currency.Get(self.payout, client))
 		end
 

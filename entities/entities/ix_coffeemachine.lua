@@ -43,7 +43,24 @@ if (SERVER) then
 
 		self.nextUseTime = 0
 		self:SetNetVar("stock", {})
+
+		if (SERVER) then
+			self:SetTrigger(true)
+		end
 	end
+
+	util.AddNetworkString("ixCoffeeMachineReset")
+
+	net.Receive("ixCoffeeMachineReset", function(len, client)
+		if (client:IsAdmin()) then
+			local entity = net.ReadEntity()
+
+			if (IsValid(entity) and entity:GetClass() == "ix_coffeemachine") then
+				entity:ResetStock()
+				client:NotifyLocalized("vendingRestockedAll")
+			end
+		end
+	end)
 
 	function ENT:SpawnFunction(client, trace)
 		local vendor = ents.Create("ix_coffeemachine")
@@ -107,6 +124,18 @@ if (SERVER) then
 		self:SetStock(id, self:GetStock(id) - 1)
 	end
 
+	function ENT:StartTouch(entity)
+		if (entity:GetClass() == "ix_item") then
+			local itemTable = entity:GetItemTable()
+
+			if (itemTable and itemTable.uniqueID == "vending_stock") then
+				self:ResetStock()
+				entity:Remove()
+				self:EmitSound("items/ammocrate_close.wav", 60, 150)
+			end
+		end
+	end
+
 	function ENT:Use(client)
 		local buttonID = self:GetClosestButton(client)
 
@@ -122,37 +151,35 @@ if (SERVER) then
 
 		local character = client:GetCharacter()
 
-		if (!character:IsCombine()) then
-			local itemInfo = self.Items[buttonID]
-			local price = itemInfo[3]
+		local itemInfo = self.Items[buttonID]
+		local price = itemInfo[3]
 
-			if (!character:HasMoney(price)) then
-				self:EmitSound("buttons/button2.wav", 50)
+		if (!character:HasMoney(price)) then
+			self:EmitSound("buttons/button2.wav", 50)
+			self.nextUseTime = CurTime() + 1
+
+			client:NotifyLocalized("vendingNeedMoney", ix.currency.Get(price, client))
+			return false
+		end
+
+		if (self:GetStock(buttonID) > 0) then
+			ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -30.25, function(item, entity)
+				local angles = self:GetAngles()
+				angles:RotateAroundAxis(angles:Forward(), 90)
+				entity:SetAngles(angles)
+
+				self:EmitSound("buttons/button1.wav", 60)
+				self:EmitSound("buttons/button4.wav", 60)
+
+				character:TakeMoney(price)
+				client:NotifyLocalized("vendingPurchased", ix.currency.Get(price, client))
+
+				self:RemoveStock(buttonID)
 				self.nextUseTime = CurTime() + 1
-
-				client:NotifyLocalized("vendingNeedMoney", ix.currency.Get(price, client))
-				return false
-			end
-
-			if (self:GetStock(buttonID)) then
-				ix.item.Spawn(itemInfo[2], self:GetPos() + self:GetForward() * 19 + self:GetRight() * 4 + self:GetUp() * -26, function(item, entity)
-					self:EmitSound("buttons/button4.wav", 60)
-
-					character:TakeMoney(price)
-					client:NotifyLocalized("vendingPurchased", ix.currency.Get(price, client))
-
-					self:RemoveStock(buttonID)
-					self.nextUseTime = CurTime() + 1
-				end)
-			else
-				self:EmitSound("buttons/button2.wav", 50)
-				self.nextUseTime = CurTime() + 1
-			end
-		elseif (self:GetStock(buttonID) == 0) then
-			self:ResetStock(buttonID)
-
-			client:NotifyLocalized("vendingRestocked")
-			self.nextUsetime = CurTime() + 1
+			end)
+		else
+			self:EmitSound("buttons/button2.wav", 50)
+			self.nextUseTime = CurTime() + 1
 		end
 	end
 
@@ -172,6 +199,23 @@ else
 	local color_red = Color(100, 20, 20, 255)
 	local color_blue = Color(0, 50, 100, 255)
 	local color_black = Color(60, 60, 60, 255)
+
+	properties.Add("ixCoffeeMachineReset", {
+		MenuLabel = L("vendingResetStock"),
+		Order = 999,
+		MenuIcon = "icon16/arrow_refresh.png",
+		Filter = function(self, entity, client)
+			if (!IsValid(entity) or entity:GetClass() != "ix_coffeemachine") then return false end
+			if (!client:IsAdmin()) then return false end
+
+			return true
+		end,
+		Action = function(self, entity)
+			net.Start("ixCoffeeMachineReset")
+				net.WriteEntity(entity)
+			net.SendToServer()
+		end
+	})
 
 	function ENT:Draw()
 		self:DrawModel()

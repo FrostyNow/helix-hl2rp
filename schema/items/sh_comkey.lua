@@ -5,6 +5,7 @@ ITEM.description = "itemCombineKeycardDesc"
 ITEM.category = "Utility"
 ITEM.price = 2000
 ITEM.noDeathDrop = true
+ITEM.isStackable = true
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

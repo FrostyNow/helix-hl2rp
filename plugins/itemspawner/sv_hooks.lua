@@ -20,20 +20,35 @@ function PLUGIN:InitializedPlugins()
 		PLUGIN.items.common = {}
 		PLUGIN.items.rare = {}
 
-		if (ixloot.randomLoot.common) then
-			for itemID, weight in pairs(ixloot.randomLoot.common) do
-				for i = 1, weight do
-					table.insert(PLUGIN.items.common, itemID)
+		local function ProcessLootTable(src, dest)
+			for k, v in pairs(src) do
+				local itemID
+				local weight
+
+				if (type(v) == "number") then
+					itemID = k
+					weight = v
+				elseif (type(v) == "string") then
+					itemID = v
+					local itemTable = ix.item.list[itemID]
+					local price = (itemTable and itemTable.price) or 10
+					weight = math.Clamp(math.floor(100 / math.max(1, price)), 1, 100)
+				end
+
+				if (itemID and weight) then
+					for i = 1, weight do
+						table.insert(dest, itemID)
+					end
 				end
 			end
 		end
 
+		if (ixloot.randomLoot.common) then
+			ProcessLootTable(ixloot.randomLoot.common, PLUGIN.items.common)
+		end
+
 		if (ixloot.randomLoot.rare) then
-			for itemID, weight in pairs(ixloot.randomLoot.rare) do
-				for i = 1, weight do
-					table.insert(PLUGIN.items.rare, itemID)
-				end
-			end
+			ProcessLootTable(ixloot.randomLoot.rare, PLUGIN.items.rare)
 		end
 	end
 end

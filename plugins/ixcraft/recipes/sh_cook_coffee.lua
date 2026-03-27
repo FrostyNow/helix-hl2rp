@@ -4,7 +4,7 @@ RECIPE.category = "Food"
 RECIPE.model = "models/shibcuppy.mdl"
 RECIPE.requirements = {
 	["coffee_beans"] = 1,
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineralwater"] = 1}},
+	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1}},
 	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}}
 }
 RECIPE.results = {

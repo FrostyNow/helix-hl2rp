@@ -5,6 +5,7 @@ function Schema:LoadData()
 	self:LoadCombineLocks()
 	self:LoadForceFields()
 	self:LoadMachines()
+	self:LoadBusinessAreas()
 
 	Schema.CombineObjectives = ix.data.Get("combineObjectives", {}, false, true)
 end
@@ -15,6 +16,7 @@ function Schema:SaveData()
 	self:SaveCombineLocks()
 	self:SaveForceFields()
 	self:SaveMachines()
+	self:SaveBusinessAreas()
 end
 
 function Schema:PlayerSwitchFlashlight(client, enabled)
@@ -131,11 +133,76 @@ function Schema:PostPlayerLoadout(client)
 	end
 end
 
--- function Schema:PrePlayerLoadedCharacter(client, character, oldCharacter)
--- 	if (IsValid(client.ixScanner)) then
--- 		client.ixScanner:Remove()
--- 	end
--- end
+function Schema:PrePlayerLoadedCharacter(client, character, oldCharacter)
+	-- Fallback: If they are in a uniform faction but lost the flag, revert them to citizen
+	local faction = ix.faction.indices[character:GetFaction()]
+
+	if (faction and faction.IsUniformCitizenDuty and faction:IsUniformCitizenDuty(character)) then
+		local requiredFlag = (faction.uniqueID == "metropolice") and "M" or (faction.uniqueID == "conscript") and "C" or nil
+
+		if (requiredFlag and !character:HasFlags(requiredFlag)) then
+			-- They don't have the flag anymore, remove the outfit effects using layered logic
+			local inventory = character:GetInventory()
+			local items = inventory:GetItems()
+			local lookups = {}
+			for _, v in pairs(items) do lookups[v:GetID()] = v end
+
+			-- 1. Identify items from the appearance stack and remove them in order (top to bottom)
+			local stack = table.Copy(character:GetData("appearanceStack", {}))
+			local originalModel = character:GetModel()
+
+			for _, itemID in ipairs(stack) do
+				local item = lookups[itemID]
+				if (item and item:GetData("equip")) then
+					-- If it's a sub-item (not the uniform itself) that might be incompatible once we revert
+					if (item.uniqueID != "metropolice" and item.uniqueID != "conscript") then
+						local bIncompatible = false
+						if (item.allowedBaseFactions and !item.allowedBaseFactions[FACTION_CITIZEN] and !item.allowedBaseFactions["citizen"]) then
+							bIncompatible = true
+						elseif (item.allowedModels and !table.HasValue(item.allowedModels, originalModel)) then
+							bIncompatible = true
+						end
+
+						if (bIncompatible) then
+							if (isfunction(item.RemoveOutfit)) then
+								item:RemoveOutfit(client)
+							else
+								item:SetData("equip", nil)
+							end
+						end
+					end
+				end
+			end
+
+			-- 2. Finally, locate and remove the main uniform item itself
+			local uniformItem = nil
+			for _, item in pairs(items) do
+				if (item:GetData("equip") and (item.uniqueID == "metropolice" or item.uniqueID == "conscript")) then
+					uniformItem = item
+					break
+				end
+			end
+
+			if (uniformItem) then
+				-- This will revert faction, name, description, etc.
+				uniformItem:RemoveOutfit(client)
+			else
+				-- Absolute last-resort fallback for faction/state
+				local returnFaction = faction:GetUniformReturnFaction(character) or FACTION_CITIZEN
+				character:SetFaction(returnFaction)
+				character:SetData("mpfUniformState", nil)
+				character:SetData("conscriptUniformState", nil)
+			end
+
+			-- 3. Nuclear cleanup of any leftover Better Outfits metadata
+			for k, _ in pairs(character:GetData()) do
+				if (isstring(k) and (k:sub(1, 8) == "oldModel" or k:sub(1, 7) == "oldSkin" or k:sub(1, 9) == "oldGroups")) then
+					character:SetData(k, nil)
+				end
+			end
+		end
+	end
+end
 
 function Schema:PlayerLoadedCharacter(client, character, oldCharacter)
 	local faction = character:GetFaction()
@@ -331,10 +398,6 @@ combinePainSounds = {
 }
 
 local function GetCombinePainSound(client)
-	if (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD")) then
-		return false
-	end
-
 	if (client:Team() == FACTION_OTA) then
 		return combinePainSounds[math.random(1, #combinePainSounds)]
 	end
@@ -540,6 +603,18 @@ function Schema:PlayerSpray(client)
 	end
 end
 
+function Schema:CanPlayerViewCharacter(client, character)
+	local faction = ix.faction.indices[character:GetFaction()]
+
+	if (faction and faction.IsUniformCitizenDuty and faction:IsUniformCitizenDuty(character)) then
+		local requiredFlag = (faction.uniqueID == "metropolice") and "M" or (faction.uniqueID == "conscript") and "C" or nil
+
+		if (requiredFlag and character:HasFlags(requiredFlag)) then
+			return true
+		end
+	end
+end
+
 function Schema:CanPlayerUseCharacter(client, character)
 	if client:IsAdmin() then return end
 
@@ -551,6 +626,21 @@ function Schema:CanPlayerUseCharacter(client, character)
 	local faction = ix.faction.indices[character:GetFaction()]
 
 	if (faction and faction.IsUniformCitizenDuty and faction:IsUniformCitizenDuty(character)) then
+		local requiredFlag = (faction.uniqueID == "metropolice") and "M" or (faction.uniqueID == "conscript") and "C" or nil
+
+		-- If they have the flag, allow it (will bypass whitelist via sh_schema override)
+		if (requiredFlag and (character:HasFlags(requiredFlag) or client:HasFlags(requiredFlag))) then
+			return true
+		end
+
+		-- If they don't have the flag, we still allow it so PrePlayerLoadedCharacter can revert them
+		-- instead of leaving them with a character they can never select.
+		return true
+	end
+end
+
+function Schema:CanPlayerHold(ply, entity)
+	if (ply:GetCharacter() and entity:GetClass() == "npc_turret_floor" and entity:GetRelationship(ply) == D_LI) then
 		return true
 	end
 end

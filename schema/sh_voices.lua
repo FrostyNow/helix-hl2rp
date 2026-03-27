@@ -49,6 +49,15 @@ Schema.voices.Add("Combine", "8", "8.", "npc/metropolice/vo/eight.wav")
 Schema.voices.Add("Combine", "80", "80.", "npc/metropolice/vo/eighty.wav")
 Schema.voices.Add("Combine", "9", "9.", "npc/metropolice/vo/nine.wav")
 Schema.voices.Add("Combine", "90", "90.", "npc/metropolice/vo/ninety.wav")
+Schema.voices.Add("Combine", "11", "11.", "npc/metropolice/vo/eleven.wav")
+Schema.voices.Add("Combine", "12", "12.", "npc/metropolice/vo/twelve.wav")
+Schema.voices.Add("Combine", "13", "13.", "npc/metropolice/vo/thirteen.wav")
+Schema.voices.Add("Combine", "14", "14.", "npc/metropolice/vo/fourteen.wav")
+Schema.voices.Add("Combine", "15", "15.", "npc/metropolice/vo/fifteen.wav")
+Schema.voices.Add("Combine", "16", "16.", "npc/metropolice/vo/sixteen.wav")
+Schema.voices.Add("Combine", "17", "17.", "npc/metropolice/vo/seventeen.wav")
+Schema.voices.Add("Combine", "18", "18.", "npc/metropolice/vo/eighteen.wav")
+Schema.voices.Add("Combine", "19", "19.", "npc/metropolice/vo/nineteen.wav")
 Schema.voices.Add("Combine", "수류탄!", "수류탄이다!", "npc/metropolice/vo/thatsagrenade.wav")
 Schema.voices.Add("Combine", "용의자포착", "용의자 포착됐다!", "npc/metropolice/vo/acquiringonvisual.wav")
 Schema.voices.Add("Combine", "지급하라", "지급하라.", "npc/metropolice/vo/administer.wav")
@@ -77,7 +86,8 @@ Schema.voices.Add("Combine", "베타", "베타.", "npc/combine_soldier/vo/boomer
 Schema.voices.Add("Combine", "부머", "부머.", "npc/combine_soldier/vo/boomer.wav")
 Schema.voices.Add("Combine", "바운서2", "바운서! 바운서!", "npc/combine_soldier/vo/bouncerbouncer.wav")
 Schema.voices.Add("Combine", "바운서 바운서", "바운서! 바운서!", "npc/combine_soldier/vo/bouncerbouncer.wav")
-Schema.voices.Add("Combine", "바디팩", "바디팩 유지 중.", "npc/combine_soldier/vo/bodypackholding.wav")
+Schema.voices.Add("Combine", "수류탄ㅌㅌ", "수류탄, 피해라!", "npc/combine_soldier/vo/bouncerbouncer.wav")
+Schema.voices.Add("Combine", "방탄복", "방탄복 양호.", "npc/combine_soldier/vo/bodypackholding.wav")
 Schema.voices.Add("Combine", "엄페물제거", "엄폐물 제거하라!", "npc/metropolice/vo/breakhiscover.wav")
 Schema.voices.Add("Combine", "캔1", "저 캔을 집어라.", "npc/metropolice/vo/pickupthecan1.wav")
 Schema.voices.Add("Combine", "캔2", "저 캔을 집으라고 했다.", "npc/metropolice/vo/pickupthecan3.wav")
@@ -138,13 +148,14 @@ Schema.voices.Add("Combine", "플래시", "플래시.", "npc/combine_soldier/vo/
 Schema.voices.Add("Combine", "폭스트롯", "폭스트롯.", "npc/combine_soldier/vo/flatline.wav")
 Schema.voices.Add("Combine", "플랫라인", "플랫라인.", "npc/combine_soldier/vo/flatline.wav")
 Schema.voices.Add("Combine", "플러시", "플러시.", "npc/combine_soldier/vo/flush.wav")
-Schema.voices.Add("Combine", "네크로틱2", "네크로틱이 날뛰고 있다!", "npc/metropolice/vo/freenecrotics.wav")
+Schema.voices.Add("Combine", "네크로틱3", "네크로틱이 날뛰고 있다!", "npc/metropolice/vo/freenecrotics.wav")
 Schema.voices.Add("Combine", "숙여", "숙여!", "npc/metropolice/vo/getdown.wav")
 Schema.voices.Add("Combine", "나가", "이제 여기서 나가라.", "npc/metropolice/vo/getoutofhere.wav")
 Schema.voices.Add("Combine", "647E포착", "로컬 감시조에서 647-E를 포착 중.", "npc/metropolice/vo/stillgetting647e.wav")
 Schema.voices.Add("Combine", "고스트", "고스트.", "npc/combine_soldier/vo/ghost.wav")
 Schema.voices.Add("Combine", "PTㄱ", "PT, 다시 가라.", "npc/metropolice/vo/ptgoagain.wav")
 Schema.voices.Add("Combine", "ㄱㄱ", "이동하라!", "npc/combine_soldier/vo/gosharp.wav")
+Schema.voices.Add("Combine", "ㄱㄱㄱ", "이동하라, 이동하라!", "npc/combine_soldier/vo/gosharpgosharp.wav")
 Schema.voices.Add("Combine", "엄호들감", "엄호하라, 들어간다!", "npc/metropolice/vo/covermegoingin.wav")
 Schema.voices.Add("Combine", "시체", "시체 발견, 11-42 취소하라.", "npc/metropolice/vo/wegotadbherecancel10-102.wav")
 Schema.voices.Add("Combine", "다시포착", "다시 포착했다. 용의자 위치, 10-20.", "npc/metropolice/vo/gothimagainsuspect10-20at.wav")
@@ -237,7 +248,7 @@ Schema.voices.Add("Combine", "노매드", "노매드.", "npc/combine_soldier/vo/
 Schema.voices.Add("Combine", "비감시", "비감시 영역.", "npc/metropolice/vo/nonpatrolregion.wav")
 Schema.voices.Add("Combine", "바이롬", "태그 없는 바이롬을 발견했다!", "npc/metropolice/vo/non-taggedviromeshere.wav")
 Schema.voices.Add("Combine", "노벰버", "노벰버.", "npc/combine_soldier/vo/nova.wav")
-Schema.voices.Add("Combine", "ㅇㅋ2", "좋아.", "vo/trainyard/ba_thatbeer01.wav")
+Schema.voices.Add("Combine", "노바", "노바.", "npc/combine_soldier/vo/nova.wav")
 Schema.voices.Add("Combine", "확산", "확산!", "npc/combine_soldier/vo/outbreak.wav")
 Schema.voices.Add("Combine", "보고한다", "보고한다.", "npc/combine_soldier/vo/overwatch.wav")
 Schema.voices.Add("Combine", "감시인", "감시인.", "npc/combine_soldier/vo/overwatch.wav")
@@ -273,7 +284,7 @@ Schema.voices.Add("Combine", "범위", "범위:", "npc/combine_soldier/vo/range.
 Schema.voices.Add("Combine", "레인저", "레인저.", "npc/combine_soldier/vo/ranger.wav")
 Schema.voices.Add("Combine", "레이저", "레이저.", "npc/combine_soldier/vo/razor.wav")
 Schema.voices.Add("Combine", "절단준비", "절단 준비 완료!", "npc/metropolice/vo/readytoamputate.wav")
-Schema.voices.Add("Combine", "포격준비", "포격 준비!", "npc/combine_soldier/vo/readycharges.wav")
+Schema.voices.Add("Combine", "폭약준비", "폭약 준비!", "npc/combine_soldier/vo/readycharges.wav")
 Schema.voices.Add("Combine", "판결준비", "판결 준비 완료.", "npc/metropolice/vo/readytojudge.wav")
 Schema.voices.Add("Combine", "속행준비", "속행 준비 완료!", "npc/metropolice/vo/readytoprosecute.wav")
 Schema.voices.Add("Combine", "무기준비!", "무기 준비!", "npc/combine_soldier/vo/readyweapons.wav")
@@ -294,7 +305,7 @@ Schema.voices.Add("Combine", "로미오", "로미오.", "npc/combine_soldier/vo/
 Schema.voices.Add("Combine", "립코드", "립코드.", "npc/combine_soldier/vo/ripcord.wav")
 Schema.voices.Add("Combine", "ㅌㅌ", "립코드! 립코드!", "npc/combine_soldier/vo/ripcordripcord.wav")
 Schema.voices.Add("Combine", "ㅇㅋ오버", "알았다, 오버!", "npc/metropolice/vo/rodgerthat.wav")
-Schema.voices.Add("Combine", "롤러", "롤러!", "npc/metropolice/vo/roller.wav")
+Schema.voices.Add("Combine", "롤러", "롤러.", "npc/metropolice/vo/roller.wav")
 Schema.voices.Add("Combine", "도망", "도망가고 있다!", "npc/metropolice/vo/hesrunning.wav")
 Schema.voices.Add("Combine", "코드1무시", "모든 병력, 코드 1 무시하고 이 CP를 사수하라!", "npc/metropolice/vo/sacrificecode1maintaincp.wav")
 Schema.voices.Add("Combine", "새비지", "새비지.", "npc/combine_soldier/vo/savage.wav")
@@ -323,6 +334,7 @@ Schema.voices.Add("Combine", "스타", "스타.", "npc/combine_soldier/vo/star.w
 Schema.voices.Add("Combine", "스테이션", "스테이션 구역.", "npc/metropolice/vo/stationblock.wav")
 Schema.voices.Add("Combine", "경비", "경비하라.", "npc/combine_soldier/vo/stayalert.wav")
 Schema.voices.Add("Combine", "살균", "살균!", "npc/metropolice/vo/sterilize.wav")
+Schema.voices.Add("Combine", "스틱", "스틱.", "npc/metropolice/vo/stick.wav")
 Schema.voices.Add("Combine", "스팅어", "스팅어.", "npc/combine_soldier/vo/stinger.wav")
 Schema.voices.Add("Combine", "스톰", "스톰.", "npc/combine_soldier/vo/storm.wav")
 Schema.voices.Add("Combine", "스트라이커", "스트라이커.", "npc/combine_soldier/vo/striker.wav")
@@ -342,7 +354,7 @@ Schema.voices.Add("Combine", "스위프트", "스위프트.", "npc/combine_soldi
 Schema.voices.Add("Combine", "소드", "소드.", "npc/combine_soldier/vo/sword.wav")
 Schema.voices.Add("Combine", "10-91D", "10-91D 출현!", "npc/metropolice/vo/tag10-91d.wav")
 Schema.voices.Add("Combine", "벌레", "벌레 출현!", "npc/metropolice/vo/tagonebug.wav")
-Schema.voices.Add("Combine", "네크로틱", "네크로틱 출현!", "npc/metropolice/vo/tagonenecrotic.wav")
+Schema.voices.Add("Combine", "네크로틱2", "네크로틱 출현!", "npc/metropolice/vo/tagonenecrotic.wav")
 Schema.voices.Add("Combine", "기생충", "기생충 출현!", "npc/metropolice/vo/tagoneparasitic.wav")
 Schema.voices.Add("Combine", "살펴보겠다", "살펴보고 오겠다!", "npc/metropolice/vo/goingtotakealook.wav")
 Schema.voices.Add("Combine", "엄폐", "엄폐하라!", "npc/metropolice/vo/takecover.wav")
@@ -376,6 +388,7 @@ Schema.voices.Add("Combine", "인력", "인력 증원.", "npc/metropolice/vo/wor
 Schema.voices.Add("Combine", "마무리", "됐어, 마무리 해.", "npc/combine_soldier/vo/thatsitwrapitup.wav")
 Schema.voices.Add("Combine", "엑스레이", "엑스레이.", "npc/metropolice/vo/xray.wav")
 Schema.voices.Add("Combine", "옐로", "옐로.", "npc/metropolice/vo/yellow.wav")
+Schema.voices.Add("Combine", "옐로우", "옐로우.", "npc/metropolice/vo/yellow.wav")
 Schema.voices.Add("Combine", "ㅇㅋㄱ", "좋아. 가도 좋다.", "npc/metropolice/vo/allrightyoucango.wav")
 Schema.voices.Add("Combine", "구역", "구역!", "npc/metropolice/vo/zone.wav")
 Schema.voices.Add("Combine", "ㅇㅋ잡았다", "알았다. 그를 잡았다.", "npc/combine_soldier/vo/affirmativewegothimnow.wav")
@@ -1701,6 +1714,7 @@ Schema.voices.Add("Overwatch", "오염된강", "오염된 강.", "npc/overwatch/
 Schema.voices.Add("Overwatch", "94", "94, 무기.", "npc/overwatch/radiovoice/weapon94.wav")
 Schema.voices.Add("Overwatch", "인력구치허브", "인력 구치 허브.", "npc/overwatch/radiovoice/workforceintake.wav")
 Schema.voices.Add("Overwatch", "엑스레이", "엑스레이.", "npc/overwatch/radiovoice/xray.wav")
+Schema.voices.Add("Overwatch", "옐로", "옐로.", "npc/overwatch/radiovoice/yellow.wav")
 Schema.voices.Add("Overwatch", "옐로우", "옐로우.", "npc/overwatch/radiovoice/yellow.wav")
 Schema.voices.Add("Overwatch", "최종고발", "최종 위반 행위: 148, 243, 245로 인해 고발되었다.", "npc/overwatch/radiovoice/youarechargedwithterminal.wav")
 Schema.voices.Add("Overwatch", "유죄판결", "시민 보호 기동대가 유죄 판결을 내렸다.", "npc/overwatch/radiovoice/youarejudgedguilty.wav")
@@ -1718,29 +1732,47 @@ Schema.voices.AddClass("Combine", function(client)
 		return index != -1 and client:GetBodygroup(index) >= 1
 	end
 
-	return (client:IsCombine() and !(Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))) or client:GetModel() == "models/dpfilms/metropolice/hdpolice.mdl" or client:GetModel() == "models/combine_soldier.mdl"
+	return client:IsCombine()
 end)
 
 Schema.voices.AddClass("CitizenMale", function(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
 	local index = client:FindBodygroupByName("mask")
 	local bIsCombineMaskOff = client:IsCombine() and Schema:IsConceptCombine(client) and index != -1 and client:GetBodygroup(index) == 0
 
-	return (!client:IsCombine() or bIsCombineMaskOff) and !client:IsFemale() and !client:GetCharacter():IsVortigaunt()
+	return (!client:IsCombine() or bIsCombineMaskOff) and !client:IsFemale() and !character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("CitizenFemale", function(client)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
 	local index = client:FindBodygroupByName("mask")
 	local bIsCombineMaskOff = client:IsCombine() and Schema:IsConceptCombine(client) and index != -1 and client:GetBodygroup(index) == 0
 
-	return (!client:IsCombine() or bIsCombineMaskOff) and client:IsFemale() and !client:GetCharacter():IsVortigaunt()
+	return (!client:IsCombine() or bIsCombineMaskOff) and client:IsFemale() and !character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("Vortigaunt", function(client)
-	return client:GetCharacter():IsVortigaunt()
+	local character = client:GetCharacter()
+
+	return character and character:IsVortigaunt()
 end)
 
 Schema.voices.AddClass("Overwatch", function(client)
-	return (client:Team() == FACTION_ADMIN and client:IsFemale()) or (Schema:IsCombineRank(client:Name(), "SCN") or Schema:IsCombineRank(client:Name(), "SHIELD"))
+	if (ix.plugin.Get("scanner") and IsValid(client:GetNetVar("ixScn"))) then
+		return true
+	end
+
+	return client:Team() == FACTION_ADMIN and (client:IsFemale() or client:IsAdmin())
 end)
 
 Schema.voices.AddClass("Dispatch", function(client)

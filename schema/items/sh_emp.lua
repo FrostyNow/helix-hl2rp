@@ -75,7 +75,9 @@ ITEM.functions.Use = {
 		local useDoor = IsValid(target) and target:IsDoor() and !(target:HasSpawnFlags(256) and target:HasSpawnFlags(1024))
 		local useTerminal = plugin and IsValid(resolved) and resolved.IsCombineTerminal and resolved:IsCombineTerminal()
 
-		if (!useDoor and !useTerminal) then
+		local useTurret = IsValid(target) and target:GetClass() == "npc_turret_floor" and target:GetSkin() == 0 and !target:GetNWBool("ixHacked")
+
+		if (!useDoor and !useTerminal and !useTurret) then
 			ply:NotifyLocalized("empInvalidTarget")
 			return false
 		end
@@ -91,12 +93,28 @@ ITEM.functions.Use = {
 
 			if (succeeded) then
 				if (useDoor and IsValid(target)) then
+					if (IsValid(target.ixLock)) then
+						target.ixLock:SetLocked(false)
+					end
+
 					target:Fire("unlock")
 					target:Fire("open")
 					ply:EmitSound("buttons/combine_button1.wav")
 					ply:NotifyLocalized("empOverloadDoorSucceed")
 				elseif (useTerminal and plugin and IsValid(resolved)) then
 					plugin:TryBypassSecurity(ply, resolved)
+				elseif (useTurret and IsValid(target)) then
+					target:SetNWBool("ixHacked", true)
+
+					local factionNPCs = ix.plugin.Get("factionnpcs")
+					if (factionNPCs) then
+						for _, v in ipairs(player.GetAll()) do
+							factionNPCs:HandleNPCRelations(target, v)
+						end
+					end
+
+					ply:EmitSound("buttons/combine_button1.wav")
+					ply:NotifyLocalized("empOverloadTurretSucceed")
 				end
 			else
 				ply:EmitSound("ambient/energy/zap1.wav")

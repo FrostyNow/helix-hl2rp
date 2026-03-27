@@ -9,3 +9,4 @@ ITEM.medAttr = 3 -- How much medical attribute the character needs
 ITEM.bleeding = false
 ITEM.fracture = true
 ITEM.sound = "interface/inv_bandage_3p7.ogg"
+ITEM.isStackable = true

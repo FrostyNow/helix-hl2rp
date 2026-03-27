@@ -24,7 +24,7 @@ function PLUGIN:UpdateBiosignalLocations()
 
 	-- Clear active biosignals and expired lost biosignals.
 	for unit, data in pairs(self.biosignalLocations) do
-		if (!IsValid(unit) or !unit:IsCombine() or (!client:GetNetVar("IsBiosignalGone") and !unit:GetNetVar("IsBiosignalGone")) or curTime - data.time >= 120) then
+		if (!IsValid(unit) or (unit:IsPlayer() and !unit:IsCombine()) or (!client:GetNetVar("IsBiosignalGone") and !unit:GetNetVar("IsBiosignalGone")) or curTime - data.time >= 120) then
 			self.biosignalLocations[unit] = nil
 		end
 		
@@ -54,6 +54,23 @@ function PLUGIN:UpdateBiosignalLocations()
 					isLost = false,
 					isKnockedOut = v:GetLocalVar("ragdoll"),
 					unitID = Schema:GetCombineUnitID(v)
+				}
+			end
+		end
+
+		for _, v in ipairs(ents.FindByClass("ix_scanner")) do
+			local pilot = v:GetPilot()
+			if (IsValid(pilot) and pilot != client and !pilot:GetNetVar("IsBiosignalGone", false)) then
+				local fullName = v:GetNetVar("ixScannerName", "SCN")
+				local shortID = fullName:match("[.-]([%w]+:%d)$") or fullName
+
+				self.biosignalLocations[v] = {
+					pos = v:GetPos() + Vector(0, 0, 10),
+					time = curTime,
+					isLost = false,
+					isKnockedOut = false,
+					unitID = shortID,
+					unitIDFull = fullName
 				}
 			end
 		end

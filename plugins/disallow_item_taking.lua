@@ -1,5 +1,5 @@
 PLUGIN.name = "Disallow item taking"
-PLUGIN.author = "github.com/John1344"
+PLUGIN.author = "github.com/John1344 | Modified by Frosty"
 PLUGIN.description = "Adds /disallowitemtaking command"
 
 ix.lang.AddTable("english", {
@@ -23,7 +23,7 @@ ix.command.Add("DisallowItemTaking", {
 			local item = ix.item.instances[eyeTrace.ixItemID]
 
 			if (item) then
-				ix.item.instances[eyeTrace.ixItemID]:SetData("cannotTake", true)
+				item:SetData("cannotTake", true)
 
 				client:NotifyLocalized("itemTakingDisallowed")
 				return
@@ -43,7 +43,7 @@ ix.command.Add("AllowItemTaking", {
 			local item = ix.item.instances[eyeTrace.ixItemID]
 
 			if (item) then
-				ix.item.instances[eyeTrace.ixItemID]:SetData("cannotTake", nil)
+				item:SetData("cannotTake", nil)
 
 				client:NotifyLocalized("itemTakingAllowed")
 				return
@@ -54,12 +54,90 @@ ix.command.Add("AllowItemTaking", {
 	end
 })
 
-function PLUGIN:CanPlayerTakeItem(client, item)
-	if (type(item) != "Entity") then
-		if (item:GetData("cannotTake") == true) then
-			client:NotifyLocalized("cannotTakeItem")
+ix.command.Add("ToggleItemTaking", {
+	adminOnly = true,
+	OnRun = function(self, client)
+		local eyeTrace = client:GetEyeTrace().Entity
 
-			return false
+		if (eyeTrace:GetClass() == "ix_item") then
+			local item = ix.item.instances[eyeTrace.ixItemID]
+
+			if (item) then
+				local bIsRestricted = !item:GetData("cannotTake")
+				item:SetData("cannotTake", bIsRestricted or nil)
+
+				client:NotifyLocalized(bIsRestricted and "itemTakingDisallowed" or "itemTakingAllowed")
+				return
+			end
 		end
+
+		client:NotifyLocalized("unknownError")
+	end
+})
+
+function PLUGIN:CanPlayerTakeItem(client, item)
+	local itemTable = isentity(item) and item:GetItemTable() or item
+
+	if (itemTable and itemTable:GetData("cannotTake") == true) then
+		client:NotifyLocalized("cannotTakeItem")
+		return false
 	end
 end
+
+properties.Add("disallow_taking", {
+	MenuLabel = "Disallow Item Taking",
+	Order = 1001,
+	MenuIcon = "icon16/lock.png",
+	Filter = function(self, entity, client)
+		if (!IsValid(entity) or entity:GetClass() != "ix_item") then return false end
+		if (!client:IsAdmin()) then return false end
+
+		local item = entity:GetItemTable()
+		return item and !item:GetData("cannotTake")
+	end,
+	Action = function(self, entity)
+		self:MsgStart()
+			net.WriteEntity(entity)
+		self:MsgEnd()
+	end,
+	Receive = function(self, length, client)
+		local entity = net.ReadEntity()
+
+		if (!self:Filter(entity, client)) then return end
+
+		local item = entity:GetItemTable()
+		if (item) then
+			item:SetData("cannotTake", true)
+			client:NotifyLocalized("itemTakingDisallowed")
+		end
+	end
+})
+
+properties.Add("allow_taking", {
+	MenuLabel = "Allow Item Taking",
+	Order = 1002,
+	MenuIcon = "icon16/lock_open.png",
+	Filter = function(self, entity, client)
+		if (!IsValid(entity) or entity:GetClass() != "ix_item") then return false end
+		if (!client:IsAdmin()) then return false end
+
+		local item = entity:GetItemTable()
+		return item and item:GetData("cannotTake")
+	end,
+	Action = function(self, entity)
+		self:MsgStart()
+			net.WriteEntity(entity)
+		self:MsgEnd()
+	end,
+	Receive = function(self, length, client)
+		local entity = net.ReadEntity()
+
+		if (!self:Filter(entity, client)) then return end
+
+		local item = entity:GetItemTable()
+		if (item) then
+			item:SetData("cannotTake", nil)
+			client:NotifyLocalized("itemTakingAllowed")
+		end
+	end
+})

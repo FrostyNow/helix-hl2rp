@@ -25,75 +25,63 @@ function PLUGIN:createScanner(ply, isClawScanner)
 		return
 	end
 
-	for _, scanner in ipairs(ents.FindByClass("ix_scanner")) do
-		if (scanner:GetPilot() == ply) then
-			scanner:SetPilot(NULL)
-		end
-	end
-	
-	entity:SetPos(ply:GetPos())
+	entity:SetPos(ply:EyePos() + ply:GetAimVector() * 80)
 	entity:SetAngles(ply:GetAngles())
-	entity:SetColor(ply:GetColor())
 	entity:Spawn()
 	entity:Activate()
-	entity:setPilot(ply)
+	entity:SetNetVar("ixPlayer", ply)
 
 	if (isClawScanner) then
 		entity:setClawScanner()
 	end
-
-	-- Draw the player info when looking at the scanner.
-	entity:SetNetVar("player", ply)
-	ply.ixScn = entity
 
 	return entity
 end
 
 function PLUGIN:PlayerSpawn(ply)
 	if (IsValid(ply.ixScn)) then
-		ply.ixScn.noRespawn = true
-		ply.ixScn.spawn = ply:GetPos()
-		ply.ixScn:Remove()
-		ply.ixScn = nil
+		ply.ixScn:ejectPilot()
 		ply:SetViewEntity(NULL)
 	end
 end
 
-function PLUGIN:DoPlayerDeath(ply)
-	if (IsValid(ply.ixScn)) then
-		ply:AddDeaths(1)
-		return false -- Suppress ragdoll creation.
-	end
-end
-
 function PLUGIN:PlayerDeath(ply)
-	if (IsValid(ply.ixScn) and ply.ixScn.health > 0) then
-		ply.ixScn:die()
-		ply.ixScn = nil
+	if (IsValid(ply.ixScn)) then
+		ply.ixScn:ejectPilot()
+		ply:SetViewEntity(NULL)
 	end
 end
 
 function PLUGIN:KeyPress(ply, key)
-	if (IsValid(ply.ixScn) and (ply.ixScnSoundDelay or 0) < CurTime()) then
-		local source
+	if not IsValid(ply.ixScn) then return end
 
-		if (key == IN_USE) then
-			source = table.Random(SCANNER_SOUNDS)
-			ply.ixScnSoundDelay = CurTime() + 1.75
-		elseif (key == IN_RELOAD) then
-			source = "npc/scanner/scanner_talk"..math.random(1, 2)..".wav"
-			ply.ixScnSoundDelay = CurTime() + 8
-		elseif (key == IN_DUCK) then
-			if (ply:GetViewEntity() == ply.ixScn) then
-				ply:SetViewEntity(NULL)
-			else
-				ply:SetViewEntity(ply.ixScn)
-			end
-		end
+	if (key == IN_USE and ply:KeyDown(IN_WALK)) then
+		ply.ixScn:ejectPilot()
+		return
+	end
 
-		if (source) then
-			ply.ixScn:EmitSound(source)
+	if ((ply.ixScnSoundDelay or 0) >= CurTime()) then return end
+
+	local source
+
+	if (key == IN_USE) then
+		source = table.Random(SCANNER_SOUNDS)
+		ply.ixScnSoundDelay = CurTime() + 1.75
+	elseif (key == IN_RELOAD) then
+		source = "npc/scanner/scanner_talk"..math.random(1, 2)..".wav"
+		ply.ixScnSoundDelay = CurTime() + 8
+	elseif (key == IN_DUCK) then
+		if (ply:GetViewEntity() == ply.ixScn) then
+			ply:SetViewEntity(NULL)
+			ply:SetNetVar("ixScanning", false)
+		else
+			ply:SetViewEntity(ply.ixScn)
+			ply:SetNetVar("ixScanning", true)
 		end
+	end
+
+	if (source) then
+		ply.ixScn:EmitSound(source)
 	end
 end
 
@@ -103,18 +91,12 @@ function PLUGIN:PlayerNoClip(ply)
 	end
 end
 
--- function PLUGIN:PlayerUse(ply, entity)
--- 	if (IsValid(ply.ixScn)) then
--- 		return false
--- 	end
--- end
-
 function PLUGIN:CanPlayerReceiveScan(ply, photographer)
 	return Schema and Schema.CanPlayerSeeCombineOverlay and Schema:CanPlayerSeeCombineOverlay(ply)
 end
 
 function PLUGIN:PlayerSwitchFlashlight(ply, enabled)
-	local scanner = ply.ixScn
+	local scanner = ply:GetNetVar("ixScn")
 	if (not IsValid(scanner)) then return end
 
 	if ((scanner.nextLightToggle or 0) >= CurTime()) then return false end
@@ -175,17 +157,66 @@ function PLUGIN:PlayerFootstep(ply)
 	end
 end
 
-function PLUGIN:PostPlayerSay(ply, chatType, message, anonymous)
+function PLUGIN:CanPlayerSay(ply, chatType, message, anonymous)
 	if (IsValid(ply.ixScn)) then
-		if (chatType == "ic" or chatType == "w" or chatType == "y") then
-			return true -- Scanners cant talk!
+		if (chatType == "w" or chatType == "y" or chatType == "whisper" or chatType == "yell") then
+			return false -- Scanners cant yell/whisper!
 		end
 	end
 end
 
-function PLUGIN:PlayerJoinedClass(ply, class)
-	if not (class == CLASS_SCANNER) then return end
+function PLUGIN:PlayerCanHearPlayersVoice(listener, talker)
+	local scanner = talker:GetNetVar("ixScn")
+
+	if (IsValid(scanner)) then
+		return true, true
+	end
+end
+
+function PLUGIN:GetListeningPos(ply)
 	if (IsValid(ply.ixScn)) then
-		ply:Spawn()
+		return ply.ixScn:GetPos()
+	end
+end
+
+function PLUGIN:SetupPlayerVisibility(ply)
+	if (IsValid(ply.ixScn)) then
+		AddOriginToPVS(ply.ixScn:GetPos())
+	end
+end
+
+function PLUGIN:CanPlayerHold(ply, entity)
+	if (entity:GetClass() == "ix_scanner") then
+		return false
+	end
+end
+
+if (SERVER) then
+	util.AddNetworkString("ixScannerToggleFlashlight")
+
+	net.Receive("ixScannerToggleFlashlight", function(len, ply)
+		local scanner = ply:GetNetVar("ixScn")
+
+		if (IsValid(scanner)) then
+			if ((scanner.nextLightToggle or 0) >= CurTime()) then return end
+			scanner.nextLightToggle = CurTime() + 0.5
+
+			local pitch
+			if (scanner:isSpotlightOn()) then
+				scanner:disableSpotlight()
+				pitch = 240
+			else
+				scanner:enableSpotlight()
+				pitch = 250
+			end
+
+			scanner:EmitSound("npc/turret_floor/click1.wav", 50, pitch)
+		end
+	end)
+end
+
+function PLUGIN:PlayerSwitchWeapon(ply, oldWeapon, newWeapon)
+	if (IsValid(ply:GetNetVar("ixScn"))) then
+		return true
 	end
 end

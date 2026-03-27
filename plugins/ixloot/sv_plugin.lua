@@ -124,17 +124,36 @@ end
 
 function PLUGIN:GetRandomItem(lootTable)
 	local totalWeight = 0
+	local processedTable = {}
 
-	for _, weight in pairs(lootTable) do
-		totalWeight = totalWeight + weight
+	for k, v in pairs(lootTable) do
+		local itemID
+		local weight
+
+		if (type(v) == "number") then
+			itemID = k
+			weight = v
+		elseif (type(v) == "string") then
+			itemID = v
+			local itemTable = ix.item.list[itemID]
+			local price = (itemTable and itemTable.price) or 10
+			weight = math.Clamp(math.floor(100 / math.max(1, price)), 1, 100)
+		end
+
+		if (itemID and weight) then
+			totalWeight = totalWeight + weight
+			processedTable[itemID] = (processedTable[itemID] or 0) + weight
+		end
 	end
 
-	local randomValue = math.random(0, totalWeight)
+	if (totalWeight <= 0) then
+		return
+	end
+
+	local randomValue = math.random(1, totalWeight)
 	local currentWeight = 0
 
-	print(randomValue)
-
-	for item, weight in pairs(lootTable) do
+	for item, weight in pairs(processedTable) do
 		currentWeight = currentWeight + weight
 
 		if (randomValue <= currentWeight) then
@@ -148,41 +167,53 @@ function PLUGIN:SearchLootContainer(ent, ply)
 	if not ( ply:IsCombine() ) then
 		if not ent.containerAlreadyUsed or ent.containerAlreadyUsed <= CurTime() then
 			if not ( ply.isEatingConsumeable == true ) then -- support for my plugin
-				local randomChance = math.random(1,20)
-				local randomAmountChance = math.random(1,3)
-				local lootAmount = 1
 
-				local randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
-				if ( randomAmountChance == 3 ) then
-					lootAmount = math.random(1,3)
-				else
-					lootAmount = 1
-				end
-
-				-- ply:Freeze(true)
 				ply:SetAction("@storageSearching", SEARCH_DURATION)
 				self:StartLootSearchSound(ent, ply)
-				ply:DoStaredAction(ent, function()
-					self:StopLootSearchSound(ply)
-					-- ply:Freeze(false)
-					for i = 1, lootAmount do
-						if (randomChance == math.random(1,20)) then
-							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
-							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
+				ply:SetNetVar("isSearchingLoot", true)
 
-							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
-							ply:GetCharacter():GetInventory():Add(randomLootItem)
-						else
-							randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
-							if !ix.item.Get(randomLootItem) then return print("Item not found: " .. randomLootItem) end
-							
-							ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
-							ply:GetCharacter():GetInventory():Add(randomLootItem)
+				ply:DoStaredAction(ent, function()
+					ply:SetNetVar("isSearchingLoot", false)
+					self:StopLootSearchSound(ply)
+
+					local character = ply:GetCharacter()
+					local lck = character:GetAttribute("lck", 0)
+					local multiplier = ix.config.Get("luckMultiplier", 1)
+					
+					local firstItemChance = 50 + (lck * multiplier)
+					local extraItemChance = 30 + (lck * multiplier)
+
+					if (math.random(1, 100) <= firstItemChance) then
+						local function GiveItem()
+							local rareChance = 1 + math.min(lck * multiplier, 10)
+							local randomLootItem
+
+							if (math.random(1, 100) <= rareChance) then
+								randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.rare)
+							else
+								randomLootItem = self:GetRandomItem(PLUGIN.randomLoot.common)
+							end
+
+							if (randomLootItem and ix.item.Get(randomLootItem)) then
+								ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
+								character:GetInventory():Add(randomLootItem)
+							end
 						end
+
+						-- Give the first item
+						GiveItem()
+
+						-- Handle extra items with 30% chance (plus luck)
+						while (math.random(1, 100) <= extraItemChance) do
+							GiveItem()
+						end
+					else
+						ply:NotifyLocalized("ixlootNoItem")
 					end
 
 					ent.containerAlreadyUsed = CurTime() + 180
 				end, SEARCH_DURATION, function()
+					ply:SetNetVar("isSearchingLoot", false)
 					self:StopLootSearchSound(ply)
 					ply:SetAction(false)
 				end)

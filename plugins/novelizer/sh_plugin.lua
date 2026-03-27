@@ -69,9 +69,11 @@ ix.lang.AddTable("english", {
 	novelizerPepsiMachine = "soda vending machine",
 	novelizerRationDispenser = "ration dispenser",
 	novelizerLock = "lock",
+	novelizerShipment = "shipment",
 	novelizerNewspaperProp = "newspaper",
 	novelizerRadioProp = "radio",
 	novelizerTVProp = "television",
+	novelizerScanner = "scanner",
 	novelizerBucketFire = "bucket fire",
 	novelizerBonfire = "bonfire",
 	novelizerBreachCharge = "breaching charge",
@@ -81,6 +83,9 @@ ix.lang.AddTable("english", {
 	novelizerKeys = "keyring",
 	novelizerHands = "fists",
 	novelizerBody = "body",
+	novelizerHeadcrab = "headcrab",
+	novelizerAntlion = "antlion",
+	novelizerZombie = "zombie",
 	novelizerCorpse = "corpse",
 	novelizerSuitcase = "suitcase",
 	novelizerRationPack = "ration pack",
@@ -408,6 +413,12 @@ ix.lang.AddTable("english", {
 	novelizerTransform1 = "reworks material at %s.",
 	novelizerTransform2 = "starts refining parts at %s.",
 	novelizerTransform3 = "processes components at %s.",
+	novelizerSelfCraft1 = "sets to work assembling something.",
+	novelizerSelfCraft2 = "starts piecing materials together.",
+	novelizerSelfCraft3 = "is busy with some handiwork.",
+	novelizerSelfCook1 = "carefully prepares some food by hand.",
+	novelizerSelfCook2 = "is busy preparing a meal.",
+	novelizerSelfCook3 = "is focused on food preparation.",
 	novelizerCookFood1 = "turns %s over the heat and starts cooking it.",
 	novelizerCookFood2 = "sets %s to cook with patient care.",
 	novelizerCookFood3 = "starts cooking %s.",
@@ -423,9 +434,6 @@ ix.lang.AddTable("english", {
 	novelizerSwitchSuitcase1 = "takes %s in hand.",
 	novelizerSwitchSuitcase2 = "brings %s up by the handle.",
 	novelizerSwitchSuitcase3 = "shifts %s into their grip.",
-	novelizerSwitchKeys1 = "takes out %s.",
-	novelizerSwitchKeys2 = "pulls out %s and lets it hang from their hand.",
-	novelizerSwitchKeys3 = "brings %s out into hand.",
 	novelizerHandsRaise1 = "clenches their fists.",
 	novelizerHandsRaise2 = "brings both hands up into a guarded stance.",
 	novelizerHandsRaise3 = "balls their hands into fists.",
@@ -646,9 +654,11 @@ ix.lang.AddTable("korean", {
 	novelizerPepsiMachine = "음료 자판기",
 	novelizerRationDispenser = "배급기",
 	novelizerLock = "잠금장치",
+	novelizerShipment = "보급품",
 	novelizerNewspaperProp = "신문",
 	novelizerRadioProp = "라디오",
 	novelizerTVProp = "TV",
+	novelizerScanner = "스캐너",
 	novelizerBucketFire = "양동이 화로",
 	novelizerBonfire = "모닥불",
 	novelizerBreachCharge = "폭파 장치",
@@ -658,6 +668,9 @@ ix.lang.AddTable("korean", {
 	novelizerKeys = "열쇠고리",
 	novelizerHands = "주먹",
 	novelizerBody = "몸",
+	novelizerHeadcrab = "헤드크랩",
+	novelizerAntlion = "개미귀신",
+	novelizerZombie = "좀비",
 	novelizerCorpse = "시신",
 	novelizerSuitcase = "여행 가방",
 	novelizerRationPack = "배급 포대",
@@ -832,9 +845,9 @@ ix.lang.AddTable("korean", {
 	novelizerMolotovThrow1 = "%s 불붙은 궤적을 그리도록 던집니다.",
 	novelizerMolotovThrow2 = "%s 화염병을 내던집니다.",
 	novelizerMolotovThrow3 = "%s 불길을 그리며 투척합니다.",
-	novelizerAmmo1 = "%s 탄약을 꺼내 장전합니다.",
-	novelizerAmmo2 = "%s 탄환을 꺼내 보충합니다.",
-	novelizerAmmo3 = "%s 탄약으로 잔탄을 채웁니다.",
+	novelizerAmmo1 = "%s 장전합니다.",
+	novelizerAmmo2 = "%s 보충합니다.",
+	novelizerAmmo3 = "%s 채웁니다.",
 	novelizerBattery1 = "%s 전력을 보충합니다.",
 	novelizerBattery2 = "%s 장비 전원계에 연결합니다.",
 	novelizerBattery3 = "%s 동력으로 장비를 충전합니다.",
@@ -985,11 +998,17 @@ ix.lang.AddTable("korean", {
 	novelizerTransform1 = "%s 위에서 재료를 다시 가공합니다.",
 	novelizerTransform2 = "%s 앞에서 부품을 손질해 바꿉니다.",
 	novelizerTransform3 = "%s 위에서 자재를 다른 형태로 가공합니다.",
+	novelizerSelfCraft1 = "자기 손으로 무언가 조립하며 제작하기 시작합니다.",
+	novelizerSelfCraft2 = "재료를 맞추어 보며 무언가를 제작하기 시작합니다.",
+	novelizerSelfCraft3 = "제작 작업에 열중하기 시작합니다.",
+	novelizerSelfCook1 = "조심스럽게 손으로 음식을 준비하기 시작합니다.",
+	novelizerSelfCook2 = "음식 준비 작업에 열중합니다.",
+	novelizerSelfCook3 = "음식을 만드는 데 집중합니다.",
 	novelizerCookFood1 = "%s 불에 올려 조리하기 시작합니다.",
 	novelizerCookFood2 = "%s 열 위에서 천천히 익히기 시작합니다.",
 	novelizerCookFood3 = "%s 조리합니다.",
 	novelizerRationOpen1 = "%s 뜯어 엽니다.",
-	novelizerRationOpen2 = "%s 봉인을 뜯습니다.",
+	novelizerRationOpen2 = "%s의 봉인을 뜯습니다.",
 	novelizerRationOpen3 = "%s 열어 안의 물건을 꺼내기 시작합니다.",
 	novelizerEquipSuitcase1 = "%s 손에 듭니다.",
 	novelizerEquipSuitcase2 = "%s 손잡이째 들어 올립니다.",
@@ -1000,9 +1019,6 @@ ix.lang.AddTable("korean", {
 	novelizerSwitchSuitcase1 = "%s 손에 듭니다.",
 	novelizerSwitchSuitcase2 = "%s 손잡이째 들어 쥡니다.",
 	novelizerSwitchSuitcase3 = "%s 손으로 고쳐 잡습니다.",
-	novelizerSwitchKeys1 = "%s 꺼내 듭니다.",
-	novelizerSwitchKeys2 = "%s 손에 걸어 듭니다.",
-	novelizerSwitchKeys3 = "%s 손안에 꺼내 쥡니다.",
 	novelizerHandsRaise1 = "주먹을 쥡니다.",
 	novelizerHandsRaise2 = "두 주먹을 올려 경계 자세를 취합니다.",
 	novelizerHandsRaise3 = "손을 말아쥐고 싸울 자세를 잡습니다.",
@@ -1201,21 +1217,21 @@ ix.option.Add("novelizerAutoActions", ix.type.bool, true, {
 })
 
 ix.config.Add("novelizerEnableIt", true, "Whether novelizer should emit ambient /it lines for nearby machinery and systems.", nil, {
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizerUse3DText", false, "Whether novelizer should show temporary 3D text for /it lines instead of chat lines.", nil, {
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizer3DTextDuration", 4.5, "How long temporary 3D novelizer text stays visible.", nil, {
 	data = {min = 1, max = 12},
-	category = "chat"
+	category = "Novelizer"
 })
 
 ix.config.Add("novelizerIdleItCooldown", DEFAULT_IT_COOLDOWN, "Base cooldown for idle entity /it narration. Actual delay is randomized by about +/- 5 seconds.", nil, {
 	data = {min = 10, max = 300},
-	category = "chat"
+	category = "Novelizer"
 })
 
 local function GetChatRange()
@@ -1476,6 +1492,7 @@ local classSubjectPhrases = {
 	ix_bucket = "novelizerBucketFire",
 	ix_bonfire = "novelizerBonfire",
 	ix_rationdispenser = "novelizerRationDispenser",
+	ix_station = "novelizerWorkbench",
 	ix_combinelock = "novelizerLock",
 	ix_unionlock = "novelizerLock",
 	ix_doorbreach = "novelizerBreachCharge",
@@ -1495,7 +1512,9 @@ local modelSubjectPhrases = {
 	{patterns = {"vehicle"}, phrase = "novelizerVehicleProp"},
 	{patterns = {"newspaper"}, phrase = "novelizerNewspaperProp"},
 	{patterns = {"radio"}, phrase = "novelizerRadioProp"},
-	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"}
+	{patterns = {"/tv", "_tv", "television"}, phrase = "novelizerTVProp"},
+	{patterns = {"scanner"}, phrase = "novelizerScanner"},
+	{patterns = {"shipment"}, phrase = "novelizerShipment"}
 }
 
 function PLUGIN:GetLocalizedArgumentValue(value, language)
@@ -1704,6 +1723,20 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 			return "corpse", "novelizerCorpse"
 		end
 
+		local model = string.lower(tostring(entity:GetModel() or ""))
+
+		if (model:find("headcrab", 1, true)) then
+			return "headcrab", "novelizerHeadcrab"
+		end
+
+		if (model:find("antlion", 1, true)) then
+			return "antlion", "novelizerAntlion"
+		end
+
+		if (model:find("zombie", 1, true)) then
+			return "zombie", "novelizerZombie"
+		end
+
 		return "body", "novelizerBody"
 	end
 
@@ -1820,6 +1853,15 @@ end
 function PLUGIN:GetItemSubject(item)
 	local text, phrase = self:ResolveItemSubjectData(item)
 	return BuildArgument(text, "object", phrase)
+end
+
+function PLUGIN:GetItemSubjectWithParticle(item, particle)
+	local text, phrase = self:ResolveItemSubjectData(item)
+	return BuildArgument(text, particle or "object", phrase)
+end
+
+function PLUGIN:GetPossessiveItemSubject(item)
+	return self:GetItemSubjectWithParticle(item, "possessive")
 end
 
 function PLUGIN:GetEntitySubjectWithParticle(entity, particle)
@@ -2033,8 +2075,6 @@ function PLUGIN:GetEquipPhrasePool(item, action)
 	elseif (category == "bag") then
 		return isEquip and {"novelizerEquipBag1", "novelizerEquipBag2", "novelizerEquipBag3"}
 			or {"novelizerUnequipBag1", "novelizerUnequipBag2", "novelizerUnequipBag3"}
-	elseif (category == "suitcase") then
-		return nil
 	end
 
 	return isEquip and {"novelizerEquip1", "novelizerEquip2", "novelizerEquip3"}
@@ -2048,7 +2088,7 @@ function PLUGIN:IsSpecialSwitchWeapon(weapon)
 
 	local className = string.lower(tostring(weapon:GetClass() or ""))
 
-	return className == "ix_keys" or self:IsNarratableWeapon(weapon)
+	return self:IsNarratableWeapon(weapon)
 end
 
 function PLUGIN:GetSwitchPhrasePool(weapon)
@@ -2061,14 +2101,6 @@ function PLUGIN:GetSwitchPhrasePool(weapon)
 	end
 
 	local className = string.lower(tostring(weapon:GetClass() or ""))
-
-	if (className == "ix_keys") then
-		return {
-			"novelizerSwitchKeys1",
-			"novelizerSwitchKeys2",
-			"novelizerSwitchKeys3"
-		}
-	end
 
 	if (istable(weapon.ixItem) and self:GetEquipCategory(weapon.ixItem) == "suitcase") then
 		return {
@@ -2491,7 +2523,7 @@ end
 
 function PLUGIN:GetEntityUseArguments(entity, phraseKey)
 	if (phraseKey == "novelizerMachineLock1" or phraseKey == "novelizerMachineLock2"
-		or phraseKey == "novelizerMachineLock3" or phraseKey == "novelizerMachineTerminal3"
+		or phraseKey == "novelizerMachineTerminal3"
 		or phraseKey == "novelizerMachineDoorUse3" or phraseKey == "novelizerMachineVending1"
 		or phraseKey == "novelizerMachineVending2" or phraseKey == "novelizerMachineComputer4"
 		or phraseKey == "novelizerMachineRadio1" or phraseKey == "novelizerMachineRadio2"
@@ -2843,6 +2875,18 @@ function PLUGIN:EmitConditionalIt(entity, key, data)
 	})
 end
 
+function PLUGIN:GetItemActionArguments(item, phraseKey)
+	if (phraseKey == "novelizerRationOpen2") then
+		return {
+			self:GetPossessiveItemSubject(item)
+		}
+	end
+
+	return {
+		self:GetItemSubject(item)
+	}
+end
+
 function PLUGIN:PatchItemAction(itemTable, action)
 	if (not itemTable.functions or not itemTable.functions[action]) then
 		return
@@ -2865,9 +2909,9 @@ function PLUGIN:PatchItemAction(itemTable, action)
 			return
 		end
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
-			self:GetItemSubject(item)
-		}, {
+		local phrase = table.Random(phrasePool)
+
+		self:SendNovelMe(client, phrase, self:GetItemActionArguments(item, phrase), {
 			actionKey = "item_" .. string.lower(narratedAction or action)
 		})
 	end)
@@ -2943,9 +2987,9 @@ function PLUGIN:PatchDirectItemAction(itemTable, action, phrasePool)
 			return
 		end
 
-		self:SendNovelMe(client, table.Random(phrasePool), {
-			self:GetItemSubject(item)
-		}, {
+		local phrase = table.Random(phrasePool)
+
+		self:SendNovelMe(client, phrase, self:GetItemActionArguments(item, phrase), {
 			actionKey = "item_" .. string.lower(action)
 		})
 	end)
@@ -3210,11 +3254,11 @@ function PLUGIN:RegisterDefaultEntityPhrases()
 		"novelizerMachineWasher2",
 		"novelizerMachineWasher3"
 	})
-	self:RegisterEntityUsePhrases("ix_forcefield", {
-		"novelizerMachineForcefield1",
-		"novelizerMachineForcefield2",
-		"novelizerMachineForcefield3"
-	})
+	-- self:RegisterEntityUsePhrases("ix_forcefield", {
+	-- 	"novelizerMachineForcefield1",
+	-- 	"novelizerMachineForcefield2",
+	-- 	"novelizerMachineForcefield3"
+	-- })
 	self:RegisterEntityUsePhrases("ix_radiorepeater", {
 		"novelizerMachineRadio1",
 		"novelizerMachineRadio2",
@@ -3456,8 +3500,24 @@ function PLUGIN:GetNearbyCraftStation(client)
 	return nil
 end
 
-function PLUGIN:GetRecipePhrasePool(recipeTable)
+function PLUGIN:GetRecipePhrasePool(recipeTable, hasStation)
 	local category = string.lower(tostring(recipeTable and recipeTable.category or ""))
+
+	if (not hasStation) then
+		if (category == "food") then
+			return {
+				"novelizerSelfCook1",
+				"novelizerSelfCook2",
+				"novelizerSelfCook3"
+			}
+		end
+
+		return {
+			"novelizerSelfCraft1",
+			"novelizerSelfCraft2",
+			"novelizerSelfCraft3"
+		}
+	end
 
 	if (category == "food") then
 		return {
@@ -3500,11 +3560,7 @@ function PLUGIN:ResolveCraftStationSubject(client, recipeTable)
 		return self:GetBareEntitySubject(entity), entity
 	end
 
-	if (category == "food") then
-		return BuildArgument("stove", false, "novelizerStove"), nil
-	end
-
-	return BuildArgument("workbench", false, "novelizerWorkbench"), nil
+	return nil, nil
 end
 
 function PLUGIN:PatchLootSearch()
@@ -3576,6 +3632,14 @@ end
 
 function PLUGIN:PatchCraftingActions()
 	local craftPlugin = ix.plugin.list["ixcraft"]
+	local categorySounds = {
+		disassemble = "physics/metal/metal_box_break1.wav",
+		transform = "ambient/materials/gears_short2.wav",
+		medical = "items/smallmedkit1.wav",
+		weapon = "weapons/shotgun/shotgun_reload2.wav",
+		armor = "physics/metal/metal_solid_impact_bullet1.wav",
+		generic = "physics/wood/wood_box_scrape1.wav"
+	}
 
 	if (not craftPlugin or not craftPlugin.craft or craftPlugin.ixNovelizerCraftWrapped) then
 		return
@@ -3588,8 +3652,8 @@ function PLUGIN:PatchCraftingActions()
 			return
 		end
 
-		local phrasePool = self:GetRecipePhrasePool(recipeTable)
 		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local phrasePool = self:GetRecipePhrasePool(recipeTable, IsValid(stationEntity))
 		local chosenPhrase = table.Random(phrasePool)
 
 		-- Dynamic particle handling for Korean
@@ -3601,11 +3665,18 @@ function PLUGIN:PatchCraftingActions()
 			end
 		end
 
-		self:SendNovelMe(client, chosenPhrase, {
+		self:SendNovelMe(client, chosenPhrase, stationSubject and {
 			stationSubject
-		}, {
+		} or {}, {
 			actionKey = "craft_" .. string.lower(tostring(recipeTable.category or "generic"))
 		})
+
+		local category = string.lower(tostring(recipeTable.category or "generic"))
+		local sound = recipeTable.sound or categorySounds[category] or categorySounds.generic
+
+		if (sound and category ~= "food") then
+			(IsValid(stationEntity) and stationEntity or client):EmitSound(sound)
+		end
 
 		if (IsValid(stationEntity)) then
 			local itKey = string.lower(tostring(recipeTable.category or "")) == "food"
@@ -3623,8 +3694,8 @@ function PLUGIN:PatchCraftingActions()
 			return
 		end
 
-		local phrasePool = self:GetRecipePhrasePool(recipeTable)
 		local stationSubject, stationEntity = self:ResolveCraftStationSubject(client, recipeTable)
+		local phrasePool = self:GetRecipePhrasePool(recipeTable, IsValid(stationEntity))
 		local chosenPhrase = table.Random(phrasePool)
 
 		-- Dynamic particle handling for Korean
@@ -3636,11 +3707,18 @@ function PLUGIN:PatchCraftingActions()
 			end
 		end
 
-		self:SendNovelMe(client, chosenPhrase, {
+		self:SendNovelMe(client, chosenPhrase, stationSubject and {
 			stationSubject
-		}, {
+		} or {}, {
 			actionKey = "craft_start"
 		})
+
+		local category = string.lower(tostring(recipeTable.category or "generic"))
+		local sound = recipeTable.sound or categorySounds[category] or categorySounds.generic
+
+		if (sound and category ~= "food") then
+			(IsValid(stationEntity) and stationEntity or client):EmitSound(sound)
+		end
 	end)
 end
 
@@ -4672,10 +4750,10 @@ function PLUGIN:PlayerUse(client, entity)
 		self:EmitConditionalIt(entity, "washer", {
 			cooldown = 5
 		})
-	elseif (className == "ix_vendingmachine" or className == "ix_pepsimachine" or className == "ix_coffeemachine") then
-		self:EmitConditionalIt(entity, "vending_hum", {
-			cooldown = 5
-		})
+	-- elseif (className == "ix_vendingmachine" or className == "ix_pepsimachine" or className == "ix_coffeemachine") then
+	-- 	self:EmitConditionalIt(entity, "vending_hum", {
+	-- 		cooldown = 5
+	-- 	})
 	elseif (className == "ix_stationary_radio" or className == "ix_radiorepeater") then
 		self:EmitConditionalIt(entity, "radio_static", {
 			cooldown = 4

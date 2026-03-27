@@ -76,6 +76,7 @@ if (SERVER) then
 
 	function ENT:Initialize()
 		self:SetModel("models/props_combine/suit_charger001.mdl")
+		self:DrawShadow(false)
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)

@@ -26,6 +26,7 @@ LANGUAGE = {
 
 	stationWorkbenchDesc = "A workbench used for crafting.",
 	stationCraftingTableDesc = "A crafting table used for crafting and scraping.",
+	stationFurnaceDesc = "A furnace used for melting and heating things.",
 	["StationUseHint"] = "Press use key to open crafting.",
 
 	recipeManhackDesc = "Assemble some parts to craft a Manhack.",
@@ -42,6 +43,7 @@ LANGUAGE = {
 	recipeFlashlightDesc = "Combine metal scrap, a light bulb, and a battery to make a flashlight.",
 	recipePipeDesc = "Combine metal scrap and duct tape to make a pipe.",
 	recipePurifiedWaterDesc = "Purify sewer water using chemicals.",
+	recipePurifiedWaterFilterDesc = "Purify sewer water using a gasmask filter.",
 	recipeRepairKitDesc = "Combine screws, a screwdriver, and oil to make a repair tool.",
 	recipeSplintDesc = "Combine wood scraps and cloth to make a first-aid splint.",
 	recipeZipTieDesc = "Use plastic and rubber to make zip ties.",
@@ -59,6 +61,7 @@ LANGUAGE = {
 	recipeHealthKitDesc = "Craft a health kit.",
 	recipeHealthVialDesc = "Craft a health vial.",
 	recipeGunPartsDesc = "Process weapon parts to make them usable.",
+	recipeFertilizerDesc = "Craft fertilizer.",
 	
 	recipeScrapAmmoPistolDesc = "Disassemble pistol ammo to extract parts.",
 	recipeScrapGrenadeDesc = "Disassemble an HE Grenade to extract parts.",
@@ -71,6 +74,8 @@ LANGUAGE = {
 	recipeScrapScannerBodyDesc = "Disassemble a scanner body to extract parts.",
 	recipeScrapAluminiumCanDesc = "Disassemble an aluminium can to extract parts.",
 	recipeScrapTelephoneDesc = "Disassemble a telephone to extract parts.",
+	["Scrap Ashtray"] = "Scrap Ashtray",
+	recipeScrapAshtrayDesc = "Disassemble an ashtray to extract parts.",
 	recipeScrapGasmaskFilterDesc = "Disassemble a gasmask filter to recover some of its materials.",
 	recipeScrapTurpentineDesc = "Disassemble turpentine to extract parts.",
 	recipePlasticBottleDesc = "Break down a plastic bottle.",
@@ -101,6 +106,17 @@ LANGUAGE = {
 	recipeScrapCombineSteelDesc = "Recycle a Combine steel chunk into generic steel pieces.",
 	recipeScrapTeaCupDesc = "Disassemble a tea cup.",
 	recipeScrapCoffeeCupDesc = "Disassemble a coffee cup.",
+	recipeEmptyVialDesc = "Disassemble an empty vial.",
+	recipeScrapPlasticBoxDesc = "Break down a plastic box for useful materials.",
+	recipeScrapSprayCanDesc = "Break down a spray can for useful materials.",
+	recipeScrapForkDesc = "Break down a fork for useful materials.",
+	recipeScrapTableKnifeDesc = "Break down a knife for useful materials.",
+	recipeScrapHandsetDesc = "Break down a handset for useful materials.",
+	recipeScrapCombineCoinDesc = "Break down a combine coin for useful materials.",
+	recipeScrapTheTerminalDesc = "Break down a newspaper for useful materials.",
+	recipeScrapWastePaperDesc = "Break down waste paper for useful materials.",
+	recipeScrapRequestDeviceDesc = "Disassemble a request device to extract parts.",
+
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
@@ -128,4 +144,10 @@ LANGUAGE = {
 	recipeNoodlesDesc = "Cook noodles.",
 	recipeChineseTakeoutDesc = "Cook Chinese takeout.",
 	recipePastaDesc = "Cook pasta.",
+	recipeFriedEggDesc = "Fry a raw egg in a pan to make a fried egg.",
+	recipeDoughDesc = "Take flour from a bag and make a lump of dough.",
+	recipeStewDesc = "Boil all kinds of leftover ingredients to make a mixed stew.",
+	recipeStewLargeDesc = "Pour all kinds of ingredients into a large pot and boil them to make a large mixed stew.",
+	recipeSandwichDesc = "Cook a sandwich by putting vegetables and meat between pieces of bread.",
+	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
 }

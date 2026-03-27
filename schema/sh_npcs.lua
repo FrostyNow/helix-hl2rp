@@ -125,6 +125,10 @@ function Schema:IsCombineNPC(npc)
 		return false
 	end
 
+	if (npc:GetNWBool("ixHacked")) then
+		return false
+	end
+
 	return true
 end
 
@@ -143,7 +147,7 @@ end
 function Schema:IsAntiCitizenNPC(npc)
 	local class = self:GetNPCClass(npc)
 
-	if (self.npcClassLists.rebel[class]) then
+	if (self.npcClassLists.rebel[class] or npc:GetNWBool("ixHacked")) then
 		return true
 	end
 

@@ -12,12 +12,22 @@ ENT.bNoPersist = true
 if (SERVER) then
 
 	function ENT:GetLockPosition(door, normal)
-		local index = door:LookupBone("handle")
+		local index = door:LookupBone("handle") or door:LookupBone("handle_l") or door:LookupBone("handle_r") or door:LookupBone("door_handle")
 		local position = door:GetPos()
 		normal = normal or door:GetForward():Angle()
 
-		if (index and index >= 1) then
+		if (index and index >= 0) then
 			position = door:GetBonePosition(index)
+		else
+			local attachment = door:LookupAttachment("handle") or door:LookupAttachment("handle_l") or door:LookupAttachment("handle_r")
+
+			if (attachment and attachment > 0) then
+				position = door:GetAttachment(attachment).Pos
+			else
+				-- fallback to middle-ish of the door if no handle bone/attachment found
+				local mins, maxs = door:GetModelBounds()
+				position = door:LocalToWorld(Vector(0, (mins.y + maxs.y) * 0.5, (mins.z + maxs.z) * 0.5))
+			end
 		end
 
 		position = position + normal:Forward() * 4 + normal:Up() * 8 + normal:Right()
@@ -56,21 +66,22 @@ if (SERVER) then
 		self:SetParent(door)
 	end
 
-	function ENT:SpawnFunction(client, trace)
+	function ENT:SpawnFunction(client, trace, class)
 		local door = trace.Entity
-
-		if (!IsValid(door) or !door:IsDoor() or IsValid(door.ixBreach)) then
-			return client:NotifyLocalized("dNotValid")
-		end
-
-		local normal = client:GetEyeTrace().HitNormal:Angle()
-		local position, angles = self:GetLockPosition(door, normal)
-
-		local entity = ents.Create("ix_doorbreach")
-		entity:SetPos(trace.HitPos)
+		local entity = ents.Create(class or "ix_doorbreach")
+		entity:SetPos(trace.HitPos + trace.HitNormal * 4)
 		entity:Spawn()
 		entity:Activate()
-		entity:SetDoor(door, position, angles)
+
+		if (IsValid(door) and door:IsDoor() and !IsValid(door.ixBreach)) then
+			local normal = trace.HitNormal:Angle()
+			local position, angles = self:GetLockPosition(door, normal)
+			entity:SetDoor(door, position, angles)
+		else
+			local angles = trace.HitNormal:Angle()
+			angles.p = angles.p + 90
+			entity:SetAngles(angles)
+		end
 
 		return entity
 	end
@@ -118,31 +129,64 @@ if (SERVER) then
 			return
 		end
 
+		if (!IsValid(self.door)) then
+			local data = {}
+			data.start = client:GetShootPos()
+			data.endpos = data.start + client:GetAimVector() * 96
+			data.filter = client
+
+			local trace = util.TraceLine(data)
+			local entity = trace.Entity
+
+			if (IsValid(entity) and entity:IsDoor() and !IsValid(entity.ixBreach)) then
+				local normal = trace.HitNormal:Angle()
+				local position, angles = self:GetLockPosition(entity, normal)
+
+				self:SetDoor(entity, position, angles)
+				self:EmitSound("physics/metal/weapon_impact_soft2.wav", 75, 80)
+			end
+
+			self.nextUseTime = CurTime() + 1
+			return
+		end
+
 		self:SetNWBool("beep", true)
 		self:EmitSound("buttons/blip1.wav")
 		timer.Simple(1, function()
+			if (!IsValid(self)) then return end
 			self:EmitSound("buttons/blip1.wav")
 			timer.Simple(1, function()
+				if (!IsValid(self)) then return end
 				self:EmitSound("buttons/blip1.wav")
 				timer.Simple(0.8, function()
+					if (!IsValid(self)) then return end
 					self:EmitSound("buttons/blip1.wav")
 					timer.Simple(0.6, function()
+						if (!IsValid(self)) then return end
 						self:EmitSound("buttons/blip1.wav")
 						timer.Simple(0.4, function()
+							if (!IsValid(self)) then return end
 							self:EmitSound("buttons/blip1.wav")
 							timer.Simple(0.4, function()
+								if (!IsValid(self)) then return end
 								self:EmitSound("buttons/blip1.wav")
 								timer.Simple(0.3, function()
+									if (!IsValid(self)) then return end
 									self:EmitSound("buttons/blip1.wav")
 									timer.Simple(0.3, function()
+										if (!IsValid(self)) then return end
 										self:EmitSound("buttons/blip1.wav")
 										timer.Simple(0.2, function()
+											if (!IsValid(self)) then return end
 											self:EmitSound("buttons/blip1.wav")
 											timer.Simple(0.2, function()
+												if (!IsValid(self)) then return end
 												self:EmitSound("buttons/blip1.wav")
 												timer.Simple(0.1, function()
+													if (!IsValid(self)) then return end
 													self:EmitSound("buttons/blip1.wav")
 													timer.Simple(0.1, function()
+														if (!IsValid(self)) then return end
 														if (IsValid(self.door)) then
 															self:EmitSound("buttons/blip1.wav")
 															self:EmitSound("weapons/explode3.wav")

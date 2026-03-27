@@ -7,17 +7,17 @@ function ENT:Draw()
 end
 
 function ENT:OnPopulateEntityInfo(container)
-		local name = container:AddRow("name")
-		name:SetImportant()
-		name:SetText(L("Slot Machine"))
-		name:SizeToContents()
+	local name = container:AddRow("name")
+	name:SetImportant()
+	name:SetText(L("Slot Machine"))
+	name:SizeToContents()
 
-		local desc = container:AddRow("desc")
-		desc:SetText(L("slotMachineDesc"))
-		desc:SizeToContents()
+	local desc = container:AddRow("desc")
+	desc:SetText(L("slotMachineDesc"))
+	desc:SizeToContents()
 
-    local price = container:AddRow("price")
-		price:SetText(ix.currency.Get(ix.config.Get("gamblingPrice", 13), LocalPlayer()))
-		price:SetBackgroundColor(Color(207, 188, 79, 173))
-		price:SizeToContents()
+	local price = container:AddRow("price")
+	price:SetText(L("price") .. ": " .. ix.currency.Get(ix.config.Get("gamblingPrice", 30)))
+	price:SetBackgroundColor(Color(255, 165, 0, 100)) -- Orange-ish background
+	price:SizeToContents()
 end

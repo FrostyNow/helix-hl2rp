@@ -168,6 +168,7 @@ function ITEM:RemoveOutfit(client)
 	local faction = GetConscriptFaction()
 	local state = character and GetUniformState(character) or {}
 	local originalName = state.originalName
+	local originalModel = state.originalModel
 	local originalClass = state.originalClass
 	local originalDescription = state.originalDescription
 	local returnFaction = (faction and character) and faction:GetUniformReturnFaction(character) or FACTION_CITIZEN
@@ -208,6 +209,10 @@ function ITEM:RemoveOutfit(client)
 
 	if (isstring(originalName) and originalName != "" and character:GetName() != originalName) then
 		character:SetName(originalName)
+	end
+
+	if (isstring(originalModel) and originalModel != "" and character:GetModel() != originalModel) then
+		character:SetModel(originalModel)
 	end
 
 	if (isstring(originalDescription) and originalDescription != "" and character:GetDescription() != originalDescription) then

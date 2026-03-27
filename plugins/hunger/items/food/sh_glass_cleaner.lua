@@ -1,0 +1,9 @@
+ITEM.name = "Glass Cleaner"
+ITEM.description = "itemGlassCleanerDesc"
+ITEM.category = "misc"
+ITEM.model = "models/props/generic/cleaner01.mdl"
+ITEM.thirst = 20
+ITEM.price = 10
+ITEM.heal = -10
+ITEM.usenum = 2
+ITEM.isDrink = true
