@@ -58,13 +58,11 @@ function PLUGIN:Drunk(client)
 	local character = client:GetCharacter()
 	local endurance = character:GetAttribute("end", 0)
 	local luck = character:GetAttribute("lck", 0)
-	local strength = character:GetAttribute("str", 0)
 	local maxAttributes = ix.config.Get("maxAttributes", 30)
 	local timerID = "ixDrunk_" .. client:SteamID64()
+	local boostID = "drunkEffect"
 
-	if strength then
-		character:SetAttrib("str", strength + 3)
-	end
+	character:AddBoost(boostID, "str", 3)
 	
 	local lastDrunk = client:GetLocalVar("drunk", 0)
 	local addDrunk = character:GetData("drunk", 0)
@@ -108,9 +106,7 @@ function PLUGIN:Drunk(client)
 				client:SetLocalVar("drunk", drunk - 1)
 				client:GetCharacter():SetData("drunk", client:GetLocalVar("drunk"))
 			else
-				if (strength) then
-					client:GetCharacter():SetAttrib("str", strength)
-				end
+				client:GetCharacter():RemoveBoost(boostID, "str")
 				timer.Remove(timerID)
 			end
 		end)

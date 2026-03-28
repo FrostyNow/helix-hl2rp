@@ -46,27 +46,16 @@ ITEM.functions.Drink = {
 		client:EmitSound("npc/barnacle/barnacle_gulp2.wav")
 		hook.Run("Drunk", client)
 		
-		if (str) then
-			char:SetAttrib("str", str + 1)
+		local boostID = "alcohol_" .. item:GetID()
+		char:AddBoost(boostID, "str", 1)
+		char:AddBoost(boostID, "int", -1)
 
-			timer.Simple(120, function()
-				if (IsValid(client) and client:GetCharacter()) then
-					local currentStr = client:GetCharacter():GetAttribute("str", 0)
-					client:GetCharacter():SetAttrib("str", math.max(0, currentStr - 1))
-				end
-			end)
-		end
-
-		if (int) then
-			char:SetAttrib("int", math.max(0, int - 1))
-
-			timer.Simple(120, function()
-				if (IsValid(client) and client:GetCharacter()) then
-					local currentInt = client:GetCharacter():GetAttribute("int", 0)
-					client:GetCharacter():SetAttrib("int", currentInt + 1)
-				end
-			end)
-		end
+		timer.Simple(120, function()
+			if (char) then
+				char:RemoveBoost(boostID, "str")
+				char:RemoveBoost(boostID, "int")
+			end
+		end)
 
 		if (usenum > 0) then
 			item:SetData("usenum", usenum)

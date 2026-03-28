@@ -11,7 +11,10 @@ ITEM.isDrink = true
 ITEM:Hook("Eat", function(item)
 	local client = item.player
 	local char = client:GetCharacter()
-	local stm = char:GetAttribute("stm", 0)
-
-	char:AddBoost("water", "stm", stm * 0.9 )
+	
+	-- Get the base attribute (excluding other boosts)
+	local baseStm = char:GetAttrib("stm", 0)
+	
+	-- Apply a 10% reduction as a temporary debuff
+	char:AddBoost("water", "stm", -baseStm * 0.1)
 end)

@@ -338,6 +338,10 @@ if (!CLIENT) then
 							local bIsProtected = client:GetMoveType() == MOVETYPE_NOCLIP
 							local bCombineProtected = false
 
+							if (!bIsProtected and char.IsVortigaunt and char:IsVortigaunt()) then
+								bIsProtected = true
+							end
+
 							if (!bIsProtected and client:IsCombine()) then
 								if (Schema:IsConceptCombine(client)) then
 									local index = client:FindBodygroupByName("mask")
