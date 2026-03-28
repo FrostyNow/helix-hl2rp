@@ -1859,6 +1859,18 @@ function COMBINE:Init()
 	self.rosterSearch:SetPlaceholderText(L("interactiveComputerSearch"))
 	self.rosterSearch:SetFont("ixComputerDOSTiny")
 	self.rosterSearch:SetUpdateOnType(true)
+	self.rosterSearch:SetTextColor(COMBINE_TEXT)
+	self.rosterSearch:SetCursorColor(COMBINE_TEXT)
+	self.rosterSearch:SetPlaceholderColor(COMBINE_DIM)
+	self.rosterSearch.Paint = function(panel, w, h)
+		surface.SetDrawColor(4, 12, 22, 255)
+		surface.DrawRect(0, 0, w, h)
+		
+		surface.SetDrawColor(COMBINE_DIM.r, COMBINE_DIM.g, COMBINE_DIM.b, 40)
+		surface.DrawOutlinedRect(0, 0, w, h)
+		
+		panel:DrawTextEntryText(panel:GetTextColor(), panel:GetHighlightColor(), panel:GetCursorColor())
+	end
 	self.rosterSearch.OnValueChange = function(entry)
 		self:PopulateRoster(entry:GetValue())
 	end
@@ -1914,6 +1926,14 @@ function COMBINE:Init()
 	self.objectivesEntry:SetMultiline(true)
 	self.objectivesEntry:SetFont("ixComputerDOSBody")
 	self.objectivesEntry:SetUpdateOnType(true)
+	self.objectivesEntry:SetTextColor(COMBINE_TEXT)
+	self.objectivesEntry:SetCursorColor(COMBINE_TEXT)
+	self.objectivesEntry.Paint = function(panel, w, h)
+		surface.SetDrawColor(4, 12, 22, 180)
+		surface.DrawRect(0, 0, w, h)
+		
+		panel:DrawTextEntryText(panel:GetTextColor(), panel:GetHighlightColor(), panel:GetCursorColor())
+	end
 	self.objectivesEntry.OnValueChange = function()
 		self:PlayTypeSound()
 	end
@@ -1922,6 +1942,14 @@ function COMBINE:Init()
 	self.dataEntry:SetMultiline(true)
 	self.dataEntry:SetFont("ixComputerDOSBody")
 	self.dataEntry:SetUpdateOnType(true)
+	self.dataEntry:SetTextColor(COMBINE_TEXT)
+	self.dataEntry:SetCursorColor(COMBINE_TEXT)
+	self.dataEntry.Paint = function(panel, w, h)
+		surface.SetDrawColor(4, 12, 22, 180)
+		surface.DrawRect(0, 0, w, h)
+		
+		panel:DrawTextEntryText(panel:GetTextColor(), panel:GetHighlightColor(), panel:GetCursorColor())
+	end
 	self.dataEntry.OnValueChange = function()
 		self:PlayTypeSound()
 	end
