@@ -1309,17 +1309,19 @@ netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, targe
 		return
 	end
 
-	local targetChar = ix.char.loaded[charID]
-	local targetPlayer = targetChar and targetChar:GetPlayer()
+	if (!client:IsAdmin()) then
+		local targetChar = ix.char.loaded[charID]
+		local targetPlayer = targetChar and targetChar:GetPlayer()
 
-	if (IsValid(targetPlayer)) then
-		if (!hook.Run("CanPlayerEditData", client, targetPlayer)) then
+		if (IsValid(targetPlayer)) then
+			if (!hook.Run("CanPlayerEditData", client, targetPlayer)) then
+				client:NotifyLocalized("noPerm")
+				return
+			end
+		elseif (!client:IsCombine()) then
 			client:NotifyLocalized("noPerm")
 			return
 		end
-	elseif (!client:IsCombine() and !client:IsAdmin()) then
-		client:NotifyLocalized("noPerm")
-		return
 	end
 
 	local data = {
@@ -1338,10 +1340,7 @@ netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, targe
 		end
 	end
 
-	local charID = tonumber(target) or (IsValid(target) and target:GetCharacter() and target:GetCharacter():GetID())
-	if (!charID) then
-		return
-	end
+
 
 	local loadedCharacter = ix.char.loaded[charID]
 	if (loadedCharacter) then

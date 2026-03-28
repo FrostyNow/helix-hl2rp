@@ -247,7 +247,11 @@ end
 
 -- called when the client wants to edit the combine data for the given target
 function Schema:CanPlayerEditData(client, target)
-	return client:IsCombine() and (!target:IsCombine() and target:Team() != FACTION_ADMIN)
+	if (client:IsAdmin()) then
+		return true
+	end
+
+	return client:IsCombine() and (!target:IsCombine() and target:Team() != (FACTION_ADMIN or -1))
 end
 
 function Schema:CanPlayerViewObjectives(client)
