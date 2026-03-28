@@ -103,6 +103,8 @@ function ENT:Use(client)
 		return
 	end
 
+	client:NotifyLocalized("gamblingStarted", ix.currency.Get(ix.config.Get("gamblingPrice", 13), client))
+
 	timer.Create("spin_all_wheels"..self:EntIndex( ), 0, 1, function()
 		self.Is_playing = false
 		character:TakeMoney(ix.config.Get("gamblingPrice", 13))

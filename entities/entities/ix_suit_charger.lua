@@ -26,13 +26,11 @@ ENT.restoreCool = 60
 
 ix.lang.AddTable("english", {
 	suitChargerDesc = "A device that automatically restores armor to the user.",
-	suitChargerNoAccess = "You do not have access to this device."
 })
 
 ix.lang.AddTable("korean", {
 	["Suit Charger"] = "충전 장치",
 	suitChargerDesc = "사용자의 장비에 전력을 공급하기 위한 충전 장치입니다.",
-	suitChargerNoAccess = "이 장치에 접근할 권한이 없습니다."
 })
 
 function ENT:GetUsed()
@@ -179,7 +177,6 @@ if (SERVER) then
 
 		local comkey = character:GetInventory():HasItem("comkey")
 		if (!client:IsCombine() and !comkey) then
-			client:NotifyLocalized("suitChargerNoAccess")
 			self:EmitSound(self.denySound)
 			return
 		end

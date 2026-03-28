@@ -8,3 +8,4 @@ ITEM.heal = 5
 ITEM.sound = "interface/inv_drink_tea.ogg"
 ITEM.empty = "tea_empty"
 ITEM.isDrink = true
+ITEM.classes = nil

@@ -369,6 +369,7 @@ LANGUAGE = {
 	empOverloading = "사용 중...",
 	empUseAction = "사용",
 	empInvalidTarget = "잠긴 문, 센트리 건, 또는 콤바인 터미널을 조준해야 합니다.",
+	empOverloadTerminalSucceed = "터미널의 보안 체계를 우회하는 데 성공했습니다.",
 	empInstabilityLevel = "불안정도",
 	["Book"] = "책",
 	bookDesc = "가볍게 읽을 만한 책입니다.\n독서를 통해 지능을 향상시킬 수 있습니다.",

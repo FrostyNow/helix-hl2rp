@@ -7,3 +7,4 @@ ITEM.price = 25
 ITEM.heal = 5
 ITEM.cookable = true
 ITEM.usenum = 2
+ITEM.classes = nil

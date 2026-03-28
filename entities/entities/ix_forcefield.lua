@@ -180,6 +180,7 @@ if (SERVER) then
 		self:SetSolid(SOLID_VPHYSICS)
 		self:SetUseType(SIMPLE_USE)
 		self:PhysicsInit(SOLID_VPHYSICS)
+		self:DrawShadow(false)
 
 		local data = {}
 			data.start = self:GetPos() + self:GetRight() * -16

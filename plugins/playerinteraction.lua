@@ -694,7 +694,7 @@ if (CLIENT) then
     end
 
     function PLUGIN:PlayerButtonDown(client, button)
-        if (client != LocalPlayer() or button != KEY_F2) then
+        if (client != LocalPlayer() or button != KEY_F4) then
             return
         end
 

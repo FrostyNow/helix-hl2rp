@@ -1,16 +1,27 @@
 # 이 파일은 메모용이므로 읽지 말 것/내 허락도 없이 바로 작업하지도 마
 
 # 테스트
-- 가구 배치 테스트
-- 새로운 애드온(헤드크랩 부착)
 - 기동대 인식 테스트
-- 웹셀렉트 테스트
 
 # 우선순위 높음
-- 캐릭터 선택창 모델/바디그룹
+- SitAnywhere 화살표 망가진 버그 고치기
+- 콤바인 시민 데이터 기록할때 콤바인인데도 저장이 안되고 이 행위를 할 권한이 없습니다
+- novelizer에서 보관함을 실제로 열었을 때나 나오게
+- 보르티곤트 EMP/렌치로 해방
+- characterlist 정렬 기능
+- 캐릭터 선택하지 않은 시점에서 mapscene이 제대로 안보이는 문제
+- 브린캐스트
 - 담배
 - 아이템 청소 로직 점검
 - CWU 사업에서 완제품 다 빼기
+
+[02:23:41] [LOG] Igor Smirnoff ran 'Eat' on item 'Breen's Water' (#17046)
+L 03/29/2026 - 02:23:41: Lua Error:
+[ERROR] gamemodes/ixhl2rp/plugins/hunger/items/food/sh_water.lua:16: attempt to call method 'GetAttrib' (a nil value)
+  1. unknown - gamemodes/ixhl2rp/plugins/hunger/items/food/sh_water.lua:16
+   2. PerformInventoryAction - gamemodes/helix/gamemode/core/libs/sh_item.lua:684
+    3. func - gamemodes/helix/gamemode/core/libs/sh_item.lua:823
+     4. unknown - lua/includes/extensions/net.lua:34
 
 # 우선순위 낮음
 - 콤바인 감시인 본머지

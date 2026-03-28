@@ -183,6 +183,7 @@ LANGUAGE = {
 	empOverloading = "Overloading...",
 	empUseAction = "Use",
 	empInvalidTarget = "You must aim at either a locked door, sentry gun, or a Combine terminal.",
+	empOverloadTerminalSucceed = "You have successfully bypassed the terminal's security.",
 	empInstabilityLevel = "Instability Level",
 
 	bookDesc = "A readable book.",

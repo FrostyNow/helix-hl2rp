@@ -137,6 +137,8 @@ properties.Add("ixScannerOperate", {
 })
 
 function PLUGIN:GetCharacterName(ply, chatType)
+	if (!IsValid(ply)) then return end
+
 	local scanner = ply:GetNetVar("ixScn")
 	if (IsValid(scanner) and (chatType == "ic" or chatType == "me" or chatType == "it" or chatType == "y" or chatType == "w" or chatType == "yell" or chatType == "whisper")) then
 		return scanner:GetNetVar("ixScannerName", "Combine Scanner")
@@ -144,6 +146,8 @@ function PLUGIN:GetCharacterName(ply, chatType)
 end
 
 function PLUGIN:GetCharacterColor(ply)
+	if (!IsValid(ply)) then return end
+
 	local scanner = ply:GetNetVar("ixScn")
 
 	if (IsValid(scanner)) then
@@ -194,11 +198,16 @@ function PLUGIN:InitializedChatClasses()
 		local class = ix.chat.classes[id]
 		if (class) then
 			class.CanHear = function(this, speaker, listener)
-				local speakerScanner = speaker:GetNetVar("ixScn")
-				local listenerScanner = listener:GetNetVar("ixScn")
+				local speakerScanner = IsValid(speaker) and speaker:GetNetVar("ixScn")
+				local listenerScanner = IsValid(listener) and listener:GetNetVar("ixScn")
 
-				local speakPos = IsValid(speakerScanner) and speakerScanner:GetPos() or speaker:GetPos()
-				local listenPos = IsValid(listenerScanner) and listenerScanner:GetPos() or listener:GetPos()
+				local speakPos = IsValid(speakerScanner) and speakerScanner:GetPos() or (IsValid(speaker) and speaker:GetPos() or nil)
+				local listenPos = IsValid(listenerScanner) and listenerScanner:GetPos() or (IsValid(listener) and listener:GetPos() or nil)
+
+				if (!speakPos or !listenPos) then
+					return false
+				end
+
 				local range = isnumber(this.range) and this.range or (ix.config.Get("chatRange", 280) ^ 2)
 
 				return (speakPos - listenPos):LengthSqr() <= range

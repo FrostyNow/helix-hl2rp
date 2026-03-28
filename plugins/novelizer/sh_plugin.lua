@@ -4448,11 +4448,11 @@ function PLUGIN:EmitIdleIt()
 				return entity.GetMode and entity:GetMode() ~= 1
 			end
 		},
-		{
-			classes = {"ix_vendingmachine", "ix_pepsimachine", "ix_coffeemachine"},
-			key = "vending_hum",
-			cooldownKey = "vending_idle"
-		},
+		-- {
+		-- 	classes = {"ix_vendingmachine", "ix_pepsimachine", "ix_coffeemachine"},
+		-- 	key = "vending_hum",
+		-- 	cooldownKey = "vending_idle"
+		-- },
 		{
 			classes = {"ix_stationary_radio", "ix_radiorepeater"},
 			key = "radio_static",
@@ -4730,15 +4730,15 @@ function PLUGIN:PlayerUse(client, entity)
 
 	local actionKey = entity:IsDoor() and self:GetDoorActionKey(entity) or ("use_" .. className)
 
-	if (entity:IsDoor() and actionKey == "door_locked") then
-		local lockedPool = self:ResolveItPhrasePool(entity, "door_locked")
-		local lockedPhraseKey = istable(lockedPool) and table.Random(lockedPool) or nil
+	-- if (entity:IsDoor() and actionKey == "door_locked") then
+	-- 	local lockedPool = self:ResolveItPhrasePool(entity, "door_locked")
+	-- 	local lockedPhraseKey = istable(lockedPool) and table.Random(lockedPool) or nil
 
-		self:SendNovelIt(lockedPhraseKey, self:GetItArguments(entity, "door_locked", lockedPhraseKey), {
-			position = entity:GetPos()
-		})
-		return
-	end
+	-- 	self:SendNovelIt(lockedPhraseKey, self:GetItArguments(entity, "door_locked", lockedPhraseKey), {
+	-- 		position = entity:GetPos()
+	-- 	})
+	-- 	return
+	-- end
 
 	self:SendNovelMe(client, phraseKey, entity:IsDoor() and {
 		self:GetEntitySubject(entity)

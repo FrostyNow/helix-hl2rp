@@ -7,3 +7,4 @@ ITEM.price = 25
 ITEM.heal = 10
 ITEM.cookable = true
 ITEM.empty = "misc_plate"
+ITEM.classes = nil

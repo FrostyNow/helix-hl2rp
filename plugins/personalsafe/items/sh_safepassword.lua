@@ -1,4 +1,4 @@
-﻿ITEM.name = "Safe Password"
+ITEM.name = "Safe Password"
 ITEM.description = "itemSafePasswordDesc"
 ITEM.model = "models/props_wasteland/prison_padlock001a.mdl"
 ITEM.category = "Utility"
@@ -12,31 +12,31 @@ ITEM.functions.Use = {
 	icon = "icon16/lock_add.png",
 	OnRun = function(itemTable, self, entity)
 		local client = itemTable.player
-		local password = net.ReadString()
-		local entity = net.ReadEntity()
 		local tr = client:GetEyeTraceNoCursor()
 
 		if (tr.Entity:GetClass() != "ix_container") then 
-			client:NotifyLocalized("notPersonalSafe", recipient) 
+			client:NotifyLocalized("notPersonalSafe", client) 
 			return false
 		end
 
 		if tr.Entity.password then 
-			client:NotifyLocalized("safeAlreadySecured", recipient)
+			client:NotifyLocalized("safeAlreadySecured", client)
 		 	return false 
 		end
 
+		local target = tr.Entity
+
 		client:RequestString("@containerPasswordTitle", "@containerPasswordDesc", function(password)
+			if (IsValid(target) and password:len() != 0) then
+				target.Sessions = {}
+				target.PasswordAttempts = {}
+				target:SetLocked(true)
+				target.password = password
 
-			if (password:len() != 0) then
-			tr.Entity.Sessions = {}
-			tr.Entity:SetLocked(true)
-			tr.Entity.password = password
+				client:NotifyLocalized("containerPassword", password)
+			end
+		end, "")
 
-			client:NotifyLocalized("containerPassword", password)
-			
-		end
-		end, '')
-
+		return true
 	end
 }

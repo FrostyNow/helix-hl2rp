@@ -239,7 +239,10 @@ local VORTIGAUNT_CLASS_WEAPONS = {
 
 function CHAR:IsVortigaunt()
 	local faction = self:GetFaction()
-	return faction == FACTION_VORT or faction == FACTION_SLAVE_VORT
+	local factionTable = ix.faction.indices[faction]
+	local uniqueID = factionTable and factionTable.uniqueID or ""
+
+	return uniqueID == "vortigaunt" or uniqueID == "vortigaunt_slave" or faction == FACTION_VORT
 end
 
 function PLUGIN:GetPlayerPainSound(client)
@@ -259,11 +262,17 @@ function PLUGIN:GetPlayerDeathSound(client)
 end
 
 function PLUGIN:IsVortigauntFaction(faction)
-	return faction == FACTION_VORT or faction == FACTION_SLAVE_VORT
+	local factionTable = ix.faction.indices[faction]
+	local uniqueID = factionTable and factionTable.uniqueID or ""
+
+	return uniqueID == "vortigaunt" or uniqueID == "vortigaunt_slave" or faction == FACTION_VORT
 end
 
 function PLUGIN:IsVortigauntClass(classIndex)
-	return classIndex == CLASS_VORT or classIndex == CLASS_SLAVE_VORT
+	local class = ix.class.list[classIndex]
+	local uniqueID = class and class.uniqueID or ""
+
+	return uniqueID == "vortigaunt" or uniqueID == "vortigaunt_slave" or classIndex == CLASS_VORT or classIndex == CLASS_SLAVE_VORT
 end
 
 function PLUGIN:GetDefaultVortigauntClass()
@@ -271,7 +280,10 @@ function PLUGIN:GetDefaultVortigauntClass()
 end
 
 function PLUGIN:GetVortigauntWeaponSet(classIndex)
-	if (classIndex == CLASS_VORT) then
+	local class = ix.class.list[classIndex]
+	local uniqueID = class and class.uniqueID or ""
+
+	if (uniqueID == "vortigaunt" or classIndex == CLASS_VORT) then
 		return VORTIGAUNT_CLASS_WEAPONS.free
 	end
 
@@ -279,7 +291,13 @@ function PLUGIN:GetVortigauntWeaponSet(classIndex)
 end
 
 function PLUGIN:IsEnslavedVortigaunt(character)
-	return character and character:GetClass() == CLASS_SLAVE_VORT
+	if (!character) then return false end
+
+	local classIndex = character:GetClass()
+	local class = ix.class.list[classIndex]
+	local uniqueID = class and class.uniqueID or ""
+
+	return uniqueID == "vortigaunt_slave" or classIndex == CLASS_SLAVE_VORT
 end
 
 function PLUGIN:CanManageSlaveVortigaunt(client, target)
@@ -296,6 +314,128 @@ function PLUGIN:CanManageSlaveVortigaunt(client, target)
 
 	return inventory and inventory:HasItem("comkey") or false
 end
+
+	function PLUGIN:StartVortigauntLiberation(client, target)
+		if (!SERVER) then
+			return false
+		end
+
+		if (!self:CanManageSlaveVortigaunt(client, target)) then
+			client:NotifyLocalized("vortShackleDenied")
+			return false
+		end
+
+		local targetCharacter = target:GetCharacter()
+
+		if (!targetCharacter or !targetCharacter:IsVortigaunt()) then
+			client:NotifyLocalized("vortTargetNotVort")
+			return false
+		end
+
+		if (!self:IsEnslavedVortigaunt(targetCharacter)) then
+			client:NotifyLocalized("vortTargetNotSlave")
+			return false
+		end
+
+		if (target:GetNetVar("vortShackleRemoving")) then
+			return false
+		end
+
+		target:SetAction("@vortShackleTargetAction", VORTIGAUNT_LIBERATION_TIME)
+		target:SetNetVar("vortShackleRemoving", true)
+		client:SetAction("@vortShackleAction", VORTIGAUNT_LIBERATION_TIME)
+
+		client:DoStaredAction(target, function()
+			if (!IsValid(client) or !IsValid(target)) then
+				return
+			end
+
+			local currentCharacter = target:GetCharacter()
+
+			if (!currentCharacter or !self:IsEnslavedVortigaunt(currentCharacter)) then
+				return
+			end
+
+			self:SetVortigauntEnslaved(currentCharacter, false, target)
+			target:SetNetVar("vortShackleRemoving", nil)
+			target:SetAction()
+			client:SetAction()
+			client:NotifyLocalized("vortShackleFreed", target:GetName())
+			target:NotifyLocalized("vortShackleFreedTarget", client:GetName())
+		end, VORTIGAUNT_LIBERATION_TIME, function()
+			if (IsValid(target)) then
+				target:SetNetVar("vortShackleRemoving", nil)
+				target:SetAction()
+			end
+
+			if (IsValid(client)) then
+				client:SetAction()
+			end
+		end)
+
+		return true
+	end
+
+	function PLUGIN:StartVortigauntReshackle(client, target)
+		if (!SERVER) then
+			return false
+		end
+
+		if (!self:CanManageSlaveVortigaunt(client, target)) then
+			client:NotifyLocalized("vortShackleDenied")
+			return false
+		end
+
+		local targetCharacter = target:GetCharacter()
+
+		if (!targetCharacter or !targetCharacter:IsVortigaunt()) then
+			client:NotifyLocalized("vortTargetNotVort")
+			return false
+		end
+
+		if (self:IsEnslavedVortigaunt(targetCharacter)) then
+			client:NotifyLocalized("vortTargetNotSlave")
+			return false
+		end
+
+		if (target:GetNetVar("vortShackleRemoving")) then
+			return false
+		end
+
+		target:SetAction("@vortReshackleTargetAction", VORTIGAUNT_LIBERATION_TIME)
+		target:SetNetVar("vortShackleRemoving", true)
+		client:SetAction("@vortReshackleAction", VORTIGAUNT_LIBERATION_TIME)
+
+		client:DoStaredAction(target, function()
+			if (!IsValid(client) or !IsValid(target)) then
+				return
+			end
+
+			local currentCharacter = target:GetCharacter()
+
+			if (!currentCharacter or !currentCharacter:IsVortigaunt() or self:IsEnslavedVortigaunt(currentCharacter)) then
+				return
+			end
+
+			self:SetVortigauntEnslaved(currentCharacter, true, target)
+			target:SetNetVar("vortShackleRemoving", nil)
+			target:SetAction()
+			client:SetAction()
+			client:NotifyLocalized("vortReshackled", target:GetName())
+			target:NotifyLocalized("vortReshackledTarget", client:GetName())
+		end, VORTIGAUNT_LIBERATION_TIME, function()
+			if (IsValid(target)) then
+				target:SetNetVar("vortShackleRemoving", nil)
+				target:SetAction()
+			end
+
+			if (IsValid(client)) then
+				client:SetAction()
+			end
+		end)
+
+		return true
+	end
 
 if SERVER then
 	local function normalizeModel(model)
@@ -440,138 +580,27 @@ if SERVER then
 		return self:SetVortigauntClass(character, classIndex, client)
 	end
 
-	function PLUGIN:StartVortigauntLiberation(client, target)
-		if (!self:CanManageSlaveVortigaunt(client, target)) then
-			client:NotifyLocalized("vortShackleDenied")
-			return false
-		end
-
-		local targetCharacter = target:GetCharacter()
-
-		if (!targetCharacter or !targetCharacter:IsVortigaunt()) then
-			client:NotifyLocalized("vortTargetNotVort")
-			return false
-		end
-
-		if (!self:IsEnslavedVortigaunt(targetCharacter)) then
-			client:NotifyLocalized("vortTargetNotSlave")
-			return false
-		end
-
-		if (target:GetNetVar("vortShackleRemoving")) then
-			return false
-		end
-
-		target:SetAction("@vortShackleTargetAction", VORTIGAUNT_LIBERATION_TIME)
-		target:SetNetVar("vortShackleRemoving", true)
-		client:SetAction("@vortShackleAction", VORTIGAUNT_LIBERATION_TIME)
-
-		client:DoStaredAction(target, function()
-			if (!IsValid(client) or !IsValid(target)) then
-				return
-			end
-
-			local currentCharacter = target:GetCharacter()
-
-			if (!currentCharacter or !self:IsEnslavedVortigaunt(currentCharacter)) then
-				return
-			end
-
-			self:SetVortigauntEnslaved(currentCharacter, false, target)
-			target:SetNetVar("vortShackleRemoving", nil)
-			target:SetAction()
-			client:SetAction()
-			client:NotifyLocalized("vortShackleFreed", target:GetName())
-			target:NotifyLocalized("vortShackleFreedTarget", client:GetName())
-		end, VORTIGAUNT_LIBERATION_TIME, function()
-			if (IsValid(target)) then
-				target:SetNetVar("vortShackleRemoving", nil)
-				target:SetAction()
-			end
-
-			if (IsValid(client)) then
-				client:SetAction()
-			end
-		end)
-
-		return true
-	end
-
-	function PLUGIN:StartVortigauntReshackle(client, target)
-		if (!self:CanManageSlaveVortigaunt(client, target)) then
-			client:NotifyLocalized("vortShackleDenied")
-			return false
-		end
-
-		local targetCharacter = target:GetCharacter()
-
-		if (!targetCharacter or !targetCharacter:IsVortigaunt()) then
-			client:NotifyLocalized("vortTargetNotVort")
-			return false
-		end
-
-		if (self:IsEnslavedVortigaunt(targetCharacter)) then
-			client:NotifyLocalized("vortTargetNotSlave")
-			return false
-		end
-
-		if (target:GetNetVar("vortShackleRemoving")) then
-			return false
-		end
-
-		target:SetAction("@vortReshackleTargetAction", VORTIGAUNT_LIBERATION_TIME)
-		target:SetNetVar("vortShackleRemoving", true)
-		client:SetAction("@vortReshackleAction", VORTIGAUNT_LIBERATION_TIME)
-
-		client:DoStaredAction(target, function()
-			if (!IsValid(client) or !IsValid(target)) then
-				return
-			end
-
-			local currentCharacter = target:GetCharacter()
-
-			if (!currentCharacter or !currentCharacter:IsVortigaunt() or self:IsEnslavedVortigaunt(currentCharacter)) then
-				return
-			end
-
-			self:SetVortigauntEnslaved(currentCharacter, true, target)
-			target:SetNetVar("vortShackleRemoving", nil)
-			target:SetAction()
-			client:SetAction()
-			client:NotifyLocalized("vortReshackled", target:GetName())
-			target:NotifyLocalized("vortReshackledTarget", client:GetName())
-		end, VORTIGAUNT_LIBERATION_TIME, function()
-			if (IsValid(target)) then
-				target:SetNetVar("vortShackleRemoving", nil)
-				target:SetAction()
-			end
-
-			if (IsValid(client)) then
-				client:SetAction()
-			end
-		end)
-
-		return true
-	end
 
 	function PLUGIN:NormalizeVortigauntCharacter(character, client)
 		if (!character) then
 			return
 		end
 
-		if (character:GetFaction() == FACTION_SLAVE_VORT and FACTION_VORT) then
-			character:SetFaction(FACTION_VORT)
-		end
-
 		if (!self:IsVortigauntFaction(character:GetFaction())) then
 			return
 		end
 
-		if (!self:IsVortigauntClass(character:GetClass())) then
-			character:SetClass(self:GetDefaultVortigauntClass())
+		local classIndex = character:GetClass()
+		if (!self:IsVortigauntClass(classIndex)) then
+			local defaultClass = self:GetDefaultVortigauntClass()
+
+			if (defaultClass) then
+				character:SetClass(defaultClass)
+				classIndex = defaultClass
+			end
 		end
 
-		self:ApplyVortigauntClassState(character, client or character:GetPlayer(), character:GetClass())
+		self:ApplyVortigauntClassState(character, client or character:GetPlayer(), classIndex)
 	end
 
 	function PLUGIN:GetCharacterIdentificationData(character)

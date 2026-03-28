@@ -56,6 +56,7 @@ ix.lang.AddTable("english", {
 	gamblePayout = "Your payout is %s",
 	slotMachineDesc = "A slot machine that can be used for gambling.",
 	price = "Price",
+	gamblingStarted = "You spent %s as the cost of the game.",
 })
 
 ix.lang.AddTable("korean", {
@@ -64,6 +65,7 @@ ix.lang.AddTable("korean", {
 	["Slot Machine"] = "슬롯머신",
 	slotMachineDesc = "도박을 할 수 있는 슬롯머신입니다.",
 	price = "비용",
+	gamblingStarted = "%s(을)를 게임 비용으로 썼습니다.",
 })
 
 ix.command.Add("SlotMachineAdd", {

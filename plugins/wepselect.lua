@@ -237,9 +237,9 @@ local function GuessWeaponSlotInfo(class, item, stored)
 	elseif class == "ix_keys" then
 		return 0, 1
 	elseif class == "weapon_physgun" then
-		return 0, 2
+		return 0, 1000
 	elseif class == "gmod_tool" then
-		return 0, 3
+		return 0, 1001
 	end
 
 	if class == "ix_suitcase" then

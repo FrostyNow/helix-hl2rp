@@ -677,7 +677,6 @@ function PLUGIN:OpenComputer(client, entity)
 			end
 		else
 			EmitCombineLockedSound(entity)
-			client:NotifyLocalized("interactiveComputerCombineDenied")
 			return
 		end
 	end
@@ -819,6 +818,20 @@ function PLUGIN:LoadData()
 
 	self.nextComputerID = maxID + 1
 	self:RefreshInteractiveComputerVisualStates()
+end
+
+function PLUGIN:TryBypassSecurity(client, entity)
+	entity = self:ResolveComputerEntity(entity)
+	if (!IsValid(entity) or !entity:IsCombineTerminal()) then
+		return
+	end
+
+	entity:SetSecurityBypass(SECURITY_BYPASS_DURATION)
+
+	client:EmitSound("buttons/combine_button1.wav")
+	client:NotifyLocalized("empOverloadTerminalSucceed")
+
+	self:OpenComputer(client, entity)
 end
 
 function PLUGIN:EntityRemoved(entity)
@@ -1103,7 +1116,6 @@ netstream.Hook("ixInteractiveComputerUpdateObjectives", function(client, entity,
 	end
 
 	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
-		client:NotifyLocalized("interactiveComputerCombineDenied")
 		return
 	end
 
@@ -1289,7 +1301,6 @@ netstream.Hook("ixInteractiveComputerUpdateData", function(client, entity, targe
 	end
 
 	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
-		client:NotifyLocalized("interactiveComputerCombineDenied")
 		return
 	end
 
@@ -1372,7 +1383,6 @@ netstream.Hook("ixInteractiveComputerSaveCombineJournal", function(client, entit
 	end
 
 	if (!entity:IsCombineTerminal() or (!PLUGIN:HasCombineTerminalAccess(client) and !entity:IsSecurityBypassed())) then
-		client:NotifyLocalized("interactiveComputerCombineDenied")
 		return
 	end
 

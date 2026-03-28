@@ -248,7 +248,6 @@ ix.lang.AddTable("english", {
 	interactiveComputerInvalid = "That computer is no longer available.",
 	interactiveComputerSaved = "Computer data saved.",
 	interactiveComputerBusy = "Someone else is already using this terminal.",
-	interactiveComputerCombineDenied = "You need Combine authorization or a keycard to access this terminal.",
 	interactiveComputerDisconnected = "The terminal assembly is disconnected. Move the paired hardware closer together.",
 	interactiveComputerSupportDesc = "Supporting hardware for a nearby terminal.",
 	interactiveComputerRequiresSupport = "This monitor needs nearby computer hardware to power on.",
@@ -389,7 +388,6 @@ ix.lang.AddTable("korean", {
 	interactiveComputerInvalid = "더 이상 사용할 수 없는 컴퓨터입니다.",
 	interactiveComputerSaved = "컴퓨터 데이터를 저장했습니다.",
 	interactiveComputerBusy = "다른 사람이 이미 이 터미널을 사용 중입니다.",
-	interactiveComputerCombineDenied = "콤바인 권한 또는 보안 카드가 있어야 이 터미널에 접근할 수 있습니다.",
 	interactiveComputerDisconnected = "터미널 장비 세트가 분리되어 있습니다. 짝이 되는 장비를 더 가깝게 옮기세요.",
 	interactiveComputerSupportDesc = "주변 단말기를 작동시키는 장비입니다.",
 	interactiveComputerRequiresSupport = "이 모니터는 근처에 컴퓨터 장비가 있어야 켜집니다.",
@@ -708,7 +706,7 @@ function PLUGIN:HasCombineTerminalAccess(client)
 		return false
 	end
 
-	if (client:IsCombine() or client:IsAdmin()) then
+	if (client:IsCombine()) then
 		return true
 	end
 

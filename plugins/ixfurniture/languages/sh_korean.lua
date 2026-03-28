@@ -9,7 +9,7 @@ LANGUAGE = {
 	furniturePlaceMode = "배치 중... (좌클릭: 배치, 우클릭: 취소)",
 	furnitureOwner = "소유주: %s",
 	furnitureGeneral = "가구",
-	furnitureShopOpen = "가구 상점을 여는 중...",
+	furnitureShopOpen = "가구 카탈로그를 엽니다.",
 	furnitureCatalog = "가구 카탈로그",
 	furnitureRemoveDesc = "조준하고 있는 가구를 회수합니다.",
 	furnitureNotInZone = "지정된 구역 내에서만 가구를 설치할 수 있습니다.",
@@ -23,4 +23,6 @@ LANGUAGE = {
 	furnitureCooldown = "재배치까지 %s초 더 기다려야 합니다.",
 	furnitureFlagDesc = "가구를 구매하고 배치할 수 있는 권한입니다.",
 	furnitureHP = "내구도: %s / %s",
+	furnitureNoMoneyRepair = "수리에 %s(이)가 필요합니다.",
+	furnitureRepaired = "가구를 %s에 수리했습니다.",
 }

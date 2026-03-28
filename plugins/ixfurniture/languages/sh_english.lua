@@ -9,7 +9,7 @@ LANGUAGE = {
 	furniturePlaceMode = "Placing... (L-Click: Place, R-Click: Cancel)",
 	furnitureOwner = "Owner: %s",
 	furnitureGeneral = "Furniture",
-	furnitureShopOpen = "Opening Furniture Shop...",
+	furnitureShopOpen = "Open furniture catalog.",
 	furnitureCatalog = "Furniture Catalog",
 	furnitureRemoveDesc = "Removes the furniture you are looking at.",
 	furnitureNotInZone = "You can only place furniture within designated zones.",
@@ -23,4 +23,6 @@ LANGUAGE = {
 	furnitureCooldown = "You must wait %s second(s) before placing another furniture.",
 	furnitureFlagDesc = "Authority to buy and place furniture.",
 	furnitureHP = "D: %s / %s",
+	furnitureNoMoneyRepair = "You need %s to repair the furniture.",
+	furnitureRepaired = "You repaired the furniture for %s.",
 }

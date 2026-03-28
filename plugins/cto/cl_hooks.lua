@@ -10,35 +10,48 @@ function PLUGIN:Tick()
 			local camera = ent:GetNWEntity("camera")
 
 			if (IsValid(camera) and camera:GetClass() == "npc_combine_camera") then
-				if (!ent.bone1) then
-					ent.bone1 = camera:LookupBone("Combine_Camera.bone1")
-					ent.lens = camera:LookupBone("Combine_Camera.Lens")
+				if (ent.bone1 == nil) then
+					ent.bone1 = camera:LookupBone("Combine_Camera.bone1") or -1
+					ent.lens = camera:LookupBone("Combine_Camera.Lens") or -1
 				end
 
-				local bonePos, boneAngles = camera:GetBonePosition(ent.bone1)
-				local camPos, camAngles = camera:GetBonePosition(ent.lens)
+				local camAngles = camera:GetAngles()
+				local camPos = camera:GetPos()
 
-				if (!bonePos or !camPos) then return end
+				if (ent.bone1 != -1) then
+					local bonePos, boneAngles = camera:GetBonePosition(ent.bone1)
+					if (bonePos and boneAngles) then
+						camAngles = boneAngles
+						camAngles.roll = camAngles.roll + 90
+					end
+				end
 
-				boneAngles.roll = boneAngles.roll + 90
+				if (ent.lens != -1) then
+					local lensPos = camera:GetBonePosition(ent.lens)
+					if (lensPos) then
+						camPos = lensPos
+					end
+				end
 
 				local children = camera:GetChildren()
 				local bulbColor = (children[1] and IsValid(children[1])) and children[1]:GetColor() or color_white
 				local statusText = "All Clear"
-				local signalText = "[512x256/p15@TR42/036]#=i" .. camera:EntIndex() .. "y=" .. math.floor(boneAngles.yaw) .. "&r=" .. math.floor(boneAngles.roll)
+				local signalText = "[512x256/p15@TR42/036]#=i" .. camera:EntIndex() .. "y=" .. math.floor(camAngles.yaw) .. "&r=" .. math.floor(camAngles.roll)
+				
 				if (bulbColor.g == 128) then
 					statusText = "Watching..."
 				elseif (bulbColor.g == 0) then
 					statusText = "Violation!"
 				end
 
-				render.PushRenderTarget(ent.tex)
-					if (self:isCameraEnabled(camera)) then
-						if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
-							render.Clear(0, 0, 0, 255, true, true)
+				if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
+					render.PushRenderTarget(ent.tex)
+						render.Clear(0, 0, 0, 255, true, true)
+
+						if (self:isCameraEnabled(camera)) then
 							render.RenderView({
-								origin = camPos + (boneAngles:Forward() * 2.8),
-								angles = boneAngles,
+								origin = camPos + (camAngles:Forward() * 2.8),
+								angles = camAngles,
 								fov = 90,
 								aspect = 2,
 								x = 0,
@@ -47,41 +60,41 @@ function PLUGIN:Tick()
 								h = 256,
 								drawviewmodel = false
 							})
-
-							ent.lastCamOutputTime = RealTime()
+						else
+							statusText = "Disabled"
+							signalText = L("no signal(?)")
+							bulbColor = Color(255, 0, 0)
 						end
-					else
-						render.Clear(0, 0, 0, 255, false, true)
-						statusText = "Disabled"
-						signalText = L("no signal(?)")
-						bulbColor = Color(255, 0, 0)
-					end
 
-					cam.Start2D()
-						draw.SimpleText("<:: C-i" .. camera:EntIndex() .. " ::>", "BudgetLabel", 4, 6)
-						draw.SimpleText("<:: " .. L(statusText) .. " ::>", "BudgetLabel", 4, 6 + draw.GetFontHeight("BudgetLabel"), bulbColor)
-						draw.SimpleText(signalText, "BudgetLabel", 4, 252 - draw.GetFontHeight("BudgetLabel"))
-						draw.SimpleText("*", "CloseCaption_Normal", 256, 126, bulbColor, 1, 1)
-					cam.End2D()
-				render.PopRenderTarget()
+						cam.Start2D()
+							draw.SimpleText("<:: C-i" .. camera:EntIndex() .. " ::>", "BudgetLabel", 4, 6)
+							draw.SimpleText("<:: " .. L(statusText) .. " ::>", "BudgetLabel", 4, 6 + draw.GetFontHeight("BudgetLabel"), bulbColor)
+							draw.SimpleText(signalText, "BudgetLabel", 4, 252 - draw.GetFontHeight("BudgetLabel"))
+							draw.SimpleText("*", "CloseCaption_Normal", 256, 126, bulbColor, 1, 1)
+						cam.End2D()
+					render.PopRenderTarget()
+
+					ent.lastCamOutputTime = RealTime()
+				end
 
 				if (ent.mat and ent.GetSubMaterial and (ent.ixAppliedMat != ent.mat:GetName())) then
 					ent:SetSubMaterial(1, "!" .. ent.mat:GetName())
 					ent.ixAppliedMat = ent.mat:GetName()
 				end
 			elseif (IsValid(camera) and camera:GetClass() == "ix_scanner") then
-				local camPos = camera:GetPos()
-				local camAngles = camera:GetAngles()
-				local pilot = camera:GetPilot()
-				local bScanning = IsValid(pilot) and pilot:GetNetVar("ixScanning")
+				if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
+					local camPos = camera:GetPos()
+					local camAngles = camera:GetAngles()
+					local pilot = camera:GetPilot()
+					local bScanning = IsValid(pilot) and pilot:GetNetVar("ixScanning")
 
-				render.PushRenderTarget(ent.tex)
-					if (bScanning) then
-						if (ent.lastCamOutputTime == nil or RealTime() - ent.lastCamOutputTime >= (1 / 15)) then
+					render.PushRenderTarget(ent.tex)
+						render.Clear(0, 0, 0, 255, true, true)
+
+						if (bScanning) then
 							local oldNoDraw = camera:GetNoDraw()
 							camera:SetNoDraw(true)
 
-							render.Clear(0, 0, 0, 255, true, true)
 							render.RenderView({
 								origin = camPos + (camAngles:Forward() * 14),
 								angles = camAngles,
@@ -95,26 +108,24 @@ function PLUGIN:Tick()
 							})
 
 							camera:SetNoDraw(oldNoDraw)
-
-							ent.lastCamOutputTime = RealTime()
 						end
-					else
-						render.Clear(0, 0, 0, 255, false, true)
-					end
 
-					cam.Start2D()
-						local bulbColor = bScanning and Color(115, 200, 255) or Color(255, 0, 0)
-						local statusText = bScanning and "PILOTED" or "NO SIGNAL"
+						cam.Start2D()
+							local bulbColor = bScanning and Color(115, 200, 255) or Color(255, 0, 0)
+							local statusText = bScanning and "PILOTED" or "NO SIGNAL"
 
-						draw.SimpleText("<:: S-i" .. camera:EntIndex() .. " ::>", "BudgetLabel", 4, 6)
-						draw.SimpleText("<:: " .. statusText .. " ::>", "BudgetLabel", 4, 6 + draw.GetFontHeight("BudgetLabel"), bulbColor)
-						draw.SimpleText(camera:GetNetVar("ixScannerName", "SCN"), "BudgetLabel", 4, 252 - draw.GetFontHeight("BudgetLabel"), bulbColor)
-						
-						if (!bScanning) then
-							draw.SimpleText("CONNECTION LOST", "BudgetLabel", 256, 128, Color(255, 0, 0), 1, 1)
-						end
-					cam.End2D()
-				render.PopRenderTarget()
+							draw.SimpleText("<:: S-i" .. camera:EntIndex() .. " ::>", "BudgetLabel", 4, 6)
+							draw.SimpleText("<:: " .. statusText .. " ::>", "BudgetLabel", 4, 6 + draw.GetFontHeight("BudgetLabel"), bulbColor)
+							draw.SimpleText(camera:GetNetVar("ixScannerName", "SCN"), "BudgetLabel", 4, 252 - draw.GetFontHeight("BudgetLabel"), bulbColor)
+							
+							if (!bScanning) then
+								draw.SimpleText("CONNECTION LOST", "BudgetLabel", 256, 128, Color(255, 0, 0), 1, 1)
+							end
+						cam.End2D()
+					render.PopRenderTarget()
+
+					ent.lastCamOutputTime = RealTime()
+				end
 
 				if (ent.mat and ent.GetSubMaterial and (ent.ixAppliedMat != ent.mat:GetName())) then
 					ent:SetSubMaterial(1, "!" .. ent.mat:GetName())

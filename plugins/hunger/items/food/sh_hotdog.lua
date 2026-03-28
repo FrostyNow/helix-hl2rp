@@ -6,3 +6,4 @@ ITEM.thirst = -10
 ITEM.price = 35
 ITEM.heal = 10
 ITEM.cookable = true
+ITEM.classes = nil

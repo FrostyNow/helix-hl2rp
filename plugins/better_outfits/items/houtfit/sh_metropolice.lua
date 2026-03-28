@@ -198,7 +198,9 @@ function ITEM:RemoveOutfit(client)
 		local classData = ix.class.list[originalClass]
 
 		if (classData and classData.faction == returnFaction) then
-			character:JoinClass(originalClass)
+			local oldClass = character:GetClass()
+			character:SetClass(originalClass)
+			hook.Run("PlayerJoinedClass", client, originalClass, oldClass)
 		else
 			character:KickClass()
 		end

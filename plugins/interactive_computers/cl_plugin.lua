@@ -2480,10 +2480,15 @@ function COMBINE:Think()
 				-- Ensure texture exists on panel
 				if (!self.tex or !self.mat) then
 					cto.terminalMaterialIdx = (cto.terminalMaterialIdx or 0) + 1
-					self.tex = GetRenderTarget("ctouiunique" .. cto.terminalMaterialIdx, 512, 256, false)
-					self.mat = CreateMaterial("ctouiunique" .. cto.terminalMaterialIdx, "UnlitGeneric", {
-						["$basetexture"] = self.tex,
+					self.tex = GetRenderTarget("ix_interactive_rt_" .. cto.terminalMaterialIdx, 512, 256, false)
+					self.mat = CreateMaterial("ix_interactive_mat_" .. cto.terminalMaterialIdx, "UnlitGeneric", {
+						["$basetexture"] = self.tex:GetName(),
 					})
+
+					-- Clear just in case
+					render.PushRenderTarget(self.tex)
+					render.Clear(0, 0, 0, 255)
+					render.PopRenderTarget()
 
 					-- Mock entity methods so CTO can use the panel as a render target
 					self.GetNWEntity = function(_, key)

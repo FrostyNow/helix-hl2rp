@@ -6,3 +6,4 @@ ITEM.hunger = 30
 ITEM.thirst = 15
 ITEM.usenum = 2
 ITEM.empty = "pot"
+ITEM.classes = nil

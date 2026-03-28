@@ -6,32 +6,166 @@ PLUGIN.description = "A simplified furniture shop integrated with Helix Area pro
 
 -- Simple list: model and price only
 PLUGIN.FurnitureList = {
-	{model = "models/props_c17/FurnitureChair001a.mdl", price = 100},
-	{model = "models/props_c17/FurnitureTable001a.mdl", price = 250},
-	{model = "models/props_c17/FurnitureDrawer001a.mdl", price = 350},
-	{model = "models/props_interiors/Furniture_Couch01a.mdl", price = 500},
-	{model = "models/props_c17/canister01a.mdl", price = 50},
-	{model = "models/props_junk/wood_pallet001a.mdl", price = 30},
-	{model = "models/props_c17/FurnitureShelf001b.mdl", price = 150},
-	{model = "models/props_interiors/refrigerator01a.mdl", price = 400},
-	{model = "models/props_c17/FurnitureCupboard001a.mdl", price = 200},
-	{model = "models/props_c17/FurnitureDrawer001a.mdl", price = 400},
-	{model = "models/props_c17/FurnitureDrawer002a.mdl", price = 400},
-	{model = "models/props_c17/FurnitureDrawer003a.mdl", price = 400},
-	{model = "models/props_c17/FurnitureDresser001a.mdl", price = 400},
-	{model = "models/props_c17/FurnitureFireplace001a.mdl", price = 300},
-	{model = "models/props_c17/FurnitureFridge001a.mdl", price = 1000},
-	{model = "models/props_c17/FurnitureRadiator001a.mdl", price = 100},
-	{model = "models/props_c17/furnitureStove001a.mdl", price = 300},
-	{model = "models/props_c17/FurnitureTable001a.mdl", price = 250},
-	{model = "models/props_c17/FurnitureTable002a.mdl", price = 250},
-	{model = "models/props_c17/FurnitureTable003a.mdl", price = 250},
-	{model = "models/props_c17/FurnitureWashingmachine001a.mdl", price = 600},
-	{model = "models/props_lab/filecabinet02.mdl", price = 400},
-	{model = "models/props_wasteland/controlroom_filecabinet001a.mdl", price = 400},
-	{model = "models/props_wasteland/controlroom_filecabinet002a.mdl", price = 400},
-	{model = "models/props_wasteland/controlroom_storagecloset001a.mdl", price = 400},
-	{model = "models/props_wasteland/controlroom_storagecloset001b.mdl", price = 400},
+	{model = "models/props_c17/FurnitureChair001a.mdl", price = 110},
+	{model = "models/props_c17/FurnitureTable001a.mdl", price = 240},
+	{model = "models/props_interiors/Furniture_Couch01a.mdl", price = 550},
+	{model = "models/props_c17/FurnitureShelf001b.mdl", price = 180, wall = true},
+	{model = "models/props_interiors/refrigerator01a.mdl", price = 925},
+	{model = "models/props_c17/FurnitureCupboard001a.mdl", price = 300},
+	{model = "models/props_c17/FurnitureFireplace001a.mdl", price = 700},
+	{model = "models/props_c17/FurnitureRadiator001a.mdl", price = 140},
+	{model = "models/props_c17/FurnitureTable001a.mdl", price = 240},
+	{model = "models/props_c17/FurnitureTable002a.mdl", price = 240},
+	{model = "models/props_c17/FurnitureTable003a.mdl", price = 240},
+	{model = "models/props_c17/FurnitureWashingmachine001a.mdl", price = 1050},
+	{model = "models/props_lab/filecabinet02.mdl", price = 225},
+	{model = "models/props_interiors/Furniture_chair01a.mdl", price = 125},
+	{model = "models/props_interiors/Furniture_chair03a.mdl", price = 125},
+	{model = "models/props_interiors/Furniture_Couch02a.mdl", price = 575},
+	{model = "models/props_interiors/Furniture_Lamp01a.mdl", price = 90},
+	{model = "models/props_interiors/Furniture_shelf01a.mdl", price = 200},
+	{model = "models/props_interiors/Furniture_Vanity01a.mdl", price = 365},
+	{model = "models/props_interiors/Furniture_Vanity01a.mdl", price = 365},
+	{model = "models/props_interiors/SinkKitchen01a.mdl", price = 465, wall = true},
+	{model = "models/props_wasteland/controlroom_chair001a.mdl", price = 140},
+	{model = "models/props_wasteland/controlroom_desk001a.mdl", price = 325},
+	{model = "models/props_wasteland/controlroom_desk001b.mdl", price = 325},
+	{model = "models/props_wasteland/kitchen_shelf002a.mdl", price = 215},
+	{model = "models/props_wasteland/kitchen_shelf001a.mdl", price = 215},
+	{model = "models/props_wasteland/prison_heater001a.mdl", price = 160},
+	{model = "models/props_wasteland/prison_shelf002a.mdl", price = 180},
+	{model = "models/props_c17/chair_stool01a.mdl", price = 75},
+	{model = "models/props_c17/chair_office01a.mdl", price = 150},
+	{model = "models/props_c17/clock01.mdl", price = 65},
+	{model = "models/props_combine/breenclock.mdl", price = 200},
+	{model = "models/props_junk/bicycle01a.mdl", price = 250},
+	{model = "models/props_junk/garbage_carboard002a.mdl", price = 25},
+	{model = "models/props_junk/MetalBucket01a.mdl", price = 60},
+	{model = "models/props_junk/MetalBucket02a.mdl", price = 60},
+	{model = "models/props_junk/PlasticCrate01a.mdl", price = 90},
+	{model = "models/props_lab/corkboard002.mdl", price = 110},
+	{model = "models/props_lab/desklamp01.mdl", price = 100},
+	{model = "models/nova/chair_plastic01.mdl", price = 90},
+	{model = "models/props_junk/TrashBin01a.mdl", price = 75},
+
+	-- Addons
+	{model = "models/props_c17/bedwithmattress.mdl", price = 630},
+	{model = "models/tv_monitor03a.mdl", price = 400},
+	{model = "models/tv_monitor03b.mdl", price = 400},
+	{model = "models/props_lab/filedesk01a.mdl", price = 310},
+	{model = "models/props_lab/paperbin001a.mdl", price = 65},
+	{model = "models/props_megapack/bed03.mdl", price = 700},
+	{model = "models/props_megapack/bed04.mdl", price = 700},
+	{model = "models/props_megapack/bed05.mdl", price = 700},
+	{model = "models/props_megapack/bed06.mdl", price = 700},
+	{model = "models/props_megapack/bed07.mdl", price = 700},
+	{model = "models/props_megapack/bed08.mdl", price = 700},
+	{model = "models/props_megapack/chair04.mdl", price = 160},
+	{model = "models/props_megapack/chair05.mdl", price = 160},
+	{model = "models/props_megapack/chair06.mdl", price = 160},
+	{model = "models/props_megapack/chair07.mdl", price = 160},
+	{model = "models/props_megapack/chair08.mdl", price = 160},
+	{model = "models/props_megapack/shelf02.mdl", price = 265},
+	{model = "models/props_megapack/shelf03.mdl", price = 265},
+	{model = "models/props_megapack/shelf04.mdl", price = 265},
+	{model = "models/props_megapack/shelf05.mdl", price = 265},
+	{model = "models/props_megapack/shelf06.mdl", price = 265},
+	{model = "models/props_megapack/shelf07.mdl", price = 265},
+	{model = "models/props_megapack/shelf08.mdl", price = 265},
+	{model = "models/props_megapack/shelf09.mdl", price = 265},
+	{model = "models/props_megapack/shelf10.mdl", price = 265},
+	{model = "models/props_megapack/shelf11.mdl", price = 265},
+	{model = "models/props_megapack/sofa01.mdl", price = 600},
+	{model = "models/props_megapack/sofa02.mdl", price = 600},
+	{model = "models/props_megapack/sofa03.mdl", price = 600},
+	{model = "models/props_megapack/sofa04.mdl", price = 600},
+	{model = "models/props_megapack/sofa05.mdl", price = 600},
+	{model = "models/props_megapack/sofa06.mdl", price = 600},
+	{model = "models/props_megapack/sofa07.mdl", price = 600},
+	{model = "models/props_megapack/table01.mdl", price = 365},
+	{model = "models/props_megapack/table02.mdl", price = 365},
+	{model = "models/props_megapack/table03.mdl", price = 365},
+	{model = "models/props_megapack/table04.mdl", price = 365},
+	{model = "models/props_megapack/table05.mdl", price = 365},
+	{model = "models/props_megapack/table06.mdl", price = 365},
+	{model = "models/props_megapack/table07.mdl", price = 365},
+	{model = "models/props_megapack/table08.mdl", price = 365},
+	{model = "models/props_megapack/table09.mdl", price = 365},
+	{model = "models/leak_props/props_c17/chair01a.mdl", price = 140},
+	{model = "models/leak_props/props_c17/furniturechair002a.mdl", price = 140},
+	{model = "models/leak_props/props_wasteland/controlroom_phone001b.mdl", price = 160},
+	{model = "models/props/industrial17/booth.mdl", price = 435},
+	{model = "models/props/industrial17/table.mdl", price = 265},
+	{model = "models/fishy/furniture/piano_seat.mdl", price = 185},
+	{model = "models/hls/alyxports/radioset_1.mdl", price = 365},
+	{model = "models/props/coop_cementplant/coop_shelf/coop_shelf.mdl", price = 300},
+	{model = "models/props/de_house/de_house_table01.mdl", price = 365},
+	{model = "models/props/de_inferno/hr_i/inferno_chair/inferno_chair.mdl", price = 160},
+	{model = "models/props/gg_vietnam/dirty_mattress03.mdl", price = 140},
+	{model = "models/props/hr_massive/survival_mattress/survival_mattress_01.mdl", price = 160},
+	{model = "models/props/hr_massive/survival_shelves/survival_shelf_01.mdl", price = 240},
+	{model = "models/props_downtown/side_table.mdl", price = 190},
+	{model = "models/props_furniture/hotel_chair.mdl", price = 225},
+	{model = "models/props_furniture/kitchen_countertop1.mdl", price = 635},
+	{model = "models/props_furniture/kitchen_shelf1.mdl", price = 265},
+	{model = "models/props_highway/plywood_01.mdl", price = 75},
+	{model = "models/props_highway/plywood_02.mdl", price = 75},
+	{model = "models/props_interiors/bed.mdl", price = 700},
+	{model = "models/props_interiors/bookcasehutch01.mdl", price = 465},
+	{model = "models/props_interiors/books01.mdl", price = 90},
+	{model = "models/props_interiors/books02.mdl", price = 90},
+	{model = "models/props_interiors/chair_office2.mdl", price = 200},
+	{model = "models/props_interiors/coffee_table_rectangular.mdl", price = 275},
+	{model = "models/props_interiors/desk_metal.mdl", price = 365},
+	{model = "models/props_interiors/dresser_short.mdl", price = 325},
+	{model = "models/props_interiors/lamp_floor.mdl", price = 160},
+	{model = "models/props_interiors/table_bedside.mdl", price = 180},
+	{model = "models/props_interiors/table_console.mdl", price = 240},
+	{model = "models/props_interiors/table_end.mdl", price = 180},
+	{model = "models/props_interiors/table_folding.mdl", price = 160},
+	{model = "models/props_interiors/table_kitchen.mdl", price = 350},
+	{model = "models/props_urban/hotel_chair001.mdl", price = 240},
+	{model = "models/props_urban/hotel_halfmoon_table001.mdl", price = 290},
+	{model = "models/env/furniture/decosofa_wood/decosofa_wood_dou.mdl", price = 800},
+	{model = "models/env/furniture/largedesk/largedesk.mdl", price = 535},
+	{model = "models/env/furniture/pool_recliner/pool_recliner.mdl", price = 400},
+	{model = "models/env/furniture/wc_double_cupboard/wc_double_cupboard.mdl", price = 465},
+	{model = "models/highrise/lobby_chair_01.mdl", price = 275},
+	{model = "models/highrise/lobby_chair_02.mdl", price = 275},
+	{model = "models/props_downtown/bed_motel01.mdl", price = 565},
+	{model = "models/props_downtown/booth_table.mdl", price = 400},
+	{model = "models/props_equipment/sleeping_bag1.mdl", price = 210},
+	{model = "models/props_equipment/sleeping_bag2.mdl", price = 210},
+	{model = "models/props_furniture/cafe_barstool1.mdl", price = 140},
+	{model = "models/props_furniture/piano_bench.mdl", price = 180},
+	{model = "models/props_interiors/bed_motel.mdl", price = 600},
+	{model = "models/props_interiors/chair01.mdl", price = 175},
+	{model = "models/props_interiors/chair_cafeteria.mdl", price = 125},
+	{model = "models/props_interiors/chairlobby01.mdl", price = 240},
+	{model = "models/props_interiors/desk_executive.mdl", price = 635},
+	{model = "models/props_interiors/dining_table_round.mdl", price = 400},
+	{model = "models/props_interiors/dinning_table_oval.mdl", price = 430},
+	{model = "models/props_interiors/lamp_table02.mdl", price = 140},
+	{model = "models/props_interiors/ottoman01.mdl", price = 180},
+	{model = "models/props_interiors/side_table_square.mdl", price = 210},
+	{model = "models/props_interiors/sofa01.mdl", price = 635},
+	{model = "models/props_interiors/sofa02.mdl", price = 700},
+	{model = "models/props_interiors/sofa_chair02.mdl", price = 365},
+	{model = "models/props_interiors/table_cafeteria.mdl", price = 310},
+	{model = "models/props_interiors/toiletpaperdispenser_residential.mdl", price = 75, wall = true},
+	{model = "models/props_interiors/toiletpaperroll.mdl", price = 25},
+	{model = "models/props_interiors/trashcankitchen01.mdl", price = 125},
+	{model = "models/props_interiors/water_cooler.mdl", price = 865},
+	{model = "models/props_office/desk_01.mdl", price = 400},
+	{model = "models/props_office/file_cabinet_03.mdl", price = 310},
+	{model = "models/props_urban/plastic_chair001.mdl", price = 90},
+	{model = "models/props_warehouse/office_furniture_coffee_table.mdl", price = 240},
+	{model = "models/props_warehouse/office_furniture_couch.mdl", price = 565},
+	{model = "models/props_warehouse/office_furniture_desk.mdl", price = 430},
+	{model = "models/props_warehouse/office_furniture_desk_corner.mdl", price = 465},
+	{model = "models/testmodels/sofa_double.mdl", price = 750},
+	{model = "models/testmodels/sofa_single.mdl", price = 400},
+	{model = "models/u4lab/chair_office_a.mdl", price = 180},
 }
 
 -- Configs
@@ -51,10 +185,17 @@ end
 
 -- Check if a position is within a furniture-enabled area
 function PLUGIN:IsInZone(pos)
-	if (!ix.area or !ix.area.stored) then return true end
+	if (!ix.area or !ix.area.stored or table.Count(ix.area.stored) == 0) then return true end
 
 	for _, v in pairs(ix.area.stored) do
-		if (pos:WithinAABox(v.startPosition, v.endPosition)) then
+		local min = Vector(math.min(v.startPosition.x, v.endPosition.x), math.min(v.startPosition.y, v.endPosition.y), math.min(v.startPosition.z, v.endPosition.z))
+		local max = Vector(math.max(v.startPosition.x, v.endPosition.x), math.max(v.startPosition.y, v.endPosition.y), math.max(v.startPosition.z, v.endPosition.z))
+
+		-- Add a tiny bit of padding (1 unit) to the area bounds to avoid floating point issues
+		min:Sub(Vector(1, 1, 1))
+		max:Add(Vector(1, 1, 1))
+
+		if (pos:WithinAABox(min, max)) then
 			if (v.properties and v.properties.furniture) then
 				return true
 			end
@@ -65,7 +206,7 @@ function PLUGIN:IsInZone(pos)
 end
 
 ix.command.Add("Furniture", {
-	description = "furnitureShopOpen",
+	description = "@furnitureShopOpen",
 	OnRun = function(self, client)
 		if (!ix.config.Get("furnitureEnabled", true)) then
 			return "@furnitureDisabledMsg"
@@ -81,7 +222,7 @@ ix.command.Add("Furniture", {
 })
 
 ix.command.Add("AreaFurniture", {
-	description = "areaFurnitureDesc",
+	description = "@areaFurnitureDesc",
 	adminOnly = true,
 	OnRun = function(self, client)
 		local areaID = client:GetArea()
@@ -121,7 +262,7 @@ ix.command.Add("AreaFurniture", {
 })
 
 ix.command.Add("FurnitureRemove", {
-	description = "furnitureRemoveDesc",
+	description = "@furnitureRemoveDesc",
 	OnRun = function(self, client)
 		local trace = client:GetEyeTrace()
 		local entity = trace.Entity
@@ -130,9 +271,8 @@ ix.command.Add("FurnitureRemove", {
 			local char = client:GetCharacter()
 			
 			if (char:GetID() == entity:GetOwnerCID() or client:IsAdmin()) then
-				local furnitureID = entity:GetFurnitureID()
-				local index = tonumber(furnitureID)
-				local furnitureData = PLUGIN.FurnitureList[index]
+				local furnitureID = tonumber(entity:GetFurnitureID())
+				local furnitureData = PLUGIN.FurnitureList[furnitureID]
 				
 				local refund = 0
 				if (furnitureData) then
@@ -147,6 +287,43 @@ ix.command.Add("FurnitureRemove", {
 			end
 		else
 			client:NotifyLocalized("furnitureNotLooking")
+		end
+	end
+})
+
+ix.command.Add("FurnitureRepair", {
+	description = "@furnitureRepairDesc",
+	OnRun = function(self, client)
+		local trace = client:GetEyeTrace()
+		local entity = trace.Entity
+
+		if (IsValid(entity) and entity:GetClass() == "ix_furniture") then
+			local char = client:GetCharacter()
+			local hp = entity:Health()
+			local maxHP = entity:GetMaxHealth()
+			
+			if (hp >= maxHP) then
+				return "@furnitureAlreadyFullHP"
+			end
+
+			local furnitureID = tonumber(entity:GetFurnitureID())
+			local furnitureData = PLUGIN.FurnitureList[furnitureID]
+			if (!furnitureData) then return end
+
+			local missingHP = maxHP - hp
+			local repairCost = math.ceil((missingHP / maxHP) * furnitureData.price * 0.5) -- 50% of value for full repair
+
+			if (!char:HasMoney(repairCost)) then
+				return L("furnitureNoMoneyRepair", client, ix.currency.Get(repairCost, client))
+			end
+
+			char:TakeMoney(repairCost)
+			entity:SetHealth(maxHP)
+			
+			client:NotifyLocalized("furnitureRepaired", ix.currency.Get(repairCost, client))
+			entity:EmitSound("physics/metal/metal_box_impact_soft" .. math.random(1, 3) .. ".wav")
+		else
+			return "@furnitureNotLooking"
 		end
 	end
 })
@@ -219,20 +396,24 @@ if (SERVER) then
 			return
 		end
 
-		local index = net.ReadUInt(8)
+		local furnitureIndex = net.ReadUInt(8)
 		local pos = net.ReadVector()
 		local ang = net.ReadAngle()
+		local normal = net.ReadVector()
 
-		if (!PLUGIN:IsInZone(pos)) then
-			client:NotifyLocalized("furnitureNotInZone")
-			return
+		local furnitureData = PLUGIN.FurnitureList[furnitureIndex]
+
+		if (!furnitureData or !char or !char:HasMoney(furnitureData.price)) then return end
+
+		local bValidSurface = false
+		if (furnitureData.wall) then
+			bValidSurface = (normal and normal.z < 0.3) -- Walls only
+		else
+			bValidSurface = (normal and normal.z > 0.6) -- Floors only
 		end
 
-		local furnitureData = PLUGIN.FurnitureList[index]
-		if (!furnitureData) then return end
-
-		if (!char:HasMoney(furnitureData.price)) then
-			client:NotifyLocalized("furnitureNoMoney")
+		if (!PLUGIN:IsInZone(pos) or !bValidSurface) then
+			client:NotifyLocalized("furnitureCanNotPlace")
 			return
 		end
 
@@ -246,7 +427,7 @@ if (SERVER) then
 		entity:SetModel(furnitureData.model)
 		entity:Spawn()
 		
-		entity:SetFurnitureID(tostring(index))
+		entity:SetFurnitureID(tostring(furnitureIndex))
 		entity:SetOwnerCID(char:GetID())
 		entity:SetOwnerName(char:GetName())
 
@@ -256,7 +437,7 @@ if (SERVER) then
 		end
 
 		-- Set Cooldown
-		client.ixFurnitureCooldown = CurTime() + 10
+		client.ixFurnitureCooldown = CurTime() + 3
 
 		client:NotifyLocalized("furniturePlaced")
 	end)
@@ -270,31 +451,22 @@ if (CLIENT) then
 
 		local frame = vgui.Create("DFrame")
 		frame:SetTitle("")
-		frame:SetSize(500, 600)
+		frame:SetSize(ScrW() * 0.5, ScrH() * 0.6)
 		frame:Center()
 		frame:MakePopup()
-		frame:ShowCloseButton(false) -- Using a custom close button
+		frame:ShowCloseButton(false)
 		ix.gui.furnitureMenu = frame
 
-		-- Premium styling for the main frame
 		frame.Paint = function(s, w, h)
-			-- Main background with a dark, modern tone
 			surface.SetDrawColor(25, 25, 30, 240)
 			surface.DrawRect(0, 0, w, h)
-
-			-- Header with a slightly lighter color
 			surface.SetDrawColor(40, 40, 45, 255)
 			surface.DrawRect(0, 0, w, 40)
-
-			-- Vertically centered title
 			draw.SimpleText(L("furnitureCatalog"):upper(), "ixMediumFont", 15, 20, Color(255, 255, 255, 180), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
-
-			-- Subtle border
 			surface.SetDrawColor(60, 60, 70, 255)
 			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 
-		-- Custom close button
 		local close = frame:Add("DButton")
 		close:SetSize(40, 40)
 		close:SetPos(frame:GetWide() - 40, 0)
@@ -303,7 +475,6 @@ if (CLIENT) then
 		close:SetTextColor(Color(200, 200, 200))
 		close.Paint = function(s, w, h)
 			if (s:IsHovered()) then
-				-- Hover effect for the close button
 				surface.SetDrawColor(200, 50, 50, 150)
 				surface.DrawRect(0, 0, w, h)
 			end
@@ -314,31 +485,26 @@ if (CLIENT) then
 
 		local scroll = frame:Add("DScrollPanel")
 		scroll:Dock(FILL)
-		scroll:DockMargin(10, 50, 10, 10)
 
-		-- Styling the scrollbar for a cleaner look
-		local bar = scroll:GetVBar()
-		bar:SetWide(4)
-		bar.Paint = function() end
-		bar.btnUp.Paint = function() end
-		bar.btnDown.Paint = function() end
-		bar.btnGrip.Paint = function(s, w, h)
-			surface.SetDrawColor(100, 100, 110, 150)
-			surface.DrawRect(0, 0, w, h)
-		end
+		local iconSize = 110
+		local iconSpacing = 10
+		local frameWide = frame:GetWide() - 40
+		local cols = math.floor(frameWide / (iconSize + iconSpacing))
+		local totalGridWidth = (cols * iconSize) + ((cols - 1) * iconSpacing)
+		local sidePadding = math.max(10, (frameWide - totalGridWidth) / 2)
+
+		scroll:DockMargin(sidePadding, 50, sidePadding, 10)
 
 		local grid = scroll:Add("DIconLayout")
 		grid:Dock(TOP)
-		grid:SetSpaceX(10)
-		grid:SetSpaceY(10)
+		grid:SetSpaceX(iconSpacing)
+		grid:SetSpaceY(iconSpacing)
 
 		for k, v in ipairs(PLUGIN.FurnitureList) do
 			local icon = grid:Add("SpawnIcon")
 			icon:SetSize(110, 110)
 			icon:SetModel(v.model)
 			icon:SetTooltip(L("furniturePrice", ix.currency.Get(v.price)))
-
-			-- Smooth hover effect for icons
 			icon.PaintOver = function(s, w, h)
 				if (s:IsHovered()) then
 					surface.SetDrawColor(255, 255, 255, 5)
@@ -354,8 +520,6 @@ if (CLIENT) then
 			label:Dock(BOTTOM)
 			label:SetContentAlignment(5)
 			label:SetTall(20)
-			-- Definitive fix for the SetBackgroundColor error:
-			-- We use Paint to draw the background safely and elegantly.
 			label.Paint = function(s, w, h)
 				surface.SetDrawColor(0, 0, 0, 180)
 				surface.DrawRect(0, 0, w, h)
@@ -380,18 +544,14 @@ if (CLIENT) then
 				LocalPlayer():NotifyLocalized("furniturePlaceMode")
 			end
 		end
+
+		grid:InvalidateLayout(true)
 	end)
 
 	function PLUGIN:Think()
 		local ghost = ix.gui.furnitureGhost
 		if (IsValid(ghost)) then
 			local client = LocalPlayer()
-			
-			if (client:GetMoveType() == MOVETYPE_NOCLIP or !client:IsOnGround()) then
-				ghost:Remove()
-				return
-			end
-
 			local trace = util.TraceLine({
 				start = client:EyePos(),
 				endpos = client:EyePos() + client:GetAimVector() * 250,
@@ -401,32 +561,45 @@ if (CLIENT) then
 			local pos = trace.HitPos
 			local ang = Angle(0, client:EyeAngles().y + 180, 0)
 			
+			local furnitureData = PLUGIN.FurnitureList[ghost.furnitureIndex]
+			local bValidSurface = false
+			
+			if (furnitureData and furnitureData.wall) then
+				bValidSurface = (trace.HitNormal.z < 0.3)
+				
+				-- Offset calculation for wall alignment
+				local mins, maxs = ghost:GetModelBounds()
+				local thickness = math.abs(mins.y) 
+				pos = pos + trace.HitNormal * thickness
+			else
+				bValidSurface = (trace.HitNormal.z > 0.6)
+			end
+
 			ghost:SetAngles(ang)
 
 			local mins, _ = ghost:GetModelBounds()
 			local center = ghost:OBBCenter()
 			local offset = ghost:LocalToWorld(Vector(center.x, center.y, mins.z)) - ghost:GetPos()
 			
-			ghost:SetPos(pos - offset)
+			-- Only apply floor offset for non-wall items
+			if (furnitureData and furnitureData.wall) then
+				ghost:SetPos(pos)
+			else
+				ghost:SetPos(pos - offset)
+			end
 
-			local mins, maxs = ghost:GetModelBounds()
-			local tr = util.TraceHull({
-				start = pos + Vector(0, 0, 5),
-				endpos = pos + Vector(0, 0, 5),
-				mins = mins + Vector(1, 1, 1),
-				maxs = maxs - Vector(1, 1, 1),
-				filter = {client, ghost}
-			})
+			local bInZone = self:IsInZone(pos)
 
-			local inZone = self:IsInZone(pos)
-
-			if ((tr.Hit and not tr.HitWorld) or not trace.HitWorld or trace.HitNormal.z < 0.7 or not inZone) then
-				ghost:SetColor(Color(255, 50, 50, 150))
+			if (!bInZone or !bValidSurface) then
+				ghost:SetColor(Color(255, 0, 0, 150))
 				ghost.canPlace = false
 			else
-				ghost:SetColor(Color(50, 255, 50, 150))
+				ghost:SetColor(Color(0, 255, 0, 150))
 				ghost.canPlace = true
 			end
+
+			-- Store trace data for network use
+			ghost.lastNormal = trace.HitNormal
 		end
 	end
 
@@ -443,6 +616,7 @@ if (CLIENT) then
 						net.WriteUInt(ghost.furnitureIndex, 8)
 						net.WriteVector(ghost:GetPos())
 						net.WriteAngle(ghost:GetAngles())
+						net.WriteVector(ghost.lastNormal or Vector(0, 0, 1))
 					net.SendToServer()
 
 					ghost:Remove()
@@ -460,11 +634,30 @@ if (CLIENT) then
 		local entity = client:GetEyeTrace().Entity
 
 		if (IsValid(entity) and entity:GetClass() == "ix_furniture") then
-			local x, y = ScrW() / 2, ScrH() / 2
-			local alpha = 80 -- More subtle alpha
+			local w, h = ScrW(), ScrH()
+			local x, y = w / 2, h - 100
+			local alpha = 80
 			
-			draw.SimpleText(L("furnitureOwner", entity:GetOwnerName()), "ixSmallFont", x, y + 45, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER)
-			draw.SimpleText(L("furnitureHP", entity:Health(), entity:GetMaxHealth()), "ixSmallFont", x, y + 60, Color(255, 180, 180, alpha), TEXT_ALIGN_CENTER)
+			-- Reverted to small font and removed Uppercase for a more subtle look
+			draw.SimpleText(L("furnitureOwner", entity:GetOwnerName()), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			
+			-- Health bar background
+			local barW, barH = 150, 4 -- Made it slightly thinner and shorter for small font
+			local health = math.Clamp(entity:Health() / entity:GetMaxHealth(), 0, 1)
+			
+			surface.SetDrawColor(0, 0, 0, 50)
+			surface.DrawRect(x - barW / 2, y + 12, barW, barH) -- Adjusted offset
+			
+			-- Translucent health bar
+			local color = Color(200, 50, 50, alpha)
+			if (health > 0.5) then
+				color = Color(50, 200, 50, alpha)
+			elseif (health > 0.25) then
+				color = Color(200, 150, 50, alpha)
+			end
+			
+			surface.SetDrawColor(color)
+			surface.DrawRect(x - barW / 2, y + 12, barW * health, barH)
 		end
 	end
 end

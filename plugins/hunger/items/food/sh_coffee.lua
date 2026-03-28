@@ -6,3 +6,4 @@ ITEM.price = 30
 ITEM.heal = 5
 ITEM.sound = "interface/inv_drink_tea.ogg"
 ITEM.isDrink = true
+ITEM.classes = nil

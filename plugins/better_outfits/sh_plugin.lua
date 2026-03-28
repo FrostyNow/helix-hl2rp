@@ -209,6 +209,12 @@ function PLUGIN:GetCharacterPreviewAppearance(character, entity)
 		return nil
 	end
 
+	-- Fast path: use server-calculated appearance if items aren't available on the client (e.g., in menu)
+	local previewAppearance = character:GetData("previewAppearance")
+	if (CLIENT and previewAppearance and #GetCharacterItems(character) == 0) then
+		return previewAppearance
+	end
+
 	local items = GetCharacterItems(character)
 	local stack = table.Copy(character:GetData("appearanceStack", {}))
 	local baseModel = character:GetData("oldModelBase", character:GetModel())
