@@ -522,7 +522,7 @@ LANGUAGE = {
     itemFiberglassDesc = "유리를 실처럼 뽑아내어 강도를 높인 보강 재료입니다.",
     ["Gears"] = "기어",
     itemGearsDesc = "동력을 전달하고 회전 속도를 조절하는 데 쓰이는 톱니바퀴 부품입니다.",
-    ["Gold"] = "금괴",
+    ["Gold Ingot"] = "금괴",
     itemGoldDesc = "가치가 높고 부식되지 않으며 전도성이 뛰어난 귀금속입니다.",
     ["Hammer"] = "망치",
     itemHammerDesc = "못을 박거나 물체에 충격을 가해 형태를 잡는 기본적인 도구입니다.",
@@ -534,7 +534,7 @@ LANGUAGE = {
     itemNuclearDesc = "핵분열을 통해 막대한 에너지를 발생시킬 수 있는 위험한 물질입니다.",
     ["Screwdriver"] = "스크루드라이버",
     itemScrewdriverDesc = "나사를 조이거나 풀 때 사용하는 가장 일반적인 수동 공구입니다.",
-    ["Silver"] = "은",
+    ["Silver Ingot"] = "은괴",
     itemSilverDesc = "장신구, 화폐 및 정밀 전자 부품에 사용되는 귀금속입니다.",
     ["Springs"] = "용수철",
     itemSpringsDesc = "탄성을 이용해 에너지를 저장하거나 충격을 흡수하는 기계 부품입니다.",
@@ -696,8 +696,7 @@ LANGUAGE = {
 	
 	facial_hair = "수염",
 	
-	Stunstick = "진압봉",
-	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "왼쪽 클릭: 휘두르기.\nALT + 왼쪽 클릭: 전원 켜기/끄기.\n오른쪽 클릭: 밀기/노크하기.",
+	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "1차 공격: 휘두르기.\nALT + 1차 공격: 전원 켜기/끄기.\n2차 공격: 밀기/노크하기.",
 	["To hold a suitcase around."] = "여행 가방을 들고 다닙니다.",
 	
 	broadcastConsole = "방송 콘솔",

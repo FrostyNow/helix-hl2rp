@@ -337,9 +337,6 @@ LANGUAGE = {
 
 	facial_hair = "Facial Hair",
 	
-	Stunstick = "Stunstick",
-	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock.",
-	
 	broadcastConsole = "Broadcast Console",
 	broadcastConsoleDesc = "A console used to make public announcements.",
 	broadcastConsoleUse = "Type /Broadcast to make an announcement.",

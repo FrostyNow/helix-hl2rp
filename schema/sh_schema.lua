@@ -154,6 +154,7 @@ ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
 
 ALWAYS_RAISED["gmod_gphone"] = true
 ALWAYS_RAISED["weapon_portalgun"] = true
+ALWAYS_RAISED["weapon_bmxs_headcrabbed"] = true
 
 game.AddAmmoType({name = "5.56x45mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
 game.AddAmmoType({name = "7.62x51mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})

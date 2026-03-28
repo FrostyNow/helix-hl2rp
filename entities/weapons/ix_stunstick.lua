@@ -1,13 +1,13 @@
 AddCSLuaFile()
 
 if (CLIENT) then
-	SWEP.PrintName = L("Stunstick", LocalPlayer())
+	SWEP.PrintName = "Stunstick"
 	SWEP.Slot = 0
 	SWEP.SlotPos = 5
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = false
-	SWEP.Instructions = L("Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock.")
-	SWEP.Purpose = L("Hitting things and knocking on doors.")
+	SWEP.Instructions = "Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."
+	SWEP.Purpose = "Hitting things and knocking on doors."
 end
 
 SWEP.Category = "HL2 RP"

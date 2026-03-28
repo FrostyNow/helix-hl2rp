@@ -22,7 +22,7 @@ if (SERVER) then
 		
 		-- Use the hit normal to slightly offset the lock so it is not clipped into the wall
 		-- We use the same forward offset (7.2) as the original GetLockPosition function
-		local position = trace.HitPos + trace.HitNormal * 7.2 + Vector(0, 2, 10)
+		local position = trace.HitPos + trace.HitNormal * 7.2 + Vector(2, 0, 10)
 
 		entity:SetPos(position)
 		entity:SetAngles(angles)

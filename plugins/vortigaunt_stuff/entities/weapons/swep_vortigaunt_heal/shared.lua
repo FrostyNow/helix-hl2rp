@@ -6,10 +6,10 @@ if (CLIENT) then
 	SWEP.Slot = 5;
 	SWEP.SlotPos = 5;
 	SWEP.DrawAmmo = false;
-	SWEP.PrintName = L("vortHealName", LocalPlayer());
+	SWEP.PrintName = "Heal Ability";
 	SWEP.DrawCrosshair = true;
-	SWEP.Instructions = L("vortHealInstructions")
-	SWEP.Purpose = L("vortHealPurpose")
+	SWEP.Instructions = "Primary Fire: Heal"
+	SWEP.Purpose = "To healing people."
 end
 
 SWEP.Author					= "JohnyReaper"

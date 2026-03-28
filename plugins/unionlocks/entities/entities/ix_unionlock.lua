@@ -71,6 +71,28 @@ if (SERVER) then
 		self:SetPos(position)
 		self:SetAngles(angles)
 		self:SetParent(door)
+
+		local index = door:FindBodygroupByName("handle01")
+
+		if (index != -1) then
+			if (self.ixOldBodygroup == nil) then
+				self.ixOldBodygroup = door:GetBodygroup(index)
+			end
+
+			door:SetBodygroup(index, 0)
+		end
+
+		if (IsValid(doorPartner)) then
+			local partnerIndex = doorPartner:FindBodygroupByName("handle01")
+
+			if (partnerIndex != -1) then
+				if (self.ixOldPartnerBodygroup == nil) then
+					self.ixOldPartnerBodygroup = doorPartner:GetBodygroup(partnerIndex)
+				end
+
+				doorPartner:SetBodygroup(partnerIndex, 0)
+			end
+		end
 	end
 
 	function ENT:SpawnFunction(client, trace)
@@ -111,11 +133,23 @@ if (SERVER) then
 		if (IsValid(self.door)) then
 			self.door:Fire("unlock")
 			self.door.ixLock = nil
+
+			local index = self.door:FindBodygroupByName("handle01")
+
+			if (index != -1) then
+				self.door:SetBodygroup(index, self.ixOldBodygroup or 1)
+			end
 		end
 
 		if (IsValid(self.doorPartner)) then
 			self.doorPartner:Fire("unlock")
 			self.doorPartner.ixLock = nil
+
+			local partnerIndex = self.doorPartner:FindBodygroupByName("handle01")
+
+			if (partnerIndex != -1) then
+				self.doorPartner:SetBodygroup(partnerIndex, self.ixOldPartnerBodygroup or 1)
+			end
 		end
 
 		if (!ix.shuttingDown) then

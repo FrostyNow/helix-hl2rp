@@ -26,7 +26,9 @@ if SERVER then
                     v.door:MapCreationID(),
                     v.door:WorldToLocal(v:GetPos()),
                     v.door:WorldToLocalAngles(v:GetAngles()),
-                    v:GetLocked()
+                    v:GetLocked(),
+                    v.ixOldBodygroup,
+                    v.ixOldPartnerBodygroup
                 }
             end
         end
@@ -43,6 +45,8 @@ if SERVER then
     
                 lock:SetPos(door:GetPos())
                 lock:Spawn()
+                lock.ixOldBodygroup = v[5]
+                lock.ixOldPartnerBodygroup = v[6]
                 lock:SetDoor(door, door:LocalToWorld(v[2]), door:LocalToWorldAngles(v[3]))
                 lock:SetLocked(v[4])
             end

@@ -6,10 +6,10 @@ if (CLIENT) then
 	SWEP.Slot = 3;
 	SWEP.SlotPos = 5;
 	SWEP.DrawAmmo = false;
-	SWEP.PrintName = L("Broom", LocalPlayer());
+	SWEP.PrintName = "Broom";
 	SWEP.DrawCrosshair = true;
-	SWEP.Instructions = L("Primary Fire: Sweep\nSecondary Fire: Push/Knock")
-	SWEP.Purpose = L("To sweep up dirt and trash.")
+	SWEP.Instructions = "Primary Fire: Sweep\nSecondary Fire: Push/Knock"
+	SWEP.Purpose = "To sweep up dirt and trash."
 end
 
 SWEP.Author					= "JohnyReaper"

@@ -1,12 +1,12 @@
 AddCSLuaFile()
 
 if (CLIENT) then
-	SWEP.PrintName = L("Suitcase", LocalPlayer())
+	SWEP.PrintName = "Suitcase"
 	SWEP.Slot = 1
 	SWEP.SlotPos = 3
 	SWEP.DrawAmmo = false
 	SWEP.DrawCrosshair = false
-	SWEP.Purpose = L("To hold a suitcase around.")
+	SWEP.Purpose = "To hold a suitcase around."
 end
 
 SWEP.Category = "HL2 RP"

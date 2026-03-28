@@ -14,13 +14,13 @@ end
 
 if ( CLIENT ) then
 	SWEP.DrawAmmo			= true
-	SWEP.PrintName			= L("vortBeamName", LocalPlayer())
+	SWEP.PrintName			= "Vortigaunt Beam"
 	SWEP.Author				= "Jvs & JohnyReaper"
 	SWEP.DrawCrosshair		= true
 	SWEP.ViewModelFOV		= 54
 
-	SWEP.Purpose		= L("vortBeamPurpose", LocalPlayer())
-	SWEP.Instructions	= L("vortBeamInstructions", LocalPlayer())
+	SWEP.Purpose		= "Zap everything! Vortigaunt Style"
+	SWEP.Instructions	= "Primary: Vortigaunt zap.\nSecondary: Target energy charging."
 
 	killicon.Add("swep_vortigaunt_beam","VGUI/killicons/swep_vortigaunt_beam",Color(255,255,255));
 end
