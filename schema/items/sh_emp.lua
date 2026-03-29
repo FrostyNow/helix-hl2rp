@@ -9,11 +9,11 @@ ITEM.price = 160
 
 local ATTEMPTS_KEY = "empAttempts"
 local BASE_SUCCESS_CHANCE = 55
-local BASE_BREAK_CHANCE = 5
-local FAILURE_CHANCE_PER_USE = 4
+local BASE_BREAK_CHANCE = 10
+local FAILURE_CHANCE_PER_USE = 10
 local BREAK_CHANCE_PER_USE = 2
 local MAX_SUCCESS_CHANCE = 92
-local MAX_BREAK_CHANCE = 55
+local MAX_BREAK_CHANCE = 100
 
 local function GetLuckBonus(client)
 	local character = IsValid(client) and client:GetCharacter()
@@ -92,7 +92,7 @@ ITEM.functions.Use = {
 		end
 
 		ply:EmitSound("ambient/machines/combine_terminal_idle2.wav")
-		ply:SetAction(useVort and "@empOverloadVortAction" or "@empOverloading", 3)
+		ply:SetAction("@empOverloading", 3)
 		ply:DoStaredAction(target, function()
 			if (!IsValid(ply) or (!IsValid(target) and !IsValid(resolved))) then
 				return
