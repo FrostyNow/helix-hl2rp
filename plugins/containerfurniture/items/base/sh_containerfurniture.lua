@@ -26,5 +26,8 @@ ITEM.functions.Use = {
 		net.Send(client)
 
 		return false
+	end,
+	OnCanRun = function(item)
+		return !IsValid(item.entity)
 	end
 }
