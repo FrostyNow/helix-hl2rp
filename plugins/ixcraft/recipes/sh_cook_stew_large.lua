@@ -6,7 +6,7 @@ RECIPE.requirements = {
 	["water_purified"] = {amount = 3, substitutes = {["water_purified_bottle"] = 3, ["water_empty"] = 3, ["mineral_water"] = 3}},
 	["potato"] = {amount = 3, substitutes = {["corn"] = 3, ["onion"] = 3, ["carrot"] = 3}},
 	["sauce"] = 2,
-	["antlion_meat"] = {amount = 2, substitutes = {["fish"] = 2, ["headcrab"] = 2, ["bacon"] = 2, ["steak"] = 2, ["sausage"] = 2}},
+	["antlion_meat"] = {amount = 2, substitutes = {["fish"] = 2, ["headcrab"] = 2, ["bacon"] = 2, ["steak"] = 2, ["sausage"] = 2, ["meat_chunk"] = 2}},
 	["pot_large"] = 1
 }
 RECIPE.results = {

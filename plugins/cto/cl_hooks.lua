@@ -371,7 +371,7 @@ function PLUGIN:HUDPaint()
 				local distSq = beholderEyePos:DistToSqr(v:GetPos())
 				if (distSq > maxDistSq) then continue end
 
-				if (self:CanFlagTargetForViolation(v)) then
+				if (self:CanFlagTargetForViolation(v) and self:CanCombineIdentifyTarget(v)) then
 					if (!v.headBone) then
 						v.headBone = v:LookupBone("ValveBiped.Bip01_Head1")
 					end

@@ -22,9 +22,6 @@ models/hls/alyxports/monitor_medium.mdl
 라이터
 models/hls/alyxports/tabletop_lighter.mdl
 
-육포(인육)
-models/mosi/fallout4/props/food/humanmeat.mdl
-
 조롱박
 models/mosi/fallout4/props/food/gourd.mdl
 

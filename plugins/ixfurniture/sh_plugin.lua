@@ -212,9 +212,9 @@ ix.command.Add("Furniture", {
 			return "@furnitureDisabledMsg"
 		end
 
-		if (!client:GetCharacter():HasFlags("F") and !client:IsAdmin()) then
-			return "@furnitureNoFlag"
-		end
+		-- if (!client:GetCharacter():HasFlags("F") and !client:IsAdmin()) then
+		-- 	return "@furnitureNoFlag"
+		-- end
 
 		net.Start("ixFurnitureOpenMenu")
 		net.Send(client)
@@ -384,10 +384,10 @@ if (SERVER) then
 		end
 
 		-- Check F flag
-		if (!char:HasFlags("F") and !client:IsAdmin()) then
-			client:NotifyLocalized("furnitureNoFlag")
-			return
-		end
+		-- if (!char:HasFlags("F") and !client:IsAdmin()) then
+		-- 	client:NotifyLocalized("furnitureNoFlag")
+		-- 	return
+		-- end
 
 		-- Check Cooldown (10s)
 		local nextTime = client.ixFurnitureCooldown or 0

@@ -633,6 +633,12 @@ function PLUGIN:ShouldCaptureBind(client)
 		return false
 	end
 
+	-- Allow scrolling/binding if we are hovering a VGUI panel that isn't the world
+	local hovered = vgui.GetHoveredPanel()
+	if IsValid(hovered) and hovered != vgui.GetWorldPanel() then
+		return false
+	end
+
 	if IsValid(ix.gui.chat) and ix.gui.chat:GetActive() then
 		return false
 	end
@@ -705,6 +711,19 @@ function PLUGIN:PlayerBindPress(client, bind, pressed, code)
 	end
 
 	if bind:find("invprev", 1, true) or bind:find("invnext", 1, true) then
+		-- 스크롤이 무조건 차단되는 문제를 해결합니다.
+		-- 1. 상호작용 개체(스크롤 패널 등)를 보고 있을 때는 허용합니다.
+		local trace = client:GetEyeTraceNoCursor()
+		if IsValid(trace.Entity) and (trace.Entity:GetClass() == "ix_scrollpanel" or trace.Entity.OnMouseWheeled) then
+			return
+		end
+
+		-- 2. 무기 선택 메뉴가 명시적으로 소환되지 않은 상태에서는 휠을 차단하지 않습니다. (확대/축소 지원 등)
+		-- 사용자가 원한 "무기 선택을 스크롤로 불가" 기능은 HUD가 열렸을 때만 차단함으로써 충족합니다.
+		if not (self.hudState and self.hudState.expires > CurTime()) then
+			return
+		end
+
 		return true
 	elseif bind:find("lastinv", 1, true) then
 		return self:SelectLastWeapon(client) and true or nil

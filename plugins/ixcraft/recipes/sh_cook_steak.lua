@@ -3,7 +3,7 @@ RECIPE.description = "recipeSteakDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/mosi/fallout4/props/food/moleratsteak.mdl"
 RECIPE.requirements = {
-	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1}},
+	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1, ["meat_chunk"] = 1}},
 	["pan"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pot"] = 1}}
 }
 RECIPE.results = {

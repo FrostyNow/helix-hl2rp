@@ -5,7 +5,7 @@ RECIPE.model = "models/willardnetworks/food/sandwich.mdl"
 RECIPE.requirements = {
 	["bread"] = {amount = 1, substitutes = {["baguette"] = 1, ["dough"] = 1}},
 	["cabbage"] = {amount = 1, substitutes = {["tomato"] = 1, ["carrot"] = 1, ["corn"] = 1, ["onion"] = 1, ["zucchini"] = 1, ["potato"] = 1}},
-	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["headcrab"] = 1, ["antlion_meat"] = 1, ["chicken_roast"] = 1}}
+	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["headcrab"] = 1, ["antlion_meat"] = 1, ["chicken_roast"] = 1, ["meat_chunk"] = 1}}
 }
 RECIPE.results = {
 	["sandwich"] = 1

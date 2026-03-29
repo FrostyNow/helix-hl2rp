@@ -74,51 +74,60 @@ end
 function PLUGIN:OnNPCKilled(entity)
 	local class = entity:GetClass()
 	local rand = math.random(1, 2)
+	local position = entity:GetPos() + Vector(0, 0, 8)
 
 	if (class == "npc_zombie") then
 		if rand == 1 then
-			ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))
+			local item = self:GetRandomDrop()
+			timer.Simple(0, function()
+				ix.item.Spawn(item, position)
+			end)
 		end
 	end
 	if (class == "npc_barnacle") then
 		if rand == 1 then
-			ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))
+			local item = self:GetRandomDrop()
+			timer.Simple(0, function()
+				ix.item.Spawn(item, position)
+			end)
 		end
 	end
 	if (class == "npc_combine_s") then
 		rand = math.random(1, 10)
 		if rand > 6 then
-			ix.item.Spawn("smg1ammo", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("smg1ammo", position)
+			end)
 		elseif rand > 9 then
-			ix.item.Spawn("smg1", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("smg1", position)
+			end)
 		end
 	end
 	if (class == "npc_metropolice") then
 		rand = math.random(1, 10)
 		if rand > 6 then
-			ix.item.Spawn("pistolammo", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("pistolammo", position)
+			end)
 		elseif rand > 9 then
-			ix.item.Spawn("pistol", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("pistol", position)
+			end)
 		end
 	end
 	if (class == "npc_cscanner") then
 		if rand == 1 then
-			ix.item.Spawn("comp_combine_steel", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("comp_combine_steel", position)
+			end)
 		end
 	end
 	if (class == "npc_turret_floor") then
 		if rand == 1 then
-			ix.item.Spawn("comp_combine_steel", entity:GetPos() + Vector(0, 0, 8))
+			timer.Simple(0, function()
+				ix.item.Spawn("comp_combine_steel", position)
+			end)
 		end
 	end
-	-- if (class == "npc_headcrab") then
-	-- 	if rand == 1 or rand == 2 then
-	-- 		ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))
-	-- 	end
-	-- end
-	-- if (class == "npc_antlion") then
-	-- 	if rand == 1 and rand == 2 then
-	-- 		ix.item.Spawn(self:GetRandomDrop(), entity:GetPos() + Vector(0, 0, 8))
-	-- 	end
-	-- end
 end

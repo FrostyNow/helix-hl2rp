@@ -90,6 +90,12 @@ ITEM.functions.Eat = {
 			if (item.cookable) then
 				amount = amount + (item.hungermultp or 1) * (cooklevel - 4)
 			end
+
+			-- Vortigaunts don't get penalties from undercooked food
+			if (client:Team() == FACTION_VORT and item.cookable and cooklevel < 4) then
+				amount = math.max(amount, item.hunger or 0)
+			end
+
 			client:SetHunger(math.Clamp(hunger + amount, 0, 100))
 		end
 
@@ -98,6 +104,17 @@ ITEM.functions.Eat = {
 			if (item.cookable) then
 				amount = amount + (item.thirstmultp or 1) * (cooklevel - 4)
 			end
+
+			-- Vortigaunts don't get penalties from undercooked food
+			if (client:Team() == FACTION_VORT and item.cookable and cooklevel < 4) then
+				amount = math.max(amount, item.thirst or 0)
+			end
+
+			-- Vortigaunts don't get dehydrated from "raw" or "mutant" food
+			if (client:Team() == FACTION_VORT and (item.cookable or string.find(item.uniqueID, "raw") or item.sound == "interface/inv_eat_mutant_food.ogg")) then
+				amount = math.max(amount, 0)
+			end
+
 			client:SetThirst(math.Clamp(thirst + amount, 0, 100))
 		end
 
@@ -119,6 +136,11 @@ ITEM.functions.Eat = {
 			end
 
 			local heal = baseHeal + luckBonus + cookBonus
+
+			-- Vortigaunts don't take damage from raw/uncooked food or mutant food
+			if (client:Team() == FACTION_VORT and (item.cookable or string.find(item.uniqueID, "raw") or item.sound == "interface/inv_eat_mutant_food.ogg")) then
+				heal = math.max(0, heal)
+			end
 
 			-- Maintain polarity: medicine stays medicine or becomes neutral, poison stays poison or becomes neutral
 			if (baseHeal > 0) then

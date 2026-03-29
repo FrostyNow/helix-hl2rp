@@ -42,7 +42,7 @@ function PLUGIN:Tick()
 							elseif (!self:CanCameraTrackTarget(client)) then
 								data[client] = nil
 								bChanged = true
-							elseif (#data[client] < 1) then
+							elseif (#data[client] < 1 and self:CanFlagTargetForViolation(client)) then
 								local violations = {}
 								if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (walkSpeed * walkSpeed)) then
 									violations[#violations + 1] = self.VIOLATION_RUNNING

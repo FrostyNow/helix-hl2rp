@@ -504,6 +504,10 @@ ix.command.Add("Heal", {
 				target:SetLocalVar("toxicity", 0)
 			end
 
+			if (ix.plugin.list["easymedikit"]) then
+				ix.plugin.list["easymedikit"]:ClearWounds(target)
+			end
+
 			client:NotifyLocalized("targetHealed", target:GetName())
 		else
 			client:NotifyLocalized("unknownError")

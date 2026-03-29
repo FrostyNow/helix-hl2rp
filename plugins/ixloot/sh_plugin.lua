@@ -129,6 +129,7 @@ PLUGIN.randomLoot.common = {
 	"coin",
 	"pesticide",
 	"watering_can",
+	"lottery",
 }
 
 PLUGIN.randomLoot.rare = {
@@ -192,6 +193,7 @@ PLUGIN.randomLoot.rare = {
 	"duffle_bag",
 	"flare",
 	"shovel",
+	"lottery_box",
 }
 
 ix.util.Include("sv_plugin.lua")

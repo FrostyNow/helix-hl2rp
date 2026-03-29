@@ -158,6 +158,8 @@ LANGUAGE = {
 	itemStewLargeDesc = "커다란 냄비에 재료를 듬뿍 넣고 우려낸 대용량 섞어찌개입니다. 여러 명이 충분히 나누어 먹을 수 있습니다.",
 	["Glass Cleaner"] = "유리 세정제",
 	itemGlassCleanerDesc = "유리를 닦는 세정제입니다.",
+	["Meat Chunk"] = "고깃조각",
+	itemMeatChunkDesc = "질기고 맛이 별로 좋진 않은 고깃조각입니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",

@@ -64,7 +64,7 @@ if (CLIENT) then
 	PLUGIN.earthquakeStart = PLUGIN.earthquakeStart or 0
 	PLUGIN.earthquakeDuration = PLUGIN.earthquakeDuration or 0
 	PLUGIN.earthquakeMagnitude = PLUGIN.earthquakeMagnitude or 0
-	PLUGIN.matDust = Material("effects/dust_cloud")
+	PLUGIN.matDust = Material("particle/smokesprites_0008")
 
 	net.Receive("ixBlackoutSync", function()
 		local bState = net.ReadBool()
@@ -141,14 +141,14 @@ if (CLIENT) then
 		end)
 
 		if (bSound) then
-			LocalPlayer():EmitSound("ambient/atmosphere/city_rumble1.wav", 100)
+			LocalPlayer():EmitSound("ambient/atmosphere/city_rumble1.wav", 140, 100, 1)
 
 			local timerID = "ixEarthquakeSound"
 			local maxCount = math.max(1, math.floor(duration / 3))
 
 			timer.Create(timerID, 1.5, maxCount, function()
 				if (!LocalPlayer():Alive()) then return end
-				LocalPlayer():EmitSound(table.Random(earthquakeSounds), 100, math.random(90, 110))
+				LocalPlayer():EmitSound(table.Random(earthquakeSounds), 130, math.random(80, 110), 1)
 			end)
 		end
 	end)
@@ -204,7 +204,7 @@ if (CLIENT) then
 			end
 		end
 
-		-- Earthquake Dust Overlay (Scrolling Cloud Texture)
+		-- Earthquake Dust Overlay (Dynamic Atmospheric Effect)
 		local curTime = CurTime()
 		if (self.earthquakeStart > 0 and curTime < self.earthquakeStart + self.earthquakeDuration) then
 			local elapsed = curTime - self.earthquakeStart
@@ -212,25 +212,36 @@ if (CLIENT) then
 			local magnitude = self.earthquakeMagnitude or 10
 
 			local fraction = math.sin(math.Clamp(elapsed / duration, 0, 1) * math.pi)
-			local alpha = (magnitude / 100) * 110 * fraction
+			local alpha = (magnitude / 100) * 120 * fraction
 			
 			if (alpha > 0) then
-				-- Multi-layered Scrolling Cloud Overlay
-				surface.SetMaterial(self.matDust or Material("effects/dust_cloud"))
-				
-				-- Layer 1: Base slow moving dust
-				local scroll1 = (curTime * 0.05) % 1
-				surface.SetDrawColor(110, 100, 80, alpha * 0.7)
-				surface.DrawTexturedRectUV(0, 0, ScrW(), ScrH(), scroll1, scroll1, scroll1 + 1, scroll1 + 1)
+				local w, h = ScrW(), ScrH()
+				local mat = self.matDust:IsError() and Material("particle/particle_composite") or self.matDust
+				surface.SetMaterial(mat)
 
-				-- Layer 2: Faster, lighter moving dust
-				local scroll2 = (curTime * 0.15) % 1
-				surface.SetDrawColor(130, 120, 100, alpha * 0.4)
-				surface.DrawTexturedRectUV(0, 0, ScrW(), ScrH(), -scroll2, scroll2, -scroll2 + 1, scroll2 + 1)
+				-- Multi-layered Atmospheric Dust
+				for i = 1, 3 do
+					local seed = i * 123.456
+					local scale = 1.2 + math.sin(curTime * 0.2 + seed) * 0.1
+					local rotate = (curTime * (5 + i)) % 360
+					local dx = math.sin(curTime * 0.1 + seed) * 50
+					local dy = math.cos(curTime * 0.15 + seed) * 50
+					
+					surface.SetDrawColor(120, 110, 90, alpha * (0.6 / i))
+					surface.DrawTexturedRectRotated(w / 2 + dx, h / 2 + dy, w * scale, h * scale, rotate)
+				end
 
-				-- Base Tint to fill gaps
-				surface.SetDrawColor(80, 70, 50, alpha * 0.3)
-				surface.DrawRect(0, 0, ScrW(), ScrH())
+				-- Base Atmospheric Tint
+				surface.SetDrawColor(80, 75, 60, alpha * 0.25)
+				surface.DrawRect(0, 0, w, h)
+
+				-- Subtle Vignette focus
+				local vignette = Material("vgui/vignette_w")
+				if (!vignette:IsError()) then
+					surface.SetMaterial(vignette)
+					surface.SetDrawColor(0, 0, 0, alpha * 0.8)
+					surface.DrawTexturedRect(0, 0, w, h)
+				end
 			end
 		end
 	end
@@ -265,7 +276,7 @@ ix.command.Add("Earthquake", {
 	},
 	superAdminOnly = true,
 	OnRun = function(self, client, magnitude, duration, bSound)
-		magnitude = math.Clamp(magnitude, 1, 100)
+		magnitude = math.Clamp(magnitude, 1, 50)
 		duration = math.Clamp(duration, 1, 60)
 		bSound = (bSound == nil) and true or bSound
 
@@ -287,8 +298,13 @@ ix.command.Add("Earthquake", {
 			local targets = {}
 			
 			-- Collect potential physics entities
-			table.Add(targets, ents.FindByClass("prop_physics*"))
-			table.Add(targets, ents.FindByClass("prop_ragdoll*"))
+			table.Add(targets, ents.FindByClass("prop_physics"))
+			table.Add(targets, ents.FindByClass("prop_physics_multiplayer"))
+			table.Add(targets, ents.FindByClass("prop_physics_respawnable"))
+			table.Add(targets, ents.FindByClass("prop_ragdoll"))
+			table.Add(targets, ents.FindByClass("ix_item"))
+			table.Add(targets, ents.FindByClass("ix_money"))
+			table.Add(targets, ents.FindByClass("ix_container"))
 			
 			for _, v in ipairs(targets) do
 				if (IsValid(v)) then
@@ -310,12 +326,12 @@ ix.command.Add("Earthquake", {
 						if (bNearby) then
 							phys:Wake() -- Specifically wake up objects near players
 							
-							-- Random jitter force relative to mass
-							local jitter = VectorRand() * (phys:GetMass() * strength)
-							jitter.z = math.abs(jitter.z) * 0.4
+							-- Random jitter force relative to mass (multiplied for better impact)
+							local jitter = VectorRand() * (phys:GetMass() * strength * 2)
+							jitter.z = math.abs(jitter.z) * 0.8 -- More vertical bounce
 							
-							phys:ApplyForceCenter(jitter)
-							phys:AddAngleVelocity(VectorRand() * (strength * 0.5))
+							phys:ApplyForceOffset(jitter, v:GetPos() + VectorRand() * 5)
+							phys:AddAngleVelocity(VectorRand() * (strength * 2.5))
 						end
 					end
 				end

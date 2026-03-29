@@ -150,4 +150,5 @@ LANGUAGE = {
 	recipeStewLargeDesc = "Pour all kinds of ingredients into a large pot and boil them to make a large mixed stew.",
 	recipeSandwichDesc = "Cook a sandwich by putting vegetables and meat between pieces of bread.",
 	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
+	recipeMeatChunkDesc = "Cook a meat chunk.",
 }

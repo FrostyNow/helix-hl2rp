@@ -76,6 +76,7 @@ LANGUAGE = {
 	itemStewDesc = "A thick stew made by boiling various ingredients in a pot.",
 	itemStewLargeDesc = "A large-capacity mixed stew made with plenty of ingredients in a big pot. Enough for several people to share.",
 	itemGlassCleanerDesc = "A cleaner for glass.",
+	itemMeatChunkDesc = "A tough and not very tasty chunk of meat.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

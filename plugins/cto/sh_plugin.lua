@@ -241,7 +241,7 @@ function PLUGIN:CanFlagTargetForViolation(target)
 		return false
 	end
 
-	return self:CanCombineIdentifyTarget(target)
+	return true
 end
 
 function PLUGIN:CanCameraTrackTarget(target)

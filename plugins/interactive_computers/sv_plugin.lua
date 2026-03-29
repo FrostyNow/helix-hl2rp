@@ -835,12 +835,8 @@ function PLUGIN:TryBypassSecurity(client, entity)
 end
 
 function PLUGIN:EntityRemoved(entity)
-	if (!ix.shuttingDown and PLUGIN:IsPrimaryComputerEntity(entity)) then
+	if (PLUGIN:IsComputerEntity(entity)) then
 		self.entities[entity:EntIndex()] = nil
-		self:SaveData()
-	elseif (!ix.shuttingDown and PLUGIN:IsSupportComputer(entity)) then
-		self.entities[entity:EntIndex()] = nil
-		self:SaveData()
 	end
 end
 

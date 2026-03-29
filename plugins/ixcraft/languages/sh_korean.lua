@@ -250,4 +250,5 @@ LANGUAGE = {
 	recipeStewDesc = "이것저것 남은 재료들을 몽땅 넣고 끓여서 섞어찌개를 만듭니다.",
 	recipeStewLargeDesc = "커다란 냄비에 온갖 재료를 쏟아붓고 끓여내어 대용량의 섞어찌개를 만듭니다.",
 	recipeSandwichDesc = "빵 사이에 야채와 고기를 끼워 넣어 샌드위치를 요리합니다.",
+	recipeMeatChunkDesc = "고깃조각을 요리합니다.",
 }

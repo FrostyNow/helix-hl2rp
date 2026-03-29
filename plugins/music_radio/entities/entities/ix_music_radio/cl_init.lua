@@ -46,7 +46,12 @@ function ENT:Think()
 		if (self.channel and self.channel:IsValid()) then
 			local threshold = 0.5
 			local signalLevel = 1 - math.Clamp(bestDist / threshold, 0, 1)
-			local targetVol = (self:GetNetVar("volume", 100) / 100) * signalLevel
+			
+			local dist = LocalPlayer():GetPos():Distance(self:GetPos())
+			local maxDist = ix.config.Get("radioDist", 550)
+			local distMultiplier = 1 - math.Clamp(dist / maxDist, 0, 1)
+			
+			local targetVol = (self:GetNetVar("volume", 100) / 100) * signalLevel * distMultiplier
 			
 			-- Jitter the audio when signal is weak but present
 			if signalLevel < 1.0 and signalLevel > 0 then
@@ -80,7 +85,11 @@ function ENT:Think()
 				self.nextStaticLoop = CurTime() + self.staticDuration - 0.1
 			end
 			
-			local staticVol = math.Clamp(bestDist / 0.5, 0.1, 1) * (self:GetNetVar("volume", 100) / 100)
+			local dist = LocalPlayer():GetPos():Distance(self:GetPos())
+			local maxDist = ix.config.Get("radioDist", 550)
+			local distMultiplier = 1 - math.Clamp(dist / maxDist, 0, 1)
+			
+			local staticVol = math.Clamp(bestDist / 0.5, 0.1, 1) * (self:GetNetVar("volume", 100) / 100) * distMultiplier
 			self.staticLoop:ChangeVolume(staticVol, 0.1)
 		else
 			if (self.staticLoop) then

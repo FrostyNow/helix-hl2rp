@@ -48,8 +48,8 @@ PLUGIN.combineModels = {
 }
 PLUGIN.spawnCategory = "HL2 RP: Computers"
 PLUGIN.assemblyMaxDistance = 140
-PLUGIN.generalAssemblyMaxDistance = 72
-PLUGIN.generalKeyboardMaxDistance = 72
+PLUGIN.generalAssemblyMaxDistance = 84
+PLUGIN.generalKeyboardMaxDistance = 120
 PLUGIN.combineAssemblyMaxDistance = 140
 PLUGIN.entityDefinitions = {
 	{
@@ -918,6 +918,26 @@ function PLUGIN:CanProperty(client, property, entity)
 	if (class == "ix_interactive_computer") then
 		if (property == "remover" or property == "ignite" or property == "extinguish" or property == "drive" or property == "rb655_dissolve") then
 			return false
+		end
+	end
+end
+
+function PLUGIN:OnEntityCreated(entity)
+	if (self:IsComputerEntity(entity)) then
+		self.entities[entity:EntIndex()] = entity
+	end
+end
+
+function PLUGIN:EntityRemoved(entity)
+	if (self:IsComputerEntity(entity)) then
+		self.entities[entity:EntIndex()] = nil
+	end
+end
+
+function PLUGIN:InitPostEntity()
+	for _, entity in ipairs(ents.GetAll()) do
+		if (self:IsComputerEntity(entity)) then
+			self.entities[entity:EntIndex()] = entity
 		end
 	end
 end

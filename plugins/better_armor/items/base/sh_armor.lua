@@ -273,6 +273,12 @@ local function RemoveFromAppearanceStack(character, itemID)
 end
 
 function ITEM:RemoveOutfit(client)
+	client = client or self.player or self:GetOwner()
+
+	if (!IsValid(client)) then
+		return
+	end
+
 	local character = client:GetCharacter()
 	if (!character) then return end
 

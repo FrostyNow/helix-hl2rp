@@ -195,8 +195,13 @@ function PLUGIN:SearchLootContainer(ent, ply)
 							end
 
 							if (randomLootItem and ix.item.Get(randomLootItem)) then
-								ply:NotifyLocalized("ixlootGained", L(ix.item.Get(randomLootItem):GetName(), ply))
-								character:GetInventory():Add(randomLootItem)
+								local name = L(ix.item.Get(randomLootItem):GetName(), ply)
+
+								if (character:GetInventory():Add(randomLootItem)) then
+								else
+									ix.item.Spawn(randomLootItem, ply)
+								end
+								ply:NotifyLocalized("ixlootGained", name)
 							end
 						end
 

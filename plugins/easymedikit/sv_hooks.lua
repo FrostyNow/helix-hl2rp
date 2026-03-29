@@ -13,12 +13,26 @@ PLUGIN.BulletDamages = {
 
 function PLUGIN:EntityTakeDamage(target, info)
 	if ( target:IsValid() and target:IsPlayer() ) then
-		if ( self.BulletDamages[info:GetDamageType()] and target:Armor() < 0 ) then
-			if ( math.random(10) > 7 ) then
+		local char = target:GetCharacter()
+		if (!char) then return end
+
+		local luck = char:GetAttribute("lck", 0)
+		local luckMlt = ix.config.Get("luckMultiplier", 1)
+		local endurance = char:GetAttribute("end", 0)
+		local endMlt = ix.config.Get("enduranceMultiplier", 0.5)
+		local maxAttr = ix.config.Get("maxAttributes", 100)
+		local normFactor = 100 / maxAttr
+
+		if ( self.BulletDamages[info:GetDamageType()] and target:Armor() <= 0 ) then
+			local threshold = 30 - (luck * normFactor * luckMlt * 0.1) - (endurance * normFactor * endMlt * 0.1)
+
+			if ( math.random(1, 100) <= threshold ) then
 				self:SetBleeding(target, true)
 			end
 		elseif ( info:GetDamageType() == DMG_FALL and target:Team() != FACTION_OTA ) then
-			if math.random(10) > 7 then
+			local threshold = 30 - (luck * normFactor * luckMlt * 0.2) - (endurance * normFactor * endMlt * 0.2)
+
+			if ( math.random(1, 100) <= threshold ) then
 				self:SetFracture(target, true)
 			end
 		end

@@ -90,6 +90,8 @@ ix.lang.AddTable("english", {
 	novelizerSuitcase = "suitcase",
 	novelizerRationPack = "ration pack",
 	novelizerCID = "CID card",
+	novelizerToken = "token",
+	novelizerTokens = "tokens",
 	novelizerMeFormat = "** %s %s",
 
 	novelizerEat1 = "takes a measured bite of %s.",
@@ -675,6 +677,8 @@ ix.lang.AddTable("korean", {
 	novelizerSuitcase = "여행 가방",
 	novelizerRationPack = "배급 포대",
 	novelizerCID = "신분증",
+	novelizerToken = "토큰",
+	novelizerTokens = "토큰",
 	novelizerMeFormat = "** %s %s",
 
 	novelizerEat1 = "%s 천천히 한입 베어 뭅니다.",
@@ -1708,10 +1712,11 @@ function PLUGIN:ResolveEntitySubjectData(entity)
 	local className = entity:GetClass()
 	
 	if (className == "ix_money") then
-		local plural = ix.currency.plural or "currencyPlural"
-		local text, phrase = ResolvePhraseReference(plural)
+		local amount = entity.GetAmount and entity:GetAmount() or 0
+		local name = (tonumber(amount) == 1) and (ix.currency.singular or "novelizerToken") or (ix.currency.plural or "novelizerTokens")
+		local text, phrase = ResolvePhraseReference(name)
 
-		return text or plural, phrase
+		return text or name, phrase
 	end
 
 	if (className == "prop_ragdoll") then
@@ -2565,9 +2570,9 @@ function PLUGIN:GetCharacterSubject(client)
 	return BuildArgument(name, "object")
 end
 
-function PLUGIN:GetMoneySubject()
-	local plural = ix.currency.plural or "tokens"
-	return BuildArgument(plural, "object")
+function PLUGIN:GetMoneySubject(amount)
+	local name = (tonumber(amount) == 1) and (ix.currency.singular or "novelizerToken") or (ix.currency.plural or "novelizerTokens")
+	return BuildArgument(name, "object")
 end
 
 function PLUGIN:GetItArguments(entity, key, phraseKey)
@@ -3441,14 +3446,14 @@ function PLUGIN:PatchCommandActions()
 		"novelizerDropMoney2",
 		"novelizerDropMoney3"
 	}, function(client, amount)
-		return { self:GetMoneySubject() }
+		return { self:GetMoneySubject(amount) }
 	end)
 	self:PatchCommand("GiveMoney", {
 		"novelizerGiveMoney1",
 		"novelizerGiveMoney2",
 		"novelizerGiveMoney3"
 	}, function(client, target, amount)
-		return { self:GetMoneySubject() }
+		return { self:GetMoneySubject(amount) }
 	end)
 end
 

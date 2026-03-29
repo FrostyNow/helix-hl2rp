@@ -349,15 +349,15 @@ if (SERVER) then
 											end
 										end
 									else
-										item:remove()
+										item:Remove()
 									end
 								end
 							else
 								if (item:GetData("equip", false)) then
-									if (item.base == ("base_armor" or "base_outfit" or "base_houtfit")) then
-										item:RemoveOutfit()
+									if (item.base == "base_armor" or item.base == "base_outfit" or item.base == "base_houtfit") then
+										item:RemoveOutfit(client)
 									elseif (item.base == "base_pacoutfit") then
-										item:RemovePart()
+										item:RemovePart(client)
 									end
 									item:SetData("equip", false)
 								end
@@ -371,7 +371,7 @@ if (SERVER) then
 										end
 									end
 								else
-									item:remove()
+									item:Remove()
 								end
 							end
 							table.Add(itemNames, {item.name})

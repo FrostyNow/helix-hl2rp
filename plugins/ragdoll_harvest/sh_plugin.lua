@@ -15,7 +15,8 @@ local HARVEST_OPTION_KEY = "harvestCorpse"
 local HARVEST_ACTION_KEY = "@harvestingCorpse"
 local DEFAULT_HARVEST_TIME = 6
 local DEFAULT_HARVEST_SOUND = "physics/body/body_medium_break3.wav"
-local HUMAN_BREAK_DAMAGE = 300
+local HUMAN_BREAK_DAMAGE = 1500
+local HUMAN_PHYSICS_THRESHOLD = 100
 local HUMAN_BREAK_SOUND = "physics/body/body_medium_break2.wav"
 
 local humanNPCClasses = {
@@ -407,6 +408,21 @@ if (SERVER) then
 			return
 		end
 
+		-- NEVER allow Combine/OTA to shatter/explode
+		local model = string.lower(entity:GetModel() or "")
+		if (string.find(model, "models/combine_")) then
+			return
+		end
+
+		local player = entity:GetNetVar("player")
+		if (IsValid(player) and player:IsPlayer()) then
+			local character = player:GetCharacter()
+
+			if (character and character:GetFaction() == FACTION_OTA) then
+				return
+			end
+		end
+
 		local breakData = self:GetBreakData(entity)
 
 		if (!breakData) then
@@ -419,7 +435,14 @@ if (SERVER) then
 			return
 		end
 
-		entity.ixCorpseDamage = (entity.ixCorpseDamage or 0) + math.max(dmgInfo:GetDamage(), 0)
+		local damage = dmgInfo:GetDamage()
+
+		-- Ignore minor physics/fall damage to prevent accidental shattering from minor bumps
+		if ((dmgInfo:IsDamageType(DMG_CRUSH) or dmgInfo:IsDamageType(DMG_FALL)) and damage < HUMAN_PHYSICS_THRESHOLD) then
+			return
+		end
+
+		entity.ixCorpseDamage = (entity.ixCorpseDamage or 0) + math.max(damage, 0)
 
 		if (entity.ixCorpseDamage >= (breakData.damage or HUMAN_BREAK_DAMAGE)) then
 			timer.Simple(0, function()
