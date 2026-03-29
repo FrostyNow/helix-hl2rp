@@ -20,7 +20,11 @@ ITEM.functions.Use = {
 	OnRun = function(item)
 		local client = item.player
 
-		hook.Run("ContainerFurnitureSpawn", item)
-		return true
+		net.Start("ixContainerFurnitureStartPlacement")
+			net.WriteUInt(item:GetID(), 32)
+			net.WriteString(item.ContainerModel)
+		net.Send(client)
+
+		return false
 	end
 }

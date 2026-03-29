@@ -4305,6 +4305,47 @@ function PLUGIN:PatchInteractiveComputers()
 	end
 end
 
+function PLUGIN:PatchStorageLibrary()
+	local originalOpen = ix.storage.Open
+
+	if (not originalOpen or self.ixNovelizerStorageWrapped) then
+		return
+	end
+
+	self.ixNovelizerStorageWrapped = true
+
+	ix.storage.Open = function(client, inventory, info, ...)
+		if (SERVER and IsValid(client) and info and IsValid(info.entity)) then
+			local entity = info.entity
+			local className = entity:GetClass()
+
+			if (className == "ix_container" and self:CanAutoNarrate(client)) then
+				local originalStart = info.OnPlayerOpenStart
+
+				info.OnPlayerOpenStart = function(ply)
+					if (isfunction(originalStart)) then
+						originalStart(ply)
+					end
+
+					if (IsValid(ply) and self:CanAutoNarrate(ply) and self:PassUseCooldown(ply, entity)) then
+						local phrasePool = self:ResolveEntityUsePhrasePool(entity)
+
+						if (phrasePool) then
+							local phraseKey = table.Random(phrasePool)
+
+							self:SendNovelMe(ply, phraseKey, self:GetEntityUseArguments(entity, phraseKey), {
+								actionKey = "open_storage_" .. className
+							})
+						end
+					end
+				end
+			end
+		end
+
+		return originalOpen(client, inventory, info, ...)
+	end
+end
+
 function PLUGIN:CanNarrateEntityUse(client, entity)
 	if (not IsValid(client) or not IsValid(entity)) then
 		return false
@@ -4571,6 +4612,7 @@ function PLUGIN:PerformAllPatches()
 	self:EnsureCorePatches()
 	self:PatchInteractiveComputers()
 	self:PatchStaminaConsumption()
+	self:PatchStorageLibrary()
 end
 
 function PLUGIN:InitializedPlugins()
@@ -4712,6 +4754,11 @@ function PLUGIN:PlayerUse(client, entity)
 	end
 
 	local className = entity:GetClass()
+
+	if (className == "ix_container") then
+		return
+	end
+
 	if (not self:CanNarrateEntityUse(client, entity)) then
 		return
 	end

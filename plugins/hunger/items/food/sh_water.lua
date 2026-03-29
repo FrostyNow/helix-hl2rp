@@ -13,7 +13,7 @@ ITEM:Hook("Eat", function(item)
 	local char = client:GetCharacter()
 	
 	-- Get the base attribute (excluding other boosts)
-	local baseStm = char:GetAttrib("stm", 0)
+	local baseStm = char:GetAttribute("stm", 0)
 	
 	-- Apply a 10% reduction as a temporary debuff
 	char:AddBoost("water", "stm", -baseStm * 0.1)

@@ -15,36 +15,50 @@ local function StartSit(trace)
 	local start = CurTime()
 	local ply = LocalPlayer()
 
+	local lastAng = nil
 	hook.Add("PostDrawOpaqueRenderables", TAG .. "PostDrawOpaqueRenderables", function(depth, skybox)
 		if CurTime() - start <= 0.25 then return end
-		if trace.StartPos:Distance(ply:GetShootPos()) > 40 then
+		if not IsValid(ply) or trace.StartPos:Distance(ply:GetShootPos()) > 80 then
 			cancelled, wantedAng = true, nil
 			hook.Remove("PostDrawOpaqueRenderables", TAG .. "PostDrawOpaqueRenderables")
 			return
 		end
 
-		local vec = util.IntersectRayWithPlane(ply:GetShootPos(), ply:EyeAngles():Forward(), trace.HitPos, Vector(0, 0, 1))
+		local planeNormal = trace.HitNormal or Vector(0, 0, 1)
+		local vec = util.IntersectRayWithPlane(ply:GetShootPos(), ply:GetAimVector(), trace.HitPos, planeNormal)
+
 		if not vec then
 			return
 		end
 
-		local posOnPlane = WorldToLocal(vec, Angle(0, 90, 0), trace.HitPos, Angle(0, 0, 0))
-		local testVec = posOnPlane:GetNormal() * traceScaled
-		local currentAng = (trace.HitPos - vec):Angle()
-		wantedAng = currentAng
+		local posOnPlane = WorldToLocal(vec, planeNormal:Angle(), trace.HitPos, Angle(0, 0, 0))
+		local dist = posOnPlane:Length()
 
-		if posOnPlane:Length() < 2 then
+		if dist < 8 then
 			wantedAng = nil
 			return
 		end
 
+		local currentAng = (trace.HitPos - vec):Angle()
+		if not lastAng then
+			lastAng = currentAng
+		else
+			lastAng = LerpAngle(FrameTime() * 10, lastAng, currentAng)
+		end
+		
+		wantedAng = lastAng
+
 		if wantedAng then
 			local goodSit = SitAnywhere.CheckValidAngForSit(trace.HitPos, trace.HitNormal:Angle(), wantedAng.y)
-			if not goodSit then wantedAng = nil end
-			cam.Start3D2D(trace.HitPos + Vector(0, 0, 1), Angle(0, 0, 0), drawScale)
-				surface.SetDrawColor(goodSit and Color(255, 255, 255, 255) or Color(255, 0, 0, 255))
+			
+			-- 가시성을 위해 Z축 오프셋을 약간 더 높임 (2.5 units)
+			cam.Start3D2D(trace.HitPos + trace.HitNormal * 1.5, trace.HitNormal:Angle() + Angle(90, 0, 0), drawScale)
+				surface.SetDrawColor(goodSit and Color(255, 255, 255, 255) or Color(255, 50, 50, 255))
 				surface.SetMaterial(arrow)
-				surface.DrawTexturedRectRotated(testVec.x * 0.5, testVec.y * -0.5, 2 / drawScale, traceScaled, currentAng.y + 90)
+				
+				-- 화살표 크기 및 위치 조정
+				local arrowSize = 4 / drawScale
+				surface.DrawTexturedRectRotated(0, -traceScaled * 0.5, arrowSize, traceScaled, lastAng.y - (trace.HitNormal:Angle().y) + 180)
 			cam.End3D2D()
 		end
 	end)

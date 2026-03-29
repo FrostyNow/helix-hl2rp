@@ -74,18 +74,62 @@ ITEM.functions.Use = {
 		local resolved = plugin and plugin:ResolveComputerEntity(target)
 		local useDoor = IsValid(target) and target:IsDoor() and !(target:HasSpawnFlags(256) and target:HasSpawnFlags(1024))
 		local useTerminal = plugin and IsValid(resolved) and resolved.IsCombineTerminal and resolved:IsCombineTerminal()
-
 		local useTurret = IsValid(target) and target:GetClass() == "npc_turret_floor" and target:GetSkin() == 0 and !target:GetNWBool("ixHacked")
 
-		if (!useDoor and !useTerminal and !useTurret) then
+		local vortPlugin = ix.plugin.Get("vortigaunt_stuff")
+		local useVort = false
+
+		if (vortPlugin and IsValid(target) and target:IsPlayer()) then
+			local targetChar = target:GetCharacter()
+			if (targetChar and targetChar:IsVortigaunt() and vortPlugin:IsEnslavedVortigaunt(targetChar)) then
+				useVort = true
+			end
+		end
+
+		if (!useDoor and !useTerminal and !useTurret and !useVort) then
 			ply:NotifyLocalized("empInvalidTarget")
 			return false
 		end
 
 		ply:EmitSound("ambient/machines/combine_terminal_idle2.wav")
-		ply:SetAction("@empOverloading", 3)
+		ply:SetAction(useVort and "@empOverloadVortAction" or "@empOverloading", 3)
 		ply:DoStaredAction(target, function()
 			if (!IsValid(ply) or (!IsValid(target) and !IsValid(resolved))) then
+				return
+			end
+
+			if (useVort) then
+				local targetChar = IsValid(target) and target:GetCharacter()
+				if (!targetChar or !vortPlugin:IsEnslavedVortigaunt(targetChar)) then
+					return
+				end
+
+				local attempts = RecordAttempt(itemTable)
+				local luckBonus = GetLuckBonus(ply)
+				local luckAttr = ply:GetCharacter():GetAttribute("lck", 0)
+				local maxAttributes = math.max(ix.config.Get("maxAttributes", 100), 1)
+				
+				local successChance = math.Clamp(8 + ((luckAttr / maxAttributes) * 10) + luckBonus - (attempts - 1) * 2, 1, 60)
+				local breakChance = math.Clamp(BASE_BREAK_CHANCE + (attempts - 1) * BREAK_CHANCE_PER_USE - luckBonus * 0.35, 0, MAX_BREAK_CHANCE)
+				
+				local succeeded = math.Rand(0, 100) <= successChance
+				local broke = math.Rand(0, 100) <= breakChance
+
+				if (succeeded) then
+					vortPlugin:SetVortigauntEnslaved(targetChar, false, target)
+					ply:EmitSound("buttons/combine_button1.wav")
+					ply:NotifyLocalized("empOverloadVortSucceed")
+					target:NotifyLocalized("empOverloadVortSucceedTarget")
+				else
+					ply:EmitSound("ambient/energy/zap1.wav")
+					ply:NotifyLocalized("empFailed")
+				end
+
+				if (broke) then
+					itemTable:Remove()
+					ply:NotifyLocalized("empBroken")
+				end
+
 				return
 			end
 
