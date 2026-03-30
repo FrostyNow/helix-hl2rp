@@ -676,20 +676,20 @@ end
 META.ixcOrigAdd = META.ixcOrigAdd or META.Add
 
 --- Override Add to support automatic stacking
-function META:Add(uniqueID, x, y, data)
-	if (SERVER and (!x or !y)) then
+function META:Add(uniqueID, quantity, data, x, y, noReplication)
+	if (SERVER and !isnumber(uniqueID) and (!x or !y)) then
 		local itemTable = ix.item.list[uniqueID]
 
 		if (itemTable and itemTable.isStackable) then
 			for _, v in pairs(self:GetItems()) do
 				if (v.uniqueID == uniqueID and PLUGIN.stack.CanStack(v, itemTable)) then
-					return self:ixcOrigAdd(uniqueID, v.gridX, v.gridY, data)
+					return self:ixcOrigAdd(uniqueID, quantity, data, v.gridX, v.gridY, noReplication)
 				end
 			end
 		end
 	end
 
-	return self:ixcOrigAdd(uniqueID, x, y, data)
+	return self:ixcOrigAdd(uniqueID, quantity, data, x, y, noReplication)
 end
 
 local ITEMMETA = ix.meta.item
