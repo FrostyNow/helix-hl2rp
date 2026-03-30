@@ -120,7 +120,7 @@ FACTION.bodyGroups = {
 }
 
 FACTION.isDefault = false
-FACTION.isGloballyRecognized = true
+FACTION.isGloballyRecognized = false
 FACTION.runSounds = {[0] = "NPC_MetroPolice.RunFootstepLeft", [1] = "NPC_MetroPolice.RunFootstepRight"}
 
 FACTION.canSeeWaypoints = true

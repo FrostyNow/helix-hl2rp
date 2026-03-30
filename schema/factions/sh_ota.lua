@@ -8,7 +8,7 @@ FACTION.models = {
 	"models/combine_soldierproto.mdl"
 }
 FACTION.isDefault = false
-FACTION.isGloballyRecognized = true
+FACTION.isGloballyRecognized = false
 FACTION.runSounds = {[0] = "NPC_CombineS.RunFootstepLeft", [1] = "NPC_CombineS.RunFootstepRight"}
 
 FACTION.attPoints = 20

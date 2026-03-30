@@ -292,6 +292,38 @@ function Schema:AdjustStaminaOffset(client, offset)
 	end
 end
 
+function Schema:IsCharacterRecognized(char, id)
+	-- Self recognition
+	if (char.id == id) then
+		return true
+	end
+
+	local other = ix.char.loaded[id]
+
+	if (other) then
+		local faction = char:GetFaction()
+		local otherFaction = other:GetFaction()
+
+		-- Combine-aligned factions that recognize each other internally
+		local internalRecogFactions = {
+			[FACTION_ADMIN] = true,
+			[FACTION_MPF] = true,
+			[FACTION_OTA] = true,
+			[FACTION_CONSCRIPT] = true
+		}
+
+		if (internalRecogFactions[faction] and internalRecogFactions[otherFaction]) then
+			return true
+		end
+
+		-- Vortigaunts recognize each other
+		if (FACTION_VORT and faction == FACTION_VORT and otherFaction == FACTION_VORT) then
+			return true
+		end
+	end
+end
+
+
 if (SERVER) then
 	local ADMIN_SET_VALUE_MAX = 2000
 	local ADMIN_RECOGNITION_SELF = 1

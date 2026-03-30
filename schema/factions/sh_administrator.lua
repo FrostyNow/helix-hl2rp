@@ -34,7 +34,7 @@ FACTION.models = {
 	"models/humans/combine/male_77.mdl"
 }
 FACTION.isDefault = false
-FACTION.isGloballyRecognized = true
+FACTION.isGloballyRecognized = false
 
 FACTION.canSeeWaypoints = true
 
