@@ -581,6 +581,21 @@ ix.lang.AddTable("english", {
 	novelizerDeathPoison1 = "succumbs to the poison.",
 	novelizerDeathPoison2 = "falls still as the toxin stops their heart.",
 	novelizerDeathPoison3 = "is finished by the lethal compound.",
+
+	novelizerInjuredBite1 = "recoils from the sharp sting of the attack.",
+	novelizerInjuredBite2 = "winces as teeth tear at them.",
+	novelizerInjuredBite3 = "twists away from the lunging attack.",
+	novelizerDeathBite1 = "is dragged down and overcome.",
+	novelizerDeathBite2 = "is torn apart and falls still.",
+	novelizerDeathBite3 = "falls as the attack proves fatal.",
+
+	novelizerInjuredStarve1 = "doubles over from a sharp wave of hunger.",
+	novelizerInjuredStarve2 = "staggers as their body starts to fail from lack of food.",
+	novelizerInjuredStarve3 = "gasps in pain as starvation sets in.",
+	novelizerDeathStarve1 = "collapses, their body finally giving out to hunger.",
+	novelizerDeathStarve2 = "falls still, overcome by starvation.",
+	novelizerDeathStarve3 = "succumbs to the silent lethality of hunger.",
+
 	novelizerItRadioMusic1 = "%s plays a faint stream of music.",
 	novelizerItRadioMusic2 = "%s carries a thin wash of music.",
 	novelizerItRadioMusic3 = "%s murmurs with a steady broadcast.",
@@ -1168,6 +1183,21 @@ ix.lang.AddTable("korean", {
 	novelizerDeathPoison1 = "독성 쇼크 끝에 쓰러집니다.",
 	novelizerDeathPoison2 = "독이 심장에 도달하며 그대로 숨을 거둡니다.",
 	novelizerDeathPoison3 = "치명적인 화합물에 중독되어 쓰러집니다.",
+
+	novelizerInjuredBite1 = "날카로운 공격에 몸을 뒤틉니다.",
+	novelizerInjuredBite2 = "물린 상처의 통증에 움찔하며 몸을 뺍니다.",
+	novelizerInjuredBite3 = "달려드는 공격을 피하려 황급히 몸을 비틉니다.",
+	novelizerDeathBite1 = "공격에 버티지 못하고 바닥으로 쓰러집니다.",
+	novelizerDeathBite2 = "치명적인 상처를 입고 힘없이 무너집니다.",
+	novelizerDeathBite3 = "흉폭한 공격 끝에 미동을 멈춥니다.",
+
+	novelizerInjuredStarve1 = "극심한 허기에 배를 움켜쥐며 괴로워합니다.",
+	novelizerInjuredStarve2 = "영양 부족으로 몸에 힘이 빠지며 비틀거립니다.",
+	novelizerInjuredStarve3 = "속이 타들어 가는 듯한 배고픔에 신음을 냅니다.",
+	novelizerDeathStarve1 = "기력이 다한 듯 힘없이 고꾸라집니다.",
+	novelizerDeathStarve2 = "지독한 굶주림 끝에 결국 쓰러집니다.",
+	novelizerDeathStarve3 = "허기를 이기지 못하고 조용히 숨을 거둡니다.",
+
 	novelizerItRadioMusic1 = "%s 희미한 음악을 흘립니다.",
 	novelizerItRadioMusic2 = "%s 잔잔한 음악 소리를 내보냅니다.",
 	novelizerItRadioMusic3 = "%s 안정된 채널로 음악을 틀어 둡니다.",
@@ -2698,6 +2728,7 @@ function PLUGIN:ClassifyDamageType(dmgInfo)
 	end
 
 	local damageType = dmgInfo:GetDamageType()
+	local attacker = dmgInfo:GetAttacker()
 	local definitions = {
 		{key = "shock", hurt = "novelizerInjuredShock", death = "novelizerDeathShock", flags = {DMG_SHOCK}},
 		{key = "radiation", hurt = "novelizerInjuredRadiation", death = "novelizerDeathRadiation", flags = {DMG_RADIATION}},
@@ -2712,8 +2743,20 @@ function PLUGIN:ClassifyDamageType(dmgInfo)
 		{key = "drown", hurt = "novelizerInjuredDrown", death = "novelizerDeathDrown", flags = {DMG_DROWN}},
 		{key = "acid", hurt = "novelizerInjuredAcid", death = "novelizerDeathAcid", flags = {DMG_ACID}},
 		{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
-		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}}
+		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}},
+		{key = "bite", hurt = "novelizerInjuredBite", death = "novelizerDeathBite", flags = {}},
+		{key = "starve", hurt = "novelizerInjuredStarve", death = "novelizerDeathStarve", flags = {}}
 	}
+
+	-- Handle starvation (self-damage from hunger/thirst plugin, or generic suicide)
+	if (IsValid(attacker) and attacker:IsPlayer() and (damageType == 0 or damageType == DMG_DIRECT)) then
+		return definitions[16]
+	end
+
+	-- Handle bites/non-weapon creature attacks
+	if (self:HasDamageFlag(damageType, DMG_SLASH) and not self:IsDamageFromMeleeWeapon(dmgInfo)) then
+		return definitions[15]
+	end
 
 	if (self:IsDamageFromMeleeWeapon(dmgInfo)) then
 		if (self:HasDamageFlag(damageType, DMG_SLASH)) then
