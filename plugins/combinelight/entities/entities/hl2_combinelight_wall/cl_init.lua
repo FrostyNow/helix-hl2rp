@@ -12,8 +12,9 @@ function ENT:Draw()
 	self:DrawModel()
 
 	-- Position adjusted for combine_light002a (taller light)
-	-- It's roughly 54 units up and 4 units forward from center
-	local pos = self:GetPos() + self:GetUp() * 54 + self:GetForward() * 4
+	-- Aligned to the bulb area
+	local offset = self:GetUp() * 35 + self:GetForward() * -10
+	local pos = self:GetPos() + offset
 	local color = Color(19, 54, 80)
 
 	if (!self.pixVis) then
@@ -42,7 +43,8 @@ end
 
 -- Called when the entity should think.
 function ENT:Think()
-	local pos = self:GetPos() + self:GetUp() * 54 + self:GetForward() * 4
+	local offset = self:GetUp() * 40 + self:GetForward() * 2
+	local pos = self:GetPos() + offset
 	
 	local dlight = DynamicLight(self:EntIndex())
 	if (dlight) then
