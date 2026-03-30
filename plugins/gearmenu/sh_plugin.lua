@@ -25,7 +25,7 @@ ix.lang.AddTable("korean", {
 	noFitDropped = "인벤토리가 가득 차 아이템이 바닥에 떨어졌습니다.",
 })
 
-ix.inventory.Register("ixGearInv", PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, true)
+ix.inventory.Register("ixGearInv", PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, false)
 
 -- Helper: check if an inventory is a gear inventory.
 function PLUGIN:IsGearInventory(invID)
@@ -40,6 +40,7 @@ end
 local ix_inv = ix.meta.inventory
 if (ix_inv) then
 	ix_inv.GearOriginalGetItems = ix_inv.GearOriginalGetItems or ix_inv.GetItems
+	ix_inv.GearOriginalGetBags = ix_inv.GearOriginalGetBags or ix_inv.GetBags
 
 	function ix_inv:GetItems(onlyMain)
 		local items = self:GearOriginalGetItems(onlyMain)
@@ -62,6 +63,36 @@ if (ix_inv) then
 		end
 
 		return items
+	end
+
+	function ix_inv:GetBags()
+		local bags = self:GearOriginalGetBags()
+
+		-- Treat equipped bags in the gear inventory as part of the character's carried storage.
+		-- Helix's empty-slot search calls GetBags(), so without this world pickup and auto-placement
+		-- won't see bag space once the bag item is moved out of the main inventory.
+		if (!self.vars.isBag and !self.vars.isGear and self.owner) then
+			local character = ix.char.loaded and ix.char.loaded[self.owner]
+
+			if (character and character:GetInventory() == self) then
+				local gearID = character:GetData("gearInvID")
+				local gearInv = gearID and ix.item.inventories[gearID]
+
+				if (gearInv and gearInv != self) then
+					for _, itemInst in pairs(gearInv:GearOriginalGetItems(true)) do
+						if (itemInst.isBag and itemInst:GetData("equip") == true) then
+							local bagInvID = itemInst:GetData("id")
+
+							if (bagInvID and bagInvID != self:GetID() and !table.HasValue(bags, bagInvID)) then
+								bags[#bags + 1] = bagInvID
+							end
+						end
+					end
+				end
+			end
+		end
+
+		return bags
 	end
 end
 

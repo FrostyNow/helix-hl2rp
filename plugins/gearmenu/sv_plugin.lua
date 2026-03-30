@@ -16,6 +16,7 @@ local function GetOrCreateGearInventory(character, callback)
 		ix.inventory.Restore(gearInvID, PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, function(inv)
 			if (inv) then
 				inv:SetOwner(character:GetID())
+				inv.vars.isBag = nil
 				inv.vars.isGear = true
 				
 				local client = character:GetPlayer()
@@ -34,6 +35,7 @@ local function GetOrCreateGearInventory(character, callback)
 		ix.inventory.New(character:GetID(), "ixGearInv", function(inv)
 			if (inv) then
 				inv:SetOwner(character:GetID())
+				inv.vars.isBag = nil
 				inv.vars.isGear = true
 				character:SetData("gearInvID", inv:GetID())
 				
@@ -456,8 +458,9 @@ function PLUGIN:CharacterLoaded(character)
 				GetOrCreateGearInventory(character, function(inv)
 					if (inv and IsValid(client)) then
 						inv:AddReceiver(client)
-						inv:Sync(client)
+						inv.vars.isBag = nil
 						inv.vars.isGear = true
+						inv:Sync(client)
 						
 						-- Trigger OnLoadout for already loaded items inside the gear inventory
 						-- once it finishes restoring so they apply properly to the active player model
