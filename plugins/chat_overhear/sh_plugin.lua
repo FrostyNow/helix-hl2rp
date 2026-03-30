@@ -3,17 +3,17 @@ PLUGIN.name = "Chat Overhear"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays overheard chat messages with transparency based on the distance between players."
 
-ix.config.Add("overhearScale", 1.3, "Maximum distance multiplier for overhearing.", nil, {
+ix.config.Add("overhearScale", 1.2, "Maximum distance multiplier for overhearing.", nil, {
 	data = {min = 1.0, max = 5.0, decimals = 1},
 	category = "chat"
 })
 
-ix.config.Add("overhearFadeStart", 0.5, "Distance multiplier where transparency starts (relative to original range).", nil, {
+ix.config.Add("overhearFadeStart", 0.3, "Distance multiplier where transparency starts (relative to original range).", nil, {
 	data = {min = 0.0, max = 1.0, decimals = 2},
 	category = "chat"
 })
 
-ix.config.Add("overhearMinAlpha", 5, "Minimum alpha percentage for overheard messages (0-100%).", nil, {
+ix.config.Add("overhearMinAlpha", 1, "Minimum alpha percentage for overheard messages (0-100%).", nil, {
 	data = {min = 0, max = 100},
 	category = "chat"
 })
@@ -32,6 +32,7 @@ local function RegisterOverhear(baseType)
 	local oldOnChatAdd = data.OnChatAdd
 	data.OnChatAdd = function(self, speaker, text, anonymous, info)
 		local alpha = (info and info.overhearAlpha) or 255
+		self.overhearAlpha = alpha
 		local oldChatAddText = chat.AddText
 		
 		-- Temporarily intercept chat.AddText to apply alpha to all color arguments
@@ -47,6 +48,7 @@ local function RegisterOverhear(baseType)
 		
 		oldOnChatAdd(self, speaker, text, anonymous, info)
 		chat.AddText = oldChatAddText
+		self.overhearAlpha = nil
 	end
 
 	ix.chat.Register(data.uniqueID, data)
@@ -82,6 +84,37 @@ function PLUGIN:InitializedChatClasses()
 			
 			-- Register the overhear-specific class
 			RegisterOverhear(v)
+		end
+	end
+end
+
+-- Hook to ensure overhear chat types are treated as 'recognizable' by the recognition system.
+-- This prevents the GetCharacterName hook from returning the real name for unrecognized characters.
+function PLUGIN:IsRecognizedChatType(chatType)
+	if (chatType:find("_overhear$")) then
+		return true
+	end
+end
+
+-- Hook to ensure correct name color (chat color vs faction color) for unrecognized characters.
+function PLUGIN:GetPlayerChatColor(client, chatClass)
+	if (chatClass and chatClass.uniqueID:find("_overhear$")) then
+		local character = client:GetCharacter()
+		local ourCharacter = LocalPlayer():GetCharacter()
+		local bRecognized = (ourCharacter and character and (ourCharacter:DoesRecognize(character) or hook.Run("IsPlayerRecognized", client)))
+
+		-- MODIFIED: Only apply chatListenColor highlight to UNRECOGNIZED targets
+		if (LocalPlayer():GetEyeTrace().Entity == client) then
+			if (!bRecognized) then
+				return ix.config.Get("chatListenColor")
+			end
+			-- If recognized, return nil so it uses the faction/unique color as requested
+			return nil
+		end
+
+		-- If the speaker is not recognized, force the chat color (no faction coloring)
+		if (!bRecognized) then
+			return chatClass.color or ix.config.Get("chatColor")
 		end
 	end
 end
@@ -130,54 +163,104 @@ if (CLIENT) then
 
 	-- [UI Patch] Runtime fixes to handle Alpha in Helix Chatbox UI
 	function PLUGIN:InitPostEntity()
-		-- 1. Patch ixChatboxHistory:AddLine to preserve alpha values in Color objects
-		local historyTable = vgui.GetControlTable("ixChatboxHistory")
-		if (historyTable and historyTable.AddLine) then
-			local oldAddLine = historyTable.AddLine
-			function historyTable:AddLine(elements, bShouldScroll)
-				for k, v in ipairs(elements) do
-					-- Helix default only uses <color=r,g,b>; we modify it to <color=r,g,b,a>
-					if (istable(v) and v.r and v.g and v.b and v.a) then
-						elements[k] = string.format("<color=%d,%d,%d,%d>", v.r, v.g, v.b, v.a)
+		-- Function to patch a chat history table to support alpha in markup
+		local function PatchHistoryTable(name)
+			local historyTable = vgui.GetControlTable(name)
+			if (historyTable and historyTable.AddLine) then
+				-- We don't call oldAddLine because we need to change how the buffer is constructed.
+				function historyTable:AddLine(elements, bShouldScroll)
+					local maxChatEntries = 100 -- Default Helix limit
+
+					local buffer = {
+						"<font=ixChatFont>"
+					}
+
+					if (ix.option.Get("chatTimestamps", false)) then
+						buffer[#buffer + 1] = "<color=150,150,150>("
+						buffer[#buffer + 1] = (ix.option.Get("24hourTime", false) and os.date("%H:%M") or os.date("%I:%M %p"))
+						buffer[#buffer + 1] = ") </color>" -- Added closing tag for safety
 					end
+
+					if (CHAT_CLASS) then
+						buffer[#buffer + 1] = string.format("<font=%s>", CHAT_CLASS.font or "ixChatFont")
+					end
+					
+					-- Robustly extract overhearAlpha
+					local overhearAlpha = 255
+					if (CHAT_CLASS and CHAT_CLASS.uniqueID:find("_overhear$") and CHAT_CLASS.overhearAlpha) then
+						overhearAlpha = CHAT_CLASS.overhearAlpha
+					else
+						-- Fallback: Scan elements for colors with alpha < 255
+						for _, v in ipairs(elements) do
+							if (v and type(v) != "string" and v.r and v.g and v.b and v.a and v.a < 255) then
+								overhearAlpha = v.a
+								break
+							end
+						end
+					end
+
+					for _, v in ipairs(elements) do
+						if (type(v) == "IMaterial") then
+							local texture = v:GetName()
+							if (texture) then
+								buffer[#buffer + 1] = string.format("<img=%s,%dx%d> ", texture, v:Width(), v:Height())
+							end
+						elseif (istable(v) and v.r and v.g and v.b) then
+							buffer[#buffer + 1] = string.format("<color=%d,%d,%d>", v.r, v.g, v.b)
+						elseif (type(v) == "Player" or (istable(v) and v.IsPlayer and v:IsPlayer())) then
+							local color = hook.Run("GetPlayerChatColor", v, CHAT_CLASS) or team.GetColor(v:Team())
+							local name = hook.Run("GetCharacterName", v, CHAT_CLASS and CHAT_CLASS.uniqueID) or v:GetName()
+							
+							buffer[#buffer + 1] = string.format("<color=%d,%d,%d>%s", color.r, color.g, color.b,
+								name:gsub("<", "&lt;"):gsub(">", "&gt;"))
+						else
+							-- Standard Helix processing for strings and other types
+							buffer[#buffer + 1] = tostring(v):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("%%", "%%%%"):gsub("%b**", function(value)
+								local inner = value:utf8sub(2, -2)
+								if (inner:find("%S")) then
+									return "<font=ixChatFontItalics>" .. inner .. "</font>"
+								end
+							end)
+						end
+					end
+
+					local panel = self:Add("ixChatMessage")
+					panel:Dock(TOP)
+					panel:InvalidateParent(true)
+					panel:SetMarkup(table.concat(buffer))
+					
+					-- MODIFIED: Attach the calculated transparency to the panel
+					panel.overhearAlpha = overhearAlpha
+
+					-- FINAL FIX: Manually inject alpha into the parsed markup blocks
+					-- This is the only way to reliably override the internal drawing alpha
+					if (panel.markup and panel.markup.blocks and overhearAlpha < 255) then
+						for _, block in ipairs(panel.markup.blocks) do
+							if (block.color) then
+								block.color.a = overhearAlpha
+							end
+						end
+					end
+
+					if (#self.entries >= maxChatEntries) then
+						local oldPanel = table.remove(self.entries, 1)
+						if (IsValid(oldPanel)) then
+							oldPanel:Remove()
+						end
+					end
+
+					self.entries[#self.entries + 1] = panel
+					return panel
 				end
-				return oldAddLine(self, elements, bShouldScroll)
 			end
 		end
 
-		-- 2. Patch ixChatMessage:Paint to merge individual alpha with the overall fade alpha
-		local messageTable = vgui.GetControlTable("ixChatMessage")
-		if (messageTable) then
-			-- Define the actual drawing logic for text
-			local function NewPaintMarkupOverride(text, font, x, y, color, alignX, alignY, alpha)
-				-- Multiply the character's unique alpha (color.a) with the line's fade alpha (alpha)
-				local targetAlpha = ( (color.a or 255) * (alpha or 255) ) / 255
-				
-				if (ix.option.Get("chatOutline", false)) then
-					draw.SimpleTextOutlined(text, font, x, y, ColorAlpha(color, targetAlpha), alignX, alignY, 1, Color(0, 0, 0, targetAlpha))
-				else
-					-- Shadow rendering
-					surface.SetTextPos(x + 1, y + 1)
-					surface.SetTextColor(0, 0, 0, targetAlpha)
-					surface.SetFont(font)
-					surface.DrawText(text)
-
-					-- Main transparent text
-					surface.SetTextPos(x, y)
-					surface.SetTextColor(color.r, color.g, color.b, targetAlpha)
-					surface.SetFont(font)
-					surface.DrawText(text)
-				end
-			end
-
-			local oldSetMarkup = messageTable.SetMarkup
-			function messageTable:SetMarkup(text)
-				oldSetMarkup(self, text)
-				if (self.markup) then
-					-- Inject the custom drawing function into the markup object
-					self.markup.onDrawText = NewPaintMarkupOverride
-				end
-			end
-		end
+		-- Patch BOTH standard and radio chat history
+		PatchHistoryTable("ixChatboxHistory")
+		PatchHistoryTable("radioChatboxHistory")
 	end
+
+
+
+
 end
