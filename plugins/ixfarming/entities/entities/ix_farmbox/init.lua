@@ -115,13 +115,13 @@ function ENT:Use(activator)
 		
 		if (self:GetProgress() >= growthTime) then
 			-- Harvest!
-			local amount = 1
+			local amount = 2
 			if (self:GetWaterQuality() > 0) then
 				local luck = activator:GetCharacter():GetAttribute("lck", 0)
 				local lckMlt = ix.config.Get("luckMultiplier", 1)
 				local chance = math.Clamp(self:GetWaterQuality() * 20 + luck * lckMlt, 0, 80)
 				if (math.random(1, 100) <= chance) then
-					amount = math.random(2, 3)
+					amount = math.random(3, 5)
 				end
 			end
 			
