@@ -12,15 +12,19 @@ ITEM.iconCam = {
 }
 ITEM.exRender = true
 ITEM.functions.Place = {
-	icon = "icon16/weather_sun.png",
-	OnRun = function(item, client, data)
-		local entity = ents.Create("hl2_combinelight")
-		entity:SetPos(item.player:EyePos() + ( item.player:GetAimVector() * 100))
-		entity:SetAngles(item.player:GetAngles())	
-		entity:Spawn()
-		entity:Activate()
+	icon = "icon16/anchor.png",
+	OnRun = function(item)
+		local client = item.player
 
-		return true
+		net.Start("ixCombineLightStartPlacement")
+			net.WriteUInt(item:GetID(), 32)
+			net.WriteString(item.model)
+		net.Send(client)
+
+		return false
+	end,
+	OnCanRun = function(item)
+		return !IsValid(item.entity)
 	end
 }
 

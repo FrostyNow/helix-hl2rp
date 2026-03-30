@@ -6,6 +6,7 @@ FACTION.models = {"models/vortigaunt_slave.mdl"}
 FACTION.weapons = {}
 FACTION.isDefault = true
 FACTION.isGloballyRecognized = false
+FACTION.excludedItemBases = {"base_weapons"}
 
 function FACTION:OnCharacterCreated(client, character)
 	character:SetModel("models/vortigaunt_slave.mdl")

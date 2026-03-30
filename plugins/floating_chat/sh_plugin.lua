@@ -109,7 +109,10 @@ if (CLIENT) then
 		if (!ix.config.Get("floatingChatEnabled", true)) then return end
 		if (!IsValid(client) or !client:IsPlayer()) then return end
 		if (client:GetMoveType() == MOVETYPE_NOCLIP) then return end
-		if (!CHAT_TYPES[info.chatType]) then return end
+
+		-- [Compatibility] Handle overheard chat types from chat_overhear plugin
+		local chatType = info.chatType:gsub("_overhear$", "")
+		if (!CHAT_TYPES[chatType]) then return end
 
 		client.ixFloatingChatData = client.ixFloatingChatData or {}
 
@@ -128,16 +131,16 @@ if (CLIENT) then
 
 		local font = "ixFloatingChatFont"
 
-		if (info.chatType == "y" or info.chatType == "radio_eavesdrop_yell") then
+		if (chatType == "y" or chatType == "radio_eavesdrop_yell") then
 			font = "ixFloatingChatFontLarge"
-		elseif (info.chatType == "w" or info.chatType == "radio_eavesdrop_whisper" or info.chatType == "radio_whisper") then
+		elseif (chatType == "w" or chatType == "radio_eavesdrop_whisper" or chatType == "radio_whisper") then
 			font = "ixFloatingChatFontSmall"
 		end
 
 		local text = info.text
 		local lpCharacter = LocalPlayer():GetCharacter()
 
-		if (info.chatType == "vortigese" and lpCharacter and !lpCharacter:IsVortigaunt()) then
+		if (chatType == "vortigese" and lpCharacter and !lpCharacter:IsVortigaunt()) then
 			text = L("vortUnintelligible")
 		end
 
@@ -159,6 +162,7 @@ if (CLIENT) then
 			font = font,
 			startTime = CurTime(),
 			dieTime = CurTime() + ix.config.Get("floatingChatDuration", 5),
+			overhearAlpha = (info.data and info.data.overhearAlpha) or 255, -- [Compatibility] Get alpha from chat_overhear
 			range = math.max(chatClass and chatClass.range or 0, math.pow(ix.config.Get("chatRange", 280), 2))
 		})
 
@@ -231,6 +235,9 @@ if (CLIENT) then
 				local fraction = distance / data.range
 				local distAlpha = (1 - math.Clamp((fraction - 0.2) / 0.4, 0, 0.8)) * 255
 				alpha = math.min(alpha, distAlpha)
+
+				-- [Compatibility] Merge with overboard alpha if it exists
+				alpha = (alpha * (data.overhearAlpha or 255)) / 255
 
 				cam.Start3D2D(pos + Vector(0, 0, offset), angle, scale)
 					surface.SetFont(data.font)

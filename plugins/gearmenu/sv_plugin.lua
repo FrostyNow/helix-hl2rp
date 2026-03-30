@@ -155,6 +155,7 @@ local function TransferToMain(item, owner)
 		return
 	end
 
+	local gearInvID = character:GetData("gearInvID")
 	local targetX, targetY = nil, nil
 	local targetInvID = mainInv:GetID()
 
@@ -168,6 +169,11 @@ local function TransferToMain(item, owner)
 	timer.Simple(0, function()
 		if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or item:GetData("equip") == true) then return end
 		
+		-- Skip transfer if the item has already been moved to another inventory (e.g., by a death plugin)
+		if (gearInvID and item.invID != gearInvID) then
+			return
+		end
+
 		local x, y = targetX, targetY
 		local tInv = ix.item.inventories[targetInvID]
 
@@ -189,11 +195,19 @@ local function TransferToMain(item, owner)
 			success = DoGearTransfer(item, targetInvID, x, y, owner)
 		end
 
-		-- ROLLBACK on failure
+		-- DROP on failure instead of rollback
 		if (!success) then
-			item:SetData("equip", true)
-			owner:NotifyLocalized("noFit")
-			print("[GearMenu] Rollback: Re-equipped item because transfer failed.")
+			-- Transfer to world (ID 0)
+			item.bGearTransfer = true
+			local oldCanTransfer = item.CanTransfer
+			item.CanTransfer = function() return true end
+
+			item:Transfer(0, nil, nil, owner)
+			owner:NotifyLocalized("noFitDropped")
+			print("[GearMenu] Transfer failed (no space): dropped item to the ground.")
+
+			item.CanTransfer = oldCanTransfer
+			item.bGearTransfer = nil
 		end
 	end)
 end
@@ -247,6 +261,14 @@ end)
 
 hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
 	if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or !IsValid(owner)) then return end
+	
+	-- Skip automatic transfer to main inventory if the player is dead.
+	-- This allows death plugins (like persistent_corpses) to handle the item correctly.
+	if (!owner:Alive()) then
+		item:SetData("equipTime", nil)
+		return
+	end
+
 	item:SetData("equipTime", nil)
 	TransferToMain(item, owner)
 end)

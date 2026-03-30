@@ -13,6 +13,7 @@ ix.lang.AddTable("english", {
 	gearTooltip = "Drag and drop\nto equip or unequip.",
 	moveUp = "Move Up",
 	moveDown = "Move Down",
+	noFitDropped = "The item was dropped to the ground because there was no space in your inventory.",
 })
 ix.lang.AddTable("korean", {
 	["gear"] = "소지품 및 장비",
@@ -21,6 +22,7 @@ ix.lang.AddTable("korean", {
 	gearTooltip = "장비를 드래그 드랍하여\n장착하거나 해제하실 수 있습니다.",
 	moveUp = "위로 이동",
 	moveDown = "아래로 이동",
+	noFitDropped = "인벤토리가 가득 차 아이템이 바닥에 떨어졌습니다.",
 })
 
 ix.inventory.Register("ixGearInv", PLUGIN.GearInvWidth, PLUGIN.GearInvHeight, true)

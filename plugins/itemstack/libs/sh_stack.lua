@@ -59,6 +59,20 @@ function PLUGIN.stack.FindAutoStackTarget(inventory, item)
 		return nil
 	end
 
+	-- First, check the slot we're already in (if any)
+	if (item.gridX and item.gridY) then
+		local key = SlotKey(item.gridX, item.gridY)
+		local stack = inventory.stacks and inventory.stacks[key]
+
+		if (stack) then
+			for _, candidate in ipairs(stack) do
+				if (candidate.id != item.id and PLUGIN.stack.CanStack(candidate, item)) then
+					return candidate
+				end
+			end
+		end
+	end
+
 	local seen = {}
 
 	for x, column in pairs(inventory.slots or {}) do
@@ -642,6 +656,41 @@ META.ixcOrigGetItems = META.ixcOrigGetItems or META.GetItems
 META.ixcOrigRemove = META.ixcOrigRemove or META.Remove
 META.ixcOrigIter = META.ixcOrigIter or META.Iter
 META.ixcOrigGetItemCount = META.ixcOrigGetItemCount or META.GetItemCount
+META.ixcOrigCanItemFit = META.ixcOrigCanItemFit or META.CanItemFit
+
+--- Override CanItemFit to support stacking during Add()
+function META:CanItemFit(x, y, w, h, item)
+	if (item and item.isStackable) then
+		local targetItem = self:GetItemAt(x, y)
+
+		if (targetItem and targetItem.isStackable and targetItem.uniqueID == item.uniqueID) then
+			if (PLUGIN.stack.CanStack(targetItem, item)) then
+				return true
+			end
+		end
+	end
+
+	return self:ixcOrigCanItemFit(x, y, w, h, item)
+end
+
+META.ixcOrigAdd = META.ixcOrigAdd or META.Add
+
+--- Override Add to support automatic stacking
+function META:Add(uniqueID, x, y, data)
+	if (SERVER and (!x or !y)) then
+		local itemTable = ix.item.list[uniqueID]
+
+		if (itemTable and itemTable.isStackable) then
+			for _, v in pairs(self:GetItems()) do
+				if (v.uniqueID == uniqueID and PLUGIN.stack.CanStack(v, itemTable)) then
+					return self:ixcOrigAdd(uniqueID, v.gridX, v.gridY, data)
+				end
+			end
+		end
+	end
+
+	return self:ixcOrigAdd(uniqueID, x, y, data)
+end
 
 local ITEMMETA = ix.meta.item
 if (ITEMMETA) then
