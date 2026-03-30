@@ -103,6 +103,35 @@ ix.util.Include("cl_plugin.lua")
 -- Commands
 -- ============================================================
 
+local function ForceUnequipForDump(item, owner)
+	if (!item or item:GetData("equip") != true or !IsValid(owner)) then
+		return
+	end
+
+	item.player = owner
+	item.bGearDump = true
+
+	if (isfunction(item.Unequip)) then
+		item:Unequip(owner, false)
+	elseif (isfunction(item.RemoveOutfit)) then
+		item:RemoveOutfit(owner)
+	elseif (isfunction(item.RemovePart)) then
+		item:RemovePart(owner)
+	elseif (item.functions and item.functions.EquipUn and item.functions.EquipUn.OnRun) then
+		item.functions.EquipUn.OnRun(item)
+	else
+		item:SetData("equip", false)
+
+		if (item.OnUnequipped) then
+			item:OnUnequipped()
+		end
+	end
+
+	item.player = nil
+	item.bGearDump = nil
+	item:SetData("equipTime", nil)
+end
+
 concommand.Add("ix_gear_dump", function(ply, cmd, args)
 	if (IsValid(ply) and !ply:IsSuperAdmin()) then return end
 	
@@ -136,16 +165,7 @@ concommand.Add("ix_gear_dump", function(ply, cmd, args)
 	for _, item in ipairs(itemsToDump) do
 		-- Unequip if equipped
 		if (item:GetData("equip") == true) then
-			item.player = targetPly
-
-			if (item.functions and item.functions.EquipUn and item.functions.EquipUn.OnRun) then
-				item.functions.EquipUn.OnRun(item)
-			else
-				item:SetData("equip", false)
-			end
-
-			item.player = nil
-			item:SetData("equipTime", nil)
+			ForceUnequipForDump(item, targetPly)
 		end
 
 		-- Force transfer to world

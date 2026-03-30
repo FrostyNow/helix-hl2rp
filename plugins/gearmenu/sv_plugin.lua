@@ -214,6 +214,22 @@ local function TransferToMain(item, owner)
 	end)
 end
 
+local function RestoreUnequippedGearItems(owner, gearInv)
+	if (!IsValid(owner) or !gearInv) then return end
+
+	for _, item in pairs(gearInv:GetItems()) do
+		if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item) then
+			continue
+		end
+
+		-- Gear inventory should only contain actively equipped items. If an item was left behind
+		-- during death/revive handling, move it back into the player's carried inventory on spawn/load.
+		if (item.invID == gearInv:GetID() and item:GetData("equip") != true) then
+			TransferToMain(item, owner)
+		end
+	end
+end
+
 local function GetOrderedEquippedWeapons(character)
 	local inventory = character and character.GetInventory and character:GetInventory() or nil
 	local items = inventory and inventory.GetItems and inventory:GetItems() or {}
@@ -263,6 +279,11 @@ end)
 
 hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
 	if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item or !IsValid(owner)) then return end
+
+	if (item.bGearDump) then
+		item:SetData("equipTime", nil)
+		return
+	end
 	
 	-- Skip automatic transfer to main inventory if the player is dead.
 	-- This allows death plugins (like persistent_corpses) to handle the item correctly.
@@ -273,6 +294,39 @@ hook.Add("OnItemUnequipped", "ixGearMenu", function(item, owner)
 
 	item:SetData("equipTime", nil)
 	TransferToMain(item, owner)
+end)
+
+hook.Add("PlayerDeath", "ixGearMenuPreserveGearWeapons", function(client)
+	timer.Simple(0, function()
+		if (!IsValid(client)) then return end
+
+		local character = client:GetCharacter()
+		if (!character) then return end
+
+		local gearInvID = character:GetData("gearInvID")
+		local gearInv = gearInvID and ix.item.inventories[gearInvID]
+		if (!gearInv) then return end
+
+		local bChanged = false
+
+		for _, item in pairs(gearInv:GetItems()) do
+			if (!item or item.bPendingRemoval or ix.item.instances[item:GetID()] != item) then
+				continue
+			end
+
+			-- Weapon-type gear items are still conceptually equipped after death if they remain
+			-- in the gear inventory. Keep their state so the dead-state gear UI remains accurate
+			-- and respawn/revive restores them without bouncing them into the main inventory.
+			if (item.invID == gearInvID and item.isWeapon and item:GetData("equip") != true) then
+				item:SetData("equip", true)
+				bChanged = true
+			end
+		end
+
+		if (bChanged) then
+			PLUGIN:SyncGearSlots(client)
+		end
+	end)
 end)
 
 -- ============================================================
@@ -442,6 +496,12 @@ function PLUGIN:CanTransferItem(item, curInv, newInv)
 
 	local curIsGear = curInv and curInv.vars and curInv.vars.isGear
 	local newIsGear = (istable(newInv) and newInv.vars and newInv.vars.isGear) or false
+	local curIsCorpse = curInv and curInv.vars and curInv.vars.isCorpseInventory
+	local newIsCorpse = (istable(newInv) and newInv.vars and newInv.vars.isCorpseInventory) or false
+
+	if ((curIsGear or newIsGear) and (curIsCorpse or newIsCorpse)) then
+		return true
+	end
 
 	if (newIsGear or curIsGear) then
 		return false
@@ -481,6 +541,8 @@ function PLUGIN:CharacterLoaded(character)
 								end
 							end
 						end
+
+						RestoreUnequippedGearItems(client, inv)
 					end
 
 					self:SyncGearSlots(client)
@@ -518,6 +580,8 @@ function PLUGIN:PostPlayerLoadout(client)
 				end
 			end
 		end
+
+		RestoreUnequippedGearItems(client, gearInv)
 	end)
 end
 
