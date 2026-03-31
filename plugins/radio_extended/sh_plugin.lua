@@ -237,6 +237,10 @@ ix.lang.AddTable("korean", {
 	radioNotListening = "모든 채널 청취를 중지했습니다.",
 	["Radio Jammer"] = "라디오 재머",
 	radioJammerDesc = "특정 반경 내의 무전 주파수를 방해하는 장치입니다.",
+	["Active"] = "활성화",
+	["Inactive"] = "비활성화",
+	["Radius"] = "범위",
+	["units"] = "유닛",
 })
 
 -- Anonymous names, if radio callsigns are anonymous
