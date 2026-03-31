@@ -56,7 +56,11 @@ ix.lang.AddTable("english", {
     interactionVortShackle = "Shackle Vortigaunt",
     interactionVortShackleDesc = "Apply shackles to a free Vortigaunt.",
     interactionVortAlreadyFree = "That Vortigaunt is already free.",
-    interactionVortAlreadyShackled = "That Vortigaunt is already shackled."
+    interactionVortAlreadyShackled = "That Vortigaunt is already shackled.",
+    interactionHeal = "Heal",
+    interactionHealDesc = "Heal the person using a medical item.",
+    interactionRevive = "Revive",
+    interactionReviveDesc = "Revive the person using a medical item."
 })
 
 ix.lang.AddTable("korean", {
@@ -96,14 +100,19 @@ ix.lang.AddTable("korean", {
     interactionVortShackle = "보르티곤트 족쇄",
     interactionVortShackleDesc = "해방된 보르티곤트에게 족쇄를 채웁니다.",
     interactionVortAlreadyFree = "대상 보르티곤트는 이미 해방된 상태입니다.",
-    interactionVortAlreadyShackled = "대상 보르티곤트는 이미 족쇄가 채워져 있습니다."
+    interactionVortAlreadyShackled = "대상 보르티곤트는 이미 족쇄가 채워져 있습니다.",
+    interactionHeal = "치료하기",
+    interactionHealDesc = "의료 도구를 사용하여 대상을 치료합니다.",
+    interactionRevive = "소생시키기",
+    interactionReviveDesc = "의료 도구를 사용하여 대상을 소생시킵니다."
 })
 
 local function GetTargetName(viewer, target)
-    local targetCharacter = IsValid(target) and target:GetCharacter()
+    local targetPlayer = IsValid(target) and (target:IsPlayer() and target or target:GetNetVar("player"))
+    local targetCharacter = IsValid(targetPlayer) and targetPlayer:GetCharacter()
 
     if not (targetCharacter and IsValid(viewer) and viewer.GetCharacter) then
-        return IsValid(target) and target:Name() or "Unknown"
+        return IsValid(targetPlayer) and targetPlayer:Name() or (IsValid(target) and target:GetNetVar("ixPlayerName") or "Unknown")
     end
 
     local viewerCharacter = viewer:GetCharacter()
@@ -126,7 +135,7 @@ local function IsValidTarget(client, target)
         return false, "interactionMenuInvalidPlayer"
     end
 
-    if not (IsValid(target) and target:IsPlayer()) then
+    if not (IsValid(target) and (target:IsPlayer() or (target:GetClass() == "prop_ragdoll" and target:GetNetVar("player")))) then
         return false, "interactionMenuNeedValidTarget"
     end
 
@@ -134,7 +143,8 @@ local function IsValidTarget(client, target)
         return false, "interactionMenuSelfTarget"
     end
 
-    if not (client:GetCharacter() and target:GetCharacter()) then
+    local targetPlayer = target:IsPlayer() and target or target:GetNetVar("player")
+    if not (client:GetCharacter() and IsValid(targetPlayer) and targetPlayer:GetCharacter()) then
         return false, "interactionMenuMissingCharacter"
     end
 
@@ -192,7 +202,7 @@ function PLUGIN:GetInteractionTarget(client)
     local trace = client:GetEyeTraceNoCursor()
     local target = trace.Entity
 
-    if not (IsValid(target) and target:IsPlayer()) then
+    if not (IsValid(target) and (target:IsPlayer() or (target:GetClass() == "prop_ragdoll" and target:GetNetVar("player")))) then
         return NULL
     end
 
@@ -456,6 +466,7 @@ PLUGIN:RegisterInteraction("untie", {
     end
 })
 
+--[[
 PLUGIN:RegisterInteraction("recognise", {
     order = 30,
     name = "interactionRecognize",
@@ -479,6 +490,87 @@ PLUGIN:RegisterInteraction("recognise", {
             hook.Run("CharacterRecognized", client, targetCharacter:GetID())
         else
             client:NotifyLocalized("interactionMenuRecognizedTargetAlready", targetCharacter:GetName())
+        end
+    end
+})
+--]]
+
+PLUGIN:RegisterInteraction("heal", {
+    order = 32,
+    name = "interactionHeal",
+    description = "interactionHealDesc",
+    shouldShow = function(client, target)
+        return target:IsPlayer() and target:Alive() and ix.plugin.Get("easymedikit")
+    end,
+    canRun = function(client, target)
+        local character = client:GetCharacter()
+        local inventory = character:GetInventory()
+        local healItem
+
+        for _, item in pairs(inventory:GetItems()) do
+            if (item.functions and item.functions.heal) then
+                healItem = item
+                break
+            end
+        end
+
+        if not healItem then
+            return false, "noHealItem"
+        end
+
+        return true
+    end,
+    onRun = function(client, target)
+        local character = client:GetCharacter()
+        local inventory = character:GetInventory()
+        local healItem
+
+        for _, item in pairs(inventory:GetItems()) do
+            if (item.functions and item.functions.heal) then
+                healItem = item
+                break
+            end
+        end
+
+        if (healItem) then
+            healItem.player = client
+            healItem.functions.heal.OnRun(healItem)
+        end
+    end
+})
+
+PLUGIN:RegisterInteraction("revive", {
+    order = 35,
+    name = "interactionRevive",
+    description = "interactionReviveDesc",
+    shouldShow = function(client, target)
+        local corpsePlugin = ix.plugin.Get("persistent_corpses")
+        return target:GetClass() == "prop_ragdoll" and target:GetNetVar("player") and corpsePlugin
+    end,
+    canRun = function(client, target)
+        local corpsePlugin = ix.plugin.Get("persistent_corpses")
+        if not corpsePlugin then return false end
+
+        local character = client:GetCharacter()
+        local inventory = character:GetInventory()
+        local reviveItem
+
+        if (corpsePlugin.GetReviveItem) then
+            reviveItem = corpsePlugin:GetReviveItem(inventory)
+        else
+            reviveItem = inventory:HasItem("health_kit") or inventory:HasItem("health_vial") or inventory:HasItem("aed")
+        end
+
+        if not reviveItem then
+            return false, "noHealItem"
+        end
+
+        return true
+    end,
+    onRun = function(client, target)
+        local corpsePlugin = ix.plugin.Get("persistent_corpses")
+        if (corpsePlugin) then
+            corpsePlugin:StartCorpseRevive(client, target)
         end
     end
 })
