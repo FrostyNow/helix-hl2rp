@@ -5,6 +5,17 @@ resource.AddWorkshop("2291046370") -- the content addon
 -- Redundant constants and functions moved to sh_plugin.lua
 
 function PLUGIN:PlayerMessageSend(speaker, chatType, text, anonymous, receivers, rawText)
+	if (chatType == "breencast") then
+		local sounds, message = Schema.voices.GetVoiceList("breencast", rawText)
+
+		if (sounds) then
+			netstream.Start(nil, "voicePlay", sounds, 80, nil, false, "breencast")
+			return message
+		end
+
+		return text
+	end
+
 	if (chatType == "ic" or chatType == "w" or chatType == "y" or chatType == "dispatch" or chatType == "radio" or chatType == "radio_yell" or chatType == "radio_whisper" or chatType == "radio_eavesdrop" or chatType == "radio_eavesdrop_yell" or chatType == "radio_eavesdrop_whisper" or chatType == "broadcast" or chatType == "request" or chatType == "request_eavesdrop") then
 		local class = Schema.voices.GetClass(speaker)
 		local mode = self:GetModeFromChatType(chatType)
