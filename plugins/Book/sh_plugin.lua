@@ -1,3 +1,56 @@
 PLUGIN.name = "Writing Book"
-PLUGIN.author = " "
+PLUGIN.author = "aaaaa | Translated by Frosty"
 PLUGIN.description = "Writing Book and Share Knowledge"
+
+ix.lang.AddTable("english", {
+	bookDontNeed = "You already know more than this book teaches.",
+	bookIdiot = "You are too stupid to understand this book. (Need at least %s intelligence)",
+	bookSkillIncreased = "%s skill has increased to %s level!",
+	skillBookDesc = "A book with something written in it.",
+	bookResumed = "Resumes writing '%s'.",
+	bookNeedsBothNameDesc = "You must enter both a title and content.",
+	writing_Table = "Writing Table",
+	bookUnfinishedTitle = "Unfinished Book (Max. 5)",
+	bookWriteNew = "Write New Book",
+	bookUnfinishedList = "Unfinished Books",
+	bookTitlePlaceholder = "Book Title...",
+	bookSelectSkill = "Select a skill",
+	bookStartCrafting = "%s Crafting Start (10s)",
+	bookResumeCrafting = "Resume crafting (%s seconds remaining)",
+	bookReadBook = "Read",
+	bookEmptyContent = "An empty book.",
+	bookRecommendedLevel = "Recommended Level: %s ~ %s",
+	bookSkillLabel = "Skill: %s",
+	bookNone = "None",
+	bookCrafting = "Crafting book...",
+	bookDraftFull = "Storage is full. (Max. 5)",
+	bookProgressSaved = "Progress saved. (Remaining: %s seconds)",
+	bookFinishCrafting = "'%s' book crafting finished! (Recorded Skill: %s)",
+})
+
+ix.lang.AddTable("korean", {
+    bookDontNeed = "이미 이 책 이상의 지식을 갖추고 있어 배울 것이 없습니다.",
+	bookIdiot = "이 책의 내용을 이해하기에는 지식이 너무 부족합니다. (최소 지능 %s 필요)",
+	bookSkillIncreased = "%s 숙련도가 %s 레벨로 상승했습니다!",
+	["Book"] = "책",
+	skillBookDesc = "누군가가 무언가를 기록해둔 책입니다.",
+	bookResumed = "'%s' 작성 작업을 다시 시작합니다.",
+	bookNeedsBothNameDesc = "제목과 내용을 모두 입력해야 합니다.",
+	writing_Table = "글쓰기 작업대",
+	bookUnfinishedTitle = "미완성된 책 (최대 5권)",
+	bookWriteNew = "새 책 쓰기",
+	bookUnfinishedList = "미완성 책 목록",
+	bookTitlePlaceholder = "책 제목...",
+	bookSelectSkill = "기술을 선택하세요",
+	bookStartCrafting = "%s 제작 시작 (10초)",
+	bookResumeCrafting = "다시 작업 (%s초 남음)",
+	bookReadBook = "읽기",
+	bookEmptyContent = "빈 책입니다.",
+	bookRecommendedLevel = "권장 레벨: %s ~ %s",
+	bookSkillLabel = "기술: %s",
+	bookNone = "없음",
+	bookCrafting = "책 제작 중...",
+	bookDraftFull = "저장 공간이 가득 찼습니다. (최대 5개)",
+	bookProgressSaved = "진행도가 저장되었습니다. (남은 시간: %s초)",
+	bookFinishCrafting = "'%s' 책 제작 완료! (기록된 숙련도: %s)",
+})

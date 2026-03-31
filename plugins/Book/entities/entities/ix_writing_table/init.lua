@@ -83,7 +83,7 @@ net.Receive("ix_book_finish", function(len, client)
     end
 
     local uniqueID = "ixBookCraft_" .. client:SteamID64()
-    client:SetAction("책 제작중...", totalTime)
+    client:SetAction(L("bookCrafting", client), totalTime)
     client:SetNetVar("can_action", true)
 
     timer.Create(uniqueID, 1, totalTime, function()
@@ -107,13 +107,13 @@ net.Receive("ix_book_finish", function(len, client)
                 if (#ent.drafts[charID] < 5) then
                     table.insert(ent.drafts[charID], newDraft)
                 else
-                    client:Notify("저장 공간이 가득 찼습니다. (최대 5개)")
+                    client:NotifyLocalized("bookDraftFull")
                 end
             end
 
             client:SetAction(false)
             client:SetNetVar("can_action", false)
-            client:Notify("진행도가 저장되었습니다. (남은 시간: " .. repsLeft .. "초)")
+            client:NotifyLocalized("bookProgressSaved", repsLeft)
             timer.Remove(uniqueID)
             return
         end
@@ -134,7 +134,7 @@ net.Receive("ix_book_finish", function(len, client)
                 table.remove(ent.drafts[charID], targetIndex)
             end
             
-            client:Notify("'" .. title .. "' 책 제작 완료! (기록된 숙련도: " .. math.floor(skillLevel) .. ")")
+            client:NotifyLocalized("bookFinishCrafting", title, math.floor(skillLevel))
         end
     end)
 end)
