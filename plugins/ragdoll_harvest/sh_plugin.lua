@@ -128,6 +128,9 @@ ix.lang.AddTable("english", {
 	itemRibDesc = "A rib bone from a shattered corpse.",
 	itemSpineDesc = "A spine from a shattered corpse.",
 	notEnoughStrHarvest = "You are not strong enough to butcher this, or you need a melee weapon equipped.",
+	harvestNPC = "Capture",
+	harvestingNPC = "Capturing...",
+	missingEmptyVial = "You need an empty vial to capture this.",
 })
 
 ix.lang.AddTable("korean", {
@@ -142,6 +145,9 @@ ix.lang.AddTable("korean", {
 	["Spine"] = "척추",
 	itemSpineDesc = "산산조각 시체에서 나온 척추입니다.",
 	notEnoughStrHarvest = "도축하기에는 힘이 부족하거나, 근접 무기를 장착해야 합니다.",
+	harvestNPC = "포획하기",
+	harvestingNPC = "포획 중...",
+	missingEmptyVial = "이것을 포획하려면 빈 병이 필요합니다.",
 })
 
 local function CopyOptions(source)
@@ -201,17 +207,29 @@ function PLUGIN:GetBreakID(npc, ragdoll)
 end
 
 function PLUGIN:GetHarvestData(entity)
-	if (!IsValid(entity) or entity:GetClass() != "prop_ragdoll") then
+	if (!IsValid(entity)) then
 		return nil
 	end
 
-	local harvestID = entity:GetNetVar("ixHarvestCorpseType")
+	if (entity:GetClass() == "prop_ragdoll") then
+		local harvestID = entity:GetNetVar("ixHarvestCorpseType")
 
-	if (!harvestID) then
-		return nil
+		if (!harvestID) then
+			return nil
+		end
+
+		return self.harvestables[harvestID], harvestID
+	elseif (entity:IsNPC()) then
+		local harvestID = self:GetHarvestID(entity)
+
+		if (!harvestID) then
+			return nil
+		end
+
+		return self.harvestables[harvestID], harvestID
 	end
 
-	return self.harvestables[harvestID], harvestID
+	return nil
 end
 
 function PLUGIN:GetBreakData(entity)
@@ -260,8 +278,12 @@ function PLUGIN:CanHarvestEntity(entity)
 end
 
 if (CLIENT) then
-	function PLUGIN:PatchRagdollMenu(entity)
-		if (!IsValid(entity) or entity:GetClass() != "prop_ragdoll" or entity.ixHarvestMenuPatched) then
+	function PLUGIN:PatchEntityMenu(entity)
+		if (!IsValid(entity) or entity.ixHarvestMenuPatched) then
+			return
+		end
+
+		if (entity:GetClass() != "prop_ragdoll" and !entity:IsNPC()) then
 			return
 		end
 
@@ -273,7 +295,8 @@ if (CLIENT) then
 			local options = CopyOptions(isfunction(originalGetEntityMenu) and originalGetEntityMenu(this, client) or nil)
 
 			if (PLUGIN:CanHarvestEntity(this) and !this:GetNetVar("ixHarvestBusy", false)) then
-				options[L(HARVEST_OPTION_KEY, client)] = true
+				local label = this:IsNPC() and L("harvestNPC", client) or L(HARVEST_OPTION_KEY, client)
+				options[label] = true
 			end
 
 			return options
@@ -281,19 +304,42 @@ if (CLIENT) then
 	end
 
 	function PLUGIN:OnEntityCreated(entity)
-		if (entity:GetClass() != "prop_ragdoll") then
+		if (entity:GetClass() != "prop_ragdoll" and !entity:IsNPC()) then
 			return
 		end
 
 		timer.Simple(0, function()
 			if (IsValid(entity)) then
-				self:PatchRagdollMenu(entity)
+				self:PatchEntityMenu(entity)
 			end
 		end)
 	end
 end
 
 if (SERVER) then
+	function PLUGIN:OnEntityCreated(entity)
+		if (!entity:IsNPC()) then
+			return
+		end
+
+		local harvestID = self:GetHarvestID(entity)
+
+		if (harvestID) then
+			local originalOnOptionSelected = entity.OnOptionSelected
+
+			function entity:OnOptionSelected(client, option, data)
+				if (option == L("harvestNPC", client) or option == L(HARVEST_OPTION_KEY, client)) then
+					PLUGIN:BeginHarvest(client, self)
+					return
+				end
+
+				if (isfunction(originalOnOptionSelected)) then
+					return originalOnOptionSelected(self, client, option, data)
+				end
+			end
+		end
+	end
+
 	function PLUGIN:MarkHarvestableRagdoll(owner, ragdoll)
 		if (!IsValid(owner) or !IsValid(ragdoll) or ragdoll:GetClass() != "prop_ragdoll") then
 			return
@@ -330,7 +376,7 @@ if (SERVER) then
 		local originalOnOptionSelected = ragdoll.OnOptionSelected
 
 		function ragdoll:OnOptionSelected(client, option, data)
-			if (harvestID and option == L(HARVEST_OPTION_KEY, client)) then
+			if (harvestID and (option == L(HARVEST_OPTION_KEY, client) or option == L("harvestNPC", client))) then
 				PLUGIN:BeginHarvest(client, self)
 				return
 			end
@@ -466,23 +512,38 @@ if (SERVER) then
 
 		local character = client:GetCharacter()
 		if (character) then
-			local str = character:GetAttribute("str", 0)
-			local maxAttributes = ix.config.Get("maxAttributes", 30)
 			local inventory = character:GetInventory()
-			local hasMelee = false
 
-			if (inventory) then
-				for _, item in pairs(inventory:GetItems()) do
-					if (item.weaponCategory == "melee" and item:GetData("equip") == true) then
-						hasMelee = true
-						break
+			-- Antlion Grub special requirement handling
+			if (entity:IsNPC() and entity:GetClass() == "npc_antlion_grub") then
+				if (inventory) then
+					local emptyVial = inventory:HasItem("antlion_grub_empty")
+					if (!emptyVial) then
+						client:NotifyLocalized("missingEmptyVial")
+						return
+					end
+				else
+					return
+				end
+			else
+				-- Original Strength/Melee check for butchering
+				local str = character:GetAttribute("str", 0)
+				local maxAttributes = ix.config.Get("maxAttributes", 30)
+				local hasMelee = false
+
+				if (inventory) then
+					for _, item in pairs(inventory:GetItems()) do
+						if (item.weaponCategory == "melee" and item:GetData("equip") == true) then
+							hasMelee = true
+							break
+						end
 					end
 				end
-			end
 
-			if (str < (maxAttributes * 2 / 3) and !hasMelee) then
-				client:NotifyLocalized("notEnoughStrHarvest")
-				return
+				if (str < (maxAttributes * 2 / 3) and !hasMelee) then
+					client:NotifyLocalized("notEnoughStrHarvest")
+					return
+				end
 			end
 		end
 
@@ -502,7 +563,9 @@ if (SERVER) then
 
 		entity.ixHarvestBusyBy = client
 		entity:SetNetVar("ixHarvestBusy", true)
-		client:SetAction(HARVEST_ACTION_KEY, data.time or DEFAULT_HARVEST_TIME)
+		
+		local actionLabel = entity:IsNPC() and "harvestingNPC" or HARVEST_ACTION_KEY
+		client:SetAction(actionLabel, data.time or DEFAULT_HARVEST_TIME)
 
 		local uniqueID = "ixHarvestSound_" .. client:SteamID64()
 		timer.Create(uniqueID, 0.7, 0, function()
@@ -528,6 +591,23 @@ if (SERVER) then
 				return
 			end
 
+			-- Check requirement again on completion for NPCs
+			if (entity:IsNPC() and entity:GetClass() == "npc_antlion_grub") then
+				local inventory = character:GetInventory()
+				if (inventory) then
+					local emptyVial = inventory:HasItem("antlion_grub_empty")
+					if (!emptyVial) then
+						client:NotifyLocalized("missingEmptyVial")
+						entity:SetNetVar("ixHarvestBusy", false)
+						entity.ixHarvestBusyBy = nil
+						return
+					end
+					emptyVial:Remove()
+				else
+					return
+				end
+			end
+
 			entity:SetNetVar("ixHarvested", true)
 			entity:SetNetVar("ixHarvestBusy", false)
 			entity.ixHarvestBusyBy = nil
@@ -540,24 +620,33 @@ if (SERVER) then
 			local amount = math.max(1, math.random(minAmount, maxAmount))
 			local dropPos = entity:GetPos() + Vector(0, 0, 12)
 
-			if (liveData.effect) then
-				ParticleEffect(liveData.effect, dropPos, Angle(0, 0, 0))
-			end
+			-- Skip effects for live NPC capture as requested
+			if (!entity:IsNPC()) then
+				if (liveData.effect) then
+					ParticleEffect(liveData.effect, dropPos, Angle(0, 0, 0))
+				end
 
-			if (liveData.decal) then
-				local trace = util.TraceLine({
-					start = dropPos + Vector(0, 0, 32),
-					endpos = dropPos - Vector(0, 0, 128),
-					filter = entity
-				})
+				if (liveData.decal) then
+					local trace = util.TraceLine({
+						start = dropPos + Vector(0, 0, 32),
+						endpos = dropPos - Vector(0, 0, 128),
+						filter = entity
+					})
 
-				if (trace.Hit) then
-					util.Decal(liveData.decal, trace.HitPos + trace.HitNormal, trace.HitPos - trace.HitNormal, entity)
+					if (trace.Hit) then
+						util.Decal(liveData.decal, trace.HitPos + trace.HitNormal, trace.HitPos - trace.HitNormal, entity)
+					end
 				end
 			end
 
+			local inventory = character:GetInventory()
+
 			for i = 1, amount do
-				ix.item.Spawn(liveData.item, dropPos + VectorRand() * 10)
+				if (entity:IsNPC() and inventory) then
+					inventory:Add(liveData.item)
+				else
+					ix.item.Spawn(liveData.item, dropPos + VectorRand() * 10)
+				end
 			end
 
 			entity:Remove()
