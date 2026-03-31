@@ -76,19 +76,25 @@ function PLUGIN:InitializedChatClasses()
 		table.insert(targets, "Vortigese")
 	end
 
-	local overhearScale = ix.config.Get("overhearScale", 1.3)
+	local overhearScale = ix.config.Get("overhearScale", 1.2)
 	for _, v in ipairs(targets) do
 		local class = ix.chat.classes[v]
 		if (class) then
-			-- Handle if range is a number
-			if (class.range) then
-				class.range = class.range * (overhearScale * overhearScale)
-			-- Handle if GetRange function exists (common in Extended Radio)
-			elseif (class.GetRange) then
-				local r = class:GetRange()
-				class.range = r * r * (overhearScale * overhearScale)
+			-- Fix for inflation bug: store the original range to prevent it from growing on every reload
+			if (!class.baseRangeSqr) then
+				-- Handle if GetRange function exists (common in Extended Radio)
+				if (class.GetRange) then
+					local r = class:GetRange()
+					class.baseRangeSqr = r * r
+				elseif (class.range) then
+					class.baseRangeSqr = class.range
+				end
 			end
-			
+
+			if (class.baseRangeSqr) then
+				class.range = class.baseRangeSqr * (overhearScale * overhearScale)
+			end
+
 			-- Register the overhear-specific class
 			RegisterOverhear(v)
 		end
@@ -135,20 +141,22 @@ if (CLIENT) then
 
 		local class = ix.chat.classes[chatType]
 		if (class and IsValid(speaker) and speaker:IsPlayer()) then
-			local overhearScale = ix.config.Get("overhearScale", 1.3)
+			local overhearScale = ix.config.Get("overhearScale", 1.2)
+			-- Use baseRangeSqr if available, otherwise fallback to class.range
+			local rangeSqr = class.baseRangeSqr or class.range
+			
 			-- Attempt real-time range calculation if range property is missing
-			local rangeSqr = class.range
 			if (!rangeSqr and class.GetRange) then
 				local r = class:GetRange()
-				rangeSqr = r * r * (overhearScale * overhearScale)
+				rangeSqr = r * r
 			end
 
 			if (rangeSqr) then
 				local dist = (speaker:GetPos() - LocalPlayer():GetPos()):Length()
 				-- Calculate the original range (1.0x)
-				local normalRange = math.sqrt(rangeSqr / (overhearScale * overhearScale))
+				local normalRange = math.sqrt(rangeSqr)
 				
-				local fadeStartScale = ix.config.Get("overhearFadeStart", 0.5)
+				local fadeStartScale = ix.config.Get("overhearFadeStart", 0.3)
 				local minDist = normalRange * fadeStartScale
 				local maxDist = normalRange * overhearScale
 				
@@ -157,7 +165,7 @@ if (CLIENT) then
 					-- Calculate alpha based on distance ratio
 					local fraction = math.Clamp((dist - minDist) / (maxDist - minDist), 0, 1)
 					-- Convert percentage config to 0-255 alpha value
-					local minAlpha = (ix.config.Get("overhearMinAlpha", 5) / 100) * 255
+					local minAlpha = (ix.config.Get("overhearMinAlpha", 1) / 100) * 255
 					local alpha = Lerp(fraction, 255, minAlpha)
 					
 					info.data = info.data or {}
@@ -182,28 +190,29 @@ if (CLIENT) then
 						"<font=ixChatFont>"
 					}
 
-					if (ix.option.Get("chatTimestamps", false)) then
-						buffer[#buffer + 1] = "<color=150,150,150>("
-						buffer[#buffer + 1] = (ix.option.Get("24hourTime", false) and os.date("%H:%M") or os.date("%I:%M %p"))
-						buffer[#buffer + 1] = ") </color>" -- Added closing tag for safety
-					end
-
-					if (CHAT_CLASS) then
-						buffer[#buffer + 1] = string.format("<font=%s>", CHAT_CLASS.font or "ixChatFont")
-					end
-					
-					-- Robustly extract overhearAlpha
+					-- Robustly extract overhearAlpha FIRST so it can be used for timestamps and special elements
 					local overhearAlpha = 255
 					if (CHAT_CLASS and CHAT_CLASS.uniqueID:find("_overhear$") and CHAT_CLASS.overhearAlpha) then
 						overhearAlpha = CHAT_CLASS.overhearAlpha
 					else
 						-- Fallback: Scan elements for colors with alpha < 255
 						for _, v in ipairs(elements) do
-							if (v and type(v) != "string" and v.r and v.g and v.b and v.a and v.a < 255) then
+							if (istable(v) and v.r and v.g and v.b and v.a and v.a < 255) then
 								overhearAlpha = v.a
 								break
 							end
 						end
+					end
+
+					if (ix.option.Get("chatTimestamps", false)) then
+						local tsColor = Color(150, 150, 150, overhearAlpha)
+						buffer[#buffer + 1] = string.format("<color=%d,%d,%d,%d>(", tsColor.r, tsColor.g, tsColor.b, tsColor.a)
+						buffer[#buffer + 1] = (ix.option.Get("24hourTime", false) and os.date("%H:%M") or os.date("%I:%M %p"))
+						buffer[#buffer + 1] = ")</color> " -- Added closing tag and trailing space
+					end
+
+					if (CHAT_CLASS) then
+						buffer[#buffer + 1] = string.format("<font=%s>", CHAT_CLASS.font or "ixChatFont")
 					end
 
 					for _, v in ipairs(elements) do
@@ -213,12 +222,18 @@ if (CLIENT) then
 								buffer[#buffer + 1] = string.format("<img=%s,%dx%d> ", texture, v:Width(), v:Height())
 							end
 						elseif (istable(v) and v.r and v.g and v.b) then
-							buffer[#buffer + 1] = string.format("<color=%d,%d,%d>", v.r, v.g, v.b)
+							buffer[#buffer + 1] = string.format("<color=%d,%d,%d,%d>", v.r, v.g, v.b, v.a or 255)
 						elseif (type(v) == "Player" or (istable(v) and v.IsPlayer and v:IsPlayer())) then
 							local color = hook.Run("GetPlayerChatColor", v, CHAT_CLASS) or team.GetColor(v:Team())
 							local name = hook.Run("GetCharacterName", v, CHAT_CLASS and CHAT_CLASS.uniqueID) or v:GetName()
 							
-							buffer[#buffer + 1] = string.format("<color=%d,%d,%d>%s", color.r, color.g, color.b,
+							-- Apply overhear alpha to the player's name color
+							local r, g, b, a = color.r, color.g, color.b, (color.a or 255)
+							if (overhearAlpha < 255) then
+								a = (a * overhearAlpha) / 255
+							end
+
+							buffer[#buffer + 1] = string.format("<color=%d,%d,%d,%d>%s", r, g, b, a,
 								name:gsub("<", "&lt;"):gsub(">", "&gt;"))
 						else
 							-- Standard Helix processing for strings and other types
@@ -241,10 +256,11 @@ if (CLIENT) then
 
 					-- FINAL FIX: Manually inject alpha into the parsed markup blocks
 					-- This is the only way to reliably override the internal drawing alpha
+					-- HELIX NOTE: The property is 'colour', not 'color'
 					if (panel.markup and panel.markup.blocks and overhearAlpha < 255) then
 						for _, block in ipairs(panel.markup.blocks) do
-							if (block.color) then
-								block.color.a = overhearAlpha
+							if (block.colour) then
+								block.colour.a = overhearAlpha
 							end
 						end
 					end
