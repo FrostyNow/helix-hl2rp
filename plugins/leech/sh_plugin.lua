@@ -4,6 +4,13 @@ PLUGIN.name = "Leeches"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds aggressive leeches to deep water areas."
 
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
+
 ix.util.Include("sv_plugin.lua")
 
 ix.lang.AddTable("korean", {

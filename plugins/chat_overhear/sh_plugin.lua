@@ -3,6 +3,13 @@ PLUGIN.name = "Chat Overhear"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Displays overheard chat messages with transparency based on the distance between players."
 
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
+
 ix.config.Add("overhearScale", 1.2, "Maximum distance multiplier for overhearing.", nil, {
 	data = {min = 1.0, max = 5.0, decimals = 1},
 	category = "chat"
