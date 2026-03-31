@@ -22,7 +22,7 @@ if (SERVER) then
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetNetVar("active", false)
-		self:SetNetVar("radius", 2048)
+		self:SetNetVar("radius", 4096)
 		self:SetNetVar("strength", 100)
 		self:SetUseType(SIMPLE_USE)
 
@@ -73,7 +73,7 @@ else
 
 		if (self:GetNetVar("active")) then
 			local radius = container:AddRow("radius")
-			radius:SetText(string.format("%s: %d %s", L("Radius"), self:GetNetVar("radius", 2048), L("units")))
+			radius:SetText(string.format("%s: %d %s", L("Radius"), self:GetNetVar("radius", 4096), L("units")))
 			radius:SizeToContents()
 		end
 	end
