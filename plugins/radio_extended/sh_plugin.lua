@@ -677,7 +677,7 @@ function PLUGIN:GetJammerStrength(pos)
 	for _, jammer in pairs(jammers) do
 		if (jammer:GetNetVar("active", false)) then
 			local dist = pos:Distance(jammer:GetPos())
-			local radius = jammer:GetNetVar("radius", 512)
+			local radius = jammer:GetNetVar("radius", 2048)
 			local strength = jammer:GetNetVar("strength", 100)
 
 			if (dist <= radius) then
