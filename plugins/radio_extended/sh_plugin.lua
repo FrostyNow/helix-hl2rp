@@ -111,6 +111,7 @@ ix.lang.AddTable("english", {
 	radioNotBroadcasting = "You are no longer broadcasting over all channels.",
 	radioListening = "You are now listening to all channels.",
 	radioNotListening = "You are no longer listening to all channels.",
+	radioJammerDesc = "A device that jams radio frequencies in a specific radius.",
 })
 
 ix.lang.AddTable("korean", {
@@ -234,6 +235,8 @@ ix.lang.AddTable("korean", {
 	radioNotBroadcasting = "모든 채널 방송을 중지했습니다.",
 	radioListening = "무전기로 %s MHz에서 모든 채널을 청취합니다.",
 	radioNotListening = "모든 채널 청취를 중지했습니다.",
+	["Radio Jammer"] = "라디오 재머",
+	radioJammerDesc = "특정 반경 내의 무전 주파수를 방해하는 장치입니다.",
 })
 
 -- Anonymous names, if radio callsigns are anonymous
@@ -660,6 +663,27 @@ function isOutdoors(target)
 	local tr = util.TraceLine( util.GetPlayerTrace(target,target:GetUp()) )
 
 	return tr.HitSky
+end
+
+-- Helper function to get jammer strength at a certain position
+function PLUGIN:GetJammerStrength(pos)
+	local totalJam = 0
+	local jammers = ents.FindByClass("ix_radio_jammer")
+
+	for _, jammer in pairs(jammers) do
+		if (jammer:GetNetVar("active", false)) then
+			local dist = pos:Distance(jammer:GetPos())
+			local radius = jammer:GetNetVar("radius", 512)
+			local strength = jammer:GetNetVar("strength", 100)
+
+			if (dist <= radius) then
+				-- Distance-based decay for jamming strength
+				totalJam = totalJam + strength * (1 - (dist / radius))
+			end
+		end
+	end
+
+	return totalJam
 end
 
 -- Checks a player's inventory to see if their active radio is set to silent, and plays/doesn't play the appropriate sounds
@@ -1093,7 +1117,15 @@ function PLUGIN:OverwriteClasses()
 
 			-- Final adjustments
 			local garbleOffset = ix.config.Get("garbleOffset",0)
-			local frac = math.min(math.max(0, frac+garbleOffset), 100)
+			
+			local lp = LocalPlayer()
+
+			-- Radio Jammer Logic (Client-side / Receiver)
+			local speakerJam = data.jam or 0
+			local listenerJam = PLUGIN:GetJammerStrength(lp:GetPos())
+			local jamFrac = math.max(speakerJam, listenerJam)
+			
+			local frac = math.min(math.max(0, frac + garbleOffset + jamFrac), 100)
 
 			if (ix.config.Get("chatAutoFormat", true)) then
 				if (Schema and Schema.IsCombineChatWrapped and Schema:IsCombineChatWrapped(text)) then
@@ -1111,7 +1143,6 @@ function PLUGIN:OverwriteClasses()
 
 			-- Recognition Logic
 			local bRecognized = false
-			local lp = LocalPlayer()
 			if IsValid(speaker) and speaker:IsPlayer() then
 				local localChar = lp:GetCharacter()
 				local char = speaker:GetCharacter()
@@ -1679,7 +1710,8 @@ function PLUGIN:OverwriteClasses()
 			-- You can't listen to your active radio and transmit on it at the same time, unless you are broadcasting on that same frequency
 			if ( (item) and !item:GetData("scanning",false) ) or ( (item) and item:GetData("scanning",false) and item:GetData("broadcast",false) ) then
 				if (!client:IsRestricted()) then
-					ix.chat.Send(client, "radio", message,nil,nil,{repeater = bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+					local jamStrength = PLUGIN:GetJammerStrength(client:GetPos())
+					ix.chat.Send(client, "radio", message,nil,nil,{jam = jamStrength, repeater = bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
 					ix.chat.Send(client, "radio_eavesdrop", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie })
 				else
 					return "@notNow"
@@ -1786,7 +1818,8 @@ function PLUGIN:OverwriteClasses()
 				if (!client:IsRestricted()) then
 
 					if (item:GetData("duplex",item.duplex) and bRepeater != false) or (!item:GetData("duplex",item.duplex)) then
-						ix.chat.Send(client, "radio_yell", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+						local jamStrength = PLUGIN:GetJammerStrength(client:GetPos())
+						ix.chat.Send(client, "radio_yell", message,nil,nil,{jam = jamStrength, repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
 					end
 						ix.chat.Send(client, "radio_eavesdrop_yell", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie})
 				else
@@ -1892,7 +1925,8 @@ function PLUGIN:OverwriteClasses()
 				if (!client:IsRestricted()) then
 
 					if (item:GetData("duplex",item.duplex) and bRepeater != false) or (!item:GetData("duplex",item.duplex)) then
-						ix.chat.Send(client, "radio_whisper", message,nil,nil,{repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
+						local jamStrength = PLUGIN:GetJammerStrength(client:GetPos())
+						ix.chat.Send(client, "radio_whisper", message,nil,nil,{jam = jamStrength, repeater=bRepeater, broadcast = broadcasting, walkie = transmitWalkie, lrange=transmitLong, freq=client:GetCharacter():GetData("frequency"), chan=client:GetCharacter():GetData("channel")})
 					end
 						ix.chat.Send(client, "radio_eavesdrop_whisper", message,nil,nil,{quiet=item:GetData("silenced"),walkie = transmitWalkie})
 				else
