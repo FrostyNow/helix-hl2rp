@@ -106,6 +106,8 @@ LANGUAGE = {
 	recipeGunPartsDesc = "무기 부품을 가공하여 사용할 수 있도록 만듭니다.",
 	["Craft Fertilizer"] = "비료 제작",
 	recipeFertilizerDesc = "비료를 제작합니다.",
+	["Craft Empty Vial"] = "빈 유리병 제작",
+	recipeEmptyVialCraftDesc = "부품을 조립하여 개미귀신 유충을 붙잡을 빈 유리병을 만듭니다.",
 
 	["Scrap Buttercup"] = "버터컵 분해",
 	recipeScrapButtercupDesc = "버터컵을 분해하여 부품을 추출합니다.",
