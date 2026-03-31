@@ -164,6 +164,7 @@ function PLUGIN:InitializedChatClasses()
 end
 
 ix.lang.AddTable("english", {
+	breenDesc = "Former administrator of Black Mesa Research Facility and administrator of the Combine Overwatch, colonial government of the Universal Union.",
 	breenCast = "Breencast",
 	breenCastDesc = "Public Dr. Breen relay terminal driven by ixVoice.",
 	breenCastAutoplay = "Schedule",
@@ -190,6 +191,8 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
+	["Dr. Wallace Breen"] = "월리스 브린 박사",
+	breenDesc = "전임 블랙 메사 연구소 행정관이자, 우주 공동체의 식민정부인 감시인 정부의 관리자입니다.",
 	breenCast = "브린캐스트",
 	breenCastDesc = "ixVoice 기반 브린 박사 공공 송출 장치입니다.",
 	breenCastAutoplay = "스케줄",
@@ -224,35 +227,35 @@ ix.command.Add("BreenCast", {
 		local normalized = plugin:NormalizeSetName(value)
 
 		if (!plugin:IsVoicePluginAvailable()) then
-			return "@breenCastNoVoice"
+			return client:NotifyLocalized("breenCastNoVoice")
 		end
 
 		if (!plugin:HasRelayEntities()) then
-			return "@breenCastNoRelay"
+			return client:NotifyLocalized("breenCastNoRelay")
 		end
 
 		if (string.lower(string.Trim(tostring(value or ""))) == "false") then
 			local result = plugin:RequestStop()
 
 			if (result == "idle") then
-				return "@breenCastAlreadyStopped"
+				return client:NotifyLocalized("breenCastAlreadyStopped")
 			end
 
 			if (result == "stopped") then
-				return "@breenCastStopped"
+				return client:NotifyLocalized("breenCastStopped")
 			end
 
-			return "@breenCastStopping"
+			return client:NotifyLocalized("breenCastStopping")
 		end
 
 		if (!normalized) then
-			return "@breenCastUnknownSet"
+			return client:NotifyLocalized("breenCastUnknownSet")
 		end
 
 		local entries = plugin:GetSetEntries(normalized)
 
 		if (!entries or #entries <= 0) then
-			return "@breenCastNoLines"
+			return client:NotifyLocalized("breenCastNoLines")
 		end
 
 		local result = plugin:StartSet(normalized)

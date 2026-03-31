@@ -44,6 +44,10 @@ local function LookupFirstSequence(entity, names)
 	end
 end
 
+local function GetSequenceTarget(entity)
+	return IsValid(entity.ixBreencastNPC) and entity.ixBreencastNPC or entity
+end
+
 function ENT:GetAxisAlignedBoundingBox()
 	local mins, maxs = self:GetModelBounds()
 	mins = Vector(mins.x, mins.y, 0)
@@ -99,10 +103,11 @@ function ENT:ApplyIdleAnimation(force)
 		return
 	end
 
-	self:ResetSequence(sequence)
-	self:ResetSequenceInfo()
-	self:SetCycle(0)
-	self:SetPlaybackRate(1)
+	local target = GetSequenceTarget(self)
+	target:ResetSequence(sequence)
+	target:ResetSequenceInfo()
+	target:SetCycle(0)
+	target:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
 end
 
@@ -113,16 +118,18 @@ function ENT:PlayFallbackBroadcastAnimation()
 		self.ixBreencastFallbackIndex = 1
 	end
 
-	local sequence = self:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
+	local target = GetSequenceTarget(self)
+
+	local sequence = target:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
 
 	if (!IsValidSequence(sequence)) then
 		return
 	end
 
-	self:ResetSequence(sequence)
-	self:ResetSequenceInfo()
-	self:SetCycle(0)
-	self:SetPlaybackRate(1)
+	target:ResetSequence(sequence)
+	target:ResetSequenceInfo()
+	target:SetCycle(0)
+	target:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
 end
 
@@ -146,7 +153,8 @@ function ENT:StartSetScene(setID)
 		return false
 	end
 
-	local sceneEntity = self:PlayScene(scenePath)
+	local target = GetSequenceTarget(self)
+	local sceneEntity = target:PlayScene(scenePath)
 
 	if (IsValid(sceneEntity)) then
 		self.ixBreencastSceneEntity = sceneEntity
@@ -188,10 +196,52 @@ function ENT:Initialize()
 	self.ixBreencastLastSequence = nil
 	self.ixBreencastSceneEntity = nil
 	self.ixBreencastSceneID = nil
+	self.ixBreencastNPC = nil
+	self.ixBreencastSeq = nil
 
 	timer.Simple(0, function()
 		if (IsValid(self)) then
 			self:AlignToGround()
+
+			local npcName = "breencast_npc_" .. self:EntIndex()
+			
+			local npc = ents.Create("npc_breen")
+			if (IsValid(npc)) then
+				npc:SetPos(self:GetPos())
+				npc:SetAngles(self:GetAngles())
+				npc:SetName(npcName)
+				npc:SetKeyValue("spawnflags", "65536")
+				npc:Spawn()
+				npc:Activate()
+				
+				local phys = npc:GetPhysicsObject()
+				if (IsValid(phys)) then
+					phys:EnableGravity(false)
+				end
+				npc:SetNotSolid(true)
+				npc:SetNPCStatic(true)
+				
+				self:DeleteOnRemove(npc)
+				self.ixBreencastNPC = npc
+
+				self:SetNoDraw(true)
+				
+				local seq = ents.Create("scripted_sequence")
+				if (IsValid(seq)) then
+					seq:SetPos(self:GetPos())
+					seq:SetAngles(self:GetAngles())
+					seq:SetKeyValue("m_fMoveTo", "0")
+					seq:SetKeyValue("m_iszEntity", npcName)
+					seq:SetKeyValue("spawnflags", "480")
+					seq:Spawn()
+					seq:Activate()
+					seq:Fire("BeginSequence")
+					
+					self:DeleteOnRemove(seq)
+					self.ixBreencastSeq = seq
+				end
+			end
+
 			self:ApplyIdleAnimation(true)
 		end
 	end)
@@ -199,6 +249,9 @@ function ENT:Initialize()
 	timer.Simple(1, function()
 		if (IsValid(self)) then
 			self:AlignToGround()
+			if (IsValid(self.ixBreencastNPC)) then
+				self.ixBreencastNPC:SetPos(self:GetPos())
+			end
 			self:ApplyIdleAnimation(true)
 		end
 	end)
