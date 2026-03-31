@@ -1,5 +1,7 @@
 include("shared.lua")
 
+ENT.PopulateEntityInfo = true
+
 function ENT:Draw()
 	self:DrawModel()
 
@@ -8,7 +10,7 @@ function ENT:Draw()
 	local dlight = DynamicLight(self:EntIndex())
 
 	if (dlight) then
-		dlight.pos = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 2
+		dlight.pos = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 4
 		dlight.r = color.r
 		dlight.g = color.g
 		dlight.b = color.b
@@ -19,15 +21,18 @@ function ENT:Draw()
 	end
 end
 
-function ENT:OnPopulateTooltip(tooltip)
+function ENT:OnPopulateEntityInfo(tooltip)
 	local name = tooltip:AddRow("name")
 	name:SetImportant()
-	name:SetText(L("pagerButton"))
+	name:SetText(L("Pager Button"))
+	name:SizeToContents()
 
 	local description = tooltip:AddRow("description")
 	description:SetText(L("pagerButtonDesc"))
+	description:SizeToContents()
 
 	local usage = tooltip:AddRow("usage")
 	usage:SetText(L("pagerButtonUsage"))
 	usage:SetBackgroundColor(team.GetColor(FACTION_MPF))
+	usage:SizeToContents()
 end

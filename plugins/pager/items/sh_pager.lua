@@ -1,6 +1,6 @@
 ITEM.name = "Pager"
 ITEM.model = Model("models/gibs/shield_scanner_gib1.mdl")
-ITEM.description = "pagerSignalDesc"
+ITEM.description = "itemPagerDesc"
 ITEM.category = "Utility"
 ITEM.price = 50
 
@@ -24,16 +24,13 @@ ITEM.functions.Sync = {
 			if (targetPager) then
 				local clientChar = client:GetCharacter()
 				
-				-- Clear previous pairings to enforce 1:1 person-to-person
-				item:SetData("pairCharID", targetChar:GetID())
-
-				-- Pair B to A (Mutual)
-				targetPager:SetData("pairCharID", clientChar:GetID())
+				-- Mutually pair item IDs
+				item:SetData("pairItemID", targetPager.id)
+				targetPager:SetData("pairItemID", item.id)
 
 				client:NotifyLocalized("pagerSynced", targetChar:GetName())
 				target:NotifyLocalized("pagerSynced", clientChar:GetName())
 
-				-- Optional: notify via novelizer me from A
 				local plugin = ix.plugin.Get("pager")
 				if (plugin) then
 					plugin:SendPagerMe(client)
@@ -43,15 +40,11 @@ ITEM.functions.Sync = {
 				return false
 			end
 		elseif (IsValid(target) and target:GetClass() == "ix_pager_button") then
-			local clientChar = client:GetCharacter()
-
-			if (target.PairCharacter) then
-				target:PairCharacter(clientChar:GetID())
+			if (target.PairPager) then
+				target:PairPager(item.id)
 				
-				-- Notify client they've synced with button
-				client:NotifyLocalized("pagerSynced", "Pager Button")
-
-				item:SetData("pairCharID", nil) -- Reset person pairing
+				client:NotifyLocalized("pagerSynced", L("pagerButton", client))
+				item:SetData("pairItemID", nil)
 
 				local plugin = ix.plugin.Get("pager")
 				if (plugin) then
@@ -76,32 +69,38 @@ ITEM.functions.Signal = {
 	icon = "icon16/transmit.png",
 	OnRun = function(item)
 		local client = item.player
-		local pairCharID = item:GetData("pairCharID")
+		local curTime = CurTime()
+		local lastSignal = item:GetData("lastSignal", 0)
 
-		if (pairCharID) then
-			local targetPlayer
-			for _, v in ipairs(player.GetAll()) do
-				local char = v:GetCharacter()
-				if (char and char:GetID() == pairCharID) then
-					targetPlayer = v
-					break
-				end
-			end
+		-- 30-second cooldown check
+		if (curTime < lastSignal + 30) then
+			client:NotifyLocalized("pagerCooldown")
+			return false
+		end
 
-			if (IsValid(targetPlayer)) then
-				local plugin = ix.plugin.Get("pager")
-				if (plugin) then
-					-- Send 'me' for sender
-					plugin:SendPagerMe(client)
-					
-					-- Send 'it' for receiver
-					plugin:SendPagerIt(targetPlayer)
-				end
+		local pairItemID = item:GetData("pairItemID")
+
+		if (pairItemID) then
+			local id = tonumber(pairItemID)
+			if (!id) then return false end
+
+			local plugin = ix.plugin.Get("pager")
+			if (plugin) then
+				plugin:SendPagerMe(client)
 				
-				client:NotifyLocalized("pagerSignalSent")
-			else
-				client:NotifyLocalized("pagerTargetOffline")
+				local targetItem = ix.item.instances[id]
+				if (targetItem) then
+					local owner = targetItem:GetOwner()
+					if (IsValid(owner) and owner:IsPlayer()) then
+						plugin:SendPagerIt(owner)
+						client:NotifyLocalized("pagerSignalSent")
+						item:SetData("lastSignal", curTime) -- Update cooldown
+						return false
+					end
+				end
 			end
+			
+			client:NotifyLocalized("pagerTargetOffline")
 		else
 			client:NotifyLocalized("pagerNotSynced")
 		end

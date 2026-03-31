@@ -15,60 +15,62 @@ function ENT:Initialize()
 		physObj:Wake()
 	end
 
-	self.ixPairedChars = self.ixPairedChars or {}
+	self.ixPairedItems = self.ixPairedItems or {}
 	self:SetNetVar("hasPairs", false)
+	self.nextUseTime = 0
+end
+
+function ENT:Think()
+	if (self:GetCycle() < 1) then
+		self:NextThink(CurTime())
+		return true
+	end
 end
 
 function ENT:Use(client)
-	self:EmitSound("buttons/combine_button1.wav")
-	
-	local onlinePlayers = {}
-	for _, v in player.Iterator() do
-		local char = v:GetCharacter()
-		if (char) then
-			onlinePlayers[char:GetID()] = v
-		end
+	-- 30-second cooldown check (ignores sound and animation if active)
+	if (CurTime() < self.nextUseTime) then
+		return
 	end
+	
+	self:EmitSound("buttons/combine_button1.wav")
+	self.nextUseTime = CurTime() + 30
+	
+	local plugin = ix.plugin.Get("pager")
+	if (!plugin) then return end
 
 	local count = 0
-	local plugin = ix.plugin.Get("pager")
-	
-	if (plugin) then
-		for charID, _ in pairs(self.ixPairedChars) do
-			local targetPlayer = onlinePlayers[charID]
-			if (IsValid(targetPlayer)) then
-				plugin:SendPagerIt(targetPlayer)
+
+	-- Signal each paired item instance ONLY if it is currently in a player's possession
+	for itemID, _ in pairs(self.ixPairedItems) do
+		local item = ix.item.instances[tonumber(itemID)]
+		if (item) then
+			-- GetOwner() efficiently finds the player holding the item (including bag recursion)
+			local owner = item:GetOwner()
+			if (IsValid(owner) and owner:IsPlayer()) then
+				plugin:SendPagerIt(owner)
 				count = count + 1
 			end
 		end
 	end
 
 	if (count > 0) then
-		client:NotifyLocalized("Pager signal sent to " .. count .. " paired characters.")
+		client:NotifyLocalized("sentButtonSignals", count)
+		self:SetNetVar("hasPairs", true) -- Maintain green if successful
 	else
-		-- When signaling fails, output a random 'me' instead of notification
-		local phrases = {
-			"pagerButtonFail1",
-			"pagerButtonFail2",
-			"pagerButtonFail3"
-		}
-		local phrase = table.Random(phrases)
-		
-		-- Use the plugin's me sender to output from the button location
-		if (plugin) then
-			-- SendNovelMe usually takes a player, but here we want it from the button
-			-- Standard 'me' chat needs a speaker. Let's use the person who pressed it.
-			-- Or if we want it to be 'it' (unbound to player), we use SendPagerIt but localized.
-			-- The user said 'me', so we'll use the user as the speaker of the fruitless action.
-			plugin:SendPagerButtonFail(client)
-		end
+		plugin:SendPagerButtonFail(client)
+		self:SetNetVar("hasPairs", false) -- Turn red if no pagers responded
 	end
+
+	-- Animation trigger at the end
+	self:ResetSequence("press")
+	self:SetPlaybackRate(1.0)
+	self:NextThink(CurTime())
 end
 
-function ENT:PairCharacter(charID)
-	self.ixPairedChars[charID] = true
+function ENT:PairPager(itemID)
+	self.ixPairedItems[itemID] = true
 	self:SetNetVar("hasPairs", true)
-	-- Notification to client is handled in item OnRun
 end
 
 -- Save/Load support
@@ -81,14 +83,14 @@ function ENT:OnSave()
 	end
 
 	return {
-		pairedChars = self.ixPairedChars,
+		pairedItems = self.ixPairedItems,
 		motionDisabled = bMotionDisabled
 	}
 end
 
 function ENT:OnRestore(data)
-	self.ixPairedChars = data.pairedChars or {}
-	self:SetNetVar("hasPairs", table.Count(self.ixPairedChars) > 0)
+	self.ixPairedItems = data.pairedItems or {}
+	self:SetNetVar("hasPairs", table.Count(self.ixPairedItems) > 0)
 	
 	if (data.motionDisabled ~= nil) then
 		local physObj = self:GetPhysicsObject()

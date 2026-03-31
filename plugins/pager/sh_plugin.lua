@@ -12,6 +12,8 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 ]]
 
 ix.lang.AddTable("english", {
+	itemPagerDesc = "A communication device that sends and receives signals with another synchronized pager.",
+
 	pagerSyncDesc = "Pair this pager with another person.",
 	pagerSignalDesc = "Send a signal to the paired person.",
 	pagerNoTarget = "You are not looking at anyone!",
@@ -20,8 +22,8 @@ ix.lang.AddTable("english", {
 	pagerTargetOffline = "The paired person is no longer available.",
 	pagerNoPager = "The target does not have a pager to synchronize with!",
 	pagerSignalSent = "The signal has been sent.",
-	
-	pagerButton = "Pager Button",
+	pagerCooldown = "The pager is recharging! Please wait before sending another signal.",
+
 	pagerButtonDesc = "A button that signals all paired pagers when pressed.",
 	pagerButtonUsage = "Press <USE> to signal connected pagers.",
 	
@@ -37,21 +39,26 @@ ix.lang.AddTable("english", {
 	pagerButtonFail1 = "presses the button, but it makes a dry clicking sound with no further response.",
 	pagerButtonFail2 = "keys the button fruitlessly as it fails to connect with any active receiver.",
 	pagerButtonFail3 = "pushes the button, but only a faint electronic hum follows, indicating no signal was sent.",
+
+	sentButtonSignals = "Pager signal sent to %s paired pagers.",
 })
 
 ix.lang.AddTable("korean", {
+	["Pager"] = "호출기",
+	itemPagerDesc = "동기화된 다른 호출기와 신호를 주고받는 통신 장치입니다.",
+	["Pager Button"] = "호출 버튼",
 	["Sync"] = "동기화",
 	pagerSyncDesc = "이 호출기를 다른 사람과 동기화합니다.",
 	["Send Signal"] = "신호 보내기",
 	pagerSignalDesc = "동기화된 상대에게 신호를 보냅니다.",
 	pagerNoTarget = "대상을 조준하고 있지 않습니다!",
-	pagerSynced = "%s와 호출기를 동기화했습니다.",
+	pagerSynced = "%s에 호출기를 동기화했습니다.",
 	pagerNotSynced = "이 호출기는 아직 누구와도 동기화되지 않았습니다.",
 	pagerTargetOffline = "동기화된 상대가 현재 접속 중이 아닙니다.",
 	pagerNoPager = "상대방이 동기화할 호출기 아이템을 가지고 있지 않습니다!",
 	pagerSignalSent = "신호를 전송했습니다.",
-	
-	pagerButton = "호출기 신호 버튼",
+	pagerCooldown = "호출기가 재충전 중입니다! 잠시 후 다시 시도해 주세요.",
+
 	pagerButtonDesc = "눌렀을 때 연결된 모든 호출기에 신호를 보냅니다.",
 	pagerButtonUsage = "<사용>하여 연결된 호출기에 신호를 보냅니다.",
 
@@ -67,66 +74,65 @@ ix.lang.AddTable("korean", {
 	pagerButtonFail1 = "버튼을 누르지만, 마른 클릭 소리만 날 뿐 아무런 반응이 없습니다.",
 	pagerButtonFail2 = "버튼을 조작하지만 연결된 수신기가 없어 신호가 전송되지 않습니다.",
 	pagerButtonFail3 = "버튼을 누르지만 희미한 전자음만 들릴 뿐 신호는 가지 않습니다.",
+
+	sentButtonSignals = "호출기 %s개에 신호를 보냈습니다.",
 })
 
-function PLUGIN:SendPagerMe(client)
-	local phrases = {
-		"novelizerPagerUse1",
-		"novelizerPagerUse2",
-		"novelizerPagerUse3"
-	}
-	local phrase = table.Random(phrases)
-	local chatType = "me"
+-- Common function to send a localized chat message directly to players in range
+local function SendLocalizedProximityChat(speaker, chatType, phraseKey)
 	local class = ix.chat.classes[chatType]
+	if (!class) then return end
 
-	if (class) then
-		client:EmitSound("buttons/button18.wav", 60, 120) -- Use sound
-		for _, v in player.Iterator() do
-			if (v:GetCharacter() and class:CanHear(client, v)) then
-				ix.chat.Send(client, chatType, L(phrase, v), false, {v})
-			end
+	for _, v in player.Iterator() do
+		-- Suppress IC messages for noclipping or dead players
+		if (v:GetMoveType() == MOVETYPE_NOCLIP or !v:Alive()) then continue end
+		
+		if (v:GetCharacter() and class:CanHear(speaker, v)) then
+			net.Start("ixChatMessage")
+				net.WriteEntity(speaker)
+				net.WriteString(chatType)
+				net.WriteString(L(phraseKey, v))
+				net.WriteBool(false)
+				net.WriteTable({})
+			net.Send(v)
 		end
 	end
+end
+
+function PLUGIN:SendPagerMe(client)
+	-- Suppress signal action if sender is noclipping or dead
+	if (client:GetMoveType() == MOVETYPE_NOCLIP or !client:Alive()) then
+		return
+	end
+
+	local phrases = { "novelizerPagerUse1", "novelizerPagerUse2", "novelizerPagerUse3" }
+	local phrase = table.Random(phrases)
+
+	client:EmitSound("buttons/button18.wav", 60, 120)
+	SendLocalizedProximityChat(client, "me", phrase)
 end
 
 function PLUGIN:SendPagerIt(target)
-	local phrases = {
-		"pagerReceive1",
-		"pagerReceive2",
-		"pagerReceive3",
-		"pagerReceive4"
-	}
-	local phrase = table.Random(phrases)
-	local chatType = "it"
-	local class = ix.chat.classes[chatType]
-
-	if (class) then
-		target:EmitSound("buttons/blip1.wav", 75, 110) -- Beep sound
-		for _, v in player.Iterator() do
-			-- Use target's position for range check
-			if (v:GetCharacter() and class:CanHear(target, v)) then
-				ix.chat.Send(target, chatType, L(phrase, v), false, {v})
-			end
-		end
+	-- If it's a player, check if they can physically produce/receive the sound (not noclip/dead)
+	if (target:IsPlayer() and (target:GetMoveType() == MOVETYPE_NOCLIP or !target:Alive())) then
+		return
 	end
+
+	local phrases = { "pagerReceive1", "pagerReceive2", "pagerReceive3", "pagerReceive4" }
+	local phrase = table.Random(phrases)
+
+	target:EmitSound("buttons/blip1.wav", 75, 110)
+	SendLocalizedProximityChat(target, "it", phrase)
 end
 
 function PLUGIN:SendPagerButtonFail(client)
-	local phrases = {
-		"pagerButtonFail1",
-		"pagerButtonFail2",
-		"pagerButtonFail3"
-	}
-	local phrase = table.Random(phrases)
-	local chatType = "me"
-	local class = ix.chat.classes[chatType]
-
-	if (class) then
-		client:EmitSound("buttons/combine_button_locked.wav", 60, 100) -- Fruitless sound
-		for _, v in player.Iterator() do
-			if (v:GetCharacter() and class:CanHear(client, v)) then
-				ix.chat.Send(client, chatType, L(phrase, v), false, {v})
-			end
-		end
+	if (client:GetMoveType() == MOVETYPE_NOCLIP or !client:Alive()) then
+		return
 	end
+
+	local phrases = { "pagerButtonFail1", "pagerButtonFail2", "pagerButtonFail3" }
+	local phrase = table.Random(phrases)
+
+	client:EmitSound("buttons/combine_button_locked.wav", 60, 100)
+	SendLocalizedProximityChat(client, "me", phrase)
 end
