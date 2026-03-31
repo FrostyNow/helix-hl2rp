@@ -5,13 +5,13 @@ PLUGIN.description = "Adds /disallowitemtaking command"
 ix.lang.AddTable("english", {
 	itemTakingDisallowed = "The item is now not took-able.",
 	itemTakingAllowed = "The item is now took-able.",
-	cannotTakeItem = "You cannot take this item. It is disallowed by admin."
+	cannotTakeItem = "%s cannot be taken."
 })
 
 ix.lang.AddTable("korean", {
 	itemTakingDisallowed = "이제 이 아이템은 가져갈 수 없습니다.",
 	itemTakingAllowed = "이제 이 아이템은 가져갈 수 있습니다.",
-	cannotTakeItem = "당신은 이 아이템을 가져갈 수 없습니다. 관리자에 의해 비허용되었습니다."
+	cannotTakeItem = "%s(은)는 가져갈 수 없습니다."
 })
 
 ix.command.Add("DisallowItemTaking", {
@@ -76,10 +76,10 @@ ix.command.Add("ToggleItemTaking", {
 })
 
 function PLUGIN:CanPlayerTakeItem(client, item)
-	local itemTable = isentity(item) and item:GetItemTable() or item
+	local itemTable = isentity(item) and ix.item.instances[item.ixItemID] or item
 
-	if (itemTable and itemTable:GetData("cannotTake") == true) then
-		client:NotifyLocalized("cannotTakeItem")
+	if (itemTable and itemTable:GetData("cannotTake")) then
+		client:NotifyLocalized("cannotTakeItem", L(itemTable:GetName(), client))
 		return false
 	end
 end
@@ -92,8 +92,7 @@ properties.Add("disallow_taking", {
 		if (!IsValid(entity) or entity:GetClass() != "ix_item") then return false end
 		if (!client:IsAdmin()) then return false end
 
-		local item = entity:GetItemTable()
-		return item and !item:GetData("cannotTake")
+		return !entity:GetData("cannotTake")
 	end,
 	Action = function(self, entity)
 		self:MsgStart()
@@ -105,7 +104,7 @@ properties.Add("disallow_taking", {
 
 		if (!self:Filter(entity, client)) then return end
 
-		local item = entity:GetItemTable()
+		local item = ix.item.instances[entity.ixItemID]
 		if (item) then
 			item:SetData("cannotTake", true)
 			client:NotifyLocalized("itemTakingDisallowed")
@@ -121,8 +120,7 @@ properties.Add("allow_taking", {
 		if (!IsValid(entity) or entity:GetClass() != "ix_item") then return false end
 		if (!client:IsAdmin()) then return false end
 
-		local item = entity:GetItemTable()
-		return item and item:GetData("cannotTake")
+		return entity:GetData("cannotTake")
 	end,
 	Action = function(self, entity)
 		self:MsgStart()
@@ -134,7 +132,7 @@ properties.Add("allow_taking", {
 
 		if (!self:Filter(entity, client)) then return end
 
-		local item = entity:GetItemTable()
+		local item = ix.item.instances[entity.ixItemID]
 		if (item) then
 			item:SetData("cannotTake", nil)
 			client:NotifyLocalized("itemTakingAllowed")
