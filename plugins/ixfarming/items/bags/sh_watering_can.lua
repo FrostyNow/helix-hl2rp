@@ -51,7 +51,7 @@ ITEM.functions.Water = {
 						entity:SetWaterQuality(entity:GetWaterQuality() + 1)
 					end
 					
-					client:NotifyLocalized("farmWaterGiven", L(waterItem.name))
+					client:NotifyLocalized("farmWaterGiven", L(waterItem.name, client))
 					waterItem:Remove()
 					return false
 				else
