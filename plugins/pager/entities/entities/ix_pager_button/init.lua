@@ -28,13 +28,13 @@ function ENT:Think()
 end
 
 function ENT:Use(client)
-	-- 30-second cooldown check (ignores sound and animation if active)
+	-- 5-second cooldown check (ignores sound and animation if active)
 	if (CurTime() < self.nextUseTime) then
 		return
 	end
 	
 	self:EmitSound("buttons/combine_button1.wav")
-	self.nextUseTime = CurTime() + 30
+	self.nextUseTime = CurTime() + 5
 	
 	local plugin = ix.plugin.Get("pager")
 	if (!plugin) then return end

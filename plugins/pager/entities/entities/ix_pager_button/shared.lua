@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.PrintName = "Pager Button"
-ENT.Category = "Helix - Pager"
+ENT.Category = "Helix"
 ENT.Spawnable = true
 ENT.AdminOnly = true
 
