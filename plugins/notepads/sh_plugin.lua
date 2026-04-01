@@ -86,6 +86,15 @@ else
 				note:SetPos(v.pos)
 				note:SetAngles(v.ang)
 				note:Spawn()
+
+				if (v.frozen) then
+					local phys = note:GetPhysicsObject()
+
+					if (phys:IsValid()) then
+						phys:EnableMotion(false)
+					end
+				end
+
 				note:Activate()
 				note:SetNetVar("ownerChar", v.owner)
 				note.id = v.id
@@ -102,7 +111,8 @@ else
 
 		for _, v in ipairs(ents.GetAll()) do
 			if (v:GetClass() == "ix_note") then
-				table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:GetOwner()})
+				local phys = v:GetPhysicsObject()
+				table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:GetOwner(), frozen = (phys:IsValid() and !phys:IsMoveable())})
 				table.insert(validNotes, v.id)
 			end
 		end
