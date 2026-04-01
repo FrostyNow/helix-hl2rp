@@ -202,7 +202,14 @@ ix.container.Register("models/hls/alyxports/wood_crate004.mdl", {
 	name = "Crate",
 	description = "containerCrateDesc",
 	width = 3,
-	height = 1,
+	height = 2,
+})
+
+ix.container.Register("models/hls/hawke/combine_crate_closed.mdl", {
+	name = "Combine Container",
+	description = "containerCombineCrateDesc",
+	width = 3,
+	height = 2,
 })
 
 ix.container.Register("models/hls/alyxports/cardboard_box_1.mdl", {
