@@ -1,7 +1,7 @@
 
 ITEM.name = "Nuclear Material"
 ITEM.description = "itemNuclearDesc"
-ITEM.price = 300
+ITEM.price = 10000
 ITEM.model = "models/mosi/fallout4/props/junk/components/nuclear.mdl"
 ITEM.isjunk = true
 ITEM.isStackable = true
