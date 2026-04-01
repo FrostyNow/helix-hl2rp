@@ -269,9 +269,9 @@ ix.command.Add("BreenCast", {
 		local displayName = plugin:GetSetDisplayName(normalized)
 
 		if (result == "queued") then
-			return string.format("breenCastSwitched", displayName)
+			return client:NotifyLocalized("breenCastSwitched", displayName)
 		end
 
-		return string.format("breenCastStarted", displayName)
+		return client:NotifyLocalized("breenCastStarted", displayName)
 	end
 })

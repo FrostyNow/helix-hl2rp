@@ -6,7 +6,7 @@ local MODEL_PATH = "models/breen.mdl"
 local SET_SCENES = {
 	welcome = "scenes/breencast/welcome.vcd",
 	instinct = "scenes/breencast/instinct.vcd",
-	collaboration = "scenes/breencast/collaboration.vcd"
+	collaboration = "scenes/breencast/collaboration_plaza.vcd"
 }
 local IDLE_SEQUENCE_NAMES = {
 	"idle_all_01",
@@ -25,6 +25,31 @@ local FALLBACK_BROADCAST_SEQUENCES = {
 	"br_welcomeshort",
 	"br_welcome"
 }
+local FLEX_CANDIDATES = {
+	jaw = {
+		"jaw_drop",
+		"phoneme_ou",
+		"phoneme_big_a"
+	},
+	smileLeft = {
+		"left_lip_corner_puller",
+		"left_corner_puller",
+		"left_smile"
+	},
+	smileRight = {
+		"right_lip_corner_puller",
+		"right_corner_puller",
+		"right_smile"
+	},
+	browLeft = {
+		"left_inner_raiser",
+		"left_outer_raiser"
+	},
+	browRight = {
+		"right_inner_raiser",
+		"right_outer_raiser"
+	}
+}
 
 local function GetTimerID(entity, suffix)
 	return "ixBreencast.Entity." .. suffix .. "." .. entity:EntIndex()
@@ -42,10 +67,6 @@ local function LookupFirstSequence(entity, names)
 			return sequence
 		end
 	end
-end
-
-local function GetSequenceTarget(entity)
-	return IsValid(entity.ixBreencastNPC) and entity.ixBreencastNPC or entity
 end
 
 function ENT:GetAxisAlignedBoundingBox()
@@ -103,11 +124,10 @@ function ENT:ApplyIdleAnimation(force)
 		return
 	end
 
-	local target = GetSequenceTarget(self)
-	target:ResetSequence(sequence)
-	target:ResetSequenceInfo()
-	target:SetCycle(0)
-	target:SetPlaybackRate(1)
+	self:ResetSequence(sequence)
+	self:ResetSequenceInfo()
+	self:SetCycle(0)
+	self:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
 end
 
@@ -118,19 +138,85 @@ function ENT:PlayFallbackBroadcastAnimation()
 		self.ixBreencastFallbackIndex = 1
 	end
 
-	local target = GetSequenceTarget(self)
-
-	local sequence = target:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
+	local sequence = self:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
 
 	if (!IsValidSequence(sequence)) then
 		return
 	end
 
-	target:ResetSequence(sequence)
-	target:ResetSequenceInfo()
-	target:SetCycle(0)
-	target:SetPlaybackRate(1)
+	self:ResetSequence(sequence)
+	self:ResetSequenceInfo()
+	self:SetCycle(0)
+	self:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
+end
+
+local function LookupFlexID(entity, candidates)
+	if (!entity.GetFlexIDByName) then
+		return
+	end
+
+	for _, name in ipairs(candidates) do
+		local flexID = entity:GetFlexIDByName(name)
+
+		if (isnumber(flexID) and flexID >= 0) then
+			return flexID
+		end
+	end
+end
+
+function ENT:ResolveFlexControllers()
+	if (self.ixBreencastFlexIDs) then
+		return self.ixBreencastFlexIDs
+	end
+
+	self.ixBreencastFlexIDs = {}
+
+	for key, names in pairs(FLEX_CANDIDATES) do
+		self.ixBreencastFlexIDs[key] = LookupFlexID(self, names)
+	end
+
+	return self.ixBreencastFlexIDs
+end
+
+function ENT:SetFlexWeightSafe(key, weight)
+	if (!self.SetFlexWeight) then
+		return
+	end
+
+	local flexID = self:ResolveFlexControllers()[key]
+
+	if (isnumber(flexID) and flexID >= 0) then
+		self:SetFlexWeight(flexID, math.Clamp(weight or 0, 0, 1))
+	end
+end
+
+function ENT:ClearBroadcastExpression()
+	self:SetFlexWeightSafe("jaw", 0)
+	self:SetFlexWeightSafe("smileLeft", 0)
+	self:SetFlexWeightSafe("smileRight", 0)
+	self:SetFlexWeightSafe("browLeft", 0)
+	self:SetFlexWeightSafe("browRight", 0)
+	self:SetPoseParameter("head_pitch", 0)
+	self:SetPoseParameter("head_yaw", 0)
+	self:SetPoseParameter("eyes_updown", 0)
+	self:SetPoseParameter("eyes_rightleft", 0)
+end
+
+function ENT:UpdateBroadcastExpression(currentTime)
+	local pulse = math.abs(math.sin(currentTime * 7.5))
+	local sway = math.sin(currentTime * 1.35)
+	local glance = math.sin(currentTime * 0.85)
+
+	self:SetFlexWeightSafe("jaw", 0.12 + pulse * 0.58)
+	self:SetFlexWeightSafe("smileLeft", 0.04 + pulse * 0.12)
+	self:SetFlexWeightSafe("smileRight", 0.05 + pulse * 0.1)
+	self:SetFlexWeightSafe("browLeft", 0.08 + math.max(sway, 0) * 0.14)
+	self:SetFlexWeightSafe("browRight", 0.08 + math.max(-sway, 0) * 0.14)
+	self:SetPoseParameter("head_pitch", 1.5 + sway * 4)
+	self:SetPoseParameter("head_yaw", glance * 8)
+	self:SetPoseParameter("eyes_updown", sway * 1.5)
+	self:SetPoseParameter("eyes_rightleft", glance * 2)
 end
 
 function ENT:StopSetScene()
@@ -149,12 +235,15 @@ function ENT:StartSetScene(setID)
 
 	self:StopSetScene()
 
-	if (!scenePath) then
+	if (!scenePath or !file.Exists(scenePath, "GAME")) then
 		return false
 	end
 
-	local target = GetSequenceTarget(self)
-	local sceneEntity = target:PlayScene(scenePath)
+	if (!self.PlayScene) then
+		return false
+	end
+
+	local sceneEntity = self:PlayScene(scenePath)
 
 	if (IsValid(sceneEntity)) then
 		self.ixBreencastSceneEntity = sceneEntity
@@ -174,12 +263,14 @@ function ENT:Initialize()
 	self:SetSolid(SOLID_BBOX)
 	self:DrawShadow(true)
 	self:InitPhysObj()
+	self:SetCollisionBounds(self:GetAxisAlignedBoundingBox())
 	self:AddCallback("OnAngleChange", function(entity)
 		local mins, maxs = entity:GetAxisAlignedBoundingBox()
 
 		entity:SetCollisionBounds(mins, maxs)
 		entity:AlignToGround()
 	end)
+
 	self:SetPlaying(false)
 	self:SetLooping(true)
 	self:SetBroadcasting(false)
@@ -190,69 +281,25 @@ function ENT:Initialize()
 	self:SetBroadcastDuration(0)
 	self:SetCurrentText("")
 	self:SetCurrentSource("")
-	self.lastFrameAdvance = CurTime()
+
 	self.ixBreencastIdleSequence = LookupFirstSequence(self, IDLE_SEQUENCE_NAMES)
 	self.ixBreencastFallbackIndex = 0
 	self.ixBreencastLastSequence = nil
 	self.ixBreencastSceneEntity = nil
 	self.ixBreencastSceneID = nil
-	self.ixBreencastNPC = nil
-	self.ixBreencastSeq = nil
+	self.ixBreencastFlexIDs = nil
+
+	-- NPC-specific initialization for VCDs
+	if (self.SetCapability) then
+		self:SetCapability(CAP_ANIMATEDFACE)
+		self:SetCapability(CAP_TURN_HEAD)
+	end
 
 	timer.Simple(0, function()
 		if (IsValid(self)) then
 			self:AlignToGround()
-
-			local npcName = "breencast_npc_" .. self:EntIndex()
-			
-			local npc = ents.Create("npc_breen")
-			if (IsValid(npc)) then
-				npc:SetPos(self:GetPos())
-				npc:SetAngles(self:GetAngles())
-				npc:SetName(npcName)
-				npc:SetKeyValue("spawnflags", "65536")
-				npc:Spawn()
-				npc:Activate()
-				
-				local phys = npc:GetPhysicsObject()
-				if (IsValid(phys)) then
-					phys:EnableGravity(false)
-				end
-				npc:SetNotSolid(true)
-				npc:SetNPCStatic(true)
-				
-				self:DeleteOnRemove(npc)
-				self.ixBreencastNPC = npc
-
-				self:SetNoDraw(true)
-				
-				local seq = ents.Create("scripted_sequence")
-				if (IsValid(seq)) then
-					seq:SetPos(self:GetPos())
-					seq:SetAngles(self:GetAngles())
-					seq:SetKeyValue("m_fMoveTo", "0")
-					seq:SetKeyValue("m_iszEntity", npcName)
-					seq:SetKeyValue("spawnflags", "480")
-					seq:Spawn()
-					seq:Activate()
-					seq:Fire("BeginSequence")
-					
-					self:DeleteOnRemove(seq)
-					self.ixBreencastSeq = seq
-				end
-			end
-
 			self:ApplyIdleAnimation(true)
-		end
-	end)
-
-	timer.Simple(1, function()
-		if (IsValid(self)) then
-			self:AlignToGround()
-			if (IsValid(self.ixBreencastNPC)) then
-				self.ixBreencastNPC:SetPos(self:GetPos())
-			end
-			self:ApplyIdleAnimation(true)
+			self:ClearBroadcastExpression()
 		end
 	end)
 end
@@ -294,6 +341,7 @@ function ENT:FinishBroadcast(stopScene)
 		self:StopSetScene()
 	end
 
+	self:ClearBroadcastExpression()
 	self:ApplyIdleAnimation(true)
 	timer.Remove(GetTimerID(self, "clear"))
 end
@@ -330,19 +378,31 @@ end
 function ENT:OnRemove()
 	timer.Remove(GetTimerID(self, "clear"))
 	self:StopSetScene()
+	self:ClearBroadcastExpression()
 end
 
 function ENT:Think()
 	local currentTime = CurTime()
-	local delta = math.max(currentTime - (self.lastFrameAdvance or currentTime), 0)
+
+	if (self:IsRelayActive()) then
+		if (!IsValid(self.ixBreencastSceneEntity)) then
+			-- Only apply manual expressions if no VCD is playing
+			self:UpdateBroadcastExpression(currentTime)
+
+			if (self:GetCycle() >= 0.98) then
+				self:PlayFallbackBroadcastAnimation()
+			end
+		end
+	else
+		if (!IsValid(self.ixBreencastSceneEntity)) then
+			self:ClearBroadcastExpression()
+		end
+	end
 
 	if (!self:IsRelayActive() and !IsValid(self.ixBreencastSceneEntity)) then
 		self:ApplyIdleAnimation(false)
 	end
 
-	self:FrameAdvance(delta)
-	self.lastFrameAdvance = currentTime
 	self:NextThink(currentTime)
-
 	return true
 end

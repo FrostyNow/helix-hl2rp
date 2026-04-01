@@ -1,8 +1,8 @@
-ENT.Type = "anim"
-ENT.Base = "base_anim"
+ENT.Type = "ai"
+ENT.Base = "base_ai"
 ENT.PrintName = "Breencast"
-ENT.Author = "Antigravity"
-ENT.Category = "Helix"
+ENT.Author = "Frosty"
+ENT.Category = "HL2 RP"
 ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.RenderGroup = RENDERGROUP_OPAQUE

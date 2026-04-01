@@ -11,9 +11,13 @@ CAMI.RegisterPrivilege({
 
 ix.lang.AddTable("english", {
 	items = "Items",
+	spawnIntoContainer = "Spawn into Container",
+	containerFull = "This container is full.",
 })
 ix.lang.AddTable("korean", {
 	items = "아이템",
+	spawnIntoContainer = "보관함에 스폰",
+	containerFull = "이 보관함은 가득 찼습니다.",
 })
 
 if (SERVER) then
@@ -62,6 +66,34 @@ if (SERVER) then
 		hook.Run("PlayerGaveItem", ply, ply:GetCharacter(), uniqueID, 1)
 	end)
 
+	netstream.Hook("MenuItemSpawnIntoContainer", function(ply, uniqueID, entity)
+		if (!IsValid(ply)) then return end
+		if (!CAMI.PlayerHasAccess(ply, "Helix - Item Menu")) then return end
+
+		if (!IsValid(entity) or entity:GetClass() ~= "ix_container") then
+			return
+		end
+
+		local inventory = entity:GetInventory()
+		if (!inventory) then
+			ply:Notify("This container has no inventory.")
+			return
+		end
+
+		local itemTable = ix.item.Get(uniqueID)
+		if (!itemTable) then return end
+
+		local x, y, error = inventory:CanAdd(uniqueID)
+		if (!x) then
+			ply:Notify(error or L("containerFull", ply))
+			return
+		end
+
+		inventory:Add(uniqueID)
+		ix.log.Add(ply, "itemListSpawnedIntoContainer", itemTable.name, entity:GetDisplayName())
+		ply:Notify(string.format("Spawned %s into %s.", itemTable.name, entity:GetDisplayName()))
+	end)
+
 	function PLUGIN:PlayerLoadedCharacter(ply)
 		netstream.Start(ply, "CheckForItemTab")
 	end
@@ -71,6 +103,9 @@ if (SERVER) then
 	end)
 	ix.log.AddType("itemListGiveItem", function(ply, name)
 		return string.format("%s has given himself a %s.", ply:GetName(), name)
+	end)
+	ix.log.AddType("itemListSpawnedIntoContainer", function(ply, name, containerName)
+		return string.format("%s has spawned a %s into %s.", ply:GetName(), name, containerName)
 	end)
 else
 	local icons = {
@@ -129,6 +164,14 @@ else
 			menu:AddOption("Give to Self", function()
 				netstream.Start("MenuItemGive", data.uniqueID)
 			end)
+
+			local entity = LocalPlayer():GetEyeTraceNoCursor().Entity
+
+			if (IsValid(entity) and entity:GetClass() == "ix_container") then
+				menu:AddOption(L("spawnIntoContainer"), function()
+					netstream.Start("MenuItemSpawnIntoContainer", data.uniqueID, entity)
+				end)
+			end
 
 			menu:Open()
 

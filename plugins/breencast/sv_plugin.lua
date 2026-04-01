@@ -280,9 +280,20 @@ end
 
 function PLUGIN:OnEntityRemoved(entity)
 	if (entity:GetClass() == "ix_breencast") then
+		local otherRelays = 0
+		for _, v in ipairs(self:GetRelayEntities()) do
+			if (IsValid(v) and v != entity) then
+				otherRelays = otherRelays + 1
+			end
+		end
+
+		if (otherRelays == 0) then
+			self:StopBecauseUnavailable()
+		end
+
 		timer.Simple(0, function()
-			if (!self:HasRelayEntities()) then
-				self:StopBecauseUnavailable()
+			if (ix.plugin.Get("breencast") == self) then
+				self:SaveData()
 			end
 		end)
 	end

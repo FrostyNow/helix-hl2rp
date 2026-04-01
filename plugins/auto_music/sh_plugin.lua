@@ -1,4 +1,4 @@
-local PLUGIN = PLUGIN or table.Count(ix and ix.plugin.list or {})
+local PLUGIN = PLUGIN
 
 PLUGIN.name = "Auto Music System"
 PLUGIN.author = "Frosty"
@@ -56,8 +56,14 @@ ix.command.Add("MusicPlay", {
 		if not MediaPlayer then return "MediaPlayer addon is required." end
 
 		local mp = MediaPlayer.GetById("auto_music")
+		
+		-- Try to create it if it doesn't exist yet (server-side)
+		if not mp and SERVER then
+			mp = MediaPlayer.Create("auto_music", "base")
+		end
+
 		if not mp then
-			return "Music player not initialized."
+			return "Music player not initialized. Ensure MediaPlayer addon is working."
 		end
 		
 		local category = PLUGIN.MusicCategories[string.lower(categoryName)]
@@ -73,7 +79,7 @@ ix.command.Add("MusicPlay", {
 			return "Failed to resolve selected URL format."
 		end
 		
-		mp:RequestMedia(media, client)
+		mp:AddMedia(media)
 		return "Requested to play random track from '" .. categoryName .. "' category."
 	end
 })

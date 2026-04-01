@@ -23,6 +23,7 @@ function ENT:OnPopulateEntityInfo(tooltip)
 	desc:SetText(L("breenDesc"))
 	desc:SizeToContents()
 
+	local client = LocalPlayer()
 	if (client:IsAdmin()) then
 		local hint = tooltip:AddRow("hint")
 		hint:SetText(L("breenCastUseHint"))

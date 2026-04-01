@@ -50,7 +50,7 @@ function PLUGIN:HUDPaint()
 	local mp = MediaPlayer.GetById("auto_music")
 	if not mp then return end
 	
-	local media = mp:CurrentMedia()
+	local media = mp:GetMedia()
 	if not IsValid(media) then return end
 	
 	-- Native GM music volume logic
