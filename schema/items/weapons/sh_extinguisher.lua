@@ -1,7 +1,7 @@
 ITEM.name = "Extinguisher"
 ITEM.description = "extinguisherDesc"
 ITEM.class = "weapon_extinguisher"
-ITEM.weaponCategory = "grenade"
+ITEM.weaponCategory = "special"
 ITEM.price = 200
 ITEM.model = "models/weapons/w_fire_extinguisher.mdl"
 ITEM.width = 1
