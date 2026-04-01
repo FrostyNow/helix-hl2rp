@@ -4,6 +4,13 @@ PLUGIN.name = "Breencast"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Breencast relay scheduling built on top of ixVoice playback."
 
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
+
 PLUGIN.defaultVolume = 80
 PLUGIN.defaultSpacing = 0.1
 PLUGIN.setLineDelay = 0.5
