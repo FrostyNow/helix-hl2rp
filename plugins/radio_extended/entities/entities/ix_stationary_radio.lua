@@ -31,12 +31,11 @@ if (SERVER) then
 	end
 
 	function ENT:Use(activator)
-		self:SetNetVar("active", !self:GetNetVar("active", false))
-		
-		if (self:GetNetVar("active")) then
-			self:EmitSound("radio/radio_on.ogg")
+		if (self:GetNetVar("active", false)) then
+			netstream.Start(activator, "ixStationaryRadioMenu", self)
 		else
-			self:EmitSound("radio/radio_off.ogg")
+			self:SetNetVar("active", true)
+			self:EmitSound("radio/radio_on.ogg")
 		end
 	end
 else
@@ -84,5 +83,20 @@ else
 			panel:SetBackgroundColor(isActive and Color(0, 255, 0, 50) or Color(255, 0, 0, 50))
 			panel:SizeToContents()
 		end
+	end
+
+	function ENT:PopulateContextMenu(container)
+		if (self:GetNetVar("active", false)) then
+			container:AddOption(L("itemRadioMenuFreqTitle"), function()
+				Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuFreqDesc"), self:GetNetVar("frequency", "100.0"), function(text)
+					ix.command.Send("SetFreq", text)
+				end)
+			end):SetIcon("icon16/transmit.png")
+
+		end
+
+		container:AddOption(L("Activate"), function()
+			netstream.Start("ixStationaryRadioAction", self, "off")
+		end):SetIcon("icon16/disconnect.png")
 	end
 end
