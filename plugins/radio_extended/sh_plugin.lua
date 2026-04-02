@@ -2748,8 +2748,6 @@ if (CLIENT) then
 				ix.command.Send("SetFreq", text)
 			end)
 		end):SetIcon("icon16/transmit.png")
-
-		end):SetIcon("icon16/transmit.png")
 		
 		menu:Open()
 	end)
