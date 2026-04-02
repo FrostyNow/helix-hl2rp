@@ -11,7 +11,9 @@ function PLUGIN:Think()
 		
 		mp.Think = function(this)
 			-- Base think logic
-			oldThink(this)
+			if oldThink then
+				oldThink(this)
+			end
 			
 			local media = this:GetMedia()
 			if not IsValid(media) then return end

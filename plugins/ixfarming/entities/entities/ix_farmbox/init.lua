@@ -91,8 +91,8 @@ function ENT:Think()
 				self:SetProgress(math.min(self:GetProgress() + 1, growthTime))
 			end
 			
-			-- 1 in-game hour = 60 in-game minutes
-			local drainInterval = 60 * ix.config.Get("secondsPerMinute", 60)
+			-- Water drains over time (1 unit per in-game minute)
+			local drainInterval = ix.config.Get("secondsPerMinute", 60)
 			if (math.random(1, drainInterval) == 1) then
 				self:SetWaterAmount(math.max(0, self:GetWaterAmount() - 1))
 			end

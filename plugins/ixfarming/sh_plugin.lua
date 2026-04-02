@@ -9,8 +9,8 @@ ix.config.Add("cropGrowthDays", 3, "How much it takes for crops to fully grow. D
 	category = "Farming"
 })
 
-ix.config.Add("waterDrainTime", 180, "How often crops need water. Default: 6 in-game hours", nil, {
-	data = {min = 1, max = 720},
+ix.config.Add("waterDrainDays", 1, "How many in-game days it takes for water to fully drain. Default: 1 in-game day", nil, {
+	data = {min = 0.1, max = 30, decimals = 1},
 	category = "Farming"
 })
 

@@ -2719,18 +2719,24 @@ function PLUGIN:PlayerSay(client, text)
 		local msgFormatted = text
 		local valid = false
 
+		local trimmedText = string.Trim(text)
+
 		-- Check for whisper/yell prefixes
-		if (text:sub(1, 3) == "/w " or text:sub(1, 9) == "/whisper ") then
+		if (trimmedText:sub(1, 3) == "/w " or trimmedText:sub(1, 9) == "/whisper ") then
 			chatType = "radio_whisper"
-			msgFormatted = text:gsub("^/[wW]%S*%s*", "")
+			msgFormatted = trimmedText:gsub("^/[wW]%S*%s*", "")
 			valid = true
-		elseif (text:sub(1, 3) == "/y " or text:sub(1, 6) == "/yell ") then
+		elseif (trimmedText:sub(1, 3) == "/y " or trimmed:sub(1, 6) == "/yell ") then
 			chatType = "radio_yell"
-			msgFormatted = text:gsub("^/[yY]%S*%s*", "")
+			msgFormatted = trimmedText:gsub("^/[yY]%S*%s*", "")
 			valid = true
-		elseif (text:sub(1, 1) != "/" and text:sub(1, 1) != "@") then -- Standard chat (IC), ignore other commands
-			chatType = "radio"
-			valid = true
+		else
+			local firstChar = trimmedText:sub(1, 1)
+			-- Standard chat (IC), ignore other non-IC commands including spaced ones
+			if (firstChar != "/" and firstChar != "@" and firstChar != "!" and trimmedText:sub(1, 3) != ".//" and trimmedText:sub(1, 2) != "[[" and trimmedText:sub(1, 2) != "//") then
+				chatType = "radio"
+				valid = true
+			end
 		end
 
 		if (valid and msgFormatted and msgFormatted != "") then
@@ -2746,7 +2752,17 @@ function PLUGIN:PlayerSay(client, text)
 			
 			ix.chat.Send(client, chatType, msgFormatted, false, nil, data)
 			
+			local eavesdropType = "radio_eavesdrop"
+			if (chatType == "radio_whisper") then
+				eavesdropType = "radio_eavesdrop_whisper"
+			elseif (chatType == "radio_yell") then
+				eavesdropType = "radio_eavesdrop_yell"
+			end
+			
+			ix.chat.Send(client, eavesdropType, msgFormatted, false, nil, {quiet = false, walkie = false})
+			
 			client.ixSendingRadio = nil
+			return ""
 		end
 	end
 end

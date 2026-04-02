@@ -13,11 +13,15 @@ ix.lang.AddTable("english", {
 	items = "Items",
 	spawnIntoContainer = "Spawn into Container",
 	containerFull = "This container is full.",
+	copyID = "Copy Item ID to Clipboard",
+	giveToSelf = "Give to Self",
 })
 ix.lang.AddTable("korean", {
 	items = "아이템",
-	spawnIntoContainer = "보관함에 스폰",
+	spawnIntoContainer = "보관함에 추가",
 	containerFull = "이 보관함은 가득 찼습니다.",
+	copyID = "아이템 ID 복사",
+	giveToSelf = "내 인벤토리에 추가",
 })
 
 if (SERVER) then
@@ -157,11 +161,11 @@ else
 
 		function icon:OpenMenu()
 			local menu = DermaMenu()
-			menu:AddOption("Copy Item ID to Clipboard", function()
+			menu:AddOption(L("copyID"), function()
 				SetClipboardText(data.uniqueID)
 			end)
 
-			menu:AddOption("Give to Self", function()
+			menu:AddOption(L("giveToSelf"), function()
 				netstream.Start("MenuItemGive", data.uniqueID)
 			end)
 

@@ -45,12 +45,16 @@ local function RegisterOverhear(baseType)
 		-- Temporarily intercept chat.AddText to apply alpha to all color arguments
 		chat.AddText = function(...)
 			local args = {...}
+			ix.overhearAlpha = alpha -- Pass alpha to AddLine reliably
+
 			for k, v in ipairs(args) do
 				if (istable(v) and v.r and v.g and v.b) then
-					args[k] = Color(v.r, v.g, v.b, alpha)
+					args[k] = Color(v.r, v.g, v.b, (v.a or 255) * alpha / 255)
 				end
 			end
 			oldChatAddText(unpack(args))
+
+			ix.overhearAlpha = nil
 		end
 		
 		oldOnChatAdd(self, speaker, text, anonymous, info)
@@ -191,15 +195,17 @@ if (CLIENT) then
 					}
 
 					-- Robustly extract overhearAlpha FIRST so it can be used for timestamps and special elements
-					local overhearAlpha = 255
-					if (CHAT_CLASS and CHAT_CLASS.uniqueID:find("_overhear$") and CHAT_CLASS.overhearAlpha) then
-						overhearAlpha = CHAT_CLASS.overhearAlpha
-					else
-						-- Fallback: Scan elements for colors with alpha < 255
-						for _, v in ipairs(elements) do
-							if (istable(v) and v.r and v.g and v.b and v.a and v.a < 255) then
-								overhearAlpha = v.a
-								break
+					local overhearAlpha = ix.overhearAlpha or 255
+					if (overhearAlpha == 255) then
+						if (CHAT_CLASS and CHAT_CLASS.uniqueID:find("_overhear$") and CHAT_CLASS.overhearAlpha) then
+							overhearAlpha = CHAT_CLASS.overhearAlpha
+						else
+							-- Fallback: Scan elements for colors with alpha < 255
+							for _, v in ipairs(elements) do
+								if (istable(v) and v.r and v.g and v.b and v.a and v.a < 255) then
+									overhearAlpha = v.a
+									break
+								end
 							end
 						end
 					end
@@ -233,7 +239,7 @@ if (CLIENT) then
 								a = (a * overhearAlpha) / 255
 							end
 
-							buffer[#buffer + 1] = string.format("<color=%d,%d,%d,%d>%s", r, g, b, a,
+							buffer[#buffer + 1] = string.format("<color=%d,%d,%d,%d>%s</color>", r, g, b, a,
 								name:gsub("<", "&lt;"):gsub(">", "&gt;"))
 						else
 							-- Standard Helix processing for strings and other types
@@ -256,11 +262,14 @@ if (CLIENT) then
 
 					-- FINAL FIX: Manually inject alpha into the parsed markup blocks
 					-- This is the only way to reliably override the internal drawing alpha
-					-- HELIX NOTE: The property is 'colour', not 'color'
-					if (panel.markup and panel.markup.blocks and overhearAlpha < 255) then
-						for _, block in ipairs(panel.markup.blocks) do
+					-- HELIX NOTE: We check both 'colour' and 'color' for maximum compatibility
+					local markupObj = panel.markup or panel.m_markup
+					if (markupObj and markupObj.blocks and overhearAlpha < 255) then
+						for _, block in ipairs(markupObj.blocks) do
 							if (block.colour) then
 								block.colour.a = overhearAlpha
+							elseif (block.color) then
+								block.color.a = overhearAlpha
 							end
 						end
 					end

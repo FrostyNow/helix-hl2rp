@@ -56,7 +56,15 @@ ITEM.functions.Pry = {
 		client:EmitSound("physics/metal/metal_box_impact_hard3.wav")
 		client:SetAction("@crowbarPrying", 5)
 		
+		local sound = CreateSound(client, "physics/metal/metal_box_scrape_rough_loop1.wav")
+		sound:Play()
+
 		client:DoStaredAction(target, function()
+			if (sound) then
+				sound:Stop()
+				sound = nil
+			end
+
 			-- chance
 			local luck = char:GetAttribute("lck", 0)
 			local maxAttributes = math.max(ix.config.Get("maxAttributes", 100), 1)
@@ -105,6 +113,11 @@ ITEM.functions.Pry = {
 				itemTable:Remove()
 			end
 		end, 5, function()
+			if (sound) then
+				sound:Stop()
+				sound = nil
+			end
+
 			if (IsValid(client)) then
 				client:SetAction()
 			end

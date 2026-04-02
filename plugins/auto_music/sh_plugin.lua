@@ -1,5 +1,9 @@
 local PLUGIN = PLUGIN
 
+ix.util.Include("sv_plugin.lua")
+ix.util.Include("cl_plugin.lua")
+
+
 PLUGIN.name = "Auto Music System"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "A global music system synchronized via MediaPlayer Redux."
@@ -56,10 +60,19 @@ ix.command.Add("MusicPlay", {
 		if not MediaPlayer then return "MediaPlayer addon is required." end
 
 		local mp = MediaPlayer.GetById("auto_music")
-		
-		-- Try to create it if it doesn't exist yet (server-side)
+
 		if not mp and SERVER then
-			mp = MediaPlayer.Create("auto_music", "base")
+			-- Use helper from sv_plugin.lua if possible
+			if PLUGIN.CreateMusicPlayer then
+				PLUGIN:CreateMusicPlayer()
+				mp = MediaPlayer.GetById("auto_music")
+			else
+				mp = MediaPlayer.Create("auto_music", "base")
+				if mp then
+					mp:SetGlobal(true)
+					mp:SetPersistent(true)
+				end
+			end
 		end
 
 		if not mp then
@@ -74,12 +87,8 @@ ix.command.Add("MusicPlay", {
 		-- Select random track
 		local url = category[math.random(#category)]
 		
-		local media = MediaPlayer.GetMediaForUrl(url)
-		if not media then
-			return "Failed to resolve selected URL format."
-		end
-		
-		mp:AddMedia(media)
+		-- Add the track via URL string - this is the standard way to broadcast
+		mp:AddMedia(url, client)
 		return "Requested to play random track from '" .. categoryName .. "' category."
 	end
 })

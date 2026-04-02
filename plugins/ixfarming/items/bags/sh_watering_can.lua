@@ -46,7 +46,8 @@ ITEM.functions.Water = {
 
 					client:EmitSound("ambient/water/water_spray1.wav", 60)
 					
-					entity:SetWaterAmount(entity:GetWaterAmount() + ix.config.Get("waterDrainTime", 6))
+					local waterAmount = ix.config.Get("waterDrainDays", 1) * 24 * 60
+					entity:SetWaterAmount(entity:GetWaterAmount() + waterAmount)
 					if (isClean) then
 						entity:SetWaterQuality(entity:GetWaterQuality() + 1)
 					end
