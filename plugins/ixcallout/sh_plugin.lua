@@ -39,6 +39,25 @@ if (ix.area and ix.area.AddProperty) then
 		category = "Automatic Voice"
 	})
 end
+end
+
+ix.config.Add("mpfCalloutTheme", ix.type.string, "auto", {
+	category = "Automatic Voice",
+	data = {
+		choices = {
+			"auto",
+			"default",
+			"trainstation",
+			"canals",
+			"eli",
+			"town",
+			"coast",
+			"prison",
+			"c17",
+			"citadel"
+		}
+	}
+})
 
 function PLUGIN:GetAreaSectorNumber(areaID)
 	if (!areaID or areaID == "" or !ix.area or !ix.area.stored) then

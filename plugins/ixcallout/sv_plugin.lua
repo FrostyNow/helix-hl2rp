@@ -983,8 +983,225 @@ local COMBINE_TEMPLATE_SETS = {
 	},
 }
 
+-- Metropolice sentences components (suspects and locations) expanded
+-- Mapping based on original HL2 map numbers/themes
+local MPF_MAP_THEMES = {
+	-- map 0 default (standard)
+	[0] = {
+		locations = {
+			{sound = "npc/metropolice/vo/block.wav", text = "구역"},
+			{sound = "npc/metropolice/vo/zone.wav", text = "구역"},
+			{sound = "npc/metropolice/vo/sector.wav", text = "섹터"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
+		}
+	},
+	-- map 1 trainstation (c17_01-04)
+	[1] = {
+		locations = {
+			{sound = "npc/metropolice/vo/stationblock.wav", text = "스테이션 구역"},
+			{sound = "npc/metropolice/vo/transitblock.wav", text = "통과 구역"},
+			{sound = "npc/metropolice/vo/workforceintake.wav", text = "인력 증원"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/citizen.wav", text = "시민"},
+			{sound = "npc/metropolice/vo/upi.wav", text = "용의자"},
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
+		}
+	},
+	-- map 2 canals (c17_05-06)
+	[2] = {
+		locations = {
+			{sound = "npc/metropolice/vo/canalblock.wav", text = "운하 구역"},
+			{sound = "npc/metropolice/vo/stormsystem.wav", text = "스톰 시스템"},
+			{sound = "npc/metropolice/vo/wasteriver.wav", text = "오염된 강"},
+			{sound = "npc/metropolice/vo/deservicedarea.wav", text = "관할 구역"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"},
+			{sound = "npc/metropolice/vo/noncitizen.wav", text = "비시민"},
+			{sound = "npc/metropolice/vo/sociocide.wav", text = "반사회"},
+			{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"}
+		}
+	},
+	-- map 3 eli's lab (c17_07-08)
+	[3] = {
+		locations = {
+			{sound = "npc/metropolice/vo/industrialzone.wav", text = "산업 구역"},
+			{sound = "npc/metropolice/vo/restrictedblock.wav", text = "제한 구역"},
+			{sound = "npc/metropolice/vo/repurposedarea.wav", text = "용도 변경 지역"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
+		}
+	},
+	-- map 4 town (ravenholm/c17_09-10)
+	[4] = {
+		locations = {
+			{sound = "npc/metropolice/vo/condemnedzone.wav", text = "저주받은 구역"},
+			{sound = "npc/metropolice/vo/infestedzone.wav", text = "감염된 구역"},
+			{sound = "npc/metropolice/vo/nonpatrolregion.wav", text = "비감시 영역"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"},
+			{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"}
+		}
+	},
+	-- map 5 coast (c17_11-12)
+	[5] = {
+		locations = {
+			{sound = "npc/metropolice/vo/externaljurisdiction.wav", text = "외부 관할권"},
+			{sound = "npc/metropolice/vo/stabilizationjurisdiction.wav", text = "진압 관할권"},
+			{sound = "npc/metropolice/vo/outlandzone.wav", text = "외지 구역"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/sociocide.wav", text = "반사회"}
+		}
+	},
+	-- map 6 prison (nova prospekt)
+	[6] = {
+		locations = {
+			{sound = "npc/metropolice/vo/externaljurisdiction.wav", text = "외부 관할권"},
+			{sound = "npc/metropolice/vo/stabilizationjurisdiction.wav", text = "진압 관할권"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/infection.wav", text = "감염"}
+		}
+	},
+	-- map 7 city 17 (urban)
+	[7] = {
+		locations = {
+			{sound = "npc/metropolice/vo/residentialblock.wav", text = "거주 구역"},
+			{sound = "npc/metropolice/vo/404zone.wav", text = "404 구역"},
+			{sound = "npc/metropolice/vo/distributionblock.wav", text = "유통 구역"},
+			{sound = "npc/metropolice/vo/productionblock.wav", text = "생산 구역"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
+		}
+	},
+	-- map 8 citadel
+	[8] = {
+		locations = {
+			{sound = "npc/metropolice/vo/highpriorityregion.wav", text = "최우선 지역"},
+			{sound = "npc/metropolice/vo/terminalrestrictionzone.wav", text = "최종 제한 구역"},
+			{sound = "npc/metropolice/vo/controlsection.wav", text = "구역 통제"}
+		},
+		suspects = {
+			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
+		}
+	}
+}
+
+local MPF_THEME_MAPPING = {
+	["default"] = 0,
+	["trainstation"] = 1,
+	["canals"] = 2,
+	["industrial"] = 3,
+	["ravenholm"] = 4,
+	["coast"] = 5,
+	["prison"] = 6,
+	["urban"] = 7,
+	["citadel"] = 8
+}
+
+function PLUGIN:GetMapThemeIndex()
+	local map = game.GetMap():lower()
+	
+	-- if (map:find("train") or map:find("c17_01") or map:find("c17_02") or map:find("c17_03") or map:find("c17_04")) then return 1 end
+	-- if (map:find("canal") or map:find("c17_05") or map:find("c17_06")) then return 2 end
+	-- if (map:find("eli") or map:find("c17_07") or map:find("c17_08")) then return 3 end
+	-- if (map:find("town") or map:find("c17_09") or map:find("c17_10") or map:find("ravenholm")) then return 4 end
+	-- if (map:find("coast") or map:find("c17_11") or map:find("c17_12")) then return 5 end
+	-- if (map:find("prison") or map:find("nova_prospekt")) then return 6 end
+	-- if (map:find("c17_13") or map:find("citadel")) then return 8 end
+	-- if (map:find("c17") or map:find("city17") or map:find("city_17")) then return 7 end
+	
+	return 0 -- default
+end
+
+function PLUGIN:GetMPFMapChoices()
+	local selected = ix.config.Get("mpfCalloutTheme", "auto")
+	local index = 0
+	
+	if (selected == "auto") then
+		index = self:GetMapThemeIndex()
+	else
+		index = MPF_THEME_MAPPING[selected] or 0
+	end
+	
+	local theme = MPF_MAP_THEMES[index] or MPF_MAP_THEMES[0]
+	
+	return theme
+end
+
 local MPF_TEMPLATE_SETS = {
-	-- Place holders for FACTION_MPF
+	pain_light = {
+		{
+			sounds = {
+				"npc/metropolice/vo/minorhitscontinuing.wav",
+			},
+			text = "경미한 부상이다, 임무 재개 중!",
+		}
+	},
+	pain_heavy = {
+		{
+			sounds = {
+				"npc/metropolice/vo/11-99officerneedsassistance.wav",
+			},
+			text = "11-99, 긴급 지원 바란다!",
+		},
+		{
+			sounds = {
+				"npc/metropolice/vo/officerneedshelp.wav",
+			},
+			text = "경찰이 지원 요청한다!",
+		},
+		{
+			sounds = {
+				"npc/metropolice/vo/dispatchIneed10-78.wav",
+			},
+			text = "10-78 지원, 대원이 위험하다!",
+		},
+		{
+			sounds = {
+				"npc/metropolice/vo/officerneedsassistance.wav",
+			},
+			text = "부상 당한 경찰이 있다, 11-99!",
+		}
+	},
+	leader_alert = {
+		{
+			-- METROPOLICE_GO_ALERT0: designatesuspectas V_G2_SUSPECT_MAP__P allunitscode2
+			sounds = {"npc/metropolice/vo/designatesuspectas.wav"},
+			layout = {"text", "target", "suffix"},
+			usesTarget = true,
+			suffixSounds = {"npc/metropolice/vo/allunitscode2.wav"},
+			text = "용의자 지명:",
+			suffix = "모든 병력, 코드 2!",
+		},
+		{
+			-- METROPOLICE_GO_ALERT1: thereheis V_DISTP meters
+			sounds = {"npc/metropolice/vo/thereheis.wav"},
+			layout = {"text", "distance", "suffix"},
+			usesDistance = true,
+			text = "저기 있다!",
+		},
+		{
+			-- METROPOLICE_GO_ALERT2: contactwith243suspect, V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/contactwith243suspect.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "243 용의자 포착했다, 10-20:",
+		},
+		{
+			-- METROPOLICE_GO_ALERT3: allunitsrespondcode3
+			sounds = {"npc/metropolice/vo/allunitsrespondcode3.wav"},
+			text = "현장의 모든 병력, 코드 3 응답하라!",
+		}
+	}
 }
 
 local TEMPLATE_SETS = {
@@ -1172,7 +1389,7 @@ function PLUGIN:CanAutoVoice(client)
 
 	local voiceType = self:GetVoiceType(client)
 
-	return voiceType == "combine" and Schema:CanPlayerSeeCombineOverlay(client)
+	return (voiceType == "combine" or voiceType == "metropolice") and Schema:CanPlayerSeeCombineOverlay(client)
 end
 
 function PLUGIN:GetPlayerVoicePriority(client)
@@ -1418,11 +1635,22 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 							end
 						end
 					else
-						local choices = {
-							{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
-							{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
-							{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
-						}
+						local choices
+						if (vType == "metropolice") then
+							local theme = self:GetMPFMapChoices()
+							choices = theme.suspects
+							
+							if (!choices or #choices == 0) then
+								choices = MPF_MAP_THEMES[0].suspects
+							end
+						else
+							choices = {
+								{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
+								{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
+								{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
+							}
+						end
+
 						local choice = table.Random(choices)
 
 						sequence[#sequence + 1] = choice.sound
@@ -1444,11 +1672,22 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 						sequence[#sequence + 1] = "npc/combine_soldier/vo/exogens.wav"
 						parts[#parts + 1] = "엑소젠"
 					else
-						local choices = {
-							{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
-							{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
-							{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
-						}
+						local choices
+						if (vType == "metropolice") then
+							local theme = self:GetMPFMapChoices()
+							choices = theme.suspects
+							
+							if (!choices or #choices == 0) then
+								choices = MPF_MAP_THEMES[0].suspects
+							end
+						else
+							choices = {
+								{sound = "npc/combine_soldier/vo/outbreak.wav", text = "확산"},
+								{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"},
+								{sound = "vj_hlr/src/npc/combine_soldier/noncitizen.wav", text = "비시민"}
+							}
+						end
+
 						local choice = table.Random(choices)
 
 						sequence[#sequence + 1] = choice.sound
@@ -1577,8 +1816,20 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		end,
 		sectorLabel = function()
 			if (variant.usesSector) then
-				local label = self:GetAreaSectorLabel(client:GetArea()) or "구역"
-				parts[#parts + 1] = label
+				if (vType == "metropolice") then
+					local theme = self:GetMPFMapChoices()
+					local choice = table.Random(theme.locations)
+
+					if (choice) then
+						sequence[#sequence + 1] = choice.sound
+						parts[#parts + 1] = choice.text
+					else
+						parts[#parts + 1] = "구역"
+					end
+				else
+					local label = self:GetAreaSectorLabel(client:GetArea()) or "구역"
+					parts[#parts + 1] = label
+				end
 			end
 		end,
 		V_SECTORS = function()
@@ -2054,9 +2305,35 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 
 	local attacker = damageInfo:GetAttacker()
 
-	-- Handle Combine getting hurt
-	if (IsValid(target) and target:IsPlayer() and target:Alive() and target:IsCombine()) then
-		if (IsValid(attacker) and attacker != target and self:IsHostileToCombine(attacker, target)) then
+	-- Handle Combine/MPF getting hurt
+	if (IsValid(target) and target:IsPlayer() and target:Alive() and (target:IsCombine() or target:Team() == FACTION_MPF)) then
+		local voiceType = self:GetVoiceType(target)
+
+		if (voiceType == "metropolice") then
+			if (IsValid(attacker) and attacker != target and self:IsHostileToCombine(attacker, target)) then
+				local health = target:Health()
+				local maxHealth = target:GetMaxHealth() or 100
+				local healthPercent = (health / maxHealth) * 100
+
+				if (healthPercent > 90) then
+					if (!target.ixPainLightUsed) then
+						target.ixPainLightUsed = true
+						local event = self:BuildTemplateEvent(target, "pain_light")
+						if (event) then
+							self:EmitVoiceEvent(target, event.text, event.sounds)
+						end
+					end
+				elseif (healthPercent < 25) then
+					if (!target.ixPainHeavyUsed) then
+						target.ixPainHeavyUsed = true
+						local event = self:BuildTemplateEvent(target, "pain_heavy")
+						if (event) then
+							self:EmitVoiceEvent(target, event.text, event.sounds)
+						end
+					end
+				end
+			end
+		elseif (IsValid(attacker) and attacker != target and self:IsHostileToCombine(attacker, target)) then
 			local damage = damageInfo:GetDamage()
 			local health = target:Health()
 			local maxHealth = target:GetMaxHealth() or 100
@@ -2538,6 +2815,9 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 	if (!self:IsVoicePluginAvailable() or !IsValid(client)) then
 		return
 	end
+
+	client.ixPainLightUsed = nil
+	client.ixPainHeavyUsed = nil
 
 	-- Handle Combine killing a player
 	if (!client:IsCombine() and IsValid(attacker) and attacker:IsPlayer() and attacker:IsCombine() and self:CanAutoVoice(attacker)) then
