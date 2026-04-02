@@ -162,43 +162,55 @@ function PANEL:Display(target)
 	end
 		
 	-- Face Closeup Panel
-	self.facePanel = self:Add("DModelPanel")
-	self.facePanel:SetSize(ScreenScale(64), ScreenScale(64))
-	self.facePanel:SetPos(4, pHeight * 0.5 - 64 - ScreenScale(64) - 4)
-	self.facePanel:SetModel(target:GetModel())
-	self.facePanel.Entity:SetSkin(target:GetSkin())
-	for k, v in pairs(target:GetBodyGroups()) do
-		self.facePanel.Entity:SetBodygroup(v.id, target:GetBodygroup(v.id))
+	local facecamDisabled = false
+	local character = target:GetCharacter()
+
+	if (character) then
+		facecamDisabled = (character:GetFaction() == FACTION_VORT)
+	else
+		-- Fallback for character creation if target is a dummy
+		facecamDisabled = (ix.anim.GetModelClass(target:GetModel()) == "vort")
 	end
-	self.facePanel:SetMouseInputEnabled(false)
-	self.facePanel.LayoutEntity = function(this, entity)
-		entity:SetAngles(Angle(0, 45, 0))
-		entity:SetIK(false)
-		
-		-- Neutral pose
-		entity:SetPoseParameter("head_pitch", 0)
-		entity:SetPoseParameter("head_yaw", 0)
-		entity:SetPoseParameter("aim_pitch", 0)
-		entity:SetPoseParameter("aim_yaw", 0)
-		entity:SetPoseParameter("eyes_pitch", 0)
-		entity:SetPoseParameter("eyes_yaw", 0)
-		
-		-- Default sequence logic
-		entity:SetSequence(self.model.Entity:GetSequence())
-		entity:SetCycle(self.model.Entity:GetCycle())
-		
-		-- Eye fix for closeup
-		local eyeTarget = entity:GetPos() + entity:GetForward() * 10000 + Vector(0, 0, 64)
-		entity:SetEyeTarget(eyeTarget)
-		local headBone = entity:LookupBone("ValveBiped.Bip01_Head1")
-		if (headBone) then
-			local headPos = entity:GetBonePosition(headBone)
-			this:SetLookAt(headPos)
-			this:SetCamPos(headPos + entity:GetForward() * 45 + entity:GetUp() * -2)
-			this:SetFOV(20)
-		else
-			this:SetCamPos(Vector(20, 0, 60))
-			this:SetLookAt(Vector(0, 0, 60))
+
+	if (!facecamDisabled) then
+		self.facePanel = self:Add("DModelPanel")
+		self.facePanel:SetSize(ScreenScale(64), ScreenScale(64))
+		self.facePanel:SetPos(4, pHeight * 0.5 - 64 - ScreenScale(64) - 4)
+		self.facePanel:SetModel(target:GetModel())
+		self.facePanel.Entity:SetSkin(target:GetSkin())
+		for k, v in pairs(target:GetBodyGroups()) do
+			self.facePanel.Entity:SetBodygroup(v.id, target:GetBodygroup(v.id))
+		end
+		self.facePanel:SetMouseInputEnabled(false)
+		self.facePanel.LayoutEntity = function(this, entity)
+			entity:SetAngles(Angle(0, 45, 0))
+			entity:SetIK(false)
+			
+			-- Neutral pose
+			entity:SetPoseParameter("head_pitch", 0)
+			entity:SetPoseParameter("head_yaw", 0)
+			entity:SetPoseParameter("aim_pitch", 0)
+			entity:SetPoseParameter("aim_yaw", 0)
+			entity:SetPoseParameter("eyes_pitch", 0)
+			entity:SetPoseParameter("eyes_yaw", 0)
+			
+			-- Default sequence logic
+			entity:SetSequence(self.model.Entity:GetSequence())
+			entity:SetCycle(self.model.Entity:GetCycle())
+			
+			-- Eye fix for closeup
+			local eyeTarget = entity:GetPos() + entity:GetForward() * 10000 + Vector(0, 0, 64)
+			entity:SetEyeTarget(eyeTarget)
+			local headBone = entity:LookupBone("ValveBiped.Bip01_Head1")
+			if (headBone) then
+				local headPos = entity:GetBonePosition(headBone)
+				this:SetLookAt(headPos)
+				this:SetCamPos(headPos + entity:GetForward() * 45 + entity:GetUp() * -2)
+				this:SetFOV(20)
+			else
+				this:SetCamPos(Vector(20, 0, 60))
+				this:SetLookAt(Vector(0, 0, 60))
+			end
 		end
 	end
 end

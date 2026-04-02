@@ -958,6 +958,23 @@ function Schema:OnCharacterMenuCreated(panel)
 					entity:SetEyeTarget(eyeTarget)
 				end
 			end
+
+			createPanel.descriptionFace.Think = function(this)
+				local facecamDisabled = false
+				local faction = createPanel.faction
+				local factionTable = ix.faction.indices[faction]
+				facecamDisabled = factionTable and factionTable.uniqueID == "vortigaunt"
+				
+				if (facecamDisabled) then
+					if (this:IsVisible()) then
+						this:SetVisible(false)
+					end
+				else
+					if (!this:IsVisible()) then
+						this:SetVisible(true)
+					end
+				end	
+			end
 		end
 	end
 

@@ -980,7 +980,16 @@ local COMBINE_TEMPLATE_SETS = {
 			sounds = {"npc/combine_soldier/vo/reportallradialsfree.wav"},
 			text = "모든 구역은 보고하라.",
 		}
-	}
+	},
+}
+
+local MPF_TEMPLATE_SETS = {
+	-- Place holders for FACTION_MPF
+}
+
+local TEMPLATE_SETS = {
+	combine = COMBINE_TEMPLATE_SETS,
+	metropolice = MPF_TEMPLATE_SETS
 }
 
 local COMBINE_CALLSIGN_KEYS = {
@@ -1056,23 +1065,7 @@ local COMBINE_CALLSIGN_KEYS = {
 	VICE = "바이스"
 }
 
-function PLUGIN:InitializedPlugins()
-	self.ixVoicePlugin = ix.plugin.list["ixvoice"]
-	self.reactedGrenades = self.reactedGrenades or {}
-	self.playerCooldowns = self.playerCooldowns or {}
-	self.nextGrenadeScan = 0
-	self.nextDeathReaction = 0
-	self.nextCombatScan = 0
-
-	if (self.voiceTypes and self.voiceTypes.combine) then
-		self.voiceTypes.combine.factions = {
-			[FACTION_OTA] = true
-			-- [FACTION_MPF] = true
-		}
-	end
-
-	self:AssignAreaSectors()
-end
+-- Faction registration and server initialization is now handled in sh_plugin.lua
 
 function PLUGIN:IsVoicePluginAvailable()
 	return self.ixVoicePlugin != nil
@@ -1358,7 +1351,9 @@ function PLUGIN:FormatCombineDesignation(callsignText, number)
 end
 
 function PLUGIN:BuildTemplateEvent(client, templateName, context)
-	local templates = COMBINE_TEMPLATE_SETS[templateName]
+	local vType = self:GetVoiceType(client)
+	local templateSet = (vType and TEMPLATE_SETS[vType]) or COMBINE_TEMPLATE_SETS
+	local templates = templateSet[templateName]
 
 	if (!istable(templates) or #templates == 0) then
 		return nil
@@ -1978,14 +1973,17 @@ function PLUGIN:TryGrenadeReaction(client, grenade)
 	return false
 end
 
-function PLUGIN:BuildManDownSequence(target)
+function PLUGIN:BuildManDownSequence(speaker, target)
+	local vType = self:GetVoiceType(speaker)
+	local templateSet = (vType and TEMPLATE_SETS[vType]) or COMBINE_TEMPLATE_SETS
+
 	local _, info = Schema:GetCombineUnitID(target)
 
 	if (!info) then
 		return nil
 	end
 
-	local variant = table.Random(COMBINE_TEMPLATE_SETS.man_down) or {}
+	local variant = table.Random(templateSet.man_down) or {}
 	local sequence = {}
 	local parts = {}
 
@@ -2567,11 +2565,11 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 
 	self.nextDeathReaction = currentTime + DEATH_EVENT_COOLDOWN
 
-	local event = self:BuildManDownSequence(client)
+	-- Man down reaction - we don't build it yet because the listener provides the sequence
+	-- But some parts of the logic require the sequence beforehand?
+	-- In the current loop, the listener uses the event from BuildManDownSequence.
+	-- Since different listeners might have different voice types, we should move BuildManDownSequence inside the loop.
 
-	if (!event) then
-		return
-	end
 
 	local clientPos = client:GetPos()
 	local listeners = player.GetAll()
@@ -2600,8 +2598,11 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 				self:EmitVoiceEvent(listener, lastSquadEvent.text, lastSquadEvent.sounds)
 				break
 			else
-				self:EmitVoiceEvent(listener, event.text, event.sounds)
-				break
+				local event = self:BuildManDownSequence(listener, client)
+				if (event) then
+					self:EmitVoiceEvent(listener, event.text, event.sounds)
+					break
+				end
 			end
 		end
 	end

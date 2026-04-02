@@ -14,6 +14,9 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 PLUGIN.voiceTypes = PLUGIN.voiceTypes or {
 	combine = {
 		factions = {}
+	},
+	metropolice = {
+		factions = {}
 	}
 }
 
@@ -62,3 +65,33 @@ function PLUGIN:GetAreaSectorLabel(areaID)
 end
 
 ix.util.Include("sv_plugin.lua")
+
+function PLUGIN:InitializedPlugins()
+	self.ixVoicePlugin = ix.plugin.list["ixvoice"]
+
+	if (SERVER) then
+		self.reactedGrenades = self.reactedGrenades or {}
+		self.playerCooldowns = self.playerCooldowns or {}
+		self.nextGrenadeScan = 0
+		self.nextDeathReaction = 0
+		self.nextCombatScan = 0
+	end
+
+	if (self.voiceTypes) then
+		if (self.voiceTypes.combine) then
+			self.voiceTypes.combine.factions = {
+				[FACTION_OTA] = true
+			}
+		end
+
+		if (self.voiceTypes.metropolice) then
+			self.voiceTypes.metropolice.factions = {
+				[FACTION_MPF] = true
+			}
+		end
+	end
+
+	if (SERVER) then
+		self:AssignAreaSectors()
+	end
+end
