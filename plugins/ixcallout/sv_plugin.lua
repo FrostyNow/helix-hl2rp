@@ -11,9 +11,25 @@ local PLAYER_COOLDOWN = 2.5
 local DEATH_EVENT_COOLDOWN = 0.4
 local IC_RANGE = 280
 
+local PHYSICS_COLLIDE_MIN_SPEED = 140 -- Minimum impact speed to trigger a reaction
+
 local COMBAT_SCAN_INTERVAL = 1.0
 local COMBAT_REACTION_COOLDOWN = 15
 local COMBAT_SIGHT_RADIUS = 1000
+
+local DANGER_CLASSES = {
+	"combine_mine",
+	"rpg_missile",
+	"prop_combine_ball",
+	"npc_satchel",
+	"npc_tripmine",
+	"grenade_ar2",
+	"prop_explosive_barrel",
+	"gmod_dynamite",
+	"npc_manhack",
+	"prop_vehicle_jeep",
+	"prop_vehicle_airboat"
+}
 
 local EXCLUDED_WEAPONS = {
 	["ix_hands"] = true,
@@ -90,6 +106,10 @@ local COMBINE_TEMPLATE_SETS = {
 		{
 			sounds = {"npc/combine_soldier/vo/flaredown.wav"},
 			text = "수류탄!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/shit.wav"},
+			text = "젠장!",
 		}
 	},
 	danger = {
@@ -213,7 +233,6 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착,",
-			suffix = ".",
 			-- "포착, 반시민 1."
 		},
 		{
@@ -236,7 +255,7 @@ local COMBINE_TEMPLATE_SETS = {
 			bearingSuffix = "도.",
 			text = "목표 대상 포착,",
 			-- "목표 대상 포착, 180도."
-		}
+		},
 	},
 	flank = {
 		{
@@ -313,7 +332,51 @@ local COMBINE_TEMPLATE_SETS = {
 			text = "전체 상황 수행!",
 			useDesignation = true,
 			-- "리더 1. 전체 상황 수행!"
-		}
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/readyweaponshostilesinbound.wav"},
+			text = "무기 준비하라, 적 접근 중.",
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/prepforcontact.wav"},
+			text = "전투 준비, 보고하라.",
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/stayalert.wav"},
+			text = "경계하라.",
+		},
+		{
+			sounds = {"npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav"},
+			text = "무기 안전 해제, 전투 준비.",
+		},
+		{
+			-- QUEST5: overwatch isatcode V_RNDCODES V_RNDNUMS
+			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/isatcode.wav"},
+			layout = {"text", "rndCodes", "rndNums"},
+			text = "보고한다, 코드:",
+			-- 보고한다, 코드: 에코 5.
+		},
+		{
+			-- IDLE1: on1 overwatchreportspossiblehostiles off1
+			sounds = {"npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav"},
+			text = "적으로 의심되는 단체가 접근하고 있다.",
+			filter = function(speaker, target)
+				local count = 0
+				local radiusSqr = (600 * 1.5) ^ 2 -- SQUAD_RADIUS * 1.5
+				local origin = speaker:GetPos()
+
+				-- Count nearby hostile humanoids (players/NPCs)
+				for _, ent in ipairs(ents.FindInSphere(origin, 900)) do
+					if (ent:IsPlayer() or ent:IsNPC()) then
+						if (ent != speaker and (ent.Alive and ent:Alive()) and PLUGIN:IsHostileToCombine(ent, speaker)) then
+							count = count + 1
+							if (count >= 2) then return true end
+						end
+					end
+				end
+				return false
+			end
+		},
 	},
 	lost_long = {
 		{
@@ -485,7 +548,6 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착,",
-			suffix = ".",
 			-- "포착, 반시민 1."
 		},
 		{
@@ -507,7 +569,6 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "지명 목표:",
-			suffix = ".",
 			-- "지명 목표: 반시민 1."
 		},
 		{
@@ -525,7 +586,6 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "포착 확인. 지명 목표:",
-			suffix = ".",
 			-- "포착 확인. 지명 목표: 반시민 1."
 		}
 	},
@@ -774,6 +834,16 @@ local COMBINE_TEMPLATE_SETS = {
 			-- "리더 1. 스팀팩 요청."
 		}
 	},
+	ally_hurt = {
+		{
+			-- IDLE2: ovewatchorders3ccstimboost
+			sounds = {"npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav"},
+			text = "스팀팩 3CC 투여하라.",
+			filter = function(speaker, target)
+				return PLUGIN:IsSquadLeader(speaker)
+			end
+		},
+	},
 	taunt = {
 		{
 			-- TAUNT0: targetineffective
@@ -793,6 +863,13 @@ local COMBINE_TEMPLATE_SETS = {
 			useNumber = true,
 			-- "리더 1. 이상 무."
 		}
+	},
+	skyshield_lost = {
+		{
+			-- "skyshieldreportslostcontact, readyweapons"
+			sounds = {"npc/combine_soldier/vo/skyshieldreportslostcontact.wav", "npc/combine_soldier/vo/readyweapons.wav"},
+			text = "스카이쉴드, 교신 실패. 무기 준비.",
+		},
 	},
 	player_dead = {
 		{
@@ -816,6 +893,7 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "보고한다,",
+			targetSuffix = "",
 			suffix = "처리 완수.",
 			-- "보고한다, 확산 처리 완수."
 		},
@@ -825,6 +903,7 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
 			text = "보고한다,",
+			targetSuffix = "",
 			suffix = "처리 완료.",
 			-- "보고한다, 확산 처리 완료."
 		},
@@ -840,16 +919,6 @@ local COMBINE_TEMPLATE_SETS = {
 			layout = {"rndNames", "rndCodes", "rndNums", "dash", "rndNums"},
 			-- 고스트 에코 1-5.
 		},
-		-- {
-		-- 	-- IDLE1: on1 overwatchreportspossiblehostiles off1
-		-- 	sounds = {"npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav"},
-		-- 	text = "적으로 의심되는 단체가 접근하고 있다.",
-		-- },
-		-- {
-		-- 	-- IDLE2: ovewatchorders3ccstimboost
-		-- 	sounds = {"npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav"},
-		-- 	text = "스팀팩 3CC 투여하라.",
-		-- },
 		{
 			-- IDLE3: stabilizationteamholding
 			sounds = {"npc/combine_soldier/vo/stabilizationteamholding.wav"},
@@ -861,34 +930,6 @@ local COMBINE_TEMPLATE_SETS = {
 			text = "대기 중.",
 			useDesignation = true,
 			useNumber = true,
-		}
-	},
-	quest = {
-		{
-			sounds = {"npc/combine_soldier/vo/readyweaponshostilesinbound.wav"},
-			text = "무기 준비하라, 적 접근 중.",
-		},
-		{
-			sounds = {"npc/combine_soldier/vo/prepforcontact.wav"},
-			text = "전투 준비, 보고하라.",
-		},
-		-- {
-		-- 	sounds = {"npc/combine_soldier/vo/skyshieldreportslostcontact.wav", "npc/combine_soldier/vo/readyweapons.wav"},
-		-- 	text = "스카이쉴드, 교신 실패. 무기 준비.",
-		-- },
-		{
-			sounds = {"npc/combine_soldier/vo/stayalert.wav"},
-			text = "경계하라.",
-		},
-		{
-			sounds = {"npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav"},
-			text = "무기 안전 해제, 전투 준비.",
-		},
-		{
-			-- QUEST5: overwatch isatcode V_RNDCODES V_RNDNUMS
-			sounds = {"npc/combine_soldier/vo/overwatch.wav", "npc/combine_soldier/vo/isatcode.wav"},
-			layout = {"text", "rndCodes", "rndNums"},
-			text = "보고한다, 코드:",
 		}
 	},
 	answer = {
@@ -986,7 +1027,7 @@ local COMBINE_TEMPLATE_SETS = {
 -- Metropolice sentences components (suspects and locations) expanded
 -- Mapping based on original HL2 map numbers/themes
 local MPF_MAP_THEMES = {
-	-- map 0 default (standard)
+	-- map 0 default
 	[0] = {
 		locations = {
 			{sound = "npc/metropolice/vo/block.wav", text = "구역"},
@@ -997,7 +1038,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
 		}
 	},
-	-- map 1 trainstation (c17_01-04)
+	-- map 1 trainstation
 	[1] = {
 		locations = {
 			{sound = "npc/metropolice/vo/stationblock.wav", text = "스테이션 구역"},
@@ -1010,7 +1051,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
 		}
 	},
-	-- map 2 canals (c17_05-06)
+	-- map 2 canals
 	[2] = {
 		locations = {
 			{sound = "npc/metropolice/vo/canalblock.wav", text = "운하 구역"},
@@ -1025,7 +1066,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"}
 		}
 	},
-	-- map 3 eli's lab (c17_07-08)
+	-- map 3 black mesa east, eli's lab
 	[3] = {
 		locations = {
 			{sound = "npc/metropolice/vo/industrialzone.wav", text = "산업 구역"},
@@ -1037,7 +1078,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/subject.wav", text = "대상"}
 		}
 	},
-	-- map 4 town (ravenholm/c17_09-10)
+	-- map 4 ravenholm
 	[4] = {
 		locations = {
 			{sound = "npc/metropolice/vo/condemnedzone.wav", text = "저주받은 구역"},
@@ -1049,7 +1090,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/anticitizen.wav", text = "반시민"}
 		}
 	},
-	-- map 5 coast (c17_11-12)
+	-- map 5 highway 17 coast
 	[5] = {
 		locations = {
 			{sound = "npc/metropolice/vo/externaljurisdiction.wav", text = "외부 관할권"},
@@ -1060,7 +1101,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/sociocide.wav", text = "반사회"}
 		}
 	},
-	-- map 6 prison (nova prospekt)
+	-- map 6 nova prospekt prison
 	[6] = {
 		locations = {
 			{sound = "npc/metropolice/vo/externaljurisdiction.wav", text = "외부 관할권"},
@@ -1070,7 +1111,7 @@ local MPF_MAP_THEMES = {
 			{sound = "npc/metropolice/vo/infection.wav", text = "감염"}
 		}
 	},
-	-- map 7 city 17 (urban)
+	-- map 7 city 17 urban
 	[7] = {
 		locations = {
 			{sound = "npc/metropolice/vo/residentialblock.wav", text = "거주 구역"},
@@ -1099,7 +1140,7 @@ local MPF_THEME_MAPPING = {
 	["default"] = 0,
 	["trainstation"] = 1,
 	["canals"] = 2,
-	["industrial"] = 3,
+	["restricted"] = 3,
 	["ravenholm"] = 4,
 	["coast"] = 5,
 	["prison"] = 6,
@@ -1110,20 +1151,89 @@ local MPF_THEME_MAPPING = {
 function PLUGIN:GetMapThemeIndex()
 	local map = game.GetMap():lower()
 	
-	-- if (map:find("train") or map:find("c17_01") or map:find("c17_02") or map:find("c17_03") or map:find("c17_04")) then return 1 end
-	-- if (map:find("canal") or map:find("c17_05") or map:find("c17_06")) then return 2 end
-	-- if (map:find("eli") or map:find("c17_07") or map:find("c17_08")) then return 3 end
-	-- if (map:find("town") or map:find("c17_09") or map:find("c17_10") or map:find("ravenholm")) then return 4 end
-	-- if (map:find("coast") or map:find("c17_11") or map:find("c17_12")) then return 5 end
-	-- if (map:find("prison") or map:find("nova_prospekt")) then return 6 end
-	-- if (map:find("c17_13") or map:find("citadel")) then return 8 end
-	-- if (map:find("c17") or map:find("city17") or map:find("city_17")) then return 7 end
+	if (map:find("trainstation") or map:find("terminal") or map:find("transit") or map:find("rp_city17")) then return 1 end
+	if (map:find("canal")) then return 2 end
+	if (map:find("eli") or map:find("black_mesa_east")) then return 3 end
+	if (map:find("ravenholm") or map:find("d1_town")) then return 4 end
+	if (map:find("coast") or map:find("highway") or map:find("wasteland") or map:find("outland") or map:find("forest")) then return 5 end
+	if (map:find("prison") or map:find("nova_prospekt")) then return 6 end
+	if (map:find("citadel")) then return 8 end
+	if (map:find("c17") or map:find("c18") or map:find("city") or map:find("indust")) then return 7 end
 	
 	return 0 -- default
 end
 
-function PLUGIN:GetMPFMapChoices()
-	local selected = ix.config.Get("mpfCalloutTheme", "auto")
+local MPF_RANK_WEIGHTS = {
+	["CMD"] = 9, ["CmD"] = 9,
+	["SEC"] = 9, ["SeC"] = 9,
+	["DVL"] = 8,  ["DvL"] = 8,
+	["OFC"] = 7,  ["OfC"] = 7,
+	["EPU"] = 7,  ["EpU"] = 7,
+	["01"] = 6,   ["i1"] = 6,
+	["02"] = 5,   ["i2"] = 5,
+	["03"] = 4,   ["i3"] = 4,
+	["04"] = 3,   ["i4"] = 3,
+	["05"] = 2,   ["i5"] = 2,
+	["RCT"] = 1,  ["Rct"] = 1
+}
+
+function PLUGIN:GetMPFRankWeight(client)
+	local char = client:GetCharacter()
+	if (!char) then return 0 end
+	
+	local name = char:GetName()
+	for rank, weight in pairs(MPF_RANK_WEIGHTS) do
+		if (name:find(rank)) then
+			return weight
+		end
+	end
+	
+	return 0
+end
+
+function PLUGIN:IsHighestRankingMPF(client)
+	local mpfs = {}
+	for _, v in ipairs(player.GetAll()) do
+		if (v:Alive() and v:Team() == FACTION_MPF) then
+			table.insert(mpfs, v)
+		end
+	end
+
+	if (#mpfs <= 1) then return false end
+
+	local maxWeight = -1
+	local minWeight = 99
+	local weights = {}
+	
+	for _, v in ipairs(mpfs) do
+		local w = self:GetMPFRankWeight(v)
+		weights[v] = w
+		if (w > maxWeight) then maxWeight = w end
+		if (w < minWeight) then minWeight = w end
+	end
+
+	-- Allow any top-ranking officer to speak, as long as there is at least one subordinate
+	return (weights[client] == maxWeight and maxWeight > minWeight)
+end
+
+function PLUGIN:GetMPFThemeName(client)
+	local overrideTheme = client and self:GetAreaCalloutTheme(client:GetArea())
+	local selected = overrideTheme or ix.config.Get("mpfCalloutTheme", "auto")
+	
+	if (selected == "auto") then
+		local index = self:GetMapThemeIndex()
+		for name, idx in pairs(MPF_THEME_MAPPING) do
+			if (idx == index) then return name end
+		end
+		return "default"
+	end
+	
+	return selected
+end
+
+function PLUGIN:GetMPFMapChoices(client)
+	local overrideTheme = client and self:GetAreaCalloutTheme(client:GetArea())
+	local selected = overrideTheme or ix.config.Get("mpfCalloutTheme", "auto")
 	local index = 0
 	
 	if (selected == "auto") then
@@ -1181,6 +1291,7 @@ local MPF_TEMPLATE_SETS = {
 			suffixSounds = {"npc/metropolice/vo/allunitscode2.wav"},
 			text = "용의자 지명:",
 			suffix = "모든 병력, 코드 2!",
+			-- "용의자 지명: 대상. 모든 병력, 코드 2!"
 		},
 		{
 			-- METROPOLICE_GO_ALERT1: thereheis V_DISTP meters
@@ -1188,6 +1299,7 @@ local MPF_TEMPLATE_SETS = {
 			layout = {"text", "distance", "suffix"},
 			usesDistance = true,
 			text = "저기 있다!",
+			-- "저기 있다! 25미터."
 		},
 		{
 			-- METROPOLICE_GO_ALERT2: contactwith243suspect, V_G1_LOCATION_MAP__P V_G3_NUMBP
@@ -1195,13 +1307,519 @@ local MPF_TEMPLATE_SETS = {
 			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
 			usesSector = true,
 			text = "243 용의자 포착했다, 10-20:",
+			-- "243 용의자 포착했다, 10-20: 구역 1."
 		},
 		{
 			-- METROPOLICE_GO_ALERT3: allunitsrespondcode3
 			sounds = {"npc/metropolice/vo/allunitsrespondcode3.wav"},
 			text = "현장의 모든 병력, 코드 3 응답하라!",
+		},
+		{
+			-- METROPOLICE_CANAL_ALERT0: suspectinstormrunoff V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/suspectinstormrunoff.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			requiredTheme = "canals",
+			text = "모든 병력, 용의자가 스톰 런오프 시스템에 있다.",
+			-- "모든 병력, 용의자가 스톰 런오프 시스템에 있다. 구역 1."
+		},
+		{
+			-- METROPOLICE_UPTHERE_ALERT0: hesupthere
+			sounds = {"npc/metropolice/vo/hesupthere.wav"},
+			text = "위쪽에 있다!",
+			filter = function(speaker, target)
+				if (!IsValid(target)) then return false end
+				return (target:GetPos().z - speaker:GetPos().z) > 150
+			end
+		},
+		{
+			-- METROPOLICE_WATER_ALERT0: suspectusingrestrictedcanals V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/suspectusingrestrictedcanals.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			requiredTheme = "canals",
+			text = "용의자가 제한된 운하를 사용하고 있다.",
+			-- "용의자가 제한된 운하를 사용하고 있다. 구역 1."
+		},
+		{
+			-- "stillgetting647e"
+			sounds = {"npc/metropolice/vo/stillgetting647e.wav"},
+			text = "로컬 감시조에서 647-E를 포착 중."
 		}
-	}
+	},
+	grenade_danger = {
+		{
+			sounds = {"npc/metropolice/vo/grenade.wav"},
+			text = "수류탄!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/thatsagrenade.wav"},
+			text = "수류탄이다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/getdown.wav"},
+			text = "숙여!",
+		}
+	},
+	manhack_danger = {
+		{
+			sounds = {"npc/metropolice/vo/lookoutrogueviscerator.wav"},
+			text = "통제 안 된 비저레이터다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/visceratorisoc.wav"},
+			text = "날뛰고 있다!",
+		}
+	},
+	vehicle_danger = {
+		{
+			sounds = {"npc/metropolice/vo/shit.wav"},
+			text = "젠장!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/watchit.wav"},
+			text = "조심해라!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/lookout.wav"},
+			text = "조심해!",
+		}
+	},
+	danger = {
+		{
+			sounds = {"npc/metropolice/vo/moveit.wav"},
+			text = "움직여!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/lookout.wav"},
+			text = "조심해!",
+		}
+	},
+	activate_baton = {
+		{
+			-- "issuing malcompliant citation"
+			sounds = {"npc/metropolice/vo/issuingmalcompliantcitation.wav"},
+			text = "불순종 소환장 발행 중.",
+		},
+		{
+			-- "pacifying"
+			sounds = {"npc/metropolice/vo/pacifying.wav"},
+			text = "진압 중!",
+		}
+	},
+	on_fire = {
+		{
+			-- "officerneedshelp"
+			sounds = {"npc/metropolice/vo/officerneedshelp.wav"},
+			text = "경찰이 지원 요청한다!",
+		},
+		{
+			-- "help"
+			sounds = {"npc/metropolice/vo/help.wav"},
+			text = "도와줘!",
+		}
+	},
+	harassment = {
+		{
+			sounds = {"npc/metropolice/vo/getoutofhere.wav"},
+			text = "이제 여기서 나가라.",
+			forceLocal = true,
+		},
+		{
+			sounds = {"npc/metropolice/vo/movealong.wav"},
+			text = "움직여라!",
+			forceLocal = true,
+		},
+		{
+			sounds = {"npc/metropolice/vo/vacatecitizen.wav"},
+			text = "시민을 내보내라!",
+			forceLocal = true,
+		},
+		{
+			sounds = {"npc/metropolice/vo/youwantamalcomplianceverdict.wav"},
+			text = "불순종 죄로 평결을 원하나?",
+			forceLocal = true,
+		},
+		{
+			sounds = {"npc/metropolice/vo/lookingfortrouble.wav"},
+			text = "문제를 일으키러 가나?",
+			forceLocal = true,
+		},
+		{
+			sounds = {"npc/metropolice/vo/possiblelevel3civilprivacyviolator.wav"},
+			text = "레벨 3 시민 사생활 침해자가 있다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/possible647erequestairwatch.wav"},
+			text = "647-E 상황 예상, 공중 추적 요청한다.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/possible10-103alerttagunits.wav"},
+			text = "10-103 예상, 후방 병력에 알려라.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/gota10-107sendairwatch.wav"},
+			text = "10-107 포착됐다, 공중 공격 요청한다.",
+		}
+	},
+	idle = {
+		{
+			-- "unitis10-8standingby"
+			sounds = {"npc/metropolice/vo/unitis10-8standingby.wav"},
+			text = "병력은 10-8 대기 중.",
+		},
+		{
+			-- "unitisonduty10-8"
+			sounds = {"npc/metropolice/vo/unitisonduty10-8.wav"},
+			text = "병력은 10-8 수행 중.",
+		},
+		{
+			-- "holdingon10-14duty"
+			sounds = {"npc/metropolice/vo/holdingon10-14duty.wav"},
+			text = "10-14 근무 중, 코드 4.",
+		},
+		{
+			-- "unitis10-65"
+			sounds = {"npc/metropolice/vo/unitis10-65.wav"},
+			text = "병력은 10-65 상태.",
+		},
+		{
+			-- "code7"
+			sounds = {"npc/metropolice/vo/code7.wav"},
+			text = "코드 7.",
+		}
+	},
+	check = {
+		{
+			-- "V_G1_LOCATION_MAP__P V_G3_NUMBP ptatlocationreport"
+			sounds = {"npc/metropolice/vo/ptatlocationreport.wav"},
+			layout = {"sectorLabel", "sectorNumber", "text", "suffix"},
+			usesSector = true,
+			text = "보호 기동대 위치 도착. 보고한다.",
+			-- "구역 1. 보호 기동대 위치 도착. 보고한다."
+			isCheck = true,
+			filter = function(speaker) return PLUGIN:IsHighestRankingMPF(speaker) end
+		},
+		{
+			-- "anyonepickup647e"
+			sounds = {"npc/metropolice/vo/anyonepickup647e.wav"},
+			text = "647-E 상태를 확인한 사람 또 있나?",
+			isCheck = true,
+			filter = function(speaker) return PLUGIN:IsHighestRankingMPF(speaker) end
+		},
+		{
+			-- "checkformiscount"
+			sounds = {"npc/metropolice/vo/checkformiscount.wav"},
+			text = "불일치 없는지 확인하라.",
+			isCheck = true,
+			filter = function(speaker) return PLUGIN:IsHighestRankingMPF(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/copy.wav"},
+			text = "확인 바람.",
+			isCheck = true,
+			filter = function(speaker) return PLUGIN:IsHighestRankingMPF(speaker) end
+		},
+	},
+	clear = {
+		{
+			-- "clearno647no10-107"
+			sounds = {"npc/metropolice/vo/clearno647no10-107.wav"},
+			text = "이상 없음, 10-107 없음.",
+		},
+		{
+			-- "wearesociostablethislocation"
+			sounds = {"npc/metropolice/vo/wearesociostablethislocation.wav"},
+			text = "이 지역은 안정되어 있다.",
+		},
+		{
+			-- "blockisholdingcohesive"
+			sounds = {"npc/metropolice/vo/blockisholdingcohesive.wav"},
+			text = "구역 유지 중, 단결.",
+		},
+		{
+			-- "control100percent"
+			sounds = {"npc/metropolice/vo/control100percent.wav"},
+			text = "이 구역은 아무 이상이 없다, 647-E 보이지 않는다.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/rodgerthat.wav"},
+			text = "알았다, 오버.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/ten4.wav"},
+			text = "10-4.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/ten2.wav"},
+			text = "10-2.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/ten97.wav"},
+			text = "10-97.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/affirmative.wav"},
+			text = "알았다.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/affirmative2.wav"},
+			text = "알았다.",
+		}
+	},
+	cto_discovery = {
+		{
+			-- "catchthatbliponstabilization"
+			sounds = {"npc/metropolice/vo/catchthatbliponstabilization.wav"},
+			text = "기기에 포착된 범죄 현장을 소탕하라.",
+		},
+		{
+			-- "pickingupnoncorplexindy"
+			sounds = {"npc/metropolice/vo/pickingupnoncorplexindy.wav"},
+			text = "비중앙 기지 신호가 잡히고 있다.",
+		}
+	},
+	assault = {
+		-- Standoff Begin (Leader)
+		{
+			sounds = {"npc/metropolice/vo/holdthisposition.wav"},
+			text = "보호 기동대, 이 위치를 사수하라.",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+			-- "보호 기동대, 이 위치를 사수하라."
+		},
+		{
+			sounds = {"npc/metropolice/vo/lockyourposition.wav"},
+			text = "모든 병력, 위치를 사수하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+			-- "모든 병력, 위치를 사수하라!"
+		},
+		{
+			sounds = {"npc/metropolice/vo/allunitsmaintainthiscp.wav"},
+			text = "모든 병력, 이 CP 사수하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+			-- "모든 병력, 이 CP 사수하라!"
+		},
+	},
+	incoming = {
+		-- Standoff End (Leader)
+		{
+			sounds = {"npc/metropolice/vo/cpiscompromised.wav"},
+			text = "CP 연루돼 있다, 지원하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+		},
+		-- Force Cover (Any)
+		{
+			sounds = {"npc/metropolice/vo/officerunderfiretakingcover.wav"},
+			text = "공격받고 있다, 엄폐한다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/movingtocover.wav"},
+			text = "엄호 위치로 이동한다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/takecover.wav"},
+			text = "엄폐하라!",
+		},
+	},
+	flank = {
+		-- Regular unit reports (Rally/Assault points)
+		{
+			sounds = {"npc/metropolice/vo/inposition.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "준비됐다.",
+			-- "유니온 3. 준비됐다."
+		},
+		{
+			sounds = {"npc/metropolice/vo/atcheckpoint.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "검문소.",
+			-- "유니온 3. 검문소."
+		},
+		{
+			sounds = {"npc/metropolice/vo/isreadytogo.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "준비가 됐다.",
+			-- "유니온 3. 준비가 됐다."
+		},
+		{
+			sounds = {"npc/metropolice/vo/readytojudge.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "판결 준비 완료.",
+			-- "유니온 3. 판결 준비 완료."
+		},
+		{
+			sounds = {"npc/metropolice/vo/inpositiononeready.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "위치로, 준비 됐다.",
+			-- "유니온 3. 위치로, 준비 됐다."
+		},
+		-- Peek (Any)
+		{
+			sounds = {"npc/metropolice/vo/goingtotakealook.wav"},
+			text = "살펴보고 오겠다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/acquiringonvisual.wav"},
+			text = "용의자 포착됐다!",
+		},
+		-- Leader commands
+		{
+			sounds = {"npc/metropolice/vo/isgo.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "허가한다.",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+			-- "디펜더 1. 허가한다."
+		},
+		{
+			sounds = {"npc/metropolice/vo/proceedtocheckpoints.wav"},
+			text = "지명된 검문소로 이동하라.",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/allunitscloseonsuspect.wav"},
+			text = "모든 병력, 용의자에 접근하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/allunitsmovein.wav"},
+			text = "모든 병력, 진입하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/teaminpositionadvance.wav"},
+			text = "팀 위치 도착, 전진!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/ptgoagain.wav"},
+			text = "PT, 다시 가라.",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			sounds = {"npc/metropolice/vo/assaultpointsecureadvance.wav"},
+			text = "습격 지점 확보, 전진하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		}
+	},
+	man_down = {
+		{
+			sounds = {"npc/metropolice/vo/wehavea10-108.wav"},
+			text = "10-108 상황 발생!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/onedown.wav"},
+			layout = {"victimDesignation", "text"},
+			usesVictim = true,
+			text = "사상자 발생!",
+			-- "유니온 3. 사상자 발생."
+		},
+		{
+			sounds = {"npc/metropolice/vo/wehavea10-108.wav"},
+			layout = {"victimDesignation", "text"},
+			usesVictim = true,
+			text = "10-108 상황 발생!",
+			-- "유니온 3. 10-108 발생."
+		},
+		{
+			sounds = {"npc/metropolice/vo/establishnewcp.wav"},
+			text = "후퇴하라, 새 CP를 구축하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+		},
+	},
+	lastSquad = {
+		{
+			sounds = {"npc/metropolice/vo/officerdowncode3tomy10-20.wav"},
+			text = "경찰이 쓰러졌다, 모든 병력은 10-20으로!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/officerdownIam10-99.wav"},
+			text = "경찰이 쓰러졌다, 여기는 10-99!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/cpisoverrunwehavenocontainment.wav"},
+			text = "CP가 침략되었다, 봉쇄가 무너졌다!",
+		},
+	},
+	physics_hit = {
+		{
+			sounds = {"npc/metropolice/vo/preparingtojudge10-107.wav"},
+			text = "10-107, 판결을 준비 중이다.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/movebackrightnow.wav"},
+			text = "즉시 물러나라!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/holditrightthere.wav"},
+			text = "거기서 멈춰라!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/malcompliant10107my1020.wav"},
+			text = "10-20에서 10-107의 불순종, 구속 진행.",
+		},
+	},
+	freeze = {
+		{
+			sounds = {"npc/metropolice/vo/holditrightthere.wav"},
+			text = "거기 정지하라!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/prepareforjudgement.wav"},
+			text = "판결을 준비하라.",
+		},
+	},
+	arrest_answer = {
+		{
+			sounds = {"npc/metropolice/vo/movetoarrestpositions.wav"},
+			text = "전원 구속 위치로 이동하라.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/positiontocontain.wav"},
+			text = "포위 위치를 사수하라.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/preparefor1015.wav"},
+			text = "구속을 준비하라, 10-15.",
+		},
+	},
+	suspect_running = {
+		{
+			sounds = {"npc/metropolice/vo/hesrunning.wav"},
+			text = "대상이 도주하고 있다!",
+		},
+		{
+			sounds = {"npc/metropolice/vo/hesgone148.wav"},
+			text = "대상 10-148, 추격을 시작한다.",
+		},
+	},
+	arrest = {
+		{
+			sounds = {"npc/metropolice/vo/inposition.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "위치 확보 완료.",
+		},
+		{
+			sounds = {"npc/metropolice/vo/readytoprosecute.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "기소 준비 완료.",
+		},
+	},
 }
 
 local TEMPLATE_SETS = {
@@ -1374,22 +1992,57 @@ function PLUGIN:GetVoiceType(client)
 	end
 end
 
+-- Efficiently handles a prop colliding with a link-connected unit
+function PLUGIN:HandlePropCollision(prop, data)
+	local target = data.HitEntity
+	if (!IsValid(target) or !target:IsPlayer()) then return end
+	if (!self:IsConnectedToLink(target) or !self:CanAutoVoice(target)) then return end
+
+	-- Check for impact speed to avoid reacting to static props/nudges
+	if (data.OurOldVelocity:Length() < PHYSICS_COLLIDE_MIN_SPEED) then return end
+
+	-- Hostile check (Optional, but usually we want to react if anyone throws something at us)
+	-- To keep it simple as requested, we just look at the impact.
+	if (self:CanUsePlayerCooldown(target, "physics_hit", 10)) then
+		local event = self:BuildTemplateEvent(target, "physics_hit")
+		if (event) then
+			self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+		end
+	end
+end
+
+function PLUGIN:IsConnectedToLink(client)
+	if (!IsValid(client) or !client:IsPlayer() or !client:Alive()) then return false end
+	if (!client:IsCombine() or !Schema:CanPlayerSeeCombineOverlay(client)) then return false end
+
+	-- Ensure character has an active biosignal if CTO plugin is present
+	if (ix.plugin.Get("cto") and client:GetNetVar("IsBiosignalGone", false)) then
+		return false
+	end
+
+	return true
+end
+
 function PLUGIN:CanAutoVoice(client)
-	if (!self:IsVoicePluginAvailable() or !IsValid(client) or !client:IsPlayer()) then
+	if (!self:IsVoicePluginAvailable() or !self:IsConnectedToLink(client)) then
 		return false
 	end
 
-	if (!client:Alive() or client:GetMoveType() == MOVETYPE_NOCLIP or client:IsRagdoll()) then
+	if (client:GetMoveType() == MOVETYPE_NOCLIP or client:IsRagdoll()) then
 		return false
 	end
 
-	if (!client:GetCharacter() or ix.option.Get(client, "autoVoiceEnabled", true) == false) then
+	if (!client:GetCharacter() or ix.option.Get(client, "ixCalloutClientEnabled", true) == false) then
 		return false
 	end
 
 	local voiceType = self:GetVoiceType(client)
 
-	return (voiceType == "combine" or voiceType == "metropolice") and Schema:CanPlayerSeeCombineOverlay(client)
+	if (client.ixVoiceBusy and client.ixVoiceBusy > CurTime()) then
+		return false
+	end
+
+	return true
 end
 
 function PLUGIN:GetPlayerVoicePriority(client)
@@ -1576,7 +2229,31 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		return nil
 	end
 
-	local variant = table.Random(templates)
+	-- Theme and dynamic filter-based selection
+	local currentTheme = (vType == "metropolice") and self:GetMPFThemeName(client) or nil
+	local eligibleTemplates = {}
+	local target = context and context.target
+
+	for _, v in ipairs(templates) do
+		local ok = true
+
+		if (v.requiredTheme and (!currentTheme or v.requiredTheme != currentTheme)) then
+			ok = false
+		elseif (v.filter and !v.filter(client, target)) then
+			ok = false
+		end
+
+		if (ok) then
+			eligibleTemplates[#eligibleTemplates + 1] = v
+		end
+	end
+
+	-- Fallback to all templates if no eligible ones found
+	if (#eligibleTemplates == 0) then
+		eligibleTemplates = templates
+	end
+
+	local variant = table.Random(eligibleTemplates)
 
 	if (!variant) then
 		return nil
@@ -1637,7 +2314,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 					else
 						local choices
 						if (vType == "metropolice") then
-							local theme = self:GetMPFMapChoices()
+							local theme = self:GetMPFMapChoices(client)
 							choices = theme.suspects
 							
 							if (!choices or #choices == 0) then
@@ -1674,7 +2351,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 					else
 						local choices
 						if (vType == "metropolice") then
-							local theme = self:GetMPFMapChoices()
+							local theme = self:GetMPFMapChoices(client)
 							choices = theme.suspects
 							
 							if (!choices or #choices == 0) then
@@ -1693,6 +2370,13 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 						sequence[#sequence + 1] = choice.sound
 						parts[#parts + 1] = choice.text
 					end
+				end
+
+				-- If follow-up information follows, automatically add a period after target if no custom suffix is specified.
+				local hasFollowup = (variant.suffix and variant.suffix != "") or variant.usesDistance or variant.usesBearing or variant.usesGrid or variant.usesSector or variant.usesVictim
+				local targetSuffix = variant.targetSuffix or (hasFollowup and ".")
+				if (targetSuffix) then
+					parts[#parts] = parts[#parts] .. targetSuffix
 				end
 			end
 		end,
@@ -1817,7 +2501,7 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		sectorLabel = function()
 			if (variant.usesSector) then
 				if (vType == "metropolice") then
-					local theme = self:GetMPFMapChoices()
+					local theme = self:GetMPFMapChoices(client)
 					local choice = table.Random(theme.locations)
 
 					if (choice) then
@@ -1985,7 +2669,9 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 
 	return {
 		sounds = sequence,
-		text = resultText
+		text = resultText,
+		forceLocal = variant.forceLocal == true,
+		isCheck = variant.isCheck == true
 	}
 end
 
@@ -2006,7 +2692,22 @@ function PLUGIN:PlayCombineSequence(client, sounds, volume, isRadioTransmission)
 		return false
 	end
 
-	netstream.Start(nil, "voicePlay", self:BuildCombineSpeech(sounds), volume or 75, client:EntIndex(), isRadioTransmission == true, "combine")
+	local sequence = self:BuildCombineSpeech(sounds)
+	local totalDuration = 0
+
+	for _, soundPath in ipairs(sequence) do
+		local duration = SoundDuration(soundPath)
+
+		if (duration == 0) then
+			-- Fallback to a default duration if SoundDuration fails on the server
+			duration = 1.5
+		end
+
+		totalDuration = totalDuration + duration
+	end
+
+	client.ixVoiceBusy = CurTime() + totalDuration + 0.5
+	netstream.Start(nil, "voicePlay", sequence, volume or 75, client:EntIndex(), isRadioTransmission == true, "combine")
 
 	return true
 end
@@ -2089,7 +2790,7 @@ function PLUGIN:HasNearbyCombineICListener(client)
 			continue
 		end
 
-		if (!target:Alive() or target:IsRagdoll() or !target:IsCombine()) then
+		if (!target:Alive() or target:IsRagdoll() or !self:IsConnectedToLink(target)) then
 			continue
 		end
 
@@ -2136,19 +2837,30 @@ function PLUGIN:SendChatForVoice(client, text, radioData)
 	return false
 end
 
-function PLUGIN:EmitVoiceEvent(client, text, sounds, volume)
+function PLUGIN:EmitVoiceEvent(client, text, sounds, volume, forceLocal, isCheck)
 	if (!self:CanAutoVoice(client)) then
 		return false
 	end
 
-	local radioData = self:GetActiveRadioState(client)
+	local radioData = !forceLocal and self:GetActiveRadioState(client) or nil
 	local didSend, usedRadio = self:SendChatForVoice(client, text, radioData)
 
 	if (!didSend) then
 		return false
 	end
 
-	return self:PlayCombineSequence(client, sounds, volume, usedRadio)
+	local success = self:PlayCombineSequence(client, sounds, volume, usedRadio)
+
+	-- Automated response logic: If this was marked as a check call, trigger responders to clear it
+	if (success and isCheck) then
+		timer.Simple(math.random(1.5, 3), function()
+			if (IsValid(client)) then
+				self:TriggerResponders(client, "idle_clear")
+			end
+		end)
+	end
+
+	return success
 end
 
 function PLUGIN:IsGrenadeRestingOnWorld(entity)
@@ -2218,7 +2930,7 @@ function PLUGIN:TryGrenadeReaction(client, grenade)
 	local event = self:BuildTemplateEvent(client, "grenade_danger")
 
 	if (event) then
-		return self:EmitVoiceEvent(client, event.text, event.sounds)
+		return self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 	end
 
 	return false
@@ -2267,12 +2979,10 @@ function PLUGIN:GetNearbyAutoVoiceCount(client, radius)
 	local origin = client:GetPos()
 
 	for _, target in ipairs(player.GetAll()) do
-		if (!self:CanAutoVoice(target)) then
-			continue
-		end
-
-		if (origin:DistToSqr(target:GetPos()) <= radiusSqr) then
-			count = count + 1
+		if (self:IsConnectedToLink(target) and self:CanAutoVoice(target)) then
+			if (origin:DistToSqr(target:GetPos()) <= radiusSqr) then
+				count = count + 1
+			end
 		end
 	end
 
@@ -2284,14 +2994,33 @@ function PLUGIN:OnNPCKilled(npc, attacker, inflictor)
 		return
 	end
 
-	-- 콤바인이 비콤바인(NPC)을 처치했을 때
-	if (IsValid(attacker) and attacker:IsPlayer() and attacker:Alive() and attacker:IsCombine() and self:CanAutoVoice(attacker)) then
+	-- NPC Killed
+	if (IsValid(attacker) and attacker:IsPlayer() and attacker:Alive() and self:IsConnectedToLink(attacker) and self:CanAutoVoice(attacker)) then
 		if (attacker.ixLastSeenTime != nil) then
 			attacker.ixVoiceKills = (attacker.ixVoiceKills or 0) + 1
 			if (self:CanUsePlayerCooldown(attacker, "kill_monster", 5)) then
 				local event = self:BuildTemplateEvent(attacker, "kill_monster")
 				if (event) then
-					self:EmitVoiceEvent(attacker, event.text, event.sounds)
+					self:EmitVoiceEvent(attacker, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+				end
+			end
+		end
+	end
+
+	-- Airwatch destroyed
+	local class = npc:GetClass():lower()
+	if (class == "npc_combinegunship" or class == "npc_combinedropship" or class == "npc_helicopter") then
+		local pos = npc:GetPos()
+		for _, client in ipairs(player.GetAll()) do
+			if (client:Alive() and self:IsConnectedToLink(client) and self:CanAutoVoice(client)) then
+				if (client:GetPos():DistToSqr(pos) <= (2000 * 2000)) then
+					if (self:CanUsePlayerCooldown(client, "skyshield_lost", 30)) then
+						local event = self:BuildTemplateEvent(client, "skyshield_lost")
+						if (event) then
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+							break
+						end
+					end
 				end
 			end
 		end
@@ -2306,10 +3035,40 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 	local attacker = damageInfo:GetAttacker()
 
 	-- Handle Combine/MPF getting hurt
-	if (IsValid(target) and target:IsPlayer() and target:Alive() and (target:IsCombine() or target:Team() == FACTION_MPF)) then
+	if (IsValid(target) and target:IsPlayer() and target:Alive() and self:IsConnectedToLink(target)) then
 		local voiceType = self:GetVoiceType(target)
 
 		if (voiceType == "metropolice") then
+			target.ixLastDamageTime = CurTime() -- Record last damage for idle logic
+			
+			-- Detect burn damage
+			if (damageInfo:IsDamageType(DMG_BURN) and self:CanUsePlayerCooldown(target, "on_fire", 30)) then
+				local event = self:BuildTemplateEvent(target, "on_fire")
+				if (event) then
+					self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+				end
+			end
+
+			if (damageInfo:IsDamageType(DMG_CRUSH)) then
+				local physicsAttacker = damageInfo:GetAttacker()
+				local inflictor = damageInfo:GetInflictor()
+
+				-- If the attacker isn't a valid player, check if the inflictor (the prop) has a physics attacker (the player who threw it)
+				if (IsValid(inflictor) and (!IsValid(physicsAttacker) or !physicsAttacker:IsPlayer())) then
+					physicsAttacker = inflictor:GetPhysicsAttacker()
+				end
+
+				-- Make sure the object was moved/thrown by some hostile entity (Player/NPC)
+				if (IsValid(physicsAttacker) and physicsAttacker != target and self:IsHostileToCombine(physicsAttacker, target)) then
+					if (self:CanUsePlayerCooldown(target, "physics_hit", 15)) then
+						local event = self:BuildTemplateEvent(target, "physics_hit")
+						if (event) then
+							self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+						end
+					end
+				end
+			end
+
 			if (IsValid(attacker) and attacker != target and self:IsHostileToCombine(attacker, target)) then
 				local health = target:Health()
 				local maxHealth = target:GetMaxHealth() or 100
@@ -2320,7 +3079,7 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 						target.ixPainLightUsed = true
 						local event = self:BuildTemplateEvent(target, "pain_light")
 						if (event) then
-							self:EmitVoiceEvent(target, event.text, event.sounds)
+							self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 						end
 					end
 				elseif (healthPercent < 25) then
@@ -2328,7 +3087,7 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 						target.ixPainHeavyUsed = true
 						local event = self:BuildTemplateEvent(target, "pain_heavy")
 						if (event) then
-							self:EmitVoiceEvent(target, event.text, event.sounds)
+							self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 						end
 					end
 				end
@@ -2342,27 +3101,54 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 				if (self:CanUsePlayerCooldown(target, "cover", 10)) then
 					local event = self:BuildTemplateEvent(target, "cover")
 					if (event) then
-						self:EmitVoiceEvent(target, event.text, event.sounds)
+						self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 					end
 				end
 			else
 				if (self:CanUsePlayerCooldown(target, "taunt", 10)) then
 					local event = self:BuildTemplateEvent(target, "taunt")
 					if (event) then
-						self:EmitVoiceEvent(target, event.text, event.sounds)
+						self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 					end
+				end
+			end
+
+			local damage = damageInfo:GetDamage()
+			if (damage > 20) then
+				for _, leader in ipairs(player.GetAll()) do
+					if (leader != target and leader:Alive() and self:IsConnectedToLink(leader) and self:IsSquadLeader(leader) and self:CanAutoVoice(leader)) then
+						if (leader:GetPos():DistToSqr(target:GetPos()) <= (SQUAD_RADIUS * SQUAD_RADIUS)) then
+							if (self:CanUsePlayerCooldown(leader, "ally_hurt", 30)) then
+								local event = self:BuildTemplateEvent(leader, "ally_hurt", {target = target})
+								if (event) then
+									self:EmitVoiceEvent(leader, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+									break
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+
+		-- Manhack specific "rogue" detection (friendly fire or accidental hits)
+		if (IsValid(attacker) and attacker:GetClass() == "npc_manhack") then
+			if (self:CanUsePlayerCooldown(target, "manhack_danger", 20)) then
+				local event = self:BuildTemplateEvent(target, "manhack_danger")
+				if (event) then
+					self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 				end
 			end
 		end
 	end
 
 	-- Only care if the attacker is a valid Combine unit
-	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:Alive() or !attacker:IsCombine()) then
+	if (!IsValid(attacker) or !attacker:IsPlayer() or !attacker:Alive() or !self:IsConnectedToLink(attacker)) then
 		return
 	end
 
 	-- Only care if the target is a player and NOT Combine
-	if (!IsValid(target) or !target:IsPlayer() or !target:Alive() or target:IsCombine()) then
+	if (!IsValid(target) or !target:IsPlayer() or !target:Alive() or self:IsConnectedToLink(target)) then
 		return
 	end
 
@@ -2375,7 +3161,7 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 			local event = self:BuildTemplateEvent(attacker, "player_hit")
 
 			if (event) then
-				self:EmitVoiceEvent(attacker, event.text, event.sounds)
+				self:EmitVoiceEvent(attacker, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 			end
 		end
 	end
@@ -2386,13 +3172,19 @@ function PLUGIN:HandleThrownGrenade(grenade)
 		return
 	end
 
+	-- Harassment and Arrest scan for nearby non-MPF players
+	if ((self.nextHarassScan or 0) < currentTime) then
+		self.nextHarassScan = currentTime + 2.0
+		self:ScanForArrestSituations()
+	end
+
 	if (grenade.ixAutoVoiceThrowHandled) then
 		return
 	end
 
 	local owner = grenade.GetOwner and grenade:GetOwner() or nil
 
-	if (!self:CanAutoVoice(owner) or !self:CanUsePlayerCooldown(owner, "throw_grenade", 1.5)) then
+	if (!self:IsConnectedToLink(owner) or !self:CanAutoVoice(owner) or !self:CanUsePlayerCooldown(owner, "throw_grenade", 1.5)) then
 		return
 	end
 
@@ -2401,7 +3193,32 @@ function PLUGIN:HandleThrownGrenade(grenade)
 	local event = self:BuildTemplateEvent(owner, "throwGrenade")
 
 	if (event) then
-		self:EmitVoiceEvent(owner, event.text, event.sounds)
+		self:EmitVoiceEvent(owner, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+	end
+end
+
+function PLUGIN:PhysicsCollide(data, phys)
+	local ent = data.HitEntity
+	local target = data.Entity
+
+	if (IsValid(target) and target:GetVelocity():LengthSqr() > (150 * 150)) then
+		local attacker = target:GetPhysicsAttacker()
+		if (IsValid(attacker) and attacker:IsPlayer()) then
+			for _, client in ipairs(player.GetAll()) do
+				if (client:Alive() and self:IsConnectedToLink(client) and self:CanAutoVoice(client) and client != attacker) then
+					if (client:GetPos():DistToSqr(target:GetPos()) <= (PHYSICS_THREAT_SCAN_RADIUS * PHYSICS_THREAT_SCAN_RADIUS)) then
+						if (self:IsHostileToCombine(attacker, client)) then
+							if (self:CanUsePlayerCooldown(client, "physics_hit", 10)) then
+								local event = self:BuildTemplateEvent(client, "physics_hit")
+								if (event) then
+									self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
 	end
 end
 
@@ -2442,22 +3259,84 @@ function PLUGIN:Think()
 		end
 	end
 
-	for _, mine in ipairs(ents.FindByClass("combine_mine")) do
-		if (!IsValid(mine)) then continue end
+	for _, class in ipairs(DANGER_CLASSES) do
+		for _, ent in ipairs(ents.FindByClass(class)) do
+			if (!IsValid(ent)) then continue end
 
-		-- Check if the hopper mine is currently jumping (has vertical velocity)
-		if (mine:GetVelocity().z > 30 and !mine:IsOnGround()) then
-			local origin = mine:GetPos()
+			local origin = ent:GetPos()
+			local isDanger = false
+			local radiusSqr = (250 * 250)
 
-			for _, client in ipairs(player.GetAll()) do
-				if (client:Alive() and client:IsCombine() and self:CanAutoVoice(client)) then
-					if (client:GetPos():DistToSqr(origin) <= (200 * 200)) then -- 200 units reaction radius
-						if (self:CanUsePlayerCooldown(client, "danger", 3)) then
-							local event = self:BuildTemplateEvent(client, "danger")
+			if (class == "combine_mine") then
+				-- Hopper mine jumping
+				isDanger = ent:GetVelocity().z > 30 and !ent:IsOnGround()
+				radiusSqr = (200 * 200)
+			elseif (class == "prop_explosive_barrel") then
+				-- Red barrel on fire
+				isDanger = ent:IsOnFire()
+				radiusSqr = (220 * 220)
+			elseif (class == "rpg_missile" or class == "prop_combine_ball" or class == "grenade_ar2") then
+				-- Moving projective threats - basic speed check
+				isDanger = ent:GetVelocity():LengthSqr() > (150 * 150)
+				radiusSqr = (350 * 350)
+			elseif (class == "npc_satchel" or class == "npc_tripmine" or class == "gmod_dynamite") then
+				-- SLAM / Dynamite
+				isDanger = true
+				radiusSqr = (220 * 220)
+			elseif (class == "npc_manhack") then
+				-- Manhacks are danger if they are hostile and flying
+				isDanger = ent:GetVelocity():LengthSqr() > (100 * 100)
+				radiusSqr = (250 * 250)
+			elseif (class:find("prop_vehicle")) then
+				-- Vehicles moving fast
+				isDanger = ent:GetVelocity():LengthSqr() > (150 * 150)
+				radiusSqr = (400 * 400)
+			end
 
-							if (event) then
-								self:EmitVoiceEvent(client, event.text, event.sounds)
-								break -- Only one reactor per mine jump to avoid noise
+			if (isDanger) then
+				for _, client in ipairs(player.GetAll()) do
+					if (self:IsConnectedToLink(client) and self:CanAutoVoice(client)) then
+						local clientPos = client:GetPos()
+
+						if (clientPos:DistToSqr(origin) <= radiusSqr) then
+							-- Unique category selection based on threat type
+							local template = "danger"
+
+							if (class == "npc_grenade_frag" or class == "grenade_ar2" or class == "rpg_missile") then
+								template = "grenade_danger"
+							elseif (class == "npc_manhack") then
+								-- Only MPF/Combine react to MANHACKS if they are hostile
+								if (!self:IsHostileToCombine(ent, client)) then
+									continue
+								end
+								template = "manhack_danger"
+							elseif (class:find("prop_vehicle")) then
+								-- Vehicles: only if coming towards
+								local vel = ent:GetVelocity():GetNormalized()
+								local toPlayer = (clientPos - origin):GetNormalized()
+								if (vel:Dot(toPlayer) < 0.6) then
+									continue
+								end
+								template = "vehicle_danger"
+							elseif (class == "rpg_missile" or class == "grenade_ar2" or class == "prop_combine_ball") then
+								-- Projectiles: only react if moving TOWARDS the player to avoid reacting to self-fires
+								local vel = ent:GetVelocity():GetNormalized()
+								local toPlayer = (clientPos - origin):GetNormalized()
+
+								-- If dot product is low, it's not moving towards the player
+								if (vel:Dot(toPlayer) < 0.6) then
+									continue
+								end
+								template = "grenade_danger"
+							end
+
+							if (self:CanUsePlayerCooldown(client, "danger", 3)) then
+								local event = self:BuildTemplateEvent(client, template)
+
+								if (event) then
+									self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+									break -- Only one reactor per entity to avoid noise
+								end
 							end
 						end
 					end
@@ -2472,6 +3351,139 @@ function PLUGIN:Think()
 
 	self.nextCombatScan = currentTime + COMBAT_SCAN_INTERVAL
 	self:ScanForCombatCallouts()
+
+	-- [[
+	-- Temporarily disabled: Harassment scan for nearby non-MPF players
+	-- if ((self.nextHarassScan or 0) < currentTime) then
+	-- 	self.nextHarassScan = currentTime + 2
+	-- 	self:ScanForHarassment()
+	-- end
+	-- ]]
+
+	-- Scan for physics hits (objects tossed/thrown near units)
+	for index, data in pairs(self.activePhysicsThreats) do
+		local ent = data.ent
+		if (!IsValid(ent) or data.dieTime < currentTime or ent:GetVelocity():LengthSqr() < (50 * 50)) then
+			self.activePhysicsThreats[index] = nil
+			continue
+		end
+
+		local entPos = ent:GetPos()
+		local attacker = data.attacker
+
+		for _, client in ipairs(player.GetAll()) do
+			if (client:Alive() and self:IsConnectedToLink(client) and self:CanAutoVoice(client)) then
+				-- Check if the prop is very close to this client
+				if (entPos:DistToSqr(client:GetPos()) <= (PHYSICS_THREAT_SCAN_RADIUS * PHYSICS_THREAT_SCAN_RADIUS)) then
+					-- Hostile check
+					if (attacker != client and self:IsHostileToCombine(attacker, client)) then
+						if (self:CanUsePlayerCooldown(client, "physics_hit", 10)) then
+							local event = self:BuildTemplateEvent(client, "physics_hit")
+							if (event) then
+								self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+								-- Once triggered for a unit, the prop stops being a threat to avoid repeat firing
+								self.activePhysicsThreats[index] = nil
+								break
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local HARASSMENT_DISTANCE_SQR = 55 * 55
+
+function PLUGIN:ScanForArrestSituations()
+	local currentTime = CurTime()
+	
+	for _, client in ipairs(player.GetAll()) do
+		if (client:Alive() and client:Team() == FACTION_MPF and self:IsConnectedToLink(client) and self:CanAutoVoice(client)) then
+			-- Skip if busy or recently spoke
+			if ((client.ixNextHarassVoice or 0) > currentTime) then
+				continue
+			end
+			
+			local origin = client:GetPos()
+			local cto = ix.plugin.Get("cto")
+			
+			for _, other in ipairs(player.GetAll()) do
+				if (other == client or !other:Alive() or other:GetMoveType() == MOVETYPE_NOCLIP or other:IsCombine()) then
+					continue
+				end
+				
+				local distSqr = origin:DistToSqr(other:GetPos())
+				if (distSqr > (500 * 500)) then continue end -- Only within 500 units
+
+				-- LOS check
+				if (!client:IsLineOfSightClear(other)) then continue end
+
+				local hasViolation = false
+				if (cto and cto.IsVisibleWeaponViolation and cto:IsVisibleWeaponViolation(other)) then
+					hasViolation = true
+				elseif (other:IsWepRaised()) then
+					hasViolation = true
+				end
+
+				if (hasViolation) then
+					-- Track suspect state
+					other.ixSuspectData = other.ixSuspectData or {state = "none", lastStationary = 0}
+					local data = other.ixSuspectData
+					local isRunning = other:GetVelocity():LengthSqr() > (150 * 150)
+
+					if (data.state == "none") then
+						-- Initial freeze command
+						data.state = "warned"
+						client.ixNextHarassVoice = currentTime + 10
+						local event = self:BuildTemplateEvent(client, "freeze")
+						if (event) then
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+						end
+						break
+					elseif (data.state == "warned" and isRunning) then
+						-- Suspect is fleeing
+						data.state = "fleeing"
+						client.ixNextHarassVoice = currentTime + 15
+						local event = self:BuildTemplateEvent(client, "suspect_running")
+						if (event) then
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+						end
+						break
+					elseif (data.state == "fleeing" and !isRunning) then
+						-- Suspect stopped fleeing
+						if (data.lastStationary == 0 or other:GetVelocity():LengthSqr() > (10 * 10)) then
+							data.lastStationary = currentTime
+						end
+
+						if (currentTime - data.lastStationary >= 3.0) then
+							-- Complied for 3 seconds
+							data.state = "arrested"
+							client.ixNextHarassVoice = currentTime + 20
+							local event = self:BuildTemplateEvent(client, "arrest")
+							if (event) then
+								self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+								
+								-- Trigger leader response
+								timer.Simple(1.5, function()
+									if (IsValid(client)) then
+										self:TriggerResponders(client, "arrest_answer")
+									end
+								end)
+							end
+							break
+						end
+					end
+				else
+					-- No violation, reset if they were a suspect but now clean?
+					-- Usually they stay suspect until cuffed or leave range.
+					if (other.ixSuspectData and distSqr > (800 * 800)) then
+						other.ixSuspectData = nil
+					end
+				end
+			end
+		end
+	end
 end
 
 function PLUGIN:IsHostileToCombine(entity, source)
@@ -2552,7 +3564,12 @@ function PLUGIN:TriggerResponders(client, responseType)
 	local clientRadio = self:GetActiveRadioState(client)
 	
 	for _, other in ipairs(player.GetAll()) do
-		if (other != client and other:Alive() and other:IsCombine() and self:CanAutoVoice(other)) then
+		if (other != client and self:IsConnectedToLink(other) and self:CanAutoVoice(other)) then
+			-- OTA Hierarchy check: OTA only responds to OTA. MPF responds to both.
+			if (client:Team() == FACTION_MPF and other:Team() == FACTION_OTA) then
+				continue
+			end
+
 			local otherRadio = self:GetActiveRadioState(other)
 			local distSqr = other:GetPos():DistToSqr(client:GetPos())
 			local canHear = false
@@ -2577,7 +3594,7 @@ function PLUGIN:TriggerResponders(client, responseType)
 				
 				local respEvent = self:BuildTemplateEvent(responder, responseType)
 				if (respEvent) then
-					self:EmitVoiceEvent(responder, respEvent.text, respEvent.sounds)
+					self:EmitVoiceEvent(responder, respEvent.text, respEvent.sounds, 75, respEvent.forceLocal, respEvent.isCheck)
 				end
 			end
 		end)
@@ -2588,7 +3605,7 @@ function PLUGIN:ScanForCombatCallouts()
 	local otaUnits = {}
 
 	for _, client in ipairs(player.GetAll()) do
-		if (client:Alive() and (client:Team() == FACTION_OTA or client:Team() == FACTION_MPF) and self:CanAutoVoice(client)) then
+		if (client:Alive() and client:IsCombine() and self:CanAutoVoice(client)) then
 			local weapon = client:GetActiveWeapon()
 			local weaponClass = IsValid(weapon) and weapon:GetClass() or ""
 
@@ -2599,30 +3616,12 @@ function PLUGIN:ScanForCombatCallouts()
 				if (!client.ixWasWepRaised) then
 					client.ixWasWepRaised = true
 					
-					local canQuest = false
-					local clientRadio = self:GetActiveRadioState(client)
-					
-					if (clientRadio) then
-						canQuest = true
-					else
-						for _, other in ipairs(player.GetAll()) do
-							if (other != client and other:Alive() and other:IsCombine()) then
-								if (other:GetPos():DistToSqr(client:GetPos()) <= (600 * 600)) then
-									canQuest = true
-									break
-								end
-							end
-						end
-					end
-					
-					if (canQuest) then
-						local cooldown = self:IsSquadLeader(client) and 30 or 120
-						if ((client.ixNextQuestVoice or 0) < CurTime()) then
-							client.ixNextQuestVoice = CurTime() + cooldown
-							local event = self:BuildTemplateEvent(client, "quest")
+					-- Stunstick
+					if (weaponClass == "ix_stunstick" and client:Team() == FACTION_MPF) then
+						if (self:CanUsePlayerCooldown(client, "activate_baton", 10)) then
+							local event = self:BuildTemplateEvent(client, "activate_baton")
 							if (event) then
-								self:EmitVoiceEvent(client, event.text, event.sounds)
-								self:TriggerResponders(client, "answer")
+								self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 							end
 						end
 					end
@@ -2679,10 +3678,13 @@ function PLUGIN:ScanForCombatCallouts()
 
 				if (isFirstContact) then
 					-- Squad leaders report first contact
-					if (self:IsSquadLeader(client)) then
+					local isMPF = (client:Team() == FACTION_MPF)
+					local isLeader = (isMPF and self:IsHighestRankingMPF(client)) or (!isMPF and self:IsSquadLeader(client))
+					
+					if (isLeader) then
 						template = "leader_alert"
 
-						-- Specialty check for non-humans
+						-- Specialty check for non-humans for leaders
 						if (!target:IsPlayer()) then
 							local class = target:GetClass():lower()
 
@@ -2701,8 +3703,11 @@ function PLUGIN:ScanForCombatCallouts()
 							end
 						end
 					else
-						-- Non-leader units use specific hazard sets
-						if (!target:IsPlayer()) then
+						-- Non-leaders report first contact using go_alert for humans (especially MPF)
+						if (target:IsPlayer()) then
+							template = "go_alert"
+						else
+							-- Specialty check for non-humans for non-leaders
 							local class = target:GetClass():lower()
 
 							if (class:find("antlion")) then
@@ -2717,12 +3722,56 @@ function PLUGIN:ScanForCombatCallouts()
 						end
 					end
 				else
-					-- If lost for more than 10 seconds, use refind_enemy
-					local timeSinceLastSeen = CurTime() - (client.ixLastSeenTime or 0)
+					-- Check for flanking (moving towards enemy, and enemy isn't coming towards us)
+					local velocity = client:GetVelocity()
 
-					if (timeSinceLastSeen > 10) then
-						template = "refind_enemy"
+					if (velocity:LengthSqr() > (100 * 100)) then
+						local toTarget = (target:GetPos() - client:GetPos()):GetNormalized()
+						local dot = velocity:GetNormalized():Dot(toTarget)
+
+						-- Moving towards enemy (dot product check)
+						if (dot > 0.7) then
+							local enemyVelocity = target:GetVelocity()
+							local toPlayer = (client:GetPos() - target:GetPos()):GetNormalized()
+							local enemyDot = enemyVelocity:GetNormalized():Dot(toPlayer)
+
+							-- Enemy is not coming towards us
+							if (enemyDot < 0.3) then
+								template = "flank"
+							end
+						end
 					end
+
+					-- Check for incoming enemy (enemy moving towards player, player not moving towards enemy)
+					if (template == "combatCallout") then
+						local enemyVelocity = target:GetVelocity()
+
+						if (enemyVelocity:LengthSqr() > (100 * 100)) then
+							local toPlayer = (client:GetPos() - target:GetPos()):GetNormalized()
+							local enemyDot = enemyVelocity:GetNormalized():Dot(toPlayer)
+
+							-- Enemy is coming towards us
+							if (enemyDot > 0.7) then
+								local dot = velocity:GetNormalized():Dot(toTarget)
+
+								-- Player is NOT moving towards the enemy
+								if (dot < 0.3) then
+									template = "incoming"
+								end
+							end
+						end
+					end
+
+					-- Random chance for assault callout if not flanking/incoming
+					if (template == "combatCallout" and math.random(1, 10) <= 4) then
+						template = "assault"
+					end
+
+					-- If lost for more than 10 seconds, use refind_enemy
+					-- Note: Since ixLastSeenTime was updated above, we check it against the previous value if needed, 
+					-- but here we rely on the fact that if isFirstContact was false and it was a while, it's a refind.
+					-- However, the original code had a bug where it checked against the JUST updated time.
+					-- We'll assume the user wants the new logic to take precedence for active combat.
 				end
 
 				local event = self:BuildTemplateEvent(client, template, {
@@ -2733,7 +3782,18 @@ function PLUGIN:ScanForCombatCallouts()
 				})
 
 				if (event) then
-					self:EmitVoiceEvent(client, event.text, event.sounds)
+					self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+
+					-- Trigger responses for major combat alerts
+					local responseTriggers = {
+						["leader_alert"] = true,
+						["monster_alert"] = true,
+						["cto_discovery"] = true,
+					}
+					
+					if (responseTriggers[template]) then
+						self:TriggerResponders(client, "answer")
+					end
 
 					return -- Only one callout per scan interval to avoid noise
 				end
@@ -2753,7 +3813,7 @@ function PLUGIN:ScanForCombatCallouts()
 						local event = self:BuildTemplateEvent(client, "lost_long")
 
 						if (event) then
-							self:EmitVoiceEvent(client, event.text, event.sounds)
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 							return
 						end
 					end
@@ -2764,7 +3824,7 @@ function PLUGIN:ScanForCombatCallouts()
 						local event = self:BuildTemplateEvent(client, "lost_short")
 
 						if (event) then
-							self:EmitVoiceEvent(client, event.text, event.sounds)
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 							return
 						end
 					end
@@ -2774,17 +3834,18 @@ function PLUGIN:ScanForCombatCallouts()
 				if ((client.ixNextIdleChatter or 0) < CurTime()) then
 					local canIdle = true
 					
-					-- exclude if typing recently or currently typing
-					if (client:GetNetVar("typing", false) or (client.ixLastChatTime and CurTime() - client.ixLastChatTime < 60)) then
+					-- exclude if typing recently or currently typing, or took damage recently
+					if (client:GetNetVar("typing", false) or (client.ixLastChatTime and CurTime() - client.ixLastChatTime < 60) or (client.ixLastDamageTime and CurTime() - client.ixLastDamageTime < 30)) then
 						canIdle = false
 					end
 					
-					-- Need at least one other combine nearby to talk to
-					if (canIdle and self:GetNearbyAutoVoiceCount(client, 600) > 1) then
+					-- Need at least one other combine nearby OR have radio access
+					local hasRadio = self:GetActiveRadioState(client) != nil
+					if (canIdle and (self:GetNearbyAutoVoiceCount(client, 600) > 1 or hasRadio)) then
 						client.ixNextIdleChatter = CurTime() + 120 -- 2 minutes cooldown
 						
 						local choices = {"idle"}
-						if (self:IsSquadLeader(client)) then
+						if (isLeader) then
 							table.insert(choices, "check")
 						end
 						
@@ -2792,7 +3853,7 @@ function PLUGIN:ScanForCombatCallouts()
 						local event = self:BuildTemplateEvent(client, selection)
 						
 						if (event) then
-							self:EmitVoiceEvent(client, event.text, event.sounds)
+							self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 							
 							if (selection == "check") then
 								self:TriggerResponders(client, "clear")
@@ -2806,6 +3867,50 @@ function PLUGIN:ScanForCombatCallouts()
 		end
 	end
 end
+
+-- Hook into scanner and cto photo transmissions
+function PLUGIN:OnScannerPhotoReceived(receivers)
+	timer.Simple(1.5, function()
+		local candidates = {}
+
+		for _, client in ipairs(player.GetAll()) do
+			if (client:Alive() and client:Team() == FACTION_MPF and self:IsHighestRankingMPF(client)) then
+				table.insert(candidates, client)
+			end
+		end
+
+		if (#candidates > 0) then
+			local speaker = table.Random(candidates)
+			local event = self:BuildTemplateEvent(speaker, "cto_discovery")
+							if (event) then
+				self:EmitVoiceEvent(speaker, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+			end
+		end
+	end, 1.5)
+end
+
+-- Initialize collision callbacks for all props
+function PLUGIN:RegisterPropCollision(ent)
+	if (ent:GetClass() == "prop_physics") then
+		ent:AddCallback("PhysicsCollide", function(prop, data)
+			self:HandlePropCollision(prop, data)
+		end)
+	end
+end
+
+function PLUGIN:OnEntityCreated(ent)
+	self:RegisterPropCollision(ent)
+end
+
+function PLUGIN:InitPostEntity()
+	for _, ent in ipairs(ents.FindByClass("prop_physics")) do
+		self:RegisterPropCollision(ent)
+	end
+end
+
+-- Remove old physics threat hooks
+-- (Previous OnPlayerPhysicsPickup/Drop etc are no longer needed for this logic)
+
 
 function PLUGIN:PostPlayerSay(client, chatType, message)
 	client.ixLastChatTime = CurTime()
@@ -2828,7 +3933,7 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 			if (self:CanUsePlayerCooldown(attacker, templateName, 5)) then
 				local event = self:BuildTemplateEvent(attacker, templateName, {target = client})
 				if (event) then
-					self:EmitVoiceEvent(attacker, event.text, event.sounds)
+					self:EmitVoiceEvent(attacker, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 				end
 			end
 		end
@@ -2875,12 +3980,12 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 			end
 
 			if (lastSquadEvent) then
-				self:EmitVoiceEvent(listener, lastSquadEvent.text, lastSquadEvent.sounds)
+				self:EmitVoiceEvent(listener, lastSquadEvent.text, lastSquadEvent.sounds, 75, lastSquadEvent.forceLocal, lastSquadEvent.isCheck)
 				break
 			else
 				local event = self:BuildManDownSequence(listener, client)
 				if (event) then
-					self:EmitVoiceEvent(listener, event.text, event.sounds)
+					self:EmitVoiceEvent(listener, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 					break
 				end
 			end

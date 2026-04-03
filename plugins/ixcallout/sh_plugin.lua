@@ -21,39 +21,61 @@ PLUGIN.voiceTypes = PLUGIN.voiceTypes or {
 }
 
 ix.lang.AddTable("english", {
-	optAutoVoiceEnabled = "Automatic voice reactions",
-	optdAutoVoiceEnabled = "Allows supported factions to automatically speak in response to nearby events."
+	optIxCalloutClientEnabled = "Automatic voice reactions",
+	optdIxCalloutClientEnabled = "Allows supported factions to automatically speak in response to nearby events."
 })
 
 ix.lang.AddTable("korean", {
-	optAutoVoiceEnabled = "자동 보이스 반응",
-	optdAutoVoiceEnabled = "지원되는 진영이 주변 상황에 자동으로 음성을 내도록 합니다."
+	optIxCalloutClientEnabled = "자동 보이스 반응",
+	optdIxCalloutClientEnabled = "지원되는 진영이 주변 상황에 자동으로 음성을 내도록 합니다."
 })
 
-ix.option.Add("autoVoiceEnabled", ix.type.bool, true, {
-	category = "voices"
+ix.option.Add("ixCalloutClientEnabled", ix.type.bool, true, {
+	category = "Helix Callout"
+})
+
+ix.config.Add("ixCalloutEnabled", true, "Whether or not the automatic callout system is enabled.", nil, {
+	category = "Helix Callout"
 })
 
 if (ix.area and ix.area.AddProperty) then
 	ix.area.AddProperty("sector", ix.type.number, 0, {
-		category = "Automatic Voice"
+		category = "Helix Callout"
 	})
-end
+
+	ix.area.AddProperty("calloutTheme", ix.type.string, "none", {
+		name = "Callout Theme Override",
+		category = "Helix Callout",
+		data = {
+			choices = {
+				"none",
+				"default",
+				"trainstation",
+				"canals",
+				"restricted",
+				"ravenholm",
+				"coast",
+				"prison",
+				"urban",
+				"citadel"
+			}
+		}
+	})
 end
 
 ix.config.Add("mpfCalloutTheme", ix.type.string, "auto", {
-	category = "Automatic Voice",
+	category = "Helix Callout",
 	data = {
 		choices = {
 			"auto",
 			"default",
 			"trainstation",
 			"canals",
-			"eli",
-			"town",
+			"restricted",
+			"ravenholm",
 			"coast",
 			"prison",
-			"c17",
+			"urban",
 			"citadel"
 		}
 	}
@@ -83,7 +105,25 @@ function PLUGIN:GetAreaSectorLabel(areaID)
 	return string.format("구역 %d", sector)
 end
 
+function PLUGIN:GetAreaCalloutTheme(areaID)
+	if (!areaID or areaID == "" or !ix.area or !ix.area.stored) then
+		return nil
+	end
+
+	local area = ix.area.stored[areaID]
+	local properties = area and area.properties
+	local theme = properties and properties.calloutTheme or "none"
+
+	if (theme and theme != "none") then
+		return theme
+	end
+end
+
 ix.util.Include("sv_plugin.lua")
+
+function PLUGIN:IsVoicePluginAvailable()
+	return ix.config.Get("ixCalloutEnabled", true) and (ix.plugin.list["ixvoice"] != nil)
+end
 
 function PLUGIN:InitializedPlugins()
 	self.ixVoicePlugin = ix.plugin.list["ixvoice"]

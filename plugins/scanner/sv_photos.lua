@@ -83,6 +83,8 @@ net.Receive("ixScannerData", function(length, ply)
                 net.WriteString(trg)
                 net.WriteString(zone)
             net.Send(receivers)
+
+            hook.Run("OnScannerPhotoReceived", receivers)
         end
 
         -- Store in history for Combine Computer
