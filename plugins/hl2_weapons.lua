@@ -16,9 +16,6 @@ ix.config.Add("npcDamageMultiplier", 0.5, "Multiplies how much damage NPCs deal.
 })
 
 local weaponDamage = {
-	-- Modded
-	["weapon_ezt_mp5k"] = 5,
-	
 	-- Vanilla
 	["weapon_pistol"] = 5,
 	["weapon_smg1"] = 4,

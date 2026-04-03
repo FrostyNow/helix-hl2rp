@@ -74,7 +74,7 @@ PLUGIN.customWeaponInfo = {
 	["arc9_hla_irifle"] = {
 		purpose = "ar1Desc"
 	},
-	["weapon_ezt_mp5k"] = {
+	["arc9_l4d2_mp5"] = {
 		purpose = "mp5kDesc"
 	},
 	["weapon_extinguisher"] = {

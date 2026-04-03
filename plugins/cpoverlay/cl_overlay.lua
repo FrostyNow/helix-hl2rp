@@ -26,6 +26,7 @@ local weps = { -- this table is for the weapons printnames, to be shown correctl
 	["arc9_hl2_smg1"] = L("Submachine Gun"),
 	["arc9_rtb_oicw"] = "OICW",
 	["arc9_l4d2_spas12"] = L("Shotgun"),
+	["arc9_l4d2_mp5"] = "MP5K",
 	["weapon_rtbr_frag"] = L("Grenade"),
 	["weapon_rtbr_oicw"] = "OICW",
 	["weapon_rtbr_flaregun"] = L("Flare Gun"),

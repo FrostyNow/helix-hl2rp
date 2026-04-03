@@ -33,6 +33,7 @@ local BASH_MELEE_WEAPONS = {
 	["arc9_hl2_smg1"] = true,
 	["arc9_hla_hmg"] = true,
 	["arc9_hl2_pistol"] = true,
+	["arc9_l4d2_mp5"] = true,
 	["arc9_rtb_oicw"] = true
 }
 
@@ -87,6 +88,14 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.DamageMax = 8
 		swep.DamageMin = 6
+		swep.BashDamage = 10
+		swep.ForceDefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("arc9_l4d2_mp5")
+	if (swep) then
+		swep.DamageMax = 6
+		swep.DamageMin = 4
 		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
 	end
@@ -212,12 +221,6 @@ function PLUGIN:InitializedPlugins()
 	if (swep) then
 		swep.MinDamage = 5
 		swep.MaxDamage = 8
-	end
-
-	// etc
-	local swep = weapons.GetStored("weapon_ezt_mp5k")
-	if (swep) then
-		swep.Primary.DefaultClip = 0
 	end
 end
 

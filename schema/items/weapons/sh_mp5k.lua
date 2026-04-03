@@ -1,6 +1,6 @@
 ITEM.name = "MP5K"
 ITEM.description = "mp5kDesc"
-ITEM.class = "weapon_ezt_mp5k"
+ITEM.class = "arc9_l4d2_mp5"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EMP, CLASS_MPU, CLASS_OWS, CLASS_REBEL}
 ITEM.price = 430
