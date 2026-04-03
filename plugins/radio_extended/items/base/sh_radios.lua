@@ -544,7 +544,7 @@ ITEM.functions.Listen = {
 			local notifyStr = string.format(" on %s MHz", itemTable:GetData("duplex",itemTable.duplex) and itemTable:GetData("listenfrequency","900.0") or itemTable:GetData("frequency","100.0")) --.." MHz"
 			local noWalkie = !itemTable.walkietalkie
 			local printStr = string.format("You are now listening to all channels%s.", noWalkie and notifyStr or "")
-			itemTable.player:NotifyLocalized(printStr)
+			itemTable.player:NotifyLocalized(printStr, itemTable.player)
 		else
 			character:SetData("scanning",keepScanning)
 			itemTable:SetData("scanning",false)

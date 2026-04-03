@@ -12,4 +12,6 @@ LANGUAGE = {
 	itemSplintDesc = "A splint is a rigid or flexible device that maintains in position a displaced or movable part, also used to keep in place and protect an injured part to support healing and to prevent further damage.",
 	aedDesc = "A device used to restore normal heart rhythm. Use only on cardiac arrest patients.",
 	medkitDesc = "A red cloth bag with a white cross on it, containing emergency medical supplies such as bandages and forceps.",
+	isBleeding = "Bleeding",
+	isFractured = "Limping",
 }

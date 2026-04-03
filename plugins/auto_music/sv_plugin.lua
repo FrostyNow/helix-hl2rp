@@ -9,8 +9,7 @@ function PLUGIN:CreateMusicPlayer()
 		mp = MediaPlayer.Create("auto_music", "base")
 		
 		if mp then
-			mp:SetGlobal(true)
-			mp:SetPersistent(true)
+			-- No special setup needed for base music player
 		end
 	end
 end

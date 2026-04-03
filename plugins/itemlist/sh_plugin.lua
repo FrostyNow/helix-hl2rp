@@ -15,6 +15,9 @@ ix.lang.AddTable("english", {
 	containerFull = "This container is full.",
 	copyID = "Copy Item ID to Clipboard",
 	giveToSelf = "Give to Self",
+	itemSpawnForbidden = "%s, don't you even dare spawn that shit.",
+	containerNoInventory = "This container has no inventory.",
+	spawnedIntoContainer = "Spawned %s into %s.",
 })
 ix.lang.AddTable("korean", {
 	items = "아이템",
@@ -22,6 +25,9 @@ ix.lang.AddTable("korean", {
 	containerFull = "이 보관함은 가득 찼습니다.",
 	copyID = "아이템 ID 복사",
 	giveToSelf = "내 인벤토리에 추가",
+	itemSpawnForbidden = "%s, 어디서 감히 이걸 스폰하려고 해.",
+	containerNoInventory = "이 보관함에는 인벤토리가 없습니다.",
+	spawnedIntoContainer = "%s 아이템을 %s에 생성했습니다.",
 })
 
 if (SERVER) then
@@ -33,7 +39,7 @@ if (SERVER) then
 		local pos = trace.HitPos
 
 		if (uniqueID == "goldgnome") and not (ply:SteamID() == "STEAM_0:1:1395956") then
-			ply:Notify(ply:Nick().." don't you even dare spawn that shit.")
+			ply:NotifyLocalized("itemSpawnForbidden", ply:Nick())
 			return false
 		end
 
@@ -60,7 +66,7 @@ if (SERVER) then
 		local inventory = character:GetInventory()
 
 		if (uniqueID == "goldgnome") and not (ply:SteamID() == "STEAM_0:1:1395956") then
-			ply:Notify(ply:Nick().." don't you even dare spawn that shit.")
+			ply:NotifyLocalized("itemSpawnForbidden", ply:Nick())
 			return false
 		end
 
@@ -80,22 +86,22 @@ if (SERVER) then
 
 		local inventory = entity:GetInventory()
 		if (!inventory) then
-			ply:Notify("This container has no inventory.")
+			ply:NotifyLocalized("containerNoInventory")
 			return
 		end
 
 		local itemTable = ix.item.Get(uniqueID)
 		if (!itemTable) then return end
 
-		local x, y, error = inventory:CanAdd(uniqueID)
-		if (!x) then
-			ply:Notify(error or L("containerFull", ply))
+		local bSuccess, error = inventory:Add(uniqueID)
+
+		if (!bSuccess) then
+			ply:NotifyLocalized(error or "containerFull")
 			return
 		end
 
-		inventory:Add(uniqueID)
 		ix.log.Add(ply, "itemListSpawnedIntoContainer", itemTable.name, entity:GetDisplayName())
-		ply:Notify(string.format("Spawned %s into %s.", itemTable.name, entity:GetDisplayName()))
+		ply:NotifyLocalized("spawnedIntoContainer", L(itemTable.name, ply), entity:GetDisplayName())
 	end)
 
 	function PLUGIN:PlayerLoadedCharacter(ply)

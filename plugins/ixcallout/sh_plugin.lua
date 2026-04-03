@@ -131,6 +131,7 @@ function PLUGIN:InitializedPlugins()
 	if (SERVER) then
 		self.reactedGrenades = self.reactedGrenades or {}
 		self.playerCooldowns = self.playerCooldowns or {}
+		self.activePhysicsThreats = self.activePhysicsThreats or {}
 		self.nextGrenadeScan = 0
 		self.nextDeathReaction = 0
 		self.nextCombatScan = 0

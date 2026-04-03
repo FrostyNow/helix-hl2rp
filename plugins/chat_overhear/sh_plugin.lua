@@ -63,6 +63,7 @@ local function RegisterOverhear(baseType)
 	end
 
 	ix.chat.Register(data.uniqueID, data)
+	base.bCanOverhear = true
 end
 
 function PLUGIN:InitializedChatClasses()
@@ -144,7 +145,7 @@ if (CLIENT) then
 		if (chatType:find("_overhear$")) then return end
 
 		local class = ix.chat.classes[chatType]
-		if (class and IsValid(speaker) and speaker:IsPlayer()) then
+		if (class and class.bCanOverhear and IsValid(speaker) and speaker:IsPlayer()) then
 			local overhearScale = ix.config.Get("overhearScale", 1.2)
 			-- Use baseRangeSqr if available, otherwise fallback to class.range
 			local rangeSqr = class.baseRangeSqr or class.range
@@ -243,12 +244,17 @@ if (CLIENT) then
 								name:gsub("<", "&lt;"):gsub(">", "&gt;"))
 						else
 							-- Standard Helix processing for strings and other types
-							buffer[#buffer + 1] = tostring(v):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("%%", "%%%%"):gsub("%b**", function(value)
-								local inner = value:utf8sub(2, -2)
-								if (inner:find("%S")) then
-									return "<font=ixChatFontItalics>" .. inner .. "</font>"
-								end
+							local ok, result = pcall(function()
+								local str = tostring(v):gsub("<", "&lt;"):gsub(">", "&gt;"):gsub("%%", "%%%%")
+								return str:gsub("%b**", function(value)
+									local inner = value:sub(2, -2) -- Using sub is safe for ASCII * and robust against broken UTF-8
+									if (inner:find("%S")) then
+										return "<font=ixChatFontItalics>" .. inner .. "</font>"
+									end
+								end)
 							end)
+
+							buffer[#buffer + 1] = ok and result or tostring(v)
 						end
 					end
 

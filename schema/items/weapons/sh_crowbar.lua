@@ -56,14 +56,32 @@ ITEM.functions.Pry = {
 		client:EmitSound("physics/metal/metal_box_impact_hard3.wav")
 		client:SetAction("@crowbarPrying", 5)
 		
-		local sound = CreateSound(client, "physics/metal/metal_box_scrape_rough_loop1.wav")
-		sound:Play()
+		local bPrying = true
+		local lastSound
+		local function PlayPrySound()
+			if (!bPrying or !IsValid(client)) then return end
+
+			local soundIndex = math.random(1, 4)
+			while (soundIndex == lastSound) do
+				soundIndex = math.random(1, 4)
+			end
+			lastSound = soundIndex
+
+			local soundName = "physics/metal/metal_box_strain" .. soundIndex .. ".wav"
+			client:EmitSound(soundName)
+
+			local duration = SoundDuration(soundName)
+			if (duration == 0) then duration = 0.7 end -- fallback if SoundDuration fails
+
+			timer.Simple(duration + 0.05, function()
+				PlayPrySound()
+			end)
+		end
+
+		PlayPrySound()
 
 		client:DoStaredAction(target, function()
-			if (sound) then
-				sound:Stop()
-				sound = nil
-			end
+			bPrying = false
 
 			-- chance
 			local luck = char:GetAttribute("lck", 0)
@@ -113,10 +131,7 @@ ITEM.functions.Pry = {
 				itemTable:Remove()
 			end
 		end, 5, function()
-			if (sound) then
-				sound:Stop()
-				sound = nil
-			end
+			bPrying = false
 
 			if (IsValid(client)) then
 				client:SetAction()

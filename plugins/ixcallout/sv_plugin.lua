@@ -1256,6 +1256,28 @@ local MPF_TEMPLATE_SETS = {
 			text = "경미한 부상이다, 임무 재개 중!",
 		}
 	},
+	pain_medium = {
+		{
+			-- COVER_HEAVY_DAMAGE0: officerunderfiretakingcover
+			sounds = {"npc/metropolice/vo/officerunderfiretakingcover.wav"},
+			text = "공격받고 있다, 엄폐한다!",
+		},
+		{
+			-- COVER_HEAVY_DAMAGE1: officerneedsassistance
+			sounds = {"npc/metropolice/vo/officerneedsassistance.wav"},
+			text = "부상 당한 경찰이 있다, 11-99!",
+		},
+		{
+			-- COVER_HEAVY_DAMAGE2: takecover
+			sounds = {"npc/metropolice/vo/takecover.wav"},
+			text = "엄폐하라!",
+		},
+		{
+			-- COVER_HEAVY_DAMAGE3: movingtocover
+			sounds = {"npc/metropolice/vo/movingtocover.wav"},
+			text = "엄호 위치로 이동한다!",
+		}
+	},
 	pain_heavy = {
 		{
 			sounds = {
@@ -1282,9 +1304,61 @@ local MPF_TEMPLATE_SETS = {
 			text = "부상 당한 경찰이 있다, 11-99!",
 		}
 	},
+	go_alert = {
+		{
+			-- METROPOLICE_CANAL_ALERT0: suspectinstormrunoff V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/suspectinstormrunoff.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			requiredTheme = "canals",
+			text = "모든 병력, 용의자가 스톰 런오프 시스템에 있다.",
+			-- "모든 병력, 용의자가 스톰 런오프 시스템에 있다. 구역 1."
+		},
+		{
+			-- METROPOLICE_WATER_ALERT0: suspectusingrestrictedcanals
+			sounds = {"npc/metropolice/vo/suspectusingrestrictedcanals.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			requiredTheme = "canals",
+			text = "용의자가 제한된 운하를 사용하고 있다.",
+			-- "용의자가 제한된 운하를 사용하고 있다. 구역 1."
+		},
+		{
+			-- METROPOLICE_UPTHERE_ALERT0: hesupthere
+			sounds = {"npc/metropolice/vo/hesupthere.wav"},
+			text = "위쪽에 있다!",
+			filter = function(speaker, target)
+				if (!IsValid(target)) then return false end
+				return (target:GetPos().z - speaker:GetPos().z) > 150
+			end
+		},
+		{
+			-- Generic re-finds for non-leaders
+			sounds = {"npc/metropolice/vo/thereheis.wav"},
+			text = "저기 있다!",
+		}
+	},
 	leader_alert = {
 		{
-			-- METROPOLICE_GO_ALERT0: designatesuspectas V_G2_SUSPECT_MAP__P allunitscode2
+			-- METROPOLICE_MONST_PLAYER0: V_G2_SUSPECT_MAP__P matchonapblikeness
+			layout = {"target", "text"},
+			usesTarget = true,
+			suffixSounds = {"npc/metropolice/vo/matchonapblikeness.wav"},
+			text = "APB 사진과 일치한다.",
+			-- "용의자 APB 사진과 일치한다."
+		},
+		{
+			-- METROPOLICE_MONST_PLAYER3: V_G2_SUSPECT_MAP__P location V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = { "npc/metropolice/vo/location.wav"},
+			layout = {"target", "text", "sectorLabel", "sectorNumber", "suffix"},
+			usesTarget = true,
+			usesSector = true,
+			suffix = ".",
+			text = "위치,",
+			-- "용의자 위치, 주거 구역 1."
+		},
+		{
+			-- METROPOLICE_MONST_PLAYER4: designatesuspectas V_G2_SUSPECT_MAP__P allunitscode2
 			sounds = {"npc/metropolice/vo/designatesuspectas.wav"},
 			layout = {"text", "target", "suffix"},
 			usesTarget = true,
@@ -1315,16 +1389,37 @@ local MPF_TEMPLATE_SETS = {
 			text = "현장의 모든 병력, 코드 3 응답하라!",
 		},
 		{
-			-- METROPOLICE_CANAL_ALERT0: suspectinstormrunoff V_G1_LOCATION_MAP__P V_G3_NUMBP
+			-- METROPOLICE_MONST_PLAYER2: allunitsrespondcode3, V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/allunitsrespondcode3.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			suffix = ".",
+			text = "현장의 모든 병력, 코드 3 응답하라!",
+			-- "현장의 모든 병력, 코드 3 응답하라! 주거 구역 1."
+		},
+		{
+			-- "stillgetting647e"
+			sounds = {"npc/metropolice/vo/stillgetting647e.wav"},
+			text = "로컬 감시조에서 647-E를 포착 중."
+		},
+		{
+			-- METROPOLICE_CANAL_ALERT0 (Leader version)
 			sounds = {"npc/metropolice/vo/suspectinstormrunoff.wav"},
 			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
 			usesSector = true,
 			requiredTheme = "canals",
-			text = "모든 병력, 용의자가 스톰 런오프 시스템에 있다.",
-			-- "모든 병력, 용의자가 스톰 런오프 시스템에 있다. 구역 1."
+			text = "용의자가 스톰 런오프 시스템에 있다.",
 		},
 		{
-			-- METROPOLICE_UPTHERE_ALERT0: hesupthere
+			-- METROPOLICE_WATER_ALERT0 (Leader version)
+			sounds = {"npc/metropolice/vo/suspectusingrestrictedcanals.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			requiredTheme = "canals",
+			text = "용의자가 제한된 운하를 사용하고 있다.",
+		},
+		{
+			-- METROPOLICE_UPTHERE_ALERT0 (Leader version)
 			sounds = {"npc/metropolice/vo/hesupthere.wav"},
 			text = "위쪽에 있다!",
 			filter = function(speaker, target)
@@ -1332,20 +1427,181 @@ local MPF_TEMPLATE_SETS = {
 				return (target:GetPos().z - speaker:GetPos().z) > 150
 			end
 		},
+	},
+	monster_alert = {
 		{
-			-- METROPOLICE_WATER_ALERT0: suspectusingrestrictedcanals V_G1_LOCATION_MAP__P V_G3_NUMBP
-			sounds = {"npc/metropolice/vo/suspectusingrestrictedcanals.wav"},
-			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			-- METROPOLICE_MONST0: outbreak V_RNDNUMP V_RNDACTP
+			sounds = {"npc/metropolice/vo/outbreak.wav"},
+			layout = {"text", "rndNums", "sectorLabel", "suffix"},
 			usesSector = true,
-			requiredTheme = "canals",
-			text = "용의자가 제한된 운하를 사용하고 있다.",
-			-- "용의자가 제한된 운하를 사용하고 있다. 구역 1."
+			suffix = ".",
+			text = "확산. 10-20:",
+			-- "확산. 10-20: 5 구역."
 		},
 		{
-			-- "stillgetting647e"
-			sounds = {"npc/metropolice/vo/stillgetting647e.wav"},
-			text = "로컬 감시조에서 647-E를 포착 중."
+			-- METROPOLICE_MONST1: V_RNDACTP V_RNDNUMP
+			layout = {"sectorLabel", "rndNums", "suffix"},
+			usesSector = true,
+			suffix = ".",
+			-- "구역 5."
+		},
+		{
+			-- METROPOLICE_MONST_CITIZENS1: shotsfiredhostilemalignants
+			sounds = {"npc/metropolice/vo/shotsfiredhostilemalignants.wav"},
+			text = "무기 발사, 적대적인 생명체 발견!",
+			filter = function(speaker, target)
+				return IsValid(target) and !target:IsPlayer()
+			end
+		},
+	},
+	monster_bugs = {
+		{
+			-- METROPOLICE_MONST_BUGS0: bugs
+			sounds = {"npc/metropolice/vo/bugs.wav"},
+			text = "벌레!",
+			filter = function(speaker, target)
+				return IsValid(target) and target:GetClass():lower():find("antlion")
+			end
+		},
+		{
+			-- METROPOLICE_MONST_BUGS1: bugsontheloose
+			sounds = {"npc/metropolice/vo/bugsontheloose.wav"},
+			text = "벌레들이 활동 중이다!",
+			filter = function(speaker, target)
+				return IsValid(target) and target:GetClass():lower():find("antlion")
+			end
+		},
+		{
+			-- METROPOLICE_MONST_BUGS2: outbreak V_RNDNUMP converging
+			sounds = {"npc/metropolice/vo/outbreak.wav"},
+			layout = {"text", "rndNums", "suffix"},
+			suffixSounds = {"npc/metropolice/vo/converging.wav"},
+			text = "확산",
+			suffix = "집합 중.",
+			-- "확산 5. 집합 중."
+		},
+		{
+			-- METROPOLICE_MONST_BUGS3: outlandbioticinhere
+			sounds = {"npc/metropolice/vo/outlandbioticinhere.wav"},
+			text = "여기 외지 생물체가 있다!",
+			filter = function(speaker, target)
+				return IsValid(target) and !target:IsPlayer()
+			end
 		}
+	},
+	monster_zombies = {
+		{
+			-- METROPOLICE_MONST_ZOMBIES0: freenecrotics, converging V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {
+				"npc/metropolice/vo/freenecrotics.wav",
+				"npc/metropolice/vo/converging.wav"
+			},
+			layout = {"text", "suffix", "sectorLabel", "sectorNumber"},
+			usesSector = true,
+			text = "네크로틱이 날뛰고 있다! 접근 중,",
+			suffix = ".",
+			-- "네크로틱이 날뛰고 있다! 접근 중, 주거 구역 1."
+			filter = function(speaker, target)
+				local class = IsValid(target) and target:GetClass():lower() or ""
+				return class:find("zombie") or class == "npc_zombine"
+			end
+		},
+		{
+			-- METROPOLICE_MONST_ZOMBIES1: necrotics malignant location V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/necrotics.wav", "npc/metropolice/vo/malignant.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "네크로틱 악성,",
+			suffix = ".",
+			-- "네크로틱 악성, 주거 구역 1."
+			filter = function(speaker, target)
+				local class = IsValid(target) and target:GetClass():lower() or ""
+				return class:find("zombie") or class == "npc_zombine"
+			end
+		}
+	},
+	monster_parasites = {
+		{
+			-- METROPOLICE_MONST_PARASITES0: non-taggedviromeshere
+			sounds = {"npc/metropolice/vo/non-taggedviromeshere.wav"},
+			text = "태그 없는 바이롬을 발견했다!",
+			filter = function(speaker, target)
+				return IsValid(target) and target:GetClass():lower():find("antlion")
+			end
+		},
+		{
+			-- METROPOLICE_MONST_PARASITES1: looseparasitics
+			sounds = {"npc/metropolice/vo/looseparasitics.wav"},
+			text = "기생충 조심하라!",
+			filter = function(speaker, target)
+				return IsValid(target) and target:GetClass():lower():find("headcrab")
+			end
+		}
+	},
+	monster_freeman = {
+		{
+			sounds = {"npc/metropolice/vo/confirmpriority1sighted.wav"},
+			text = "중요도 1 용의자 발견했다.",
+		}
+	},
+	monster_character = {
+		{
+			-- METROPOLICE_MONST_CHARACTER0: contactwithpriority2
+			sounds = {"npc/metropolice/vo/contactwithpriority2.wav"},
+			text = "중요도 2 용의자 발견!",
+		},
+		{
+			-- METROPOLICE_MONST_CHARACTER1: priority2anticitizenhere
+			sounds = {"npc/metropolice/vo/priority2anticitizenhere.wav"},
+			text = "여기에 중요도 2 반시민이 있다!",
+		}
+	},
+	monster_citizens = {
+		{
+			-- METROPOLICE_MONST_CITIZENS0: noncitizen outbreak
+			sounds = {"npc/metropolice/vo/noncitizen.wav", "npc/metropolice/vo/outbreak.wav"},
+			text = "반시민, 확산."
+		},
+		{
+			-- METROPOLICE_MONST_CITIZENS2: possible404here V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/possible404here.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "여기에 404 발생 예상!",
+			suffix = ".",
+			-- "여기에 404 발생 예상! 주거 구역 1."
+		},
+		{
+			-- METROPOLICE_MONST_CHARACTER2: gotoneaccomplicehere
+			sounds = {"npc/metropolice/vo/gotoneaccomplicehere.wav"},
+			text = "여기 공범자 한 명 잡았다!"
+		}
+	},
+	monster_vehicle = {
+		{
+			-- METROPOLICE_MONST_PLAYER_VEHICLE3: Ivegot408hereatlocation V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/ivegot408hereatlocation.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "suffix"},
+			usesSector = true,
+			text = "이곳에 408 사태 발생했다.",
+			suffix = ".",
+			-- "이곳에 408 사태 발생했다. 주거 구역 1."
+		},
+		{
+			-- METROPOLICE_MONST_PLAYER_VEHICLE0: airwatchsubjectis505
+			sounds = {"npc/metropolice/vo/airwatchsubjectis505.wav"},
+			text = "공중 추적 지원 바람, 표적 505!"
+		},
+		{
+			-- METROPOLICE_MONST_PLAYER_VEHICLE1: subjectis505
+			sounds = {"npc/metropolice/vo/subjectis505.wav"},
+			text = "대상은 505!"
+		},
+		{
+			-- METROPOLICE_MONST_PLAYER_VEHICLE2: subjectisnowhighspeed
+			sounds = {"npc/metropolice/vo/subjectisnowhighspeed.wav"},
+			text = "주목하라, 대상의 이동 속도가 빨라졌다!",
+		},
 	},
 	grenade_danger = {
 		{
@@ -1520,6 +1776,104 @@ local MPF_TEMPLATE_SETS = {
 			isCheck = true,
 			filter = function(speaker) return PLUGIN:IsHighestRankingMPF(speaker) end
 		},
+	},
+	lost_short = {
+		{
+			-- LOST_SHORT0: V_G2_SUSPECT_MAP__P hidinglastseenatrange V_DISTP meters
+			sounds = {"npc/metropolice/vo/hidinglastseenatrange.wav"},
+			layout = {"target", "text", "distance"},
+			usesTarget = true,
+			usesDistance = true,
+			text = "의심 중, 마지막 포착 위치:",
+			-- "대상, 의심 중, 마지막 포착 위치: 15미터."
+		},
+		{
+			-- LOST_SHORT1: sweepingforsuspect
+			sounds = {"npc/metropolice/vo/sweepingforsuspect.wav"},
+			text = "용의자 추적 중!",
+		}
+	},
+	lost_long = {
+		{
+			-- LOST_LONG0: allunitsreportlocationsuspect
+			sounds = {"npc/metropolice/vo/allunitsreportlocationsuspect.wav"},
+			text = "모든 병력, 용의자 위치 보고하라!",
+			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end,
+		},
+		{
+			-- LOST_LONG1: V_MYNAMEP V_MYNUMP nocontact
+			sounds = {"npc/metropolice/vo/nocontact.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "시야 미확보!",
+			-- "유니온 3. 시야 미확보!"
+		},
+		{
+			-- LOST_LONG2: cpweneedtoestablishaperimeterat V_G1_LOCATION_MAP__P V_G3_NUMBP
+			sounds = {"npc/metropolice/vo/cpweneedtoestablishaperimeterat.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber"},
+			usesSector = true,
+			text = "지역 구축 요청한다, 위치는...",
+			-- "지역 구축 요청한다, 위치는... 구역 5."
+		},
+		{
+			-- LOST_LONG3: V_MYNAMEP V_MYNUMP utlsuspect
+			sounds = {"npc/metropolice/vo/utlsuspect.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "용의자 미발견.",
+			-- "유니온 3. 용의자 미발견."
+		}
+	},
+	refind_enemy = {
+		{
+			-- REFIND_ENEMY0: supsecthasmovednowto V_G1_LOCATION_MAP__P V_GRIDXP
+			sounds = {"npc/metropolice/vo/supsecthasmovednowto.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber", "grid"},
+			usesSector = true,
+			usesGrid = true,
+			text = "현재 용의자가 이동했다.",
+			-- "현재 용의자가 이동했다. 구역 5, 그리드 10-5."
+		},
+		{
+			-- REFIND_ENEMY1: thereheis
+			sounds = {"npc/metropolice/vo/thereheis.wav"},
+			text = "저기 있다!",
+		},
+		{
+			-- REFIND_ENEMY2: therehegoeshesat V_DISTP meters
+			sounds = {"npc/metropolice/vo/therehegoeshesat.wav"},
+			layout = {"text", "distance"},
+			usesDistance = true,
+			text = "저기 있다! 위치:",
+			-- "저기 있다! 위치: 25미터."
+		}
+	},
+	deploy_manhack = {
+		{
+			-- METROPOLICE_DEPLOY_MANHACK0: visceratordeployed
+			sounds = {"npc/metropolice/vo/visceratordeployed.wav"},
+			text = "비저레이터가 배치되었다!",
+		},
+		{
+			-- METROPOLICE_DEPLOY_MANHACK1: tenzerovisceratorishunting
+			sounds = {"npc/metropolice/vo/tenzerovisceratorishunting.wav"},
+			text = "10-0, 비저레이터가 수색 중이다!",
+		}
+	},
+	manhack_killed = {
+		{
+			-- METROPOLICE_MANHACK_KILLED0: visceratorisoffgrid
+			sounds = {"npc/metropolice/vo/visceratorisoffgrid.wav"},
+			text = "장소를 이탈했다!",
+		},
+		{
+			-- METROPOLICE_MANHACK_KILLED1: requestsecondaryviscerator
+			sounds = {"npc/metropolice/vo/requestsecondaryviscerator.wav"},
+			text = "추가 비저레이터 요청, 첫 번째는 전투 불능이다!",
+		}
 	},
 	clear = {
 		{
@@ -1819,6 +2173,52 @@ local MPF_TEMPLATE_SETS = {
 			useNumber = true,
 			text = "기소 준비 완료.",
 		},
+	},
+	player_hit = {
+		{
+			-- HIT0: wegotadbherecancel10-102
+			sounds = {"npc/metropolice/vo/wegotadbherecancel10-102.wav"},
+			text = "시체 발견, 11-42 취소하라.",
+		},
+		{
+			-- HIT1: suspectisbleeding
+			sounds = {"npc/metropolice/vo/suspectisbleeding.wav"},
+			text = "용의자, 상처 입고 피를 흘리고 있다!"
+		},
+		{
+			-- HIT2: V_G2_SUSPECT_MAP__P ispassive
+			sounds = {"npc/metropolice/vo/ispassive.wav"},
+			layout = {"target", "text"},
+			usesTarget = true,
+			text = "반응이 없다.",
+			-- "대상, 반응이 없다."
+		},
+		{
+			-- HIT3: readytoamputate V_G2_SUSPECT_MAP__P
+			sounds = {"npc/metropolice/vo/readytoamputate.wav"},
+			layout = {"text", "target", "suffix"},
+			usesTarget = true,
+			text = "절단 준비 완료,",
+			suffix = ".",
+			-- "절단 준비 완료, 대상."
+		},
+		{
+			-- HIT4: get11-44inboundcleaningup
+			sounds = {"npc/metropolice/vo/get11-44inboundcleaningup.wav"},
+			text = "11-44 데려와라, 지금 소탕한다."
+		},
+	},
+	reload = {
+		{
+			-- COVER_NO_AMMO0: backmeupImout
+			sounds = {"npc/metropolice/vo/backmeupImout.wav"},
+			text = "엄호하라, 나간다!",
+		},
+		{
+			-- COVER_LOW_AMMO0: runninglowonverdicts
+			sounds = {"npc/metropolice/vo/runninglowonverdicts.wav"},
+			text = "실탄이 부족하다, 엄폐하겠다!"
+		}
 	},
 }
 
@@ -2229,31 +2629,42 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 		return nil
 	end
 
-	-- Theme and dynamic filter-based selection
 	local currentTheme = (vType == "metropolice") and self:GetMPFThemeName(client) or nil
-	local eligibleTemplates = {}
-	local target = context and context.target
+	local variant = nil
+	local forcedIndex = context and context.forcedIndex
 
-	for _, v in ipairs(templates) do
-		local ok = true
+	if (forcedIndex and templates[forcedIndex]) then
+		variant = templates[forcedIndex]
+	else
+		local specificTemplates = {}
+		local genericTemplates = {}
+		local target = context and context.target
 
-		if (v.requiredTheme and (!currentTheme or v.requiredTheme != currentTheme)) then
-			ok = false
-		elseif (v.filter and !v.filter(client, target)) then
-			ok = false
+		for _, v in ipairs(templates) do
+			-- Theme check first
+			if (v.requiredTheme and (!currentTheme or v.requiredTheme != currentTheme)) then
+				continue
+			end
+
+			if (v.filter) then
+				if (v.filter(client, target)) then
+					specificTemplates[#specificTemplates + 1] = v
+				end
+			else
+				genericTemplates[#genericTemplates + 1] = v
+			end
 		end
 
-		if (ok) then
-			eligibleTemplates[#eligibleTemplates + 1] = v
+		-- Priority: Specific (Filtered) > Generic (Unfiltered)
+		local eligibleTemplates = {}
+		if (#specificTemplates > 0) then
+			eligibleTemplates = specificTemplates
+		else
+			eligibleTemplates = genericTemplates
 		end
-	end
 
-	-- Fallback to all templates if no eligible ones found
-	if (#eligibleTemplates == 0) then
-		eligibleTemplates = templates
+		variant = table.Random(eligibleTemplates)
 	end
-
-	local variant = table.Random(eligibleTemplates)
 
 	if (!variant) then
 		return nil
@@ -2312,8 +2723,22 @@ function PLUGIN:BuildTemplateEvent(client, templateName, context)
 							end
 						end
 					else
-						local choices
-						if (vType == "metropolice") then
+						local choices = {}
+						local enemyType = self:GetEnemyType(target)
+
+						if (enemyType == "freeman") then
+							if (vType == "metropolice") then
+								choices = {
+									{sound = "npc/metropolice/vo/freeman.wav", text = "프리맨"}
+								}
+							else
+								choices = {
+									{sound = "npc/combine_soldier/vo/freeman3.wav", text = "프리맨"},
+									{sound = "npc/combine_soldier/vo/anticitizenone.wav", text = "반시민 1"},
+									{sound = "npc/combine_soldier/vo/priority1objective.wav", text = "1번 임무 목표 완수"}
+								}
+							end
+						elseif (vType == "metropolice") then
 							local theme = self:GetMPFMapChoices(client)
 							choices = theme.suspects
 							
@@ -2687,7 +3112,7 @@ function PLUGIN:BuildCombineSpeech(sounds)
 	return sequence
 end
 
-function PLUGIN:PlayCombineSequence(client, sounds, volume, isRadioTransmission)
+function PLUGIN:PlayCombineSequence(client, sounds, volume, isRadioTransmission, receivers)
 	if (!self:CanAutoVoice(client) or !istable(sounds) or #sounds == 0) then
 		return false
 	end
@@ -2707,7 +3132,29 @@ function PLUGIN:PlayCombineSequence(client, sounds, volume, isRadioTransmission)
 	end
 
 	client.ixVoiceBusy = CurTime() + totalDuration + 0.5
-	netstream.Start(nil, "voicePlay", sequence, volume or 75, client:EntIndex(), isRadioTransmission == true, "combine")
+	local volume = volume or 75
+	local voiceType = "combine"
+
+	-- Primary spatial sound on the speaker
+	netstream.Start(nil, "voicePlay", sequence, volume, client:EntIndex(), isRadioTransmission == true, voiceType)
+
+	-- Secondary sounds on receivers for radio transmissions (multi-cast)
+	if (isRadioTransmission and receivers) then
+		local threshold = (self.ixVoicePlugin and self.ixVoicePlugin.radioNoiseDistanceSqr) or (1200 * 1200)
+		local speakerPos = client:GetPos()
+
+		for _, v in ipairs(receivers) do
+			if (!IsValid(v) or v == client) then continue end
+
+			local pos = v:GetPos()
+			if (pos:DistToSqr(speakerPos) <= threshold) then
+				continue -- Already audible spatially
+			end
+
+			-- Relay sound through the receiver's entity index (sounds like it's coming from their radio)
+			netstream.Start(nil, "voicePlay", sequence, volume * 0.45, v:EntIndex(), true, voiceType)
+		end
+	end
 
 	return true
 end
@@ -2822,10 +3269,20 @@ function PLUGIN:SendChatForVoice(client, text, radioData)
 			walkie = chatData.walkie
 		}
 
-		ix.chat.Send(client, "radio", text, false, nil, chatData)
+		local receivers = {}
+		local chatClass = ix.chat.classes["radio"]
+		if (chatClass) then
+			for _, v in ipairs(player.GetAll()) do
+				if (v:GetCharacter() and chatClass:CanHear(client, v, chatData)) then
+					receivers[#receivers + 1] = v
+				end
+			end
+		end
+
+		ix.chat.Send(client, "radio", text, false, receivers, chatData)
 		ix.chat.Send(client, "radio_eavesdrop", text, false, nil, eavesdropData)
 
-		return true, true
+		return true, true, receivers
 	end
 
 	if (self:HasNearbyCombineICListener(client)) then
@@ -2843,13 +3300,13 @@ function PLUGIN:EmitVoiceEvent(client, text, sounds, volume, forceLocal, isCheck
 	end
 
 	local radioData = !forceLocal and self:GetActiveRadioState(client) or nil
-	local didSend, usedRadio = self:SendChatForVoice(client, text, radioData)
+	local didSend, usedRadio, receivers = self:SendChatForVoice(client, text, radioData)
 
 	if (!didSend) then
 		return false
 	end
 
-	local success = self:PlayCombineSequence(client, sounds, volume, usedRadio)
+	local success = self:PlayCombineSequence(client, sounds, volume, usedRadio, receivers)
 
 	-- Automated response logic: If this was marked as a check call, trigger responders to clear it
 	if (success and isCheck) then
@@ -2994,6 +3451,22 @@ function PLUGIN:OnNPCKilled(npc, attacker, inflictor)
 		return
 	end
 
+	-- Handle Manhack killed near Combine
+	if (npc:GetClass() == "npc_manhack") then
+		local pos = npc:GetPos()
+		for _, v in ipairs(player.GetAll()) do
+			if (v:Alive() and v:IsCombine() and v:GetPos():DistToSqr(pos) < (800 * 800) and self:CanAutoVoice(v)) then
+				if (self:CanUsePlayerCooldown(v, "manhack_killed", 10)) then
+					local event = self:BuildTemplateEvent(v, "manhack_killed")
+					if (event) then
+						self:EmitVoiceEvent(v, event.text, event.sounds, 75)
+						break
+					end
+				end
+			end
+		end
+	end
+
 	-- NPC Killed
 	if (IsValid(attacker) and attacker:IsPlayer() and attacker:Alive() and self:IsConnectedToLink(attacker) and self:CanAutoVoice(attacker)) then
 		if (attacker.ixLastSeenTime != nil) then
@@ -3078,6 +3551,14 @@ function PLUGIN:PostEntityTakeDamage(target, damageInfo)
 					if (!target.ixPainLightUsed) then
 						target.ixPainLightUsed = true
 						local event = self:BuildTemplateEvent(target, "pain_light")
+						if (event) then
+							self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+						end
+					end
+				elseif (healthPercent >= 25) then
+					if (!target.ixPainMediumUsed) then
+						target.ixPainMediumUsed = true
+						local event = self:BuildTemplateEvent(target, "pain_medium")
 						if (event) then
 							self:EmitVoiceEvent(target, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
 						end
@@ -3537,6 +4018,54 @@ function PLUGIN:IsHostileToCombine(entity, source)
 	return false
 end
 
+function PLUGIN:GetEnemyType(entity)
+	if (!IsValid(entity)) then return "none" end
+	if (entity:IsPlayer()) then
+		if (entity:InVehicle()) then return "vehicle" end
+		
+		local char = entity:GetCharacter()
+		if (char) then
+			local name = char:GetName():lower()
+			if (name:find("gordon") or name:find("freeman")) then return "freeman" end
+		end
+		
+		return "human"
+	end
+
+	local class = entity:GetClass():lower()
+	if (class:find("zombie") or class == "npc_zombine") then return "zombie" end
+	if (class:find("antlion")) then return "antlion" end
+	if (class:find("headcrab")) then return "headcrab" end
+	if (class == "npc_alyx" or class == "npc_barney") then return "character" end
+	
+	-- Humanoid NPCs like Citizens, Rebels, or other factions
+	if (class:find("citizen") or class:find("rebel") or class:find("combine") or class:find("metropolice")) then
+		return "human_npc"
+	end
+	
+	return "unknown"
+end
+
+-- Callout mappings for cleaner logic
+local MPF_LEADER_CALLOUTS = {
+	-- Keep empty to use smart fallbacks
+}
+
+local OTA_LEADER_CALLOUTS = {
+	-- Keep empty to use smart fallbacks
+}
+
+local GENERIC_MONSTER_CALLOUTS = {
+	vehicle = "monster_vehicle",
+	human_npc = "monster_citizens",
+	zombie = "monster_zombies",
+	antlion = "monster_bugs",
+	headcrab = "monster_parasites",
+	character = "monster_character",
+	freeman = "monster_freeman",
+	unknown = "monster_alert"
+}
+
 function PLUGIN:IsSquadLeader(client)
 	if (!IsValid(client) or !client:GetCharacter()) then
 		return false
@@ -3680,46 +4209,27 @@ function PLUGIN:ScanForCombatCallouts()
 					-- Squad leaders report first contact
 					local isMPF = (client:Team() == FACTION_MPF)
 					local isLeader = (isMPF and self:IsHighestRankingMPF(client)) or (!isMPF and self:IsSquadLeader(client))
-					
+
 					if (isLeader) then
-						template = "leader_alert"
-
-						-- Specialty check for non-humans for leaders
-						if (!target:IsPlayer()) then
-							local class = target:GetClass():lower()
-
-							if (class:find("zombie") or class == "npc_zombine") then
-								template = "monster_alert"
-								forcedIndex = 3 -- MONST2: infected
-							elseif (class:find("antlion") or class:find("headcrab") or class:find("barnacle")) then
-								template = "monster_alert"
-								forcedIndex = 2 -- MONST1: exogens
-							elseif (class == "npc_alyx" or class == "npc_barney") then
-								template = "monster_character"
-								forcedIndex = nil
+						local enemyType = self:GetEnemyType(target)
+						local mapping = (isMPF and MPF_LEADER_CALLOUTS[enemyType]) or OTA_LEADER_CALLOUTS[enemyType]
+						
+						if (mapping) then
+							template = mapping.template
+							forcedIndex = mapping.forcedIndex
+						else
+							-- Smart fallback: Monster callouts for NPCs, standard leader_alert for players
+							if (target:IsNPC()) then
+								template = GENERIC_MONSTER_CALLOUTS[enemyType] or "leader_alert"
 							else
-								template = "monster_alert"
-								forcedIndex = 1 -- MONST0: sterile
+								template = "leader_alert"
 							end
+							forcedIndex = nil
 						end
 					else
-						-- Non-leaders report first contact using go_alert for humans (especially MPF)
-						if (target:IsPlayer()) then
-							template = "go_alert"
-						else
-							-- Specialty check for non-humans for non-leaders
-							local class = target:GetClass():lower()
-
-							if (class:find("antlion")) then
-								template = "monster_bugs"
-							elseif (class:find("headcrab") or class:find("barnacle")) then
-								template = "monster_parasites"
-							elseif (class:find("zombie") or class == "npc_zombine") then
-								template = "monster_zombies"
-							elseif (class == "npc_alyx" or class == "npc_barney") then
-								template = "monster_character"
-							end
-						end
+						-- Non-leaders or followers
+						local enemyType = self:GetEnemyType(target)
+						template = GENERIC_MONSTER_CALLOUTS[enemyType] or "go_alert"
 					end
 				else
 					-- Check for flanking (moving towards enemy, and enemy isn't coming towards us)
@@ -3780,6 +4290,16 @@ function PLUGIN:ScanForCombatCallouts()
 					bearing = (targets[1]:GetPos() - client:GetPos()):Angle().y,
 					forcedIndex = forcedIndex
 				})
+
+				-- OTA/Faction fallback: If specialty template (like monster_vehicle) doesn't exist, try standard one
+				if (!event and template != "leader_alert" and template != "go_alert") then
+					template = isLeader and "leader_alert" or "go_alert"
+					event = self:BuildTemplateEvent(client, template, {
+						target = targets[1],
+						distance = distSqr,
+						bearing = (targets[1]:GetPos() - client:GetPos()):Angle().y
+					})
+				end
 
 				if (event) then
 					self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
@@ -3900,6 +4420,52 @@ end
 
 function PLUGIN:OnEntityCreated(ent)
 	self:RegisterPropCollision(ent)
+
+	if (ent:GetClass() == "npc_manhack") then
+		timer.Simple(0.1, function()
+			if (!IsValid(ent)) then return end
+			
+			local pos = ent:GetPos()
+			local speaker = ent:GetCreator() 
+			
+			if (!IsValid(speaker) or !speaker:IsCombine() or !speaker:Alive()) then
+				for _, v in ipairs(player.GetAll()) do
+					if (v:Alive() and v:IsCombine() and v:GetPos():DistToSqr(pos) < (500*500)) then
+						speaker = v
+						break
+					end
+				end
+			end
+
+			if (IsValid(speaker) and self:CanAutoVoice(speaker)) then
+				if (self:CanUsePlayerCooldown(speaker, "deploy_manhack", 5)) then
+					local event = self:BuildTemplateEvent(speaker, "deploy_manhack")
+					if (event) then
+						self:EmitVoiceEvent(speaker, event.text, event.sounds, 75)
+					end
+				end
+			end
+		end)
+	end
+end
+
+function PLUGIN:WeaponReload(weapon, client)
+	if (!IsValid(client) or !client:IsPlayer() or !client:Alive()) then return end
+	
+	-- Reloadable weapons
+	if (!IsValid(weapon) or weapon:GetMaxClip1() <= 0 or weapon:GetPrimaryAmmoType() == -1) then
+		return
+	end
+
+	if (!self:IsConnectedToLink(client) or !self:CanAutoVoice(client)) then return end
+
+	-- Cooldown
+	if (self:CanUsePlayerCooldown(client, "reload", 8)) then
+		local event = self:BuildTemplateEvent(client, "reload")
+		if (event) then
+			self:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+		end
+	end
 end
 
 function PLUGIN:InitPostEntity()
@@ -3922,6 +4488,7 @@ function PLUGIN:PlayerDeath(client, inflictor, attacker)
 	end
 
 	client.ixPainLightUsed = nil
+	client.ixPainMediumUsed = nil
 	client.ixPainHeavyUsed = nil
 
 	-- Handle Combine killing a player

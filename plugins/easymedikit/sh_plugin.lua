@@ -8,7 +8,7 @@ do
 		field = "bleeding",
 		fieldType = ix.type.bool,
 		default = false,
-		isLocal = true,
+		isLocal = false,
 		bNoDisplay = true
 	})
 
@@ -16,9 +16,29 @@ do
 		field = "fracture",
 		fieldType = ix.type.bool,
 		default = false,
-		isLocal = true,
+		isLocal = false,
 		bNoDisplay = true
 	})
 end
 
-ix.util.Include("sv_hooks.lua", "server")
+if (CLIENT) then
+	function PLUGIN:PopulateCharacterInfo(player, character, tooltip)
+		if (character:GetBleeding()) then
+			local row = tooltip:AddRow("bleeding")
+			row:SetText(L("isBleeding"))
+			row:SetBackgroundColor(Color(200, 0, 0))
+			row:SetTextColor(color_white)
+			row:SizeToContents()
+		end
+
+		if (character:GetFracture()) then
+			local row = tooltip:AddRow("fracture")
+			row:SetText(L("isFractured"))
+			row:SetBackgroundColor(Color(200, 0, 0))
+			row:SetTextColor(color_white)
+			row:SizeToContents()
+		end
+	end
+end
+
+ix.util.Include("sv_hooks.lua", "server")

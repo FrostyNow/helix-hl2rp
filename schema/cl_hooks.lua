@@ -874,11 +874,18 @@ function Schema:OnCharacterMenuCreated(panel)
 		Schema:ApplyMaskScale(Entity)
 
 		-- Eye fix (Look forward)
-		local arrow = Entity:GetForward() * 100
-		local eyeTarget = Entity:GetPos() + arrow + Vector(0, 0, 64)
-		Entity:SetEyeTarget(eyeTarget)
+		local headBone = Entity:LookupBone("ValveBiped.Bip01_Head1") or Entity:LookupBone("Vortigaunt_Head")
+		if (headBone) then
+			local headPos = Entity:GetBonePosition(headBone)
+			local eyeTarget = headPos + Entity:GetForward() * 50
+			Entity:SetEyeTarget(eyeTarget)
+		else
+			local arrow = Entity:GetForward() * 100
+			local eyeTarget = Entity:GetPos() + arrow + Vector(0, 0, 64)
+			Entity:SetEyeTarget(eyeTarget)
+		end
 
-		-- Neutral pose parameters
+		-- Neutral pose parameters (Safe for most standard and HL2 models)
 		Entity:SetPoseParameter("head_pitch", 0)
 		Entity:SetPoseParameter("head_yaw", 0)
 		Entity:SetPoseParameter("aim_pitch", 0)
@@ -960,19 +967,21 @@ function Schema:OnCharacterMenuCreated(panel)
 			end
 
 			createPanel.descriptionFace.Think = function(this)
-				local facecamDisabled = false
 				local faction = createPanel.faction
 				local factionTable = ix.faction.indices[faction]
-				facecamDisabled = factionTable and factionTable.uniqueID == "vortigaunt"
+				local uniqueID = (factionTable and factionTable.uniqueID) or ""
+				local model = (this:GetModel() or ""):lower()
 				
-				if (facecamDisabled) then
+				local bIsVortigaunt = (uniqueID == "vortigaunt" or uniqueID == "vortigaunt_slave")
+					or (FACTION_VORT ~= nil and faction == FACTION_VORT)
+					or (model:find("vortigaunt", 1, true) ~= nil)
+				
+				if (bIsVortigaunt) then
 					if (this:IsVisible()) then
 						this:SetVisible(false)
 					end
-				else
-					if (!this:IsVisible()) then
-						this:SetVisible(true)
-					end
+				elseif (!this:IsVisible()) then
+					this:SetVisible(true)
 				end	
 			end
 		end

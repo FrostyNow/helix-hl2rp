@@ -6,6 +6,7 @@ ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.Category = "Helix"
 ENT.RenderGroup = RENDERGROUP_BOTH
+ENT.PopulateEntityInfo = true
 
 ENT.license = [[
 Copyright © 2026 Frosty
@@ -31,10 +32,9 @@ if (SERVER) then
 	end
 
 	function ENT:Use(activator)
-		if (self:GetNetVar("active", false)) then
-			netstream.Start(activator, "ixStationaryRadioMenu", self)
-		else
+		if (!self:GetNetVar("active", false)) then
 			self:SetNetVar("active", true)
+			self:SetNetVar("lastTurnOn", CurTime())
 			self:EmitSound("radio/radio_on.ogg")
 		end
 	end
@@ -42,6 +42,32 @@ else
 	local GLOW_MATERIAL = Material("sprites/glow04_noz")
 	local COLOR_ACTIVE = Color(0, 255, 0)
 	local COLOR_INACTIVE = Color(255, 0, 0)
+
+	function ENT:GetEntityMenu(client)
+		local bActive = self:GetNetVar("active", false)
+
+		if (!bActive or (self:GetNetVar("lastTurnOn", 0) + 0.5) > CurTime()) then
+			return
+		end
+
+		local options = {}
+
+		options[L("itemRadioMenuFreqTitle")] = function()
+			Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuFreqDesc"), self:GetNetVar("frequency", "100.0"), function(text)
+				netstream.Start("ixStationaryRadioAction", self, "freq", text)
+			end)
+
+			return false
+		end
+
+		options[L("itemRadioOff")] = function()
+			netstream.Start("ixStationaryRadioAction", self, "off")
+
+			return false
+		end
+
+		return options
+	end
 
 	function ENT:Draw()
 		self:DrawModel()
@@ -85,18 +111,4 @@ else
 		end
 	end
 
-	function ENT:PopulateContextMenu(container)
-		if (self:GetNetVar("active", false)) then
-			container:AddOption(L("itemRadioMenuFreqTitle"), function()
-				Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuFreqDesc"), self:GetNetVar("frequency", "100.0"), function(text)
-					ix.command.Send("SetFreq", text)
-				end)
-			end):SetIcon("icon16/transmit.png")
-
-		end
-
-		container:AddOption(L("Activate"), function()
-			netstream.Start("ixStationaryRadioAction", self, "off")
-		end):SetIcon("icon16/disconnect.png")
-	end
 end

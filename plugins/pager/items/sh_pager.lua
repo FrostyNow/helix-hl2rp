@@ -28,8 +28,8 @@ ITEM.functions.Sync = {
 				item:SetData("pairItemID", targetPager.id)
 				targetPager:SetData("pairItemID", item.id)
 
-				client:NotifyLocalized("pagerSynced", targetChar:GetName())
-				target:NotifyLocalized("pagerSynced", clientChar:GetName())
+				client:NotifyLocalized("pagerSynced", L(targetChar:GetName(), client))
+				target:NotifyLocalized("pagerSynced", L(clientChar:GetName(), target))
 
 				local plugin = ix.plugin.Get("pager")
 				if (plugin) then

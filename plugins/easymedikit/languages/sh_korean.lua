@@ -22,4 +22,6 @@ LANGUAGE = {
 	medkitDesc = "적십자가 그려진 빨간색 천 가방에 붕대와 겸자 등의 응급 처치 도구가 들어있습니다.",
 	
 	["Intelligence"] = "지능",
+	isBleeding = "피를 흘리고 있습니다.",
+	isFractured = "다리를 절뚝입니다.",
 }

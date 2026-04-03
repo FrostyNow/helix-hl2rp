@@ -840,7 +840,7 @@ function PLUGIN:OverwriteClasses()
 			local radioSelect
 			if (togetherDistance > self:GetRange()) then
 				-- Stationary Radio Logic
-				local stationaryRadios = ents.FindInSphere(listener:GetPos(), ix.config.Get("longrangeMult", 2) * maxRadioRange)
+				local stationaryRadios = ents.FindInSphere(listener:GetPos(), ix.config.Get("chatRange", 280))
 				for _, ent in pairs(stationaryRadios) do
 					if (ent:GetClass() == "ix_stationary_radio" and ent:GetNetVar("active", false)) then
 						-- Stationary radios receive all channels on the matching frequency
@@ -1356,7 +1356,7 @@ function PLUGIN:OverwriteClasses()
 			local dist = LocalPlayer():GetPos():Distance(speaker:GetPos())
 
 			if (ix.config.Get("chatAutoFormat", true)) then
-				local lastChar = text:sub(-1)
+				local lastChar = text:utf8sub(-1)
 
 				if (lastChar != "." and lastChar != "!" and lastChar != "?") then
 					text = text .. "."
@@ -1403,8 +1403,8 @@ function PLUGIN:OverwriteClasses()
 				else
 					local desc = speaker:GetCharacter():GetDescription()
 					if (desc and #desc > 0) then
-						nameContent = desc:sub(1, math.min(#desc, 64))
-						if #desc > 64 then nameContent = nameContent .. "..." end
+						nameContent = desc:utf8sub(1, 64)
+						if string.utf8len(desc) > 64 then nameContent = nameContent .. "..." end
 					else
 						nameContent = L("someone")
 					end
@@ -1417,8 +1417,8 @@ function PLUGIN:OverwriteClasses()
 				if (!bRecognized and IsValid(speaker) and speaker:IsPlayer()) then
 					local desc = speaker:GetCharacter():GetDescription()
 					if (desc and #desc > 0) then
-						fallbackName = desc:sub(1, math.min(#desc, 64))
-						if #desc > 64 then fallbackName = fallbackName .. "..." end
+						fallbackName = desc:utf8sub(1, 64)
+						if string.utf8len(desc) > 64 then fallbackName = fallbackName .. "..." end
 					end
 					fallbackName = "[" .. fallbackName .. "]"
 				end
@@ -1582,20 +1582,20 @@ function PLUGIN:OverwriteClasses()
 		function CLASS:OnChatAdd(speaker, text, bAnonymous, data)
 			-- Randomly drops at least minDrop and up to maxDrop percent of message, from the start
 			local message = text
-			local minDrop,maxDrop = 0.05,0.3
-			local randDrop = math.min(maxDrop, minDrop + math.random()*maxDrop)
-			local dropStart = math.ceil(randDrop*string.len(message))
+			local minDrop, maxDrop = 0.05, 0.3
+			local randDrop = math.min(maxDrop, minDrop + math.random() * maxDrop)
+			local len = string.utf8len(message)
+			local dropStart = math.ceil(randDrop * len)
 
-			local firstChar = string.sub(string.sub(message, dropStart),0,1)
+			local firstChar = message:utf8sub(dropStart, dropStart)
 
-			while (firstChar == " " or firstChar == "" or firstChar == "-" or firstChar == "," or firstChar == "." or firstChar == "!" or firstChar == "?") and (dropStart <= string.len(message) - 4) do
+			while (firstChar == " " or firstChar == "" or firstChar == "-" or firstChar == "," or firstChar == "." or firstChar == "!" or firstChar == "?") and (dropStart <= len - 4) do
 				dropStart = dropStart + 1
-				firstChar = string.sub(string.sub(message, dropStart),0,1)
+				firstChar = message:utf8sub(dropStart, dropStart)
 			end
 
-			local message = "..."..string.sub(message, dropStart)
-			chat.AddText(self:GetColor(speaker,text), string.format(self.format,message)) -- string.format(self.format, speaker:Name(), text))
-			--end
+			message = "..." .. message:utf8sub(dropStart)
+			chat.AddText(self:GetColor(speaker, text), string.format(self.format, message))
 		end
 
 		CLASS.uniqueID = "radio_overhear" -- to be sure
@@ -2610,7 +2610,7 @@ function PLUGIN:LoadRadioRepeaters()
 		repeater:SetAngles(v[2])
 		repeater:Spawn()
 		repeater:SetEnabled(v[3])
-		repeater:SetOutputFreq(v[4])
+		repeater:SetInputFreq(v[4])
 		repeater:SetOutputFreq(v[5])
 	end
 end
@@ -2729,26 +2729,16 @@ if (SERVER) then
 		if (action == "off") then
 			entity:SetNetVar("active", false)
 			entity:EmitSound("radio/radio_off.ogg")
+		elseif (action == "on") then
+			entity:SetNetVar("active", true)
+			entity:EmitSound("radio/radio_on.ogg")
+		elseif (action == "freq") then
+			if (string.find(tostring(value), "^%d%d%d%.%d$")) then
+				entity:SetNetVar("frequency", value)
+				client:NotifyLocalized("radioFreqSet", value)
+			else
+				client:NotifyLocalized("radioInvalidChannel")
+			end
 		end
-	end)
-end
-
-if (CLIENT) then
-	netstream.Hook("ixStationaryRadioMenu", function(entity)
-		if (!IsValid(entity)) then return end
-
-		local menu = DermaMenu()
-		
-		menu:AddOption(L("itemRadioOff"), function()
-			netstream.Start("ixStationaryRadioAction", entity, "off")
-		end):SetIcon("icon16/disconnect.png")
-		
-		menu:AddOption(L("itemRadioMenuFreqTitle"), function()
-			Derma_StringRequest(L("itemRadioMenuFreqTitle"), L("itemRadioMenuFreqDesc"), entity:GetNetVar("frequency", "100.0"), function(text)
-				ix.command.Send("SetFreq", text)
-			end)
-		end):SetIcon("icon16/transmit.png")
-		
-		menu:Open()
 	end)
 end
