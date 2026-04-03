@@ -2329,13 +2329,13 @@ function PLUGIN:AssignAreaSectors()
 		local area = ix.area.stored[areaID]
 		local properties = area and area.properties or nil
 		local areaName = tostring((properties and properties.name) or areaID or "")
-		local sector = self:GetAreaSectorNumber(areaID)
+		local sector_index = self:GetAreaSectorNumber(areaID)
 
-		if (sector) then
-			usedSectors[sector] = true
+		if (sector_index) then
+			usedSectors[sector_index] = true
 
 			if (areaName != "") then
-				nameToSector[areaName] = nameToSector[areaName] or sector
+				nameToSector[areaName] = nameToSector[areaName] or sector_index
 			end
 		end
 	end
@@ -2356,13 +2356,13 @@ function PLUGIN:AssignAreaSectors()
 			local sharedSector = areaName != "" and nameToSector[areaName] or nil
 
 			if (sharedSector) then
-				area.properties.sector = sharedSector
+				area.properties.sector_index = sharedSector
 			else
 				while (usedSectors[nextSector]) do
 					nextSector = nextSector + 1
 				end
 
-				area.properties.sector = nextSector
+				area.properties.sector_index = nextSector
 				usedSectors[nextSector] = true
 				nameToSector[areaName] = nextSector
 				nextSector = nextSector + 1

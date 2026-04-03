@@ -311,6 +311,8 @@ function PLUGIN:HUDPaint()
 								violations[#violations + 1] = "<:: 1x" .. L("Searching Trash") .. " ::>"
 							elseif (vio == self.VIOLATION_MULTIPLE_CIDS) then
 								violations[#violations + 1] = "<:: 1x" .. L("Multiple CIDs") .. " ::>"
+							elseif (vio == self.VIOLATION_UNAUTHORIZED_AREA) then
+								violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Area") .. " ::>"
 							end
 						end
 					end
@@ -419,6 +421,13 @@ function PLUGIN:HUDPaint()
 							if (self:IsVisibleWeaponViolation(v)) then violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Weapon Possession") .. " ::>" end
 							if (v:GetNetVar("isSearchingLoot")) then violations[#violations + 1] = "<:: 1x" .. L("Searching Trash") .. " ::>" end
 							if (self:HasMultipleCIDs(v)) then violations[#violations + 1] = "<:: 1x" .. L("Multiple CIDs") .. " ::>" end
+
+							for areaID, area in pairs(ix.area.stored) do
+								if (v:GetPos():WithinAABox(area.startPosition, area.endPosition) and area.properties.unauthorized) then
+									violations[#violations + 1] = "<:: 1x" .. L("Unauthorized Area") .. " ::>"
+									break
+								end
+							end
 
 							if (#violations > 0) then
 								draw.SimpleText("<:: " .. L("Possible Violation") .. " ::>", "BudgetLabel", toScreen.x, toScreen.y, colorRed, 1, 1)

@@ -76,6 +76,14 @@ function PLUGIN:Tick()
 									violations[#violations + 1] = self.VIOLATION_MULTIPLE_CIDS
 								end
 
+								local areaID = (client.GetArea and client:GetArea() or client.ixArea)
+								if (areaID and areaID != "") then
+									local area = ix.area.stored[areaID]
+									if (area and area.properties.unauthorized) then
+										violations[#violations + 1] = self.VIOLATION_UNAUTHORIZED_AREA
+									end
+								end
+
 								if (#violations > 0) then
 									data[client] = violations
 									bChanged = true

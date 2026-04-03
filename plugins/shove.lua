@@ -29,6 +29,7 @@ ix.lang.AddTable("korean", {
 })
 
 ix.config.Add("shoveTime", 20, "How long should a character be unconscious after being knocked out?", nil, {
+	category = "Shove",
 	data = {min = 5, max = 60},
 })
 

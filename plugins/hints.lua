@@ -55,6 +55,8 @@ ix.lang.AddTable("english", {
 	hintWorkers = "Not just simple labor, public services and facility management are handled by the Civil Worker's Union.",
 	hintLabour = "Citizens have a duty to work, and you will be compensated for your labor.",
 	hintConscript = "The Civil Defense are the lowest rank of the Overwatch, serving as auxiliary forces for low-intensity combat such as pest control and civil security.",
+	hintLeech = "The ruthless alien species called Leech has destroyed the marine ecosystem and bites unlucky people who fall into the water...",
+	hintFishing = "Some people even try to catch leeches with empty tin cans to eat them... Yuck.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -101,6 +103,8 @@ ix.lang.AddTable("korean", {
 	hintWorkers = "단순 육체 노동이 아닌, 공공 서비스나 시설 관리는 시민 노동 조합이 담당합니다.",
 	hintLabour = "시민들은 노동의 의무가 있으며, 노동에 참여하면 대가가 지급됩니다.",
 	hintConscript = "민방위는 감시 부대의 가장 말단에 있는 보조군의 역할로, 해수 구제 등의 강도 낮은 전투와 민간 치안 유지를 담당합니다.",
+	hintLeech = "거머리라고 불리는 무자비한 외계종이 해양 생태계도, 불운히 물에 빠진 사람도 물어뜯습니다...",
+	hintFishing = "거머리를 먹으려 빈 통조림 캔으로 낚시를 하는 사람들도 있다고 합니다... 우웩.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -187,6 +191,14 @@ end
 
 if (ix.plugin.Get("apply")) then
 	ix.hints.Register("hintApply")
+end
+
+if (ix.plugin.Get("leech")) then
+	ix.hints.Register("leech")
+	
+	if (ix.plugin.Get("fishing")) then
+		ix.hints.Register("fishing")
+	end
 end
 
 ix.command.Add("Hint", {

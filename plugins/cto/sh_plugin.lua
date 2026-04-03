@@ -11,11 +11,7 @@ ix.util.Include("sv_hooks.lua")
 ix.util.Include("sv_plugin.lua")
 
 ix.lang.AddTable("english", {
-	["Camera Terminal"] = "Camera Terminal",
 	cameraTerminalDesc = "A terminal connected to surveillance cameras.",
-	["Unauthorized Weapon Possession"] = "Unauthorized Weapon Possession",
-	["Suspected Violent Act"] = "Suspected Violent Act",
-	["Missing CID"] = "Missing CID",
 	MovementViolation = "Movement violation(s) sighted by C-i%s...",
 	NoBiosignalNote = "Note: Your character currently has no biosignal.",
 	DownloadingTrauma = "Downloading trauma packet...",
@@ -74,6 +70,8 @@ ix.lang.AddTable("korean", {
 	["Within Sights"] = "명 시야에 들어옴",
 	["Violations Within Sights"] = "시야 내 위반 행위 포착",
 	["Possible Violation"] = "위반 행위 의심",
+	["Unauthorized Area"] = "비인가 구역 침입",
+	["unauthorized"] = "비인가",
 	MovementViolation = "C-i%s에 의해 위반 행위(들) 포착...",
 	NoBiosignalNote = "알림: 당신의 캐릭터는 현재 생체 신호가 두절되었습니다.",
 	DownloadingTrauma = "신체 손상 패킷 내려받는 중...",
@@ -132,6 +130,7 @@ PLUGIN.VIOLATION_MISSING_CID = 5
 PLUGIN.VIOLATION_SUSPECTED_VIOLENCE = 6
 PLUGIN.VIOLATION_SEARCHING_TRASH = 7
 PLUGIN.VIOLATION_MULTIPLE_CIDS = 8
+PLUGIN.VIOLATION_UNAUTHORIZED_AREA = 9
 
 -- Camera controlling enums.
 PLUGIN.CAMERA_VIEW = 0
@@ -151,6 +150,12 @@ PLUGIN.weaponViolationFactionWhitelist = {
 	[FACTION_ADMIN] = true,
 	[FACTION_CONSCRIPT] = true
 }
+
+function PLUGIN:SetupAreaProperties()
+	ix.area.AddProperty("unauthorized", ix.type.bool, false, {
+		category = "cto"
+	})
+end
 
 function PLUGIN:isCameraEnabled(camera)
 	return camera:GetSequenceName(camera:GetSequence()) == "idlealert"

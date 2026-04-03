@@ -1,4 +1,5 @@
 LANGUAGE = {
+	["furniture"] = "가구",
 	furnitureTitle = "가구 카탈로그",
 	furniturePrice = "가격: %s",
 	furniturePlaced = "가구를 구매하여 배치했습니다.",

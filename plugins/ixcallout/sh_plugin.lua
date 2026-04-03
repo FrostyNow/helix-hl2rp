@@ -22,12 +22,16 @@ PLUGIN.voiceTypes = PLUGIN.voiceTypes or {
 
 ix.lang.AddTable("english", {
 	optIxCalloutClientEnabled = "Automatic voice reactions",
-	optdIxCalloutClientEnabled = "Allows supported factions to automatically speak in response to nearby events."
+	optdIxCalloutClientEnabled = "Allows supported factions to automatically speak in response to nearby events.",
+	["sector_index"] = "Sector Index",
+	["calloutTheme"] = "Theme",
 })
 
 ix.lang.AddTable("korean", {
 	optIxCalloutClientEnabled = "자동 보이스 반응",
-	optdIxCalloutClientEnabled = "지원되는 진영이 주변 상황에 자동으로 음성을 내도록 합니다."
+	optdIxCalloutClientEnabled = "지원되는 진영이 주변 상황에 자동으로 음성을 내도록 합니다.",
+	["sector_index"] = "구역 번호",
+	["calloutTheme"] = "테마",
 })
 
 ix.option.Add("ixCalloutClientEnabled", ix.type.bool, true, {
@@ -39,7 +43,7 @@ ix.config.Add("ixCalloutEnabled", true, "Whether or not the automatic callout sy
 })
 
 if (ix.area and ix.area.AddProperty) then
-	ix.area.AddProperty("sector", ix.type.number, 0, {
+	ix.area.AddProperty("sector_index", ix.type.number, 0, {
 		category = "Helix Callout"
 	})
 
@@ -63,7 +67,7 @@ if (ix.area and ix.area.AddProperty) then
 	})
 end
 
-ix.config.Add("mpfCalloutTheme", ix.type.string, "auto", {
+ix.config.Add("mpfCalloutTheme", "auto", "The default voice theme for automatic callouts.", nil, {
 	category = "Helix Callout",
 	data = {
 		choices = {
@@ -88,21 +92,21 @@ function PLUGIN:GetAreaSectorNumber(areaID)
 
 	local area = ix.area.stored[areaID]
 	local properties = area and area.properties
-	local sector = properties and tonumber(properties.sector) or nil
+	local sector_index = properties and tonumber(properties.sector_index) or nil
 
-	if (sector and sector > 0) then
-		return math.floor(sector)
+	if (sector_index and sector_index > 0) then
+		return math.floor(sector_index)
 	end
 end
 
 function PLUGIN:GetAreaSectorLabel(areaID)
-	local sector = self:GetAreaSectorNumber(areaID)
+	local sector_index = self:GetAreaSectorNumber(areaID)
 
-	if (!sector) then
+	if (!sector_index) then
 		return nil
 	end
 
-	return string.format("구역 %d", sector)
+	return string.format("구역 %d", sector_index)
 end
 
 function PLUGIN:GetAreaCalloutTheme(areaID)
