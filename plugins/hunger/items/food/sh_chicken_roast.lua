@@ -5,3 +5,4 @@ ITEM.price = 100
 ITEM.hunger = 60
 ITEM.heal = 10
 ITEM.usenum = 4
+ITEM.isStackable = false

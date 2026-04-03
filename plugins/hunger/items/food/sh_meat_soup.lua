@@ -8,3 +8,4 @@ ITEM.heal = 5
 ITEM.cookable = true
 ITEM.usenum = 2
 ITEM.classes = nil
+ITEM.maxStack = 2

@@ -4,3 +4,4 @@ ITEM.description = "itemCabbageDesc"
 ITEM.price = 10
 ITEM.hunger = 7
 ITEM.heal = 5
+ITEM.maxStack = 2

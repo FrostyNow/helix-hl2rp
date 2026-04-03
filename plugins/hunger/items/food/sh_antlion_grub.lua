@@ -11,3 +11,4 @@ ITEM.heal = 5
 ITEM.empty = "antlion_grub_empty"
 ITEM.usenum = 4
 ITEM.sound = "interface/inv_eat_mutant_food.ogg"
+ITEM.maxStack = 2

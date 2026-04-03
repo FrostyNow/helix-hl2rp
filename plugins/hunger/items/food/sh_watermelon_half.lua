@@ -7,3 +7,5 @@ ITEM.thirst = 10
 ITEM.heal = 2
 ITEM.usenum = 2
 ITEM.empty = "watermelon_slice"
+ITEM.maxStack = 2
+ITEM.classes = nil

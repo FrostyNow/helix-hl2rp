@@ -10,6 +10,8 @@ ITEM.thirst = 0
 ITEM.radiation = 0
 ITEM.empty = false
 ITEM.classes = {CLASS_CWU}
+ITEM.isStackable = true
+ITEM.maxStack = 2
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

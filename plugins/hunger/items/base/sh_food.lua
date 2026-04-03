@@ -13,6 +13,8 @@ ITEM.cookable = false
 ITEM.heal = 0
 ITEM.sound = "npc/barnacle/barnacle_gulp2.wav"
 ITEM.isDrink = false
+ITEM.isStackable = true
+ITEM.maxStack = 3
 
 if (CLIENT) then
 	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)

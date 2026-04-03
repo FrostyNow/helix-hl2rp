@@ -10,6 +10,7 @@ ITEM.thirst = 30
 ITEM.price = 20
 ITEM.heal = 10
 ITEM.sound = "interface/inv_eat_ration1.ogg"
+ITEM.maxStack = 2
 
 ITEM:Hook("Eat", function(item)
 	local client = item.player

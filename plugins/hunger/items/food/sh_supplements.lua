@@ -6,3 +6,4 @@ ITEM.hunger = 20
 ITEM.thirst = 5
 ITEM.price = 5
 ITEM.sound = "interface/inv_eat_ration1.ogg"
+ITEM.maxStack = 2

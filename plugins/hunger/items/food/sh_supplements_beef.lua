@@ -6,3 +6,4 @@ ITEM.classes = nil
 ITEM.hunger = 40
 ITEM.price = 40
 ITEM.sound = "interface/inv_eat_ration1.ogg"
+ITEM.maxStack = 2

@@ -5,3 +5,4 @@ ITEM.price = 10
 ITEM.hunger = 3
 ITEM.thirst = 5
 ITEM.heal = 1
+ITEM.classes = nil

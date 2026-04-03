@@ -7,3 +7,4 @@ ITEM.heal = 8
 ITEM.usenum = 2
 ITEM.cookable = true
 ITEM.empty = "misc_plate"
+ITEM.classes = nil

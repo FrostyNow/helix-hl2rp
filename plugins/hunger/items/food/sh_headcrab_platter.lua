@@ -10,3 +10,4 @@ ITEM.cookable = true
 ITEM.usenum = 3
 ITEM.sound = "interface/inv_eat_mutant_food.ogg"
 ITEM.classes = nil
+ITEM.maxStack = 2

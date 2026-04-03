@@ -11,6 +11,7 @@ ITEM.price = 50
 ITEM.heal = 0
 ITEM.usenum = 2
 ITEM.sound = "items/gift_pickup.wav"
+ITEM.maxStack = 2
 
 ITEM.functions.Eat.OnCanRun = function(item)
 	if (item.baseTable.functions.Eat.OnCanRun(item) == false) then

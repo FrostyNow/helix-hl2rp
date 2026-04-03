@@ -6,3 +6,4 @@ ITEM.thirst = -10
 ITEM.price = 25
 ITEM.heal = 5
 ITEM.usenum = 2
+ITEM.maxStack = 2

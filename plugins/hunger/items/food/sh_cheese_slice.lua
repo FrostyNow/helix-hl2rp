@@ -4,3 +4,4 @@ ITEM.description = "itemCheeseDesc"
 ITEM.hunger = 15
 ITEM.price = 20
 ITEM.heal = 5
+ITEM.classes = nil

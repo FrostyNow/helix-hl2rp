@@ -7,3 +7,4 @@ ITEM.thirst = 10
 ITEM.heal = 5
 ITEM.usenum = 4
 ITEM.classes = nil
+ITEM.maxStack = 2

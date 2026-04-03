@@ -7,3 +7,4 @@ ITEM.thirst = 30
 ITEM.heal = 10
 ITEM.usenum = 2
 ITEM.empty = "watermelon_half"
+ITEM.isStackable = false
