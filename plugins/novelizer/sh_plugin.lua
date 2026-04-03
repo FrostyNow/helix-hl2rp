@@ -2722,7 +2722,7 @@ function PLUGIN:IsDamageFromMeleeWeapon(dmgInfo)
 	return false
 end
 
-function PLUGIN:ClassifyDamageType(dmgInfo)
+function PLUGIN:ClassifyDamageType(dmgInfo, victim)
 	if (not dmgInfo) then
 		return nil
 	end
@@ -2749,7 +2749,7 @@ function PLUGIN:ClassifyDamageType(dmgInfo)
 	}
 
 	-- Handle starvation (self-damage from hunger/thirst plugin, or generic suicide)
-	if (IsValid(attacker) and attacker:IsPlayer() and (damageType == 0 or damageType == DMG_DIRECT)) then
+	if (IsValid(attacker) and attacker:IsPlayer() and (attacker == victim) and (damageType == 0 or damageType == DMG_DIRECT)) then
 		return definitions[16]
 	end
 
@@ -5221,7 +5221,7 @@ function PLUGIN:PostEntityTakeDamage(target, dmgInfo, tookDamage)
 		return
 	end
 
-	local damageData = self:ClassifyDamageType(dmgInfo)
+	local damageData = self:ClassifyDamageType(dmgInfo, target)
 
 	if (not damageData) then
 		return
@@ -5239,7 +5239,7 @@ function PLUGIN:DoPlayerDeath(client, attacker, dmgInfo)
 		return
 	end
 
-	local damageData = self:ClassifyDamageType(dmgInfo)
+	local damageData = self:ClassifyDamageType(dmgInfo, client)
 
 	if (not damageData) then
 		return
