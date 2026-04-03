@@ -838,8 +838,40 @@ function PLUGIN:OverwriteClasses()
 
 			--local duplex = false
 			local radioSelect
+
+			-- Stationary radio transmission: check independently of distance
+			-- If the message came from a stationary radio (data.stationary == true),
+			-- the listener can hear it if they have a matching-frequency radio item
+			-- OR if there's a matching active stationary radio near them.
+			if (data.stationary) then
+				local stationaryNearListener = ents.FindInSphere(listener:GetPos(), ix.config.Get("chatRange", 280))
+				for _, ent in pairs(stationaryNearListener) do
+					if (ent:GetClass() == "ix_stationary_radio" and ent:GetNetVar("active", false)) then
+						if (tonumber(ent:GetNetVar("frequency", "100.0")) == tonumber(data.freq)) then
+							bHasRadio = true
+							break
+						end
+					end
+				end
+
+				if (!bHasRadio) then
+					-- Also allow listeners with a matching-frequency inventory radio
+					for k, v in pairs(radios) do
+						if v:GetData("enabled", false) and !v:GetData("duplex", v.duplex) then
+							if (tostring(v:GetData("frequency", "100.0")) == tostring(data.freq)) then
+								bHasRadio = true
+								radioSelect = v
+								break
+							end
+						end
+					end
+				end
+
+				return bHasRadio
+			end
+
 			if (togetherDistance > self:GetRange()) then
-				-- Stationary Radio Logic
+				-- Stationary Radio Logic (for receiving via stationary radio when out of IC range)
 				local stationaryRadios = ents.FindInSphere(listener:GetPos(), ix.config.Get("chatRange", 280))
 				for _, ent in pairs(stationaryRadios) do
 					if (ent:GetClass() == "ix_stationary_radio" and ent:GetNetVar("active", false)) then
