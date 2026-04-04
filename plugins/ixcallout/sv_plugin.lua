@@ -1336,7 +1336,15 @@ local MPF_TEMPLATE_SETS = {
 			-- Generic re-finds for non-leaders
 			sounds = {"npc/metropolice/vo/thereheis.wav"},
 			text = "저기 있다!",
-		}
+		},
+		{
+			-- METROPOLICE_IDLE_CR1: suspect11-6my1020is
+			sounds = {"npc/metropolice/vo/suspect11-6my1020is.wav"},
+			layout = {"text", "sectorLabel", "sectorNumber"},
+			usesSector = true,
+			text = "용의자 11-6, 여기는 10-20:",
+			-- "용의자 11-6, 여기는 10-20: 주거 구역 1."
+		},
 	},
 	leader_alert = {
 		{
@@ -1676,47 +1684,28 @@ local MPF_TEMPLATE_SETS = {
 		}
 	},
 	harassment = {
-		{
-			sounds = {"npc/metropolice/vo/getoutofhere.wav"},
-			text = "이제 여기서 나가라.",
-			forceLocal = true,
-		},
-		{
-			sounds = {"npc/metropolice/vo/movealong.wav"},
-			text = "움직여라!",
-			forceLocal = true,
-		},
-		{
-			sounds = {"npc/metropolice/vo/vacatecitizen.wav"},
-			text = "시민을 내보내라!",
-			forceLocal = true,
-		},
-		{
-			sounds = {"npc/metropolice/vo/youwantamalcomplianceverdict.wav"},
-			text = "불순종 죄로 평결을 원하나?",
-			forceLocal = true,
-		},
-		{
-			sounds = {"npc/metropolice/vo/lookingfortrouble.wav"},
-			text = "문제를 일으키러 가나?",
-			forceLocal = true,
-		},
-		{
-			sounds = {"npc/metropolice/vo/possiblelevel3civilprivacyviolator.wav"},
-			text = "레벨 3 시민 사생활 침해자가 있다!",
-		},
-		{
-			sounds = {"npc/metropolice/vo/possible647erequestairwatch.wav"},
-			text = "647-E 상황 예상, 공중 추적 요청한다.",
-		},
-		{
-			sounds = {"npc/metropolice/vo/possible10-103alerttagunits.wav"},
-			text = "10-103 예상, 후방 병력에 알려라.",
-		},
-		{
-			sounds = {"npc/metropolice/vo/gota10-107sendairwatch.wav"},
-			text = "10-107 포착됐다, 공중 공격 요청한다.",
-		}
+		-- Level 1 (A)
+		{ sounds = {"npc/metropolice/vo/movealong3.wav"}, text = "움직여라!", forceLocal = true, level = 1, volume = 60 },
+		{ sounds = {"npc/metropolice/vo/move.wav"}, text = "움직여!", forceLocal = true, level = 1, volume = 60 },
+		{ sounds = {"npc/metropolice/vo/keepmoving.wav"}, text = "계속 움직여라!", forceLocal = true, level = 1, volume = 60 },
+		{ sounds = {"npc/metropolice/vo/backup.wav"}, text = "물러서!", forceLocal = true, level = 1, volume = 60 }, -- 오역 대체: "지원!"
+		{ sounds = {"npc/metropolice/vo/getoutofhere.wav"}, text = "이제 여기서 나가라.", forceLocal = true, level = 1, volume = 60 },
+		{ sounds = {"npc/metropolice/vo/firstwarningmove.wav"}, text = "첫 번째 경고다, 비켜라!", forceLocal = true, level = 1, volume = 60 },
+
+		-- Level 2 (B)
+		{ sounds = {"npc/metropolice/vo/isaidmovealong.wav"}, text = "움직이라고 말했다.", forceLocal = true, level = 2, volume = 70 },
+		{ sounds = {"npc/metropolice/vo/youwantamalcomplianceverdict.wav"}, text = "불순종 죄로 평결을 원하나?", forceLocal = true, level = 2, volume = 70 },
+		{ sounds = {"npc/metropolice/vo/movebackrightnow.wav"}, text = "즉시 물러나라!", forceLocal = true, level = 2, volume = 70 },
+		{ sounds = {"npc/metropolice/vo/secondwarning.wav"}, text = "2차 경고 발부!", forceLocal = true, level = 2, volume = 70 },
+
+		-- Level 3 (C)
+		{ sounds = {"npc/metropolice/vo/level3civilprivacyviolator.wav"}, text = "여기에 레벨 3 시민 사생활 침해자가 있다!", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/malcompliant10107my1020.wav"}, text = "10-20에서 10-107의 불순종, 구속 진행.", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/preparingtojudge10-107.wav"}, text = "10-107, 판결을 준비 중이다.", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/readytoprosecutefinalwarning.wav"}, text = "불순종 시민, 기소 준비를 마쳤다!", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/issuingmalcompliantcitation.wav"}, text = "불순종 소환장 발행 중.", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/possiblelevel3civilprivacyviolator.wav"}, text = "레벨 3 시민 사생활 침해자가 있다!", level = 3, volume = 80 },
+		{ sounds = {"npc/metropolice/vo/finalwarning.wav"}, text = "최종 경고!", forceLocal = true, level = 3, volume = 80 },
 	},
 	idle = {
 		{
@@ -1743,6 +1732,16 @@ local MPF_TEMPLATE_SETS = {
 			-- "code7"
 			sounds = {"npc/metropolice/vo/code7.wav"},
 			text = "코드 7.",
+		},
+		{
+			-- METROPOLICE_IDLE_CR2: ten8standingby
+			sounds = {"npc/metropolice/vo/ten8standingby.wav"},
+			text = "10-8 대기 중.",
+		},
+		{
+			-- METROPOLICE_IDLE_CR3: code100
+			sounds = {"npc/metropolice/vo/code100.wav"},
+			text = "코드 100.",
 		}
 	},
 	check = {
@@ -1825,7 +1824,12 @@ local MPF_TEMPLATE_SETS = {
 			useNumber = true,
 			text = "용의자 미발견.",
 			-- "유니온 3. 용의자 미발견."
-		}
+		},
+		{
+			-- METROPOLICE_IDLE_CR0: ten97suspectisgoa
+			sounds = {"npc/metropolice/vo/ten97suspectisgoa.wav"},
+			text = "10-97, 용의자는 GOA 상태.",
+		},
 	},
 	refind_enemy = {
 		{
@@ -2065,6 +2069,38 @@ local MPF_TEMPLATE_SETS = {
 			sounds = {"npc/metropolice/vo/assaultpointsecureadvance.wav"},
 			text = "습격 지점 확보, 전진하라!",
 			filter = function(speaker) return PLUGIN:IsSquadLeader(speaker) end
+		},
+		{
+			-- METROPOLICE_FLANK0: ismovingin
+			sounds = {"npc/metropolice/vo/ismovingin.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "접근 중이다.",
+			-- "유니온 3. 접근 중이다."
+		},
+		{
+			-- METROPOLICE_FLANK1: covermegoingin
+			sounds = {"npc/metropolice/vo/covermegoingin.wav"},
+			text = "엄호하라, 들어간다!",
+		},
+		{
+			-- METROPOLICE_FLANK2: isclosingonsuspect
+			sounds = {"npc/metropolice/vo/isclosingonsuspect.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "용의자에 접근 중!",
+			-- "유니온 3. 용의자에 접근 중!"
+		},
+		{
+			-- METROPOLICE_FLANK3: converging
+			sounds = {"npc/metropolice/vo/converging.wav"},
+			layout = {"designation", "text"},
+			useDesignation = true,
+			useNumber = true,
+			text = "집합 중.",
+			-- "유니온 3. 집합 중."
 		}
 	},
 	man_down = {
@@ -2218,6 +2254,28 @@ local MPF_TEMPLATE_SETS = {
 			-- COVER_LOW_AMMO0: runninglowonverdicts
 			sounds = {"npc/metropolice/vo/runninglowonverdicts.wav"},
 			text = "실탄이 부족하다, 엄폐하겠다!"
+		}
+	},
+	shoot_cover = {
+		{
+			-- METROPOLICE_SHOOT_COVER0: breakhiscover
+			sounds = {"npc/metropolice/vo/breakhiscover.wav"},
+			text = "엄폐물 제거하라!",
+		},
+		{
+			-- METROPOLICE_SHOOT_COVER1: destroythatcover
+			sounds = {"npc/metropolice/vo/destroythatcover.wav"},
+			text = "엄폐물 파괴하라!",
+		},
+		{
+			-- METROPOLICE_SHOOT_COVER2: firingtoexposetarget
+			sounds = {"npc/metropolice/vo/firingtoexposetarget.wav"},
+			text = "목표를 향해 쏴라!",
+		},
+		{
+			-- METROPOLICE_SHOOT_COVER3: firetodislocateinterpose
+			sounds = {"npc/metropolice/vo/firetodislocateinterpose.wav"},
+			text = "사이를 쏴서 힘을 분산시켜라!",
 		}
 	},
 }
@@ -3678,6 +3736,70 @@ function PLUGIN:HandleThrownGrenade(grenade)
 	end
 end
 
+function PLUGIN:ScanForHarassment()
+	local currentTime = CurTime()
+
+	for _, client in ipairs(player.GetAll()) do
+		if (client:Alive() and client:Team() == FACTION_MPF and self:IsConnectedToLink(client) and self:CanAutoVoice(client)) then
+			-- Skip if busy or recently spoke
+			if ((client.ixNextHarassVoice or 0) > currentTime) then
+				continue
+			end
+
+			local origin = client:GetPos()
+			
+			for _, other in ipairs(player.GetAll()) do
+				if (other == client or !other:Alive() or other:GetMoveType() == MOVETYPE_NOCLIP or other:IsCombine()) then
+					continue
+				end
+
+				local distSqr = origin:DistToSqr(other:GetPos())
+				if (distSqr > (120 * 120)) then continue end -- Pestering range: 120 units
+
+				-- Check LOS
+				if (!client:IsLineOfSightClear(other)) then continue end
+
+				-- They are pestering the unit!
+				other.ixPesterData = other.ixPesterData or {count = 0, lastTime = 0}
+				local data = other.ixPesterData
+
+				-- If it's been a while (e.g. 30s), reset the pester count
+				if (currentTime - data.lastTime > 30) then
+					data.count = 0
+				end
+
+				data.lastTime = currentTime
+				data.count = data.count + 1
+
+				local currentLevel
+				if (data.count <= 2) then currentLevel = 1
+				elseif (data.count <= 4) then currentLevel = 2
+				else currentLevel = 3 end
+
+				-- Find valid indices for this level
+				local validIndices = {}
+				for i, v in ipairs(MPF_TEMPLATE_SETS.harassment) do
+					if (v.level == currentLevel) then
+						table.insert(validIndices, i)
+					end
+				end
+
+				if (#validIndices > 0) then
+					local index = table.Random(validIndices)
+					local variant = MPF_TEMPLATE_SETS.harassment[index]
+					
+					client.ixNextHarassVoice = currentTime + 8 -- Don't yell too often at the same guy
+					local event = self:BuildTemplateEvent(client, "harassment", {forcedIndex = index})
+					if (event) then
+						self:EmitVoiceEvent(client, event.text, event.sounds, variant.volume or 75, true, event.isCheck)
+					end
+				end
+				break -- Only yell at one person at a time
+			end
+		end
+	end
+end
+
 function PLUGIN:PhysicsCollide(data, phys)
 	local ent = data.HitEntity
 	local target = data.Entity
@@ -3833,13 +3955,10 @@ function PLUGIN:Think()
 	self.nextCombatScan = currentTime + COMBAT_SCAN_INTERVAL
 	self:ScanForCombatCallouts()
 
-	-- [[
-	-- Temporarily disabled: Harassment scan for nearby non-MPF players
-	-- if ((self.nextHarassScan or 0) < currentTime) then
-	-- 	self.nextHarassScan = currentTime + 2
-	-- 	self:ScanForHarassment()
-	-- end
-	-- ]]
+	if ((self.nextHarassScan or 0) < currentTime) then
+		self.nextHarassScan = currentTime + 2
+		self:ScanForHarassment()
+	end
 
 	-- Scan for physics hits (objects tossed/thrown near units)
 	for index, data in pairs(self.activePhysicsThreats) do
@@ -4157,6 +4276,7 @@ function PLUGIN:ScanForCombatCallouts()
 				end
 			else
 				client.ixWasWepRaised = false
+				client.ixFlankStartPos = nil
 			end
 		end
 	end
@@ -4171,6 +4291,7 @@ function PLUGIN:ScanForCombatCallouts()
 
 	for _, client in ipairs(otaUnits) do
 		local targets = {}
+		local targetData = {}
 
 		for _, entity in ipairs(ents.FindInSphere(client:GetPos(), COMBAT_SIGHT_RADIUS)) do
 			if (entity == client or (!entity:IsNPC() and !entity:IsPlayer())) then
@@ -4186,8 +4307,14 @@ function PLUGIN:ScanForCombatCallouts()
 					mask = MASK_SHOT
 				})
 
-				if (!trace.Hit) then
+				local behindPhysics = false
+				if (trace.Hit and IsValid(trace.Entity) and trace.Entity:GetClass() == "prop_physics") then
+					behindPhysics = true
+				end
+
+				if (!trace.Hit or behindPhysics) then
 					targets[#targets + 1] = entity
+					targetData[entity] = {behindPhysics = behindPhysics}
 				end
 			end
 		end
@@ -4247,9 +4374,21 @@ function PLUGIN:ScanForCombatCallouts()
 
 							-- Enemy is not coming towards us
 							if (enemyDot < 0.3) then
-								template = "flank"
+								-- Only trigger flank if moved more than 20ft (240 units)
+								client.ixFlankStartPos = client.ixFlankStartPos or client:GetPos()
+
+								if (client:GetPos():DistToSqr(client.ixFlankStartPos) >= (240 * 240)) then
+									template = "flank"
+									client.ixFlankStartPos = nil
+								end
+							else
+								client.ixFlankStartPos = nil
 							end
+						else
+							client.ixFlankStartPos = nil
 						end
+					else
+						client.ixFlankStartPos = nil
 					end
 
 					-- Check for incoming enemy (enemy moving towards player, player not moving towards enemy)
@@ -4282,6 +4421,11 @@ function PLUGIN:ScanForCombatCallouts()
 					-- but here we rely on the fact that if isFirstContact was false and it was a while, it's a refind.
 					-- However, the original code had a bug where it checked against the JUST updated time.
 					-- We'll assume the user wants the new logic to take precedence for active combat.
+				end
+
+				-- Use shoot_cover if the target is behind physics
+				if (targetData[target] and targetData[target].behindPhysics and client:Team() == FACTION_MPF) then
+					template = "shoot_cover"
 				end
 
 				local event = self:BuildTemplateEvent(client, template, {
