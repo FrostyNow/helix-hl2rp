@@ -127,20 +127,26 @@ local function ParseSubstitute(entry, parentPreserve)
 	return {amount = 1, preserve = parentPreserve}
 end
 
---- Check how many of an item (or its substitutes) the player has
--- @param inventory The player's inventory
--- @param uniqueID The required item's unique ID
--- @param req The parsed requirement table
--- @return bool Whether the player has enough
--- @return string Missing item names (for error message)
 function RECIPE:CheckRequirement(inventory, uniqueID, req, client)
+	if (!inventory) then
+		return false, uniqueID
+	end
+
 	local needed = req.amount
 	local has = inventory:GetItemCount(uniqueID)
 
 	-- Check substitutes
 	if (has < needed and req.substitutes) then
-		for subID, _ in pairs(req.substitutes) do
-			has = has + inventory:GetItemCount(subID)
+		for k, v in pairs(req.substitutes) do
+			local subID = isstring(k) and k or v
+			
+			if (isstring(subID)) then
+				has = has + inventory:GetItemCount(subID)
+			end
+			
+			if (has >= needed) then
+				break
+			end
 		end
 	end
 
@@ -372,7 +378,7 @@ function RECIPE:OnCanCraft(client)
 	end
 
 	local inventory = character:GetInventory()
-	local bHasItems, bHasTools
+	local bHasItems, bHasTools = true, true
 	local missing = ""
 
 	if (self.flag and !character:HasFlags(self.flag)) then
@@ -448,7 +454,7 @@ function RECIPE:OnCanCraft(client)
 		end
 	end
 
-	return true
+	return bHasItems and bHasTools
 end
 
 if (SERVER) then

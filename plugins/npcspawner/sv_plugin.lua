@@ -117,7 +117,7 @@ end)
 function PLUGIN:GetGlobalNPCCount()
     local count = 0
     for _, ent in ipairs(ents.FindByClass("npc_*")) do
-        if (ent:IsNPC()) then
+        if (ent:IsNPC() and not ent.ixIgnoreSpawner) then
             count = count + 1
         end
     end
@@ -127,7 +127,7 @@ end
 function PLUGIN:GetNearbyNPCCount(pos, radius)
     local count = 0
     for _, ent in ipairs(ents.FindInSphere(pos, radius)) do
-        if (ent:IsNPC()) then
+        if (ent:IsNPC() and not ent.ixIgnoreSpawner) then
             count = count + 1
         end
     end

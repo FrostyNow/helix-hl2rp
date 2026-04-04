@@ -7,3 +7,4 @@ ITEM.price = 60
 ITEM.usenum = 4
 ITEM.width = 2
 ITEM.height = 2
+ITEM.isStackable = false

@@ -3295,7 +3295,7 @@ function PLUGIN:HasNearbyCombineICListener(client)
 			continue
 		end
 
-		if (!target:Alive() or target:IsRagdoll() or !self:IsConnectedToLink(target)) then
+		if (!target:Alive() or target:IsRagdoll()) then
 			continue
 		end
 
@@ -3754,7 +3754,7 @@ function PLUGIN:ScanForHarassment()
 				end
 
 				local distSqr = origin:DistToSqr(other:GetPos())
-				if (distSqr > (120 * 120)) then continue end -- Pestering range: 120 units
+				if (distSqr > (50 * 50)) then continue end -- Pestering range: 50 units
 
 				-- Check LOS
 				if (!client:IsLineOfSightClear(other)) then continue end

@@ -46,6 +46,7 @@ function PLUGIN:SpawnLeechSwarm(entity)
 
 		local npc = ents.Create("npc_vj_hlr1_leech")
 		if (IsValid(npc)) then
+			npc.ixIgnoreSpawner = true
 			npc:SetPos(pos)
 			npc:SetAngles(Angle(0, math.random(0, 360), 0))
 			npc:Spawn()

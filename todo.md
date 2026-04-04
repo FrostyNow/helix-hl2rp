@@ -7,9 +7,11 @@
 - IP 차단 테스트
 
 # 우선순위 높음
+- 작업용 모니터에서 기록이 저장이 안되는 문제
+- 사망한 상태에서 수갑 채우기 (revive하면 수갑 채워지게)
+
 - 출혈 시각적 효과
 - 감시인 용어집
-- 대화록만 모으는 로그
 - SitAnywhere 화살표 고치기
 - 캐릭터 선택하지 않은 시점에서 간헐적으로 mapscene이 제대로 안보이는 문제
 - 담배
@@ -33,3 +35,13 @@
 # 아이디어
 - 작전 플러그인: 활성화 시, 캐릭터를 로드, 리스폰한 플레이어에게 화면 전체를 채우는 스크린 출력(스크린은 현재 상황에 대한 안내, 같은 세력 중에서 관리자가 아닌 플레이어를 관전하는 카메라, 없다면 mapscene 출력), 그동안 플레이어는 관리자가 사전에 명령어로 지정한 위치에 텔레포트. 작전을 투입시키면 스크린 출력 중지.
 - 자동 음성 대사 플러그인: 활성화 시, b메뉴(bind가능)으로 수동 선택도 가능(상황별로 준비). 이때 목록은 cssource에서 대사 선택하듯이 하고, 마우스 옆 앞뒤키(혹은 방향키)로 다음 페이지 보기.
+
+
+
+
+[Srlion's Hook Library] gamemodes/ixhl2rp/schema/items/bags/sh_suitcase.lua:105: attempt to index a nil value
+  1. Equip - gamemodes/ixhl2rp/schema/items/bags/sh_suitcase.lua:105
+   2. unknown - gamemodes/helix/gamemode/core/meta/sh_player.lua:504
+    3. ProtectedCall - [C]:-1
+     4. unknown - lua/includes/extensions/entity.lua:158
+      5. unknown - lua/includes/modules/hook.lua:313

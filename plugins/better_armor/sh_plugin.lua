@@ -832,3 +832,10 @@ function PLUGIN:CanPlayerEquipItem(client, item)
 		return false
 	end
 end
+
+if (SERVER) then
+	function PLUGIN:OnCharFallback(client, character)
+		client:SetNetVar("gasmask", false)
+		client:SetNetVar("resistance", false)
+	end
+end

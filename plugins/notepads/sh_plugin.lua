@@ -87,6 +87,12 @@ else
 				note:SetAngles(v.ang)
 				note:Spawn()
 
+				note:Activate()
+				note:SetNetVar("ownerChar", v.owner)
+				note.id = v.id
+
+				hook.Run("OnNoteSpawned", note, noteItem, true)
+
 				if (v.frozen) then
 					local phys = note:GetPhysicsObject()
 
@@ -94,12 +100,6 @@ else
 						phys:EnableMotion(false)
 					end
 				end
-
-				note:Activate()
-				note:SetNetVar("ownerChar", v.owner)
-				note.id = v.id
-
-				hook.Run("OnNoteSpawned", note, noteItem, true)
 			end
 		end
 	end

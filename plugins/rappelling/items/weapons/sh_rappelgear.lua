@@ -6,4 +6,5 @@ ITEM.class = "rappel_gear"
 ITEM.weaponCategory = "special"
 ITEM.width = 1
 ITEM.height = 1
-
+ITEM.factions = {FACTION_MPF, FACTION_OTA}
+ITEM.noDeathDrop = true

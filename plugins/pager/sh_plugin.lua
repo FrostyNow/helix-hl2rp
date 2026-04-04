@@ -136,3 +136,44 @@ function PLUGIN:SendPagerButtonFail(client)
 	client:EmitSound("buttons/combine_button_locked.wav", 60, 100)
 	SendLocalizedProximityChat(client, "me", phrase)
 end
+
+if (SERVER) then
+	function PLUGIN:SaveData()
+		local data = {}
+
+		for _, v in ipairs(ents.FindByClass("ix_pager_button")) do
+			data[#data + 1] = {
+				pos = v:GetPos(),
+				angles = v:GetAngles(),
+				data = v:OnSave()
+			}
+		end
+
+		self:SetData(data)
+	end
+
+	function PLUGIN:LoadData()
+		local data = self:GetData()
+
+		if (data) then
+			for _, v in ipairs(data) do
+				local entity = ents.Create("ix_pager_button")
+				entity:SetPos(v.pos)
+				entity:SetAngles(v.angles)
+				entity:Spawn()
+
+				if (v.data) then
+					entity:OnRestore(v.data)
+				end
+
+				-- Always ensure it's frozen on load as requested
+				local physObj = entity:GetPhysicsObject()
+
+				if (IsValid(physObj)) then
+					physObj:EnableMotion(false)
+					physObj:Wake()
+				end
+			end
+		end
+	end
+end

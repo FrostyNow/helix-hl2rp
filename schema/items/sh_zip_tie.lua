@@ -13,7 +13,8 @@ ITEM.functions.Use = {
 			data.start = client:GetShootPos()
 			data.endpos = data.start + client:GetAimVector() * 96
 			data.filter = client
-		local target = util.TraceLine(data).Entity
+		local entity = util.TraceLine(data).Entity
+		local target = (IsValid(entity) and entity:GetClass() == "prop_ragdoll") and entity:GetNetVar("player") or entity
 
 		if (IsValid(target) and target:IsPlayer() and target:GetCharacter()
 		and !target:GetNetVar("tying") and !target:IsRestricted()) then
@@ -21,7 +22,7 @@ ITEM.functions.Use = {
 
 			client:SetAction("@tying", 5)
 
-			client:DoStaredAction(target, function()
+			client:DoStaredAction(entity, function()
 				target:SetRestricted(true)
 				target:SetNetVar("tying")
 				target:NotifyLocalized("fTiedUp")
@@ -35,8 +36,10 @@ ITEM.functions.Use = {
 			end, 5, function()
 				client:SetAction()
 
-				target:SetAction()
-				target:SetNetVar("tying")
+				if (IsValid(target)) then
+					target:SetAction()
+					target:SetNetVar("tying")
+				end
 
 				itemTable.bBeingUsed = false
 			end)
