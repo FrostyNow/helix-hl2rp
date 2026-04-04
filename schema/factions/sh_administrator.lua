@@ -2,7 +2,7 @@
 FACTION.name = "Administrator"
 FACTION.description = "A human Administrator advised by the Universal Union."
 FACTION.color = Color(191, 57, 75, 255)
-FACTION.pay = 100
+FACTION.pay = 60
 FACTION.models = {
 	"models/humans/combine/female_01.mdl",
 	"models/humans/combine/female_02.mdl",
