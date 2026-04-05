@@ -8,6 +8,7 @@
 - 사망한 상태에서 수갑 채우기
 
 # 우선순위 높음
+- 나이트비전 IR 하얗게 변함
 - 페이저 전원 온오프, 동기화 해제
 - 출혈 시각적 효과
 - 감시인 용어집
@@ -38,10 +39,43 @@
 
 
 
+# 메뉴판
+차 - 25 토큰
+오렌지 소다 - 30 토큰
+우유 - 30 토큰
+병 콜라 - 30 토큰
+생수 - 35 토큰
+커피 - 35 토큰
+캔맥주 - 35 토큰
+라거/에일 - 45 토큰
+커피 그란데 - 45 토큰
+보드카/포도주 - 45 토큰
+수박 - 45 토큰
+위스키 - 65 토큰
 
-[Srlion's Hook Library] gamemodes/ixhl2rp/schema/items/bags/sh_suitcase.lua:105: attempt to index a nil value
-  1. Equip - gamemodes/ixhl2rp/schema/items/bags/sh_suitcase.lua:105
-   2. unknown - gamemodes/helix/gamemode/core/meta/sh_player.lua:504
-    3. ProtectedCall - [C]:-1
-     4. unknown - lua/includes/extensions/entity.lua:158
-      5. unknown - lua/includes/modules/hook.lua:313
+크래커 - 10 토큰
+땅콩 - 12 토큰
+옥수수 - 15 토큰
+빵 - 15 토큰
+헤드크랩 한 접시 - 20 토큰
+야채/토마토 수프 - 20 토큰
+중국식 요리 - 20 토큰
+국수 - 20 토큰
+소시지 - 20 토큰
+어니언링 - 25 토큰
+햄 통조림 - 25 토큰
+헤드크랩 수프 - 25 토큰
+치즈 한 조각 - 25 토큰
+달걀 프라이 - 25 토큰
+생선 통조림 - 30 토큰
+바게트 - 30 토큰
+고깃국 - 30 토큰
+파스타 - 30 토큰
+블루 치즈 한 조각 - 35 토큰
+초콜릿 - 35 토큰
+베이컨 - 35 토큰
+브라우니 - 35 토큰
+핫도그 - 40 토큰
+스테이크 - 40 토큰
+버거 - 50 토큰
+피자 - 55 토큰

@@ -126,7 +126,7 @@ else
 	
 	function ENT:DrawTranslucent()
 		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-		if (!self:TestPVS()) then
+		if (false) then
 			return
 		end
 

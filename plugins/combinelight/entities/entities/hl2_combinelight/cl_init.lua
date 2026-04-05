@@ -15,7 +15,7 @@ function ENT:Draw()
 	self:DrawModel()
 
 	-- Point 3: Only process sprites if potentially visible
-	if (!self:TestPVS()) then return end
+	if (false) then return end
 
 	local pos = self:GetPos() - self:GetForward() * 4 + self:GetUp() * 2
 	local color = Color(19, 54, 80)
@@ -47,7 +47,8 @@ end
 -- Called when the entity should think.
 function ENT:Think()
 	-- Point 3: PVS Check - skip heavy lighting if the entity is not in a potentially visible set
-	if (!self:TestPVS()) then
+	-- PVS check disabled due to compatibility issues
+	if (false) then
 		if (IsValid(self.projectedLight)) then
 			self.projectedLight:Remove()
 		end

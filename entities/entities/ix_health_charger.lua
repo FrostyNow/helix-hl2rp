@@ -350,10 +350,8 @@ else
 	local MAX_LIGHT_DIST = 512 * 512
 
 	function ENT:DrawTranslucent()
-		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-		if (!self:TestPVS()) then
-			return
-		end
+		-- Lighting culling based on distance below
+
 
 		local ft = FrameTime()
 		local idxHealth = self:LookupBone("healthbar")

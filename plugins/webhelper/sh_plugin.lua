@@ -23,6 +23,7 @@ ix.lang.AddTable("korean", {
 	collections = "모음집",
 	rpGuide = "안내서",
 	worldSetting = "세계관",
+	glossary = "용어집",
 	webLoading = "불러오는 중..."
 })
 
@@ -30,8 +31,10 @@ ix.lang.AddTable("english", {
 	collections = "Collections",
 	rpGuide = "RP Guide",
 	worldSetting = "World Lore",
+	glossary = "Glossary",
 	webLoading = "Loading..."
 })
 
 ix.util.Include("cl_lore.lua")
+ix.util.Include("cl_glossary.lua")
 ix.util.Include("cl_plugin.lua")

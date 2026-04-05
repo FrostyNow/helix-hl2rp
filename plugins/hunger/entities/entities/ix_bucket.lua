@@ -93,8 +93,8 @@ else
 				self.loopsound:PlayEx(0.8, 100)
 			end
 
-			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-			if (!self:TestPVS()) then return end
+			-- Lighting culling based on distance below
+
 
 			local firepos = self:GetPos() + self:GetUp() * 5
 			
@@ -127,8 +127,8 @@ else
 	function ENT:DrawTranslucent()
 		if not self:GetNetVar("active") then return end
 
-		-- Point 3: PVS Check - skip expensive rendering if not in a potentially visible set
-		if (!self:TestPVS()) then return end
+		-- Particle culling based on distance below
+
 		
 		if not IsValid(self.emitter) then
 			self.emitter = ParticleEmitter(self:GetPos(), false)

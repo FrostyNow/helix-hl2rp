@@ -52,8 +52,8 @@ else
 				self.loopsound:PlayEx(0.8, 100)
 			end
 
-			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-			if (!self:TestPVS()) then return end
+			-- Lighting culling based on distance below
+
 
 			-- Point 4: Performance - only create heavy dynamic light when the player is close
 			if (EyePos():DistToSqr(self:GetPos()) <= MAX_LIGHT_DIST) then
@@ -92,8 +92,8 @@ else
 		self:DrawModel()
 		
 		if self:GetNetVar("active") then
-			-- Point 3: PVS Check - skip expensive rendering if not in a potentially visible set
-			if (!self:TestPVS()) then return end
+			-- Sprite culling below
+
 
 			local position = self:GetPos() + (self:GetUp() * 20) + (self:GetRight() * 11) + (self:GetForward() * 3)
 			local size = 20 + math.sin(RealTime() * 15) * 5

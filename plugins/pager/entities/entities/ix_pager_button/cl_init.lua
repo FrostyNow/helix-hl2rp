@@ -8,8 +8,7 @@ local MAX_LIGHT_DIST = 512 * 512
 function ENT:Draw()
 	self:DrawModel()
 
-	-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-	if (!self:TestPVS()) then
+	if (false) then
 		return
 	end
 

@@ -1,4 +1,4 @@
-RECIPE.name = "Potato Chips"
+RECIPE.name = "Potato Crisps"
 RECIPE.description = "recipeCrispsDesc"
 RECIPE.category = "Food"
 RECIPE.model = "models/griim/foodpack/crisps_packet.mdl"

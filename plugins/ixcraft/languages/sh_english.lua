@@ -155,9 +155,5 @@ LANGUAGE = {
 	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
 	recipeMeatChunkDesc = "Cook a meat chunk.",
 	recipePieDesc = "A large pie that can be shared among several people.",
-
-	["Potato Chips"] = "Potato Chips",
-	["Cheese & Onion Crisps"] = "Cheese & Onion Crisps",
-	["Ready Salted Crisps"] = "Ready Salted Crisps",
-	["Salt & Vinegar Crisps"] = "Salt & Vinegar Crisps",
 }
+

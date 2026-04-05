@@ -163,7 +163,6 @@ LANGUAGE = {
 	["Cheese & Onion Crisps"] = "치즈 & 어니언 감자칩",
 	itemCrispsCheeseDesc = "치즈와 양파 향이 가미된 짭조름한 감자칩입니다.",
 	["Crisp Packet"] = "감자칩",
-	itemBoiledWaterDesc = "더러운 물을 펄펄 끓이고 체에 걸러 독성 물질과 기생충을 제거한 물입니다. 물맛이 없지만 안전합니다.",
 	itemCrispsGenericDesc = "감자를 얇게 썰어 기름에 튀겨낸 바삭한 감자칩입니다.",
 	["Ready Salted Crisps"] = "레디 솔티드 감자칩",
 	itemCrispsSaltedDesc = "소금으로 살짝 간을 한 감자칩입니다.",
@@ -171,7 +170,8 @@ LANGUAGE = {
 	itemCrispsVinegarDesc = "소금과 식초 향이 가미되어 코를 찌르는 감자칩입니다.",
 	["Pie"] = "파이",
 	itemPieDesc = "겉은 바삭하고 속은 부드러운 파이입니다. 따뜻할 때 먹으면 더욱 맛있습니다.",
-	recipePieDesc = "여러 명이 나누어 먹을 수 있는 큼지막한 파이입니다.",
+	["Boiled Water"] = "끓인 물",
+	itemBoiledWaterDesc = "더러운 물을 펄펄 끓이고 체에 걸러 독성 물질과 기생충을 제거한 물입니다. 물맛이 없지만 안전합니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",

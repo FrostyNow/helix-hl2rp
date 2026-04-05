@@ -368,10 +368,8 @@ else
 	function ENT:Draw()
 		self:DrawModel()
 
-		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-		if (!self:TestPVS()) then
-			return
-		end
+		-- Lighting culling based on distance below
+
 
 		-- allow the light to draw while detonating so we can see the red flash
 		if (self:IsLockDisabled() and !self:GetDetonating()) then

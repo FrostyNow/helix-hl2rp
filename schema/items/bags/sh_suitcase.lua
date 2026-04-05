@@ -100,9 +100,21 @@ ITEM.functions.Equip = {
 }
 
 function ITEM:Equip(client, bNoSelect, bNoSound)
+	local character = client:GetCharacter()
+
+	if (!character) then
+		return false
+	end
+
+	local inventory = character:GetInventory()
+
+	if (!inventory) then
+		return false
+	end
+
 	client.carryWeapons = client.carryWeapons or {}
 
-	for k, _ in client:GetCharacter():GetInventory():Iter() do
+	for k, _ in inventory:Iter() do
 		if (k.id != self.id) then
 			local itemTable = ix.item.instances[k.id]
 

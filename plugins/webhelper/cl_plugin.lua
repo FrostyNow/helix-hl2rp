@@ -90,9 +90,26 @@ local function PopulateLoreTab(container)
     html:SetHTML(text)
 end
 
+local function PopulateGlossaryTab(container)
+    container:DisableScrolling()
+
+    local canvas = container:Add("EditablePanel")
+    canvas:Dock(FILL)
+
+    local html = canvas:Add("DHTML")
+    html:Dock(FILL)
+
+    local text = PLUGIN.glossaryTranslations[ix.option.Get("language", "english")] or PLUGIN.glossaryTranslations.english
+    html:SetHTML(text)
+end
+
 hook.Add("PopulateHelpMenu", "ixWebview", function(tabs)
     tabs["worldSetting"] = function(container)
         PopulateLoreTab(container)
+    end
+
+    tabs["glossary"] = function(container)
+        PopulateGlossaryTab(container)
     end
 
     tabs["collections"] = function(container)

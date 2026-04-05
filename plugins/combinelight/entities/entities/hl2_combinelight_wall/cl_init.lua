@@ -14,8 +14,8 @@ end
 function ENT:Draw()
 	self:DrawModel()
 
-	-- Point 3: Only process sprites if potentially visible
-	if (!self:TestPVS()) then return end
+	-- Sprite culling based on PixelVisible below
+
 
 	-- Position adjusted for combine_light002a (taller light)
 	-- Aligned to the bulb area
@@ -49,13 +49,8 @@ end
 
 -- Called when the entity should think.
 function ENT:Think()
-	-- Point 3: PVS Check - skip heavy lighting if the entity is not in a potentially visible set
-	if (!self:TestPVS()) then
-		if (IsValid(self.projectedLight)) then
-			self.projectedLight:Remove()
-		end
-		return
-	end
+	-- Lighting culling based on distance below
+
 
 	local offset = self:GetUp() * 40 + self:GetForward() * 2
 	local pos = self:GetPos() + offset

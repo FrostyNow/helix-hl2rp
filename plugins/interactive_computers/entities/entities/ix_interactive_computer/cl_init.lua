@@ -126,10 +126,8 @@ end
 local MAX_LIGHT_DIST = 1000 * 1000
 
 function ENT:DrawTranslucent()
-	-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-	if (!self:TestPVS()) then
-		return
-	end
+	-- Lighting culling based on distance below
+
 
 	-- Point 4: Performance - only create lighting when the player is close
 	if (EyePos():DistToSqr(self:GetPos()) > MAX_LIGHT_DIST) then
