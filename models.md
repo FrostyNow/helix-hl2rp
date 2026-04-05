@@ -1,6 +1,3 @@
-콤바인 방독면 정화통
-models/willardnetworks/props/cpfilter.mdl
-
 업소용 스토브
 models/props_lab/soupprepstove.mdl
 models/props_wasteland/kitchen_stove003a.mdl

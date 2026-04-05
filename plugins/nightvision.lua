@@ -101,6 +101,20 @@ local state = {
 	cachedLightPos = 0
 }
 
+-- Performance - Cache common globals in upvalues to reduce Lua table lookup overhead
+local _LocalPlayer = LocalPlayer
+local _FrameTime = FrameTime
+local _ScrW = ScrW
+local _ScrH = ScrH
+local _IsValid = IsValid
+local _CurTime = CurTime
+local _ents = ents
+local _player = player
+local _render = render
+local _cam = cam
+local _surface = surface
+local _util = util
+
 CreateClientConVar("nv_toggspeed", 0.09, true, false)
 CreateClientConVar("nv_illum_area", 512, true, false)
 CreateClientConVar("nv_illum_bright", 1, true, false)
@@ -118,7 +132,7 @@ CreateClientConVar("nv_fx_blur_status", 1, true, false)
 CreateClientConVar("nv_fx_distort_status", 1, true, false)
 CreateClientConVar("nv_fx_colormod_status", 1, true, false)
 CreateClientConVar("nv_fx_blur_intensity", 1, true, false)
-CreateClientConVar("nv_fx_goggle_overlay_status", 1, true, false)
+CreateClientConVar("nv_fx_goggle_overlay_status", 0, true, false)
 CreateClientConVar("nv_fx_bloom_status", 0, true, false)
 CreateClientConVar("nv_fx_goggle_status", 0, true, false)
 CreateClientConVar("nv_fx_noise_status", 0, true, false)
@@ -161,18 +175,18 @@ local function disableLegacyNVScript()
 	hook.Remove("PostDrawViewModel", "NV_PostDrawViewModel")
 end
 
-local Color_Brightness = 0.58
-local Color_Contrast = 1.45
-local Color_AddGreen = 0.08
+local Color_Brightness = 0.05
+local Color_Contrast = 1.3
+local Color_AddGreen = 0.15
 local Color_MultiplyGreen = 0.08
 
 local Color_Tab = {
-	["$pp_colour_addr"] = -0.18,
+	["$pp_colour_addr"] = 0.02,
 	["$pp_colour_addg"] = Color_AddGreen,
-	["$pp_colour_addb"] = -0.18,
+	["$pp_colour_addb"] = 0.02,
 	["$pp_colour_brightness"] = Color_Brightness,
 	["$pp_colour_contrast"] = Color_Contrast,
-	["$pp_colour_colour"] = 0,
+	["$pp_colour_colour"] = 0.2, -- Keep it mostly monochrome-green
 	["$pp_colour_mulr"] = 0,
 	["$pp_colour_mulg"] = Color_MultiplyGreen,
 	["$pp_colour_mulb"] = 0
@@ -422,15 +436,19 @@ local function setNightVisionState(enabled, nightType)
 		render.SetStencilReferenceValue(1)
 		render.SuppressEngineLighting(true)
 
-		local FT = FrameTime()
+		local FT = _FrameTime()
 
-		for _, ent in pairs(ents.GetAll()) do
-			if (IsValid(ent)) then
+		-- Performance - ents.Iterator() is much faster than pairs(ents.GetAll()) since 2022 GMod update
+		for _, ent in _ents.Iterator() do
+			if (_IsValid(ent)) then
 				if (ent:IsNPC() or ent:IsPlayer()) then
+					-- Don't draw the local player's heat signature
+					if (ent == _LocalPlayer()) then continue end
+
 					if (!ent:IsEffectActive(EF_NODRAW)) then
-						render.SuppressEngineLighting(true)
+						_render.SuppressEngineLighting(true)
 						ent:DrawModel()
-						render.SuppressEngineLighting(false)
+						_render.SuppressEngineLighting(false)
 					end
 				elseif (ent:GetClass() == "class C_ClientRagdoll") then
 					if (!ent.Int) then
@@ -471,14 +489,14 @@ local function setNightVisionState(enabled, nightType)
 			return
 		end
 
-		local CT = CurTime()
+		local CT = _CurTime()
 		local EP, EA = state.ply:EyePos(), state.ply:EyeAngles():Forward()
 
-		-- Performance - throttle ComputeLighting (super expensive) to 10Hz
+		-- Performance - throttle ComputeLighting (super expensive) to 20Hz (0.05s)
 		if (state.nextLightCheck < CT) then
-			local lights = render.ComputeLighting(EP, Vector(0, 0, -1)) - render.ComputeDynamicLighting(EP, Vector(0, 0, -1))
+			local lights = _render.ComputeLighting(EP, Vector(0, 0, -1)) - _render.ComputeDynamicLighting(EP, Vector(0, 0, -1))
 			state.cachedClr = lights:Length() * 33
-			state.nextLightCheck = CT + 0.1
+			state.nextLightCheck = CT + 0.05
 		end
 		
 		local clr = state.cachedClr
@@ -524,13 +542,14 @@ local function setNightVisionState(enabled, nightType)
 				state.dlight.Brightness = 1.25
 
 				if (cv.isib_status:GetInt() < 1) then
-					state.dlight.Size = state.illumArea * state.curScale * 1.2
-					state.dlight.Decay = state.illumArea * state.curScale * 1.2
+					-- Significantly increased size and adjusted decay for a more "ambient" feel
+					state.dlight.Size = state.illumArea * state.curScale * 5.0
+					state.dlight.Decay = state.dlight.Size * 1.5
 				else
 					if (aim > 0) then
 						-- Throttle this as well for aim mode
 						if (state.nextLightCheck < CT) then
-							local traceLights = render.ComputeLighting(trace.HitPos, Vector(0, 0, -1)) - render.ComputeDynamicLighting(trace.HitPos, Vector(0, 0, -1))
+							local traceLights = _render.ComputeLighting(trace.HitPos, Vector(0, 0, -1)) - _render.ComputeDynamicLighting(trace.HitPos, Vector(0, 0, -1))
 							state.cachedLightPos = traceLights:Length() * 33
 						end
 						clr = state.cachedLightPos
@@ -538,8 +557,8 @@ local function setNightVisionState(enabled, nightType)
 
 					-- Realistic Exposure: Increased intensity in dark, reduced in light
 					state.isibIntensity = Lerp(FT * 10, state.isibIntensity, clr * state.isibSens)
-					state.dlight.Size = math.Clamp((state.illumArea * state.curScale * 1.2) / state.isibIntensity, 0, state.illumArea * 1.2)
-					state.dlight.Decay = state.dlight.Size
+					state.dlight.Size = math.Clamp((state.illumArea * state.curScale * 4.0) / state.isibIntensity, 0, state.illumArea * 5.0)
+					state.dlight.Decay = state.dlight.Size * 1.5
 				end
 
 				state.dlight.DieTime = CT + FT * 3
@@ -638,7 +657,7 @@ concommand.Add("nv_reset_everything", function()
 	RunConsoleCommand("nv_fx_blur_status", "1")
 	RunConsoleCommand("nv_fx_distort_status", "0")
 	RunConsoleCommand("nv_fx_colormod_status", "1")
-	RunConsoleCommand("nv_fx_goggle_overlay_status", "1")
+	RunConsoleCommand("nv_fx_goggle_overlay_status", "0")
 	RunConsoleCommand("nv_fx_goggle_status", "0")
 	RunConsoleCommand("nv_fx_noise_status", "1")
 	RunConsoleCommand("nv_fx_noise_variety", "20")
