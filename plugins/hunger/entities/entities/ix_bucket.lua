@@ -98,7 +98,7 @@ else
 
 			local firepos = self:GetPos() + self:GetUp() * 5
 			
-			-- Point 4: Performance - only create heavy dynamic light when the player is close
+			-- Performance - only create heavy dynamic light when the player is close
 			if (EyePos():DistToSqr(firepos) <= MAX_LIGHT_DIST) then
 				local dlight = DynamicLight(self:EntIndex())
 				
@@ -138,7 +138,7 @@ else
 		local up = self:GetUp()
 
 		-- Add particles
-		-- Point 4: Only emit particles when close enough to see them
+		-- Only emit particles when close enough to see them
 		if (self.nextParticle < CurTime() and IsValid(self.emitter) and EyePos():DistToSqr(firepos) <= MAX_PARTICLE_DIST) then
 			-- Main Fire
 			for i = 1, 2 do

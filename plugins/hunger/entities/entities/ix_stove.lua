@@ -55,7 +55,7 @@ else
 			-- Lighting culling based on distance below
 
 
-			-- Point 4: Performance - only create heavy dynamic light when the player is close
+			-- Performance - only create heavy dynamic light when the player is close
 			if (EyePos():DistToSqr(self:GetPos()) <= MAX_LIGHT_DIST) then
 				local dlight = DynamicLight(self:EntIndex())
 				

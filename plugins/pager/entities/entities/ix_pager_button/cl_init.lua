@@ -8,19 +8,13 @@ local MAX_LIGHT_DIST = 512 * 512
 function ENT:Draw()
 	self:DrawModel()
 
-	if (false) then
-		return
-	end
-
 	local bHasPairs = self:GetNetVar("hasPairs", false)
 	local color = bHasPairs and Color(0, 255, 0) or Color(255, 0, 0)
 	local position = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 4
 
-	-- Point 2: Fake Light (Glow Sprite) - add visual light source visible from a distance
 	render.SetMaterial(GLOW_MATERIAL)
 	render.DrawSprite(position, 10, 10, color)
 
-	-- Point 4: Performance - only create heavy dynamic light when the player is close
 	if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
 		local dlight = DynamicLight(self:EntIndex())
 

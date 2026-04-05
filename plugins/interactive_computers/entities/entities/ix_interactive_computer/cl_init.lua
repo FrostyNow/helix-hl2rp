@@ -129,7 +129,7 @@ function ENT:DrawTranslucent()
 	-- Lighting culling based on distance below
 
 
-	-- Point 4: Performance - only create lighting when the player is close
+	-- Performance - only create lighting when the player is close
 	if (EyePos():DistToSqr(self:GetPos()) > MAX_LIGHT_DIST) then
 		return
 	end
@@ -160,7 +160,7 @@ function ENT:DrawTranslucent()
 	local position = self:GetPos() + self:GetUp() * 33 + self:GetForward() * 2 + self:GetRight() * 13
 	local color = Color(110, 255, 110)
 
-	-- Point 2: Fake Light (Glow Sprite) - visual light source visible within range
+	-- Fake Light (Glow Sprite) - visual light source visible within range
 	render.SetMaterial(GLOW_MATERIAL)
 	render.DrawSprite(position, 10, 10, color)
 

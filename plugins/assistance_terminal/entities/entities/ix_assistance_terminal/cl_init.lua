@@ -14,11 +14,8 @@ noiseRTMat:SetFloat( "$alpha", 0.02 )
 local MAX_LIGHT_DIST = 1000 * 1000
 
 function ENT:Think()
-	-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-	if (false) then return end
-
 	if ( self:GetNetVar( "alarmLights" ) ) then
-		-- Point 4: Performance - only create heavy dynamic light when the player is close
+		-- Performance - only create heavy dynamic light when the player is close
 		if (EyePos():DistToSqr(self:GetPos()) <= MAX_LIGHT_DIST) then
 			local dynamicLight = DynamicLight( self:EntIndex() )
 
@@ -89,8 +86,8 @@ end
 function ENT:Draw()
 	self:DrawModel()
 		
-	-- Point 3: Use PVS and distance checking to skip expensive 3D2D rendering
-	if (false or EyePos():DistToSqr(self:GetPos()) > MAX_LIGHT_DIST) then 
+	-- Use PVS and distance checking to skip expensive 3D2D rendering
+	if (EyePos():DistToSqr(self:GetPos()) > MAX_LIGHT_DIST) then 
 		return 
 	end
 		

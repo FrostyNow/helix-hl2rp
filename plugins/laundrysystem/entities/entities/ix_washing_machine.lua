@@ -206,15 +206,9 @@ else
 	
 	function ENT:DrawTranslucent()
 		if (self.models) then
-			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
-			if (false) then
-				return
-			end
-
 			local position = self:GetPos()
 			local distSqr = EyePos():DistToSqr(position)
 
-			-- Point 4: Performance - only create lighting when the player is close
 			if (distSqr > MAX_LIGHT_DIST) then
 				return
 			end

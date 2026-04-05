@@ -423,21 +423,9 @@ local function setNightVisionState(enabled, nightType)
 		render.SuppressEngineLighting(true)
 
 		local FT = FrameTime()
-		local myPos = LocalPlayer():GetPos()
-		local maxRange = 2000 * 2000
 
-		-- Point 4: Performance - skip global entities loop, focus on players/NPCs and close items
-		local targets = {}
-		table.Add(targets, player.GetAll())
-		table.Add(targets, ents.FindByClass("npc_*"))
-		table.Add(targets, ents.FindByClass("class C_ClientRagdoll"))
-
-		local pl = LocalPlayer()
-		for _, ent in ipairs(targets) do
-			if (IsValid(ent) and ent != pl) then
-				-- Point 4: Performance - Distance and PVS check for thermal signatures
-				if (ent:GetPos():DistToSqr(myPos) > maxRange) then continue end
-
+		for _, ent in pairs(ents.GetAll()) do
+			if (IsValid(ent)) then
 				if (ent:IsNPC() or ent:IsPlayer()) then
 					if (!ent:IsEffectActive(EF_NODRAW)) then
 						render.SuppressEngineLighting(true)
@@ -478,7 +466,7 @@ local function setNightVisionState(enabled, nightType)
 			return
 		end
 
-		-- Point 4: Performance - skip heavy lighting computation if not needed
+		-- Performance - skip heavy lighting computation if not needed
 		if (!state.status and cv.id_status:GetInt() < 1) then
 			return
 		end
@@ -486,7 +474,7 @@ local function setNightVisionState(enabled, nightType)
 		local CT = CurTime()
 		local EP, EA = state.ply:EyePos(), state.ply:EyeAngles():Forward()
 
-		-- Point 4: Performance - throttle ComputeLighting (super expensive) to 10Hz
+		-- Performance - throttle ComputeLighting (super expensive) to 10Hz
 		if (state.nextLightCheck < CT) then
 			local lights = render.ComputeLighting(EP, Vector(0, 0, -1)) - render.ComputeDynamicLighting(EP, Vector(0, 0, -1))
 			state.cachedClr = lights:Length() * 33
@@ -536,8 +524,8 @@ local function setNightVisionState(enabled, nightType)
 				state.dlight.Brightness = 1.25
 
 				if (cv.isib_status:GetInt() < 1) then
-					state.dlight.Size = state.illumArea * state.curScale * 1.5 -- Increased for better visualization
-					state.dlight.Decay = state.illumArea * state.curScale * 1.5
+					state.dlight.Size = state.illumArea * state.curScale * 1.2
+					state.dlight.Decay = state.illumArea * state.curScale * 1.2
 				else
 					if (aim > 0) then
 						-- Throttle this as well for aim mode
@@ -549,12 +537,12 @@ local function setNightVisionState(enabled, nightType)
 					end
 
 					-- Realistic Exposure: Increased intensity in dark, reduced in light
-					state.isibIntensity = Lerp(FT * 5, state.isibIntensity, math.Clamp(clr * state.isibSens, 0.5, 20))
-					state.dlight.Size = math.Clamp((state.illumArea * state.curScale * 2.0) / state.isibIntensity, 0, state.illumArea * 2.0)
+					state.isibIntensity = Lerp(FT * 10, state.isibIntensity, clr * state.isibSens)
+					state.dlight.Size = math.Clamp((state.illumArea * state.curScale * 1.2) / state.isibIntensity, 0, state.illumArea * 1.2)
 					state.dlight.Decay = state.dlight.Size
 				end
 
-				state.dlight.DieTime = CT + 0.1
+				state.dlight.DieTime = CT + FT * 3
 			end
 		end
 

@@ -378,11 +378,11 @@ else
 		local color = bDisplayError and color_red or (bLocked and color_blue or color_green)
 		local position = self:GetPos() + self:GetUp() * -8.7 + self:GetForward() * -3.85 + self:GetRight() * -6
 
-		-- Point 2: Fake Light (Glow Sprite) - always draw so it's visible from a distance
+		-- Fake Light (Glow Sprite) - always draw so it's visible from a distance
 		render.SetMaterial(glowMaterial)
 		render.DrawSprite(position, 10, 10, color)
 
-		-- Point 4: Performance - only create heavy dynamic light when the player is close
+		-- Performance - only create heavy dynamic light when the player is close
 		if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
 			local dlight = DynamicLight(self:EntIndex())
 
