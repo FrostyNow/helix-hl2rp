@@ -5,6 +5,7 @@ ITEM.price = 50
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "plate"
+ITEM.noDeathDrop = true
 ITEM.factions = {FACTION_OTA}
 
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}

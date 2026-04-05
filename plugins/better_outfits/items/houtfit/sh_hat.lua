@@ -4,6 +4,8 @@ ITEM.model = "models/props_junk/cardboard_box004a.mdl"
 ITEM.height = 1
 ITEM.width = 1
 ITEM.price = 20
+ITEM.noDeathDrop = true
+ITEM.factions = {FACTION_CONSCRIPT}
 ITEM.eqBodyGroups = {
 	["helmet"] = 3
 }

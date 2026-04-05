@@ -12,6 +12,7 @@ ITEM.iconCam = {
 }
 ITEM.price = 175
 ITEM.exRender = true
+ITEM.factions = {FACTION_MPF, FACTION_CONSCRIPT, FACTION_ADMIN}
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

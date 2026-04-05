@@ -10,6 +10,8 @@ ITEM.iconCam = {
 }
 ITEM.exRender = true
 ITEM.price = 50
+ITEM.noDeathDrop = true
+ITEM.classes = {CLASS_MPU}
 ITEM.bodyGroups = {
 	["cop mask filters"] = 2,
 }

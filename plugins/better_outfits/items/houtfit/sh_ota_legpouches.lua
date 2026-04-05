@@ -8,6 +8,8 @@ ITEM.eqBodyGroups = {
 	["TacticalLegs"] = 0
 }
 ITEM.outfitCategory = "legs"
+ITEM.faction = {FACTION_OTA}
+ITEM.noDeathDrop = true
 
 ITEM.isBag = true
 ITEM.invWidth = 1

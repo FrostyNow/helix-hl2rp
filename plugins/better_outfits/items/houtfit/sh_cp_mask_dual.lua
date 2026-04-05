@@ -13,6 +13,8 @@ ITEM.price = 50
 ITEM.bodyGroups = {
 	["cop mask filters"] = 1,
 }
+ITEM.noDeathDrop = true
+ITEM.classes = {CLASS_MPU}
 ITEM.eqBodyGroups = {
 	["mask"] = 1,
 	["mask eyes"] = 1,

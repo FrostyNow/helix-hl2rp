@@ -8,7 +8,8 @@ ITEM.outfitCategory = "vest"
 ITEM.eqBodyGroups = {
 	["vest"] = 1,
 }
-ITEM.noBusiness = true
+ITEM.factions = {FACTION_MPF}
+ITEM.noDeathDrop = true
 
 local faction = ix.faction.indices[FACTION_MPF]
 ITEM.allowedModels = faction and table.Copy(faction.models) or {

@@ -10,6 +10,8 @@ ITEM.iconCam = {
 }
 ITEM.exRender = true
 ITEM.price = 50
+ITEM.noDeathDrop = true
+ITEM.factions = {FACTION_MPF}
 ITEM.eqBodyGroups = {
 	["mask"] = 1,
 	["mask eyes"] = 1,

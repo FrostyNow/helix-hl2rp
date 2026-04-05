@@ -4,6 +4,7 @@ ITEM.model = Model("models/hls/alyxports/cardboard_box_1.mdl")
 ITEM.description = "conscriptGearSupplyDesc"
 ITEM.category = "Utility"
 ITEM.items = {
+	"conscript",
 	"bag",
 	"hat",
 	"pasgt_helmet",

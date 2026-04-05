@@ -6,6 +6,8 @@ ITEM.height = 1
 ITEM.description = "itemFlashlightDesc"
 ITEM.category = "Utility"
 ITEM.price = 60
+ITEM.factions = {FACTION_MPF, FACTION_OTA, FACTION_CONSCRIPT}
+ITEM.classes = {CLASS_REBEL}
 
 local function turnOffIfLast(item)
 	local client = item:GetOwner()
