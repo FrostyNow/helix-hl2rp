@@ -1,16 +1,15 @@
-ITEM.name = "Gasmask Filter"
-ITEM.description = "itemGasmaskFilterDesc"
-ITEM.model = "models/willardnetworks/props/blackfilter.mdl"
+ITEM.name = "Filter Base"
+ITEM.description = "A base for gasmask filters."
+ITEM.category = "Utility"
+ITEM.model = "models/props_junk/garbage_metalcan002a.mdl"
 ITEM.width = 1
 ITEM.height = 1
-ITEM.category = "Utility"
-ITEM.isStackable = true
+ITEM.isGasmaskFilter = true
 ITEM.maxDurability = 100
-ITEM.price = 60
-
--- function ITEM:GetDescription()
--- 	return string.format("%s\n \n%s: %d / %d", L(self.description), L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability)
--- end
+ITEM.badAirProtection = true
+ITEM.isStackable = true
+ITEM.maxStack = 2
+ITEM.factions = {FACTION_MPF, FACTION_OTA, FACTION_CONSCRIPT}
 
 function ITEM:OnInstanced()
 	if (self:GetData("Durability") == nil) then
@@ -27,7 +26,6 @@ ITEM.functions.Use = {
 		if (!IsValid(client)) then return false end
 
 		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
 		local badair = ix.plugin.Get("badair")
 
 		if (!badair) then
@@ -64,7 +62,43 @@ ITEM.functions.Use = {
 		local invID = char:GetInventory():GetID()
 		local gearInvID = char:GetData("gearInvID")
 
-		return !IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))
+		return !item:GetData("equip") and (!IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID)))
+	end
+}
+
+ITEM.functions.Equip = {
+	name = "Equip",
+	tip = "equipTip",
+	icon = "icon16/tick.png",
+	OnRun = function(item)
+		local client = item.player or item:GetOwner()
+		item:SetData("equip", true)
+		client:EmitSound("items/ammopickup.wav")
+
+		return false
+	end,
+	OnCanRun = function(item)
+		local client = item.player or item:GetOwner()
+		local badair = ix.plugin.Get("badair")
+		return badair and !IsValid(item.entity) and !item:GetData("equip") and badair:CanEquipInternalFilter(client)
+	end
+}
+
+ITEM.functions.EquipUn = {
+	name = "Unequip",
+	tip = "equipTip",
+	icon = "icon16/cross.png",
+	OnRun = function(item)
+		local client = item.player or item:GetOwner()
+		item:SetData("equip", false)
+		client:EmitSound("items/ammopickup.wav")
+
+		return false
+	end,
+	OnCanRun = function(item)
+		local client = item.player or item:GetOwner()
+		local badair = ix.plugin.Get("badair")
+		return badair and !IsValid(item.entity) and item:GetData("equip") == true and badair:CanEquipInternalFilter(client)
 	end
 }
 
@@ -74,6 +108,13 @@ if (CLIENT) then
 		durability:SetBackgroundColor(derma.GetColor("Warning", tooltip))
 		durability:SetText(string.format("%s: %d / %d", L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
 		durability:SizeToContents()
+
+		if (self:GetData("equip")) then
+			local equipped = tooltip:AddRow("equipped")
+			equipped:SetBackgroundColor(derma.GetColor("Success", tooltip))
+			equipped:SetText(L("equipped"))
+			equipped:SizeToContents()
+		end
 
 		local data = tooltip:AddRow("data")
 		data:SetBackgroundColor(team.GetColor(FACTION_MPF))

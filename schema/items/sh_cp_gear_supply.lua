@@ -4,9 +4,11 @@ ITEM.model = Model("models/hls/alyxports/cardboard_box_1.mdl")
 ITEM.description = "cpGearSupplyDesc"
 ITEM.category = "Utility"
 ITEM.items = {
+	"metropolice",
 	"bag",
 	"cp_mask",
-	"gasmask_filter",
+	"overwatch_gasmask_filter",
+	"overwatch_gasmask_filter",
 	"cp_vest_mpf",
 	"stunstick",
 	"pistol",

@@ -155,5 +155,7 @@ LANGUAGE = {
 	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
 	recipeMeatChunkDesc = "Cook a meat chunk.",
 	recipePieDesc = "A large pie that can be shared among several people.",
+	
+	recipePurifiedWaterFilterLowDurability = "Your filter durability is too low. (Minimum 50 required)",
 }
 

@@ -258,4 +258,6 @@ LANGUAGE = {
 	recipeCrispsDesc = "감자를 얇게 썰어 기름에 튀겨 바삭한 감자칩을 만듭니다.",
 	["Boil Water"] = "물 끓이기",
 	recipeBoilWaterDesc = "더러운 물을 끓여서 마실 수 있는 상태로 만듭니다.",
+	
+	recipePurifiedWaterFilterLowDurability = "정화통의 내구도가 부족합니다. (최소 50 필요)",
 }

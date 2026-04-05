@@ -154,13 +154,26 @@ function PLUGIN:GetFilterTooltipText(item, client)
 	return string.format("%s (%d / %d)", L("filterInstalled", client), durability, maxDurability)
 end
 
+function PLUGIN:CharacterRequiresGasmaskFilter(character)
+	return self:CanEquipInternalFilter(character:GetPlayer() or character:GetInventory().owner)
+end
+
+function PLUGIN:CanEquipInternalFilter(client)
+	if (!IsValid(client)) then
+		return false
+	end
+
+	local faction = client:Team()
+	return faction == FACTION_OTA
+end
+
 function PLUGIN:GetFirstAvailableFilterItem(inventory)
 	if (!inventory) then
 		return nil
 	end
 
-	for _, filterItem in pairs(inventory:GetItemsByUniqueID("gasmask_filter", true) or {}) do
-		if ((tonumber(filterItem:GetData("Durability", filterItem.maxDurability or DEFAULT_FILTER_MAX_DURABILITY)) or 0) > 0) then
+	for _, filterItem in pairs(inventory:GetItems()) do
+		if (filterItem.isGasmaskFilter == true and (tonumber(filterItem:GetData("Durability", filterItem.maxDurability or DEFAULT_FILTER_MAX_DURABILITY)) or 0) > 0) then
 			return filterItem
 		end
 	end
@@ -197,7 +210,7 @@ function PLUGIN:GetFilterInstallTarget(character)
 end
 
 function PLUGIN:InstallFilterOnItem(item, filterItem)
-	if (!self:ItemRequiresGasmaskFilter(item) or !filterItem or filterItem.uniqueID != "gasmask_filter") then
+	if (!self:ItemRequiresGasmaskFilter(item) or !filterItem or filterItem.isGasmaskFilter != true) then
 		return false
 	end
 
@@ -217,6 +230,7 @@ function PLUGIN:InstallFilterOnItem(item, filterItem)
 
 	self:SetItemFilterInstalled(item, true)
 	self:SetItemFilterDurability(item, durability)
+	item:SetData("FilterID", filterItem.uniqueID)
 
 	return true
 end
@@ -227,18 +241,21 @@ function PLUGIN:RemoveFilterFromItem(item, inventory, client)
 	end
 
 	local durability = self:GetItemFilterDurability(item)
+	local filterID = item:GetData("FilterID", "gasmask_filter")
+	
 	self:SetItemFilterInstalled(item, false)
+	item:SetData("FilterID", nil)
 
 	local data = {
 		Durability = durability
 	}
 
-	if (inventory and inventory.Add and inventory:Add("gasmask_filter", 1, data)) then
+	if (inventory and inventory.Add and inventory:Add(filterID, 1, data)) then
 		return true
 	end
 
 	if (IsValid(client)) then
-		ix.item.Spawn("gasmask_filter", client, nil, Angle(0, 0, 0), data)
+		ix.item.Spawn(filterID, client, nil, Angle(0, 0, 0), data)
 		return true
 	end
 
@@ -310,6 +327,21 @@ function PLUGIN:TryProtectWithBadAirItem(client, item)
 		if (before > 0 and after <= 0) then
 			ix.chat.Send(client, "it", L("badairMaskDepleted", client), false, {client})
 		end
+	elseif (item.isGasmaskFilter) then
+		-- For items that are filters themselves (equipped by OTA)
+		local before = tonumber(item:GetData("Durability", item.maxDurability or DEFAULT_FILTER_MAX_DURABILITY)) or 0
+		local amount = (item.maxDurability or DEFAULT_FILTER_MAX_DURABILITY) / 600
+		local after = math.max(0, before - amount)
+
+		item:SetData("Durability", after)
+
+		if (before > 0 and after <= 0) then
+			ix.chat.Send(client, "it", L("badairMaskDepleted", client), false, {client})
+		end
+		
+		if (after <= 0) then
+			return false
+		end
 	end
 
 	return self:CanItemProtectFromBadAir(item)
@@ -357,7 +389,17 @@ if (!CLIENT) then
 										end
 									end
 								else
-									bIsProtected = true
+									local activeFilter = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+										return item.isGasmaskFilter == true
+									end)
+
+									if (activeFilter) then
+										bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeFilter)
+									elseif (PLUGIN:CharacterRequiresGasmaskFilter(char)) then
+										bIsProtected = false
+									else
+										bIsProtected = true
+									end
 									bCombineProtected = true
 								end
 							end

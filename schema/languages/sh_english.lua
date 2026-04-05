@@ -279,6 +279,7 @@ LANGUAGE = {
 	itemShotgunPartsDesc = "Includes core shotgun parts that are hard to make by hand.",
 	itemSMGPartsDesc = "Includes core SMG parts that are hard to make by hand.",
 	itemGasmaskFilterDesc = "A replacement filter for a gasmask.\nCan be used to replenish the durability of the gasmask completely.",
+	itemOverwatchGasmaskFilterDesc = "A high-capacity replacement filter for a gasmask used by Overwatch units.\nCan be used to replenish the durability of the gasmask completely.",
 	replaceFilter = "Replace Filter",
 	gasmaskFilterReplaced = "You have successfully replaced the filter on your gasmask.",
 	gasmaskNoNeedRepair = "You do not have a gasmask that needs a new filter.",
