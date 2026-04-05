@@ -363,44 +363,51 @@ else
 	local color_yellow = Color(224, 208, 117)
 	local color_red = Color(255, 50, 50, 255)
 
+	local MAX_LIGHT_DIST = 512 * 512
+
 	function ENT:Draw()
 		self:DrawModel()
+
+		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+		if (!self:TestPVS()) then
+			return
+		end
 
 		-- allow the light to draw while detonating so we can see the red flash
 		if (self:IsLockDisabled() and !self:GetDetonating()) then
 			return
 		end
 
-		local color = color_yellow
 		local bDisplayError = self:GetDisplayError()
-		local bLocked = self:GetLocked()
 		local bDetonating = self:GetDetonating()
 
-		if (bDisplayError) then
-			color = color_red
-		elseif (bDetonating) then
+		if (bDetonating and !bDisplayError) then
 			-- don't draw anything unless we're flashing red (which is handled by DisplayError)
 			return
-		elseif (bLocked) then
-			color = color_orange
 		end
 
+		local bLocked = self:GetLocked()
+		local color = bDisplayError and color_red or (bLocked and color_orange or color_yellow)
 		local position = self:GetPos() + self:GetUp() * -8.7 + self:GetForward() * -3.85 + self:GetRight() * -6
 
+		-- Point 2: Fake Light (Glow Sprite) - always draw so it's visible from a distance
 		render.SetMaterial(glowMaterial)
 		render.DrawSprite(position, 10, 10, color)
 
-		local dlight = DynamicLight(self:EntIndex())
+		-- Point 4: Performance - only create heavy dynamic light when the player is close
+		if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
+			local dlight = DynamicLight(self:EntIndex())
 
-		if (dlight) then
-			dlight.pos = position
-			dlight.r = color.r
-			dlight.g = color.g
-			dlight.b = color.b
-			dlight.brightness = 2
-			dlight.Decay = 1000
-			dlight.Size = bDisplayError and 128 or 64
-			dlight.DieTime = CurTime() + 0.1
+			if (dlight) then
+				dlight.pos = position
+				dlight.r = color.r
+				dlight.g = color.g
+				dlight.b = color.b
+				dlight.brightness = 2
+				dlight.Decay = 1000
+				dlight.Size = bDisplayError and 128 or 64
+				dlight.DieTime = CurTime() + 0.1
+			end
 		end
 	end
 end

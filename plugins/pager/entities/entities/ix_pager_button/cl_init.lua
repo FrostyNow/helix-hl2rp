@@ -2,22 +2,39 @@ include("shared.lua")
 
 ENT.PopulateEntityInfo = true
 
+local GLOW_MATERIAL = Material("sprites/glow04_noz")
+local MAX_LIGHT_DIST = 512 * 512
+
 function ENT:Draw()
 	self:DrawModel()
 
+	-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+	if (!self:TestPVS()) then
+		return
+	end
+
 	local bHasPairs = self:GetNetVar("hasPairs", false)
 	local color = bHasPairs and Color(0, 255, 0) or Color(255, 0, 0)
-	local dlight = DynamicLight(self:EntIndex())
+	local position = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 4
 
-	if (dlight) then
-		dlight.pos = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 4
-		dlight.r = color.r
-		dlight.g = color.g
-		dlight.b = color.b
-		dlight.brightness = 2
-		dlight.Decay = 1000
-		dlight.Size = 64
-		dlight.DieTime = CurTime() + 1
+	-- Point 2: Fake Light (Glow Sprite) - add visual light source visible from a distance
+	render.SetMaterial(GLOW_MATERIAL)
+	render.DrawSprite(position, 10, 10, color)
+
+	-- Point 4: Performance - only create heavy dynamic light when the player is close
+	if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
+		local dlight = DynamicLight(self:EntIndex())
+
+		if (dlight) then
+			dlight.pos = position
+			dlight.r = color.r
+			dlight.g = color.g
+			dlight.b = color.b
+			dlight.brightness = 2
+			dlight.Decay = 1000
+			dlight.Size = 64
+			dlight.DieTime = CurTime() + 0.1
+		end
 	end
 end
 

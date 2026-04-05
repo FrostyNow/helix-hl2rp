@@ -71,6 +71,9 @@ if (SERVER) then
 		return true
 	end
 else
+	local MAX_LIGHT_DIST = 1200 * 1200
+	local MAX_PARTICLE_DIST = 800 * 800
+
 	function ENT:Initialize()
 		self.emitter = ParticleEmitter(self:GetPos(), false)
 		self.nextParticle = CurTime()
@@ -86,18 +89,25 @@ else
 				self.loopsound:PlayEx(0.8, 100)
 			end
 
+			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+			if (!self:TestPVS()) then return end
+
 			local firepos = self:GetPos() + self:GetUp() * 10
-			local dlight = DynamicLight(self:EntIndex())
 			
-			if (dlight) then
-				dlight.Pos = firepos
-				dlight.r = 255
-				dlight.g = 100
-				dlight.b = 20
-				dlight.Brightness = 3
-				dlight.Size = 256
-				dlight.Decay = 1000
-				dlight.DieTime = CurTime() + 0.1
+			-- Point 4: Performance - only create heavy dynamic light when the player is close
+			if (EyePos():DistToSqr(firepos) <= MAX_LIGHT_DIST) then
+				local dlight = DynamicLight(self:EntIndex())
+				
+				if (dlight) then
+					dlight.Pos = firepos
+					dlight.r = 255
+					dlight.g = 100
+					dlight.b = 20
+					dlight.Brightness = 3
+					dlight.Size = 256
+					dlight.Decay = 1000
+					dlight.DieTime = CurTime() + 0.1
+				end
 			end
 		elseif (self.loopsound) then
 			self.loopsound:Stop()
@@ -110,10 +120,11 @@ else
 		self:DrawModel()
 	end
 
-	local GLOW_MATERIAL = Material("sprites/glow04_noz.vmt")
-
 	function ENT:DrawTranslucent()
 		if not self:GetNetVar("active") then return end
+
+		-- Point 3: PVS Check - skip expensive rendering if not in a potentially visible set
+		if (!self:TestPVS()) then return end
 		
 		if not IsValid(self.emitter) then
 			self.emitter = ParticleEmitter(self:GetPos(), false)
@@ -123,7 +134,8 @@ else
 		local up = self:GetUp()
 
 		-- Add particles
-		if (self.nextParticle < CurTime() and IsValid(self.emitter)) then
+		-- Point 4: Only emit particles when close enough to see them
+		if (self.nextParticle < CurTime() and IsValid(self.emitter) and EyePos():DistToSqr(firepos) <= MAX_PARTICLE_DIST) then
 			-- Main Fire
 			for i = 1, 3 do
 				local p = self.emitter:Add("particles/flamelet" .. math.random(1, 5), firepos + VectorRand() * 4)

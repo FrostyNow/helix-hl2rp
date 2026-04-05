@@ -123,14 +123,26 @@ function ENT:Draw()
 	self:DrawModel()
 end
 
+local MAX_LIGHT_DIST = 1000 * 1000
+
 function ENT:DrawTranslucent()
-	local plugin = ix.plugin.Get("interactive_computers")
-	local definition = plugin and plugin:GetComputerDefinition(self:GetClass())
-	if (!definition) then
+	-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+	if (!self:TestPVS()) then
+		return
+	end
+
+	-- Point 4: Performance - only create lighting when the player is close
+	if (EyePos():DistToSqr(self:GetPos()) > MAX_LIGHT_DIST) then
 		return
 	end
 
 	if (!self:GetNetVar("powered", false)) then
+		return
+	end
+
+	local plugin = ix.plugin.Get("interactive_computers")
+	local definition = plugin and plugin:GetComputerDefinition(self:GetClass())
+	if (!definition) then
 		return
 	end
 
@@ -150,9 +162,11 @@ function ENT:DrawTranslucent()
 	local position = self:GetPos() + self:GetUp() * 33 + self:GetForward() * 2 + self:GetRight() * 13
 	local color = Color(110, 255, 110)
 
+	-- Point 2: Fake Light (Glow Sprite) - visual light source visible within range
 	render.SetMaterial(GLOW_MATERIAL)
 	render.DrawSprite(position, 10, 10, color)
 
+	-- Level 1: Dynamic Light - illuminate surroundings when close
 	local dlight = DynamicLight(self:EntIndex())
 
 	ApplyScreenLight(dlight, position, self:GetForward(), CIVIC_LIGHT_COLOR, CIVIC_LIGHT_BRIGHTNESS, CIVIC_LIGHT_SIZE, 1200)

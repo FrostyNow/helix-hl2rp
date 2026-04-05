@@ -294,24 +294,35 @@ else
 		end
 	end
 
+	local MAX_LIGHT_DIST = 512 * 512
+
 	function ENT:DrawTranslucent()
+		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+		if (!self:TestPVS()) then
+			return
+		end
+
 		local position = self:GetPos() + self:GetForward() * 8 + self:GetUp() * 11 + self:GetRight() * 1
 		local color = self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE
 
+		-- Point 2: Fake Light (Glow Sprite) - always draw so it's visible from a distance
 		render.SetMaterial(GLOW_MATERIAL)
 		render.DrawSprite(position, 10, 10, color)
 
-		local dlight = DynamicLight(self:EntIndex())
+		-- Point 4: Performance - only create heavy dynamic light when the player is close
+		if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
+			local dlight = DynamicLight(self:EntIndex())
 
-		if (dlight) then
-			dlight.pos = position
-			dlight.r = color.r
-			dlight.g = color.g
-			dlight.b = color.b
-			dlight.brightness = 2
-			dlight.Decay = 1000
-			dlight.Size = 64
-			dlight.DieTime = CurTime() + 0.1
+			if (dlight) then
+				dlight.pos = position
+				dlight.r = color.r
+				dlight.g = color.g
+				dlight.b = color.b
+				dlight.brightness = 2
+				dlight.Decay = 1000
+				dlight.Size = 64
+				dlight.DieTime = CurTime() + 0.1
+			end
 		end
 	end
 

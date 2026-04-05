@@ -202,33 +202,43 @@ else
 	local ms = math.sin
 	local mc = math.cos
 	local GLOW_MATERIAL = Material("sprites/glow04_noz.vmt")
+	local MAX_LIGHT_DIST = 512 * 512
 	
 	function ENT:DrawTranslucent()
 		if (self.models) then
-			local rt = RealTime()
-			
-			-- Calculate distance-based alpha
-			local distance = LocalPlayer():GetPos():Distance(self:GetPos())
-			local distalpha = math.Clamp(255 - (distance / 512 * 255), 0, 255)
-			if (distalpha <= 0) then return end
+			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+			if (!self:TestPVS()) then
+				return
+			end
+
+			local position = self:GetPos()
+			local distSqr = EyePos():DistToSqr(position)
+
+			-- Point 4: Performance - only create lighting when the player is close
+			if (distSqr > MAX_LIGHT_DIST) then
+				return
+			end
 
 			local mdl = self.models.comlock
 			if (IsValid(mdl)) then
+				local rt = RealTime()
 				local pos = mdl:GetPos()
 				pos = pos + self:GetForward() * 5.4
 				pos = pos + self:GetUp() * -10.6
 				pos = pos + self:GetRight() * -3.8
 				
+				local distAlpha = math.Clamp(255 - (math.sqrt(distSqr) / 512 * 255), 0, 255)
 				local color = Color(255, 44, 44)
+
 				if (self:GetWashing()) then
 					local alpha = math.Clamp(math.abs(ms(6 * rt) + ms(14 * rt) + mc(22 * rt)) * 500, 0, 255)
 					color = Color(44, 255, 44)
 					render.SetMaterial(GLOW_MATERIAL)
-					render.DrawSprite(pos, 12, 12, Color(44, 255, 44, (alpha / 255) * distalpha))
+					render.DrawSprite(pos, 12, 12, Color(44, 255, 44, (alpha / 255) * distAlpha))
 				else
 					local alpha = math.Clamp(math.abs(ms(2 * rt)) * 255, 0, 255)
 					render.SetMaterial(GLOW_MATERIAL)
-                    render.DrawSprite(pos, 12, 12, Color(255, 44, 44, (alpha / 255) * distalpha))
+                    render.DrawSprite(pos, 12, 12, Color(255, 44, 44, (alpha / 255) * distAlpha))
 				end
 
 				local dlight = DynamicLight(self:EntIndex())

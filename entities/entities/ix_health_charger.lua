@@ -347,7 +347,14 @@ else
 	local COLOR_ACTIVE = Color(0, 255, 255, 50)
 	local COLOR_INACTIVE = Color(255, 0, 0, 50)
 
+	local MAX_LIGHT_DIST = 512 * 512
+
 	function ENT:DrawTranslucent()
+		-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+		if (!self:TestPVS()) then
+			return
+		end
+
 		local ft = FrameTime()
 		local idxHealth = self:LookupBone("healthbar")
 		local idxSpinner = self:LookupBone("roundcap")
@@ -359,7 +366,7 @@ else
 		end
 
 		self.smoothUsed = math.Approach(self.smoothUsed, self:GetUsed(), ft * (self.restoreRate + self.restoreCost) * 2)
-		
+
 		if (idxSpinner and idxSpinner != -1) then
 			self:ManipulateBoneAngles(idxSpinner, Angle(0, self.smoothUsed * 250, 0))
 			self:ManipulateBonePosition(idxSpinner, Vector(0, 0, -4 * self.smoothUsed))
@@ -372,20 +379,24 @@ else
 		local position = self:GetPos() + self:GetForward() * 7.5 + self:GetUp() * -0.5 + self:GetRight() * 2.5
 		local color = self:GetUsed() >= 1 and COLOR_INACTIVE or COLOR_ACTIVE
 
+		-- Point 2: Fake Light (Glow Sprite) - always draw so it's visible from a distance
 		render.SetMaterial(GLOW_MATERIAL)
 		render.DrawSprite(position, 10, 10, color)
 
-		local dlight = DynamicLight(self:EntIndex())
+		-- Point 4: Performance - only create heavy dynamic light when the player is close
+		if (EyePos():DistToSqr(position) <= MAX_LIGHT_DIST) then
+			local dlight = DynamicLight(self:EntIndex())
 
-		if (dlight) then
-			dlight.pos = position
-			dlight.r = color.r
-			dlight.g = color.g
-			dlight.b = color.b
-			dlight.brightness = 2
-			dlight.Decay = 1000
-			dlight.Size = 64
-			dlight.DieTime = CurTime() + 0.1
+			if (dlight) then
+				dlight.pos = position
+				dlight.r = color.r
+				dlight.g = color.g
+				dlight.b = color.b
+				dlight.brightness = 2
+				dlight.Decay = 1000
+				dlight.Size = 64
+				dlight.DieTime = CurTime() + 0.1
+			end
 		end
 	end
 

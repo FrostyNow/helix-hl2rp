@@ -34,6 +34,9 @@ if (SERVER) then
 		end
 	end
 else
+	local MAX_LIGHT_DIST = 800 * 800
+	local MAX_PARTICLE_DIST = 500 * 500
+
 	function ENT:Initialize()
 		self.emitter = ParticleEmitter(self:GetPos())
 		self.emittime = CurTime()
@@ -47,6 +50,25 @@ else
 				self.loopsound:PlayEx(0.8, 100)
 			elseif (!self.loopsound:IsPlaying()) then
 				self.loopsound:PlayEx(0.8, 100)
+			end
+
+			-- Point 3: PVS Check - skip lighting if the entity is not in a potentially visible set
+			if (!self:TestPVS()) then return end
+
+			-- Point 4: Performance - only create heavy dynamic light when the player is close
+			if (EyePos():DistToSqr(self:GetPos()) <= MAX_LIGHT_DIST) then
+				local dlight = DynamicLight(self:EntIndex())
+				
+				if (dlight) then
+					dlight.pos = self:GetPos() + self:GetUp() * 20 + self:GetRight() * 11 + self:GetForward() * 3
+					dlight.r = 255
+					dlight.g = 162
+					dlight.b = 76
+					dlight.brightness = 2
+					dlight.Decay = 1000
+					dlight.Size = 128
+					dlight.DieTime = CurTime() + 0.1
+				end
 			end
 		elseif (self.loopsound) then
 			self.loopsound:Stop()
@@ -70,12 +92,18 @@ else
 		self:DrawModel()
 		
 		if self:GetNetVar("active") then
+			-- Point 3: PVS Check - skip expensive rendering if not in a potentially visible set
+			if (!self:TestPVS()) then return end
+
 			local position = self:GetPos() + (self:GetUp() * 20) + (self:GetRight() * 11) + (self:GetForward() * 3)
 			local size = 20 + math.sin(RealTime() * 15) * 5
+			
+			-- Level 2: Glow Sprite - visible light source
 			render.SetMaterial(GLOW_MATERIAL)
 			render.DrawSprite(position, size, size, Color(255, 162, 76, 255))
 			
-			if (self.emittime < CurTime()) then
+			-- Level 1: Particles - extra detail when close
+			if (self.emittime < CurTime() and EyePos():DistToSqr(position) <= MAX_PARTICLE_DIST) then
 				if (!IsValid(self.emitter)) then
 					self.emitter = ParticleEmitter(self:GetPos())
 				end
