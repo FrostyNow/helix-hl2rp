@@ -1,15 +1,14 @@
-RECIPE.name = "Headcrab Soup"
-RECIPE.description = "recipeHeadcrabSoupDesc"
+RECIPE.name = "Potato Chips"
+RECIPE.description = "recipeCrispsDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/props_lab/headcrabprepbowl.mdl"
+RECIPE.model = "models/griim/foodpack/crisps_packet.mdl"
 RECIPE.requirements = {
-	["headcrab"] = 1,
-	["cabbage"] = {amount = 1, substitutes = {["carrot"] = 1, ["onion"] = 1, ["corn"] = 1, ["tomato"] = 1}},
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1, ["water_boiled"] = 1}},
-	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
+	["potato"] = 1,
+	["vegetable_oil"] = 1,
+	["pan"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pot"] = 1}}
 }
 RECIPE.results = {
-	["headcrab_soup"] = 1
+	["crisps_generic"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

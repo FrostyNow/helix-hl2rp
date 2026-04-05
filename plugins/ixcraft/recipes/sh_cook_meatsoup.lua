@@ -5,11 +5,11 @@ RECIPE.model = "models/mosi/fallout4/props/food/squirrelsoup.mdl"
 RECIPE.requirements = {
 	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1, ["meat_chunk"] = 1}},
 	["cabbage"] = {amount = 1, substitutes = {["carrot"] = 1, ["onion"] = 1, ["corn"] = 1, ["tomato"] = 1, ["misc_dried_vegetable"] = 1}},
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1}},
+	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water_boiled"] = 1, ["water"] = 1, ["mineral_water"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {
-	["meat_soup"] = 1
+	["meat_soup"] = 3
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

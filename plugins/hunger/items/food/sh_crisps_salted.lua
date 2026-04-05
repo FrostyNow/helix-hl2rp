@@ -1,0 +1,9 @@
+ITEM.name = "Ready Salted Crisps"
+ITEM.model = "models/griim/foodpack/crisps_readysalted.mdl"
+ITEM.description = "itemCrispsSaltedDesc"
+ITEM.hunger = 20
+ITEM.price = 30
+ITEM.thirst = -5
+ITEM.heal = 2
+ITEM.sound = "interface/inv_eat_paperwrap.ogg"
+ITEM.classes = nil

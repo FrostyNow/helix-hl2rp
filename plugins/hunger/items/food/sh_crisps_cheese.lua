@@ -1,0 +1,9 @@
+ITEM.name = "Cheese & Onion Crisps"
+ITEM.model = "models/griim/foodpack/crisps_cheeseandonion.mdl"
+ITEM.description = "itemCrispsCheeseDesc"
+ITEM.hunger = 40
+ITEM.price = 60
+ITEM.thirst = -5
+ITEM.heal = 2
+ITEM.sound = "interface/inv_eat_paperwrap.ogg"
+ITEM.classes = nil

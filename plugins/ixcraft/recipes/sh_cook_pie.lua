@@ -1,15 +1,16 @@
-RECIPE.name = "Headcrab Soup"
-RECIPE.description = "recipeHeadcrabSoupDesc"
+RECIPE.name = "Pie"
+RECIPE.description = "recipePieDesc"
 RECIPE.category = "Food"
-RECIPE.model = "models/props_lab/headcrabprepbowl.mdl"
+RECIPE.model = "models/griim/foodpack/pie.mdl"
 RECIPE.requirements = {
-	["headcrab"] = 1,
-	["cabbage"] = {amount = 1, substitutes = {["carrot"] = 1, ["onion"] = 1, ["corn"] = 1, ["tomato"] = 1}},
+	["dough"] = 1,
+	["meat_chunk"] = {amount = 1, substitutes = {["bacon"] = 1, ["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["antlion_meat"] = 1, ["chicken_roast"] = 1}},
+	["onion"] = {amount = 1, substitutes = {["apple"] = 1, ["carrot"] = 1, ["cabbage"] = 1, ["tomato"] = 1, ["zucchini"] = 1}},
 	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1, ["water_boiled"] = 1}},
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {
-	["headcrab_soup"] = 1
+	["pie"] = 1
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

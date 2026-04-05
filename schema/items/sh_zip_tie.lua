@@ -15,6 +15,7 @@ ITEM.functions.Use = {
 			data.filter = client
 		local entity = util.TraceLine(data).Entity
 		local target = (IsValid(entity) and entity:GetClass() == "prop_ragdoll") and entity:GetNetVar("player") or entity
+		local bIsCorpse = IsValid(entity) and entity:GetClass() == "prop_ragdoll"
 
 		if (IsValid(target) and target:IsPlayer() and target:GetCharacter()
 		and !target:GetNetVar("tying") and !target:IsRestricted()) then
@@ -46,6 +47,23 @@ ITEM.functions.Use = {
 
 			target:SetNetVar("tying", true)
 			target:SetAction("@fBeingTied", 5)
+		elseif (bIsCorpse and !entity:GetNetVar("ixRestricted")) then
+			itemTable.bBeingUsed = true
+
+			client:SetAction("@tying", 5)
+
+			client:DoStaredAction(entity, function()
+				entity:SetNetVar("ixRestricted", true)
+
+				if (IsValid(target) and target:IsPlayer()) then
+					target:SetRestricted(true)
+				end
+
+				itemTable:Remove()
+			end, 5, function()
+				client:SetAction()
+				itemTable.bBeingUsed = false
+			end)
 		else
 			itemTable.player:NotifyLocalized("plyNotValid")
 		end

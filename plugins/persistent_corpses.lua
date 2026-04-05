@@ -112,8 +112,24 @@ if (CLIENT) then
 					end
 				end
 
+				if (this:GetNetVar("ixRestricted")) then
+					options[L"unTying"] = function()
+						return true
+					end
+				end
+
 				return options
 			end
+		end
+	end
+
+	function PLUGIN:PopulateEntityInfo(entity, tooltip)
+		if (entity:GetClass() == "prop_ragdoll" and entity:GetNetVar("ixRestricted")) then
+			local panel = tooltip:AddRow("ziptie")
+			panel:SetBackgroundColor(derma.GetColor("Warning", tooltip))
+			panel:SetText(L("tiedUp"))
+			panel:SetFont("ixMediumFont")
+			panel:SizeToContents()
 		end
 	end
 end
@@ -503,13 +519,59 @@ if (SERVER) then
 				end
 
 				entity.ixIsReviving = true
+				local bRestricted = entity:GetNetVar("ixRestricted")
 
 				target:Spawn()
 				timer.Simple(0, function()
 					if (IsValid(target)) then
-						target:SetPos(pos)
+						local revivePos = pos
+						local playerMins = target:OBBMins()
+						local playerMaxs = target:OBBMaxs()
+
+						-- Helper function to check if a position is safe for a player
+						local function IsSafe(checkPos)
+							local trace = {
+								start = checkPos,
+								endpos = checkPos,
+								filter = {client, target, entity},
+								mins = playerMins,
+								maxs = playerMaxs,
+								mask = MASK_PLAYERSOLID
+							}
+							return !util.TraceEntity(trace, target).StartSolid
+						end
+
+						-- If the current position is not safe, look for the nearest empty space
+						if (!IsSafe(revivePos)) then
+							local found = false
+							-- Try searching in a circle around the corpse
+							for i = 1, 3 do
+								local distance = i * 32
+								for j = 0, 7 do
+									local ang = j * 45
+									local rad = math.rad(ang)
+									local offset = Vector(math.cos(rad) * distance, math.sin(rad) * distance, 8)
+									local testPos = pos + offset
+
+									if (IsSafe(testPos)) then
+										revivePos = testPos
+										found = true
+										break
+									end
+								end
+								if (found) then break end
+							end
+						else
+							revivePos = revivePos + Vector(0, 0, 8)
+						end
+
+						target:SetPos(revivePos)
 						target:SetEyeAngles(Angle(0, angles.y, 0))
 						target:SetHealth(amount)
+
+						if (bRestricted) then
+							target:SetRestricted(true)
+						end
 					end
 				end)
 
@@ -537,6 +599,7 @@ if (SERVER) then
 
 		local isSearch = (option == L("searchCorpse", client))
 		local isRevive = (option == L("revive", client))
+		local isUntie = (option == L("unTying", client))
 
 		if (invID and isSearch) then
 			local inventory = ix.item.inventories[invID]
@@ -579,6 +642,20 @@ if (SERVER) then
 			end
 		elseif (isRevive) then
 			self:StartCorpseRevive(client, entity)
+		elseif (isUntie) then
+			if (!client:IsRestricted() and entity:GetNetVar("ixRestricted")) then
+				client:SetAction("@unTying", 5)
+				client:DoStaredAction(entity, function()
+					entity:SetNetVar("ixRestricted", false)
+					if (IsValid(target) and target:IsPlayer()) then
+						target:SetRestricted(false)
+					end
+				end, 5, function()
+					if (IsValid(client)) then
+						client:SetAction()
+					end
+				end)
+			end
 		end
 	end
 
@@ -604,6 +681,14 @@ if (SERVER) then
 				end
 				if (IsValid(ragdoll)) then
 					ragdoll.ixIsReviving = true
+
+					if (ragdoll:GetNetVar("ixRestricted")) then
+						timer.Simple(0, function()
+							if (IsValid(target)) then
+								target:SetRestricted(true)
+							end
+						end)
+					end
 				end
 				return oldOnRun(self, client, target)
 			end

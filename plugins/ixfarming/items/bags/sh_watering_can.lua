@@ -14,6 +14,7 @@ ITEM.waterItems = {
 	["water_purified"] = {isClean = true},
 	["water_purified_bottle"] = {isClean = true},
 	["mineral_water"] = {isClean = true},
+	["water_boiled"] = {isClean = true},
 	["water_dirty"] = {isClean = false},
 	["water_dirty_bottle"] = {isClean = false},
 	["water_dirty_can"] = {isClean = false},

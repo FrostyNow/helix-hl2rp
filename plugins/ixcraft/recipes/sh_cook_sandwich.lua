@@ -8,7 +8,7 @@ RECIPE.requirements = {
 	["bacon"] = {amount = 1, substitutes = {["steak"] = 1, ["sausage"] = 1, ["fish"] = 1, ["headcrab"] = 1, ["antlion_meat"] = 1, ["chicken_roast"] = 1, ["meat_chunk"] = 1}}
 }
 RECIPE.results = {
-	["sandwich"] = 1
+	["sandwich"] = 2
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}

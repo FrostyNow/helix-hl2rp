@@ -24,4 +24,10 @@ LANGUAGE = {
 	["Intelligence"] = "지능",
 	isBleeding = "피를 흘리고 있습니다.",
 	isFractured = "다리를 절뚝입니다.",
+	startBleeding1 = "갑작스러운 충격과 함께 상처 부위에서 선혈이 배어 나오기 시작합니다.",
+	startBleeding2 = "따끔한 고통과 함께 상처에서 뜨거운 액체가 흘러내리는 것이 느껴집니다.",
+	startBleeding3 = "옷가지가 붉게 물들기 시작하며, 상처 부위에서 피가 쏟아져 나옵니다.",
+	startFracture1 = "둔탁한 파열음과 함께 다리에 극심한 고통이 몰려옵니다.",
+	startFracture2 = "무언가 부러지는 소리가 들리며 다리에 도저히 견딜 수 없는 통증이 느껴집니다.",
+	startFracture3 = "다리에서 느껴지는 기분 나쁜 감각과 함께, 뼈가 어긋난 것 같은 고통이 전해집니다.",
 }

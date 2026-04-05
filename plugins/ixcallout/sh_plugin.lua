@@ -35,7 +35,8 @@ ix.lang.AddTable("korean", {
 })
 
 ix.option.Add("ixCalloutClientEnabled", ix.type.bool, true, {
-	category = "Helix Callout"
+	category = "Helix Callout",
+	bNetworked = true
 })
 
 ix.config.Add("ixCalloutEnabled", true, "Whether or not the automatic callout system is enabled.", nil, {

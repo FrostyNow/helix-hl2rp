@@ -838,7 +838,7 @@ function PANEL:CycleHistory(direction)
 	self.suppressTyping = false
 end
 
-function PANEL:SubmitSave()
+function PANEL:SubmitSave(bSilent)
 	if (!IsValid(self.entity)) then
 		self:Close()
 		return
@@ -850,7 +850,9 @@ function PANEL:SubmitSave()
 		netstream.Start("ixInteractiveComputerSave", self.entity, self.data)
 	end
 
-	self:AppendConsole("SAVE REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+	if (!bSilent) then
+		self:AppendConsole("SAVE REQUEST TRANSMITTED.", COLOR_DOS_DIM)
+	end
 end
 
 function PANEL:SelectCategory(index)
@@ -1044,6 +1046,7 @@ function PANEL:RunCommand(rawText)
 			}
 		}
 		self:SelectEntry(#category.entries)
+		self:SubmitSave(true)
 		self:AppendConsole("ENTRY CREATED: " .. title, COLOR_DOS_DIM)
 		return
 	end
@@ -1063,6 +1066,7 @@ function PANEL:RunCommand(rawText)
 		table.remove(category.entries, self.selectedEntry)
 		self.selectedEntry = math.Clamp(self.selectedEntry, 1, #category.entries)
 		self:UpdatePrompt()
+		self:SubmitSave(true)
 		self:AppendConsole("ENTRY REMOVED: " .. removedTitle, COLOR_DOS_DIM)
 		return
 	end
@@ -1082,6 +1086,7 @@ function PANEL:RunCommand(rawText)
 		entry.title = title
 		entry.updatedAt = os.time()
 		self:UpdatePrompt()
+		self:SubmitSave(true)
 		self:AppendConsole("TITLE UPDATED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1098,6 +1103,7 @@ function PANEL:RunCommand(rawText)
 		end
 
 		entry.author = string.sub(string.Trim(remainder), 1, PLUGIN.maxAuthorLength)
+		self:SubmitSave(true)
 		self:AppendConsole("AUTHOR UPDATED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1121,6 +1127,7 @@ function PANEL:RunCommand(rawText)
 
 		entry.body = string.sub(newBody .. string.gsub(appendedLine, "\r", ""), 1, PLUGIN.maxEntryBodyLength)
 		entry.updatedAt = os.time()
+		self:SubmitSave(true)
 		self:AppendConsole("BODY APPENDED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1143,6 +1150,7 @@ function PANEL:RunCommand(rawText)
 			lines[#lines + 1] = line
 		end
 		self:SetEntryLines(lines, entry)
+		self:SubmitSave(true)
 		self:AppendConsole("BODY PREPENDED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1161,6 +1169,7 @@ function PANEL:RunCommand(rawText)
 
 		table.remove(lines, #lines)
 		self:SetEntryLines(lines, entry)
+		self:SubmitSave(true)
 		self:AppendConsole("LAST LINE REMOVED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1180,6 +1189,7 @@ function PANEL:RunCommand(rawText)
 
 		table.remove(lines, lineNumber)
 		self:SetEntryLines(lines, entry)
+		self:SubmitSave(true)
 		self:AppendConsole("LINE REMOVED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1200,6 +1210,7 @@ function PANEL:RunCommand(rawText)
 
 		lines[lineNumber] = replacement
 		self:SetEntryLines(lines, entry)
+		self:SubmitSave(true)
 		self:AppendConsole("LINE REVISED.", COLOR_DOS_DIM)
 		return
 	end
@@ -1212,6 +1223,7 @@ function PANEL:RunCommand(rawText)
 
 		entry.body = ""
 		entry.updatedAt = os.time()
+		self:SubmitSave(true)
 		self:AppendConsole("BODY CLEARED.", COLOR_DOS_DIM)
 		return
 	end

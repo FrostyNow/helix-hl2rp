@@ -1,0 +1,9 @@
+ITEM.name = "Crisp Packet"
+ITEM.model = "models/griim/foodpack/crisps_packet.mdl"
+ITEM.description = "itemCrispsGenericDesc"
+ITEM.hunger = 15
+ITEM.price = 25
+ITEM.thirst = -5
+ITEM.heal = 2
+ITEM.sound = "interface/inv_eat_paperwrap.ogg"
+ITEM.classes = nil

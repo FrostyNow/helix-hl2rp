@@ -299,7 +299,48 @@ ix.command.Add("Revive", {
 
 		timer.Simple(0, function()
 			if (IsValid(target)) then
-				target:SetPos(pos)
+				local revivePos = pos
+				local playerMins = target:OBBMins()
+				local playerMaxs = target:OBBMaxs()
+
+				-- Helper function to check if a position is safe for a player
+				local function IsSafe(checkPos)
+					local trace = {
+						start = checkPos,
+						endpos = checkPos,
+						filter = {client, target, ragdoll},
+						mins = playerMins,
+						maxs = playerMaxs,
+						mask = MASK_PLAYERSOLID
+					}
+					return !util.TraceEntity(trace, target).StartSolid
+				end
+
+				-- If the current position is not safe, look for the nearest empty space
+				if (!IsSafe(revivePos)) then
+					local found = false
+					-- Try searching in a circle around the original position
+					for i = 1, 3 do
+						local distance = i * 32
+						for j = 0, 7 do
+							local ang = j * 45
+							local rad = math.rad(ang)
+							local offset = Vector(math.cos(rad) * distance, math.sin(rad) * distance, 8)
+							local testPos = pos + offset
+
+							if (IsSafe(testPos)) then
+								revivePos = testPos
+								found = true
+								break
+							end
+						end
+						if (found) then break end
+					end
+				else
+					revivePos = revivePos + Vector(0, 0, 8)
+				end
+
+				target:SetPos(revivePos)
 				target:SetEyeAngles(Angle(0, angles.y, 0))
 
 				if (target.ixDeathAmmo) then

@@ -14,4 +14,10 @@ LANGUAGE = {
 	medkitDesc = "A red cloth bag with a white cross on it, containing emergency medical supplies such as bandages and forceps.",
 	isBleeding = "Bleeding",
 	isFractured = "Limping",
+	startBleeding1 = "Blood begins to seep from the wound with a sudden impact.",
+	startBleeding2 = "A sharp sting is followed by the sensation of warm liquid flowing from your wound.",
+	startBleeding3 = "Your clothes begin to stain crimson as blood starts to pour from the injury.",
+	startFracture1 = "A sharp cracking sound is followed by an intense wave of pain in your leg.",
+	startFracture2 = "You hear a sickening snap, and an unbearable pain surges through your leg.",
+	startFracture3 = "An agonizing sensation tells you that something in your leg has given way, making it impossible to stand properly.",
 }

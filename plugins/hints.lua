@@ -194,10 +194,10 @@ if (ix.plugin.Get("apply")) then
 end
 
 if (ix.plugin.Get("leech")) then
-	ix.hints.Register("leech")
+	ix.hints.Register("hintLeech")
 	
 	if (ix.plugin.Get("fishing")) then
-		ix.hints.Register("fishing")
+		ix.hints.Register("hintFishing")
 	end
 end
 

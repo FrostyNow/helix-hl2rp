@@ -22,20 +22,5 @@ models/hls/alyxports/monitor_medium.mdl
 라이터
 models/hls/alyxports/tabletop_lighter.mdl
 
-조롱박
-models/mosi/fallout4/props/food/gourd.mdl
-
-고깃덩이
-models/mosi/fnv/props/food/yoaguaimeat.mdl
-
 담배자판기
 models/props_downtown/cigarettemachine.mdl
-
-파이
-models/griim/foodpack/pie.mdl
-
-감자칩
-models/griim/foodpack/crisps_cheeseandonion.mdl
-models/griim/foodpack/crisps_packet.mdl
-models/griim/foodpack/crisps_readysalted.mdl
-models/griim/foodpack/crisps_saltandvinegar.mdl

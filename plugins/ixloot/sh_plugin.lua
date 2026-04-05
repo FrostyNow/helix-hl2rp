@@ -194,6 +194,7 @@ PLUGIN.randomLoot.rare = {
 	"flare",
 	"shovel",
 	"lottery_box",
+	"pager",
 }
 
 ix.util.Include("sv_plugin.lua")

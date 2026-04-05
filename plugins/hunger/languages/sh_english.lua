@@ -77,6 +77,13 @@ LANGUAGE = {
 	itemStewLargeDesc = "A large-capacity mixed stew made with plenty of ingredients in a big pot. Enough for several people to share.",
 	itemGlassCleanerDesc = "A cleaner for glass.",
 	itemMeatChunkDesc = "A tough and not very tasty chunk of meat.",
+	itemCrispsCheeseDesc = "A small bag of cheese and onion flavored potato chips.",
+	itemBoiledWaterDesc = "Dirty water that has been boiled and filtered to remove most toxins and parasites. It's not as pure as purified water, but it's safe to drink.",
+	itemCrispsGenericDesc = "Thinly sliced potatoes fried in oil until crispy.",
+	itemCrispsSaltedDesc = "A small bag of lightly salted potato chips.",
+	itemCrispsVinegarDesc = "A small bag of salt and vinegar flavored potato chips.",
+	itemPieDesc = "A crunchy, well-ripened pie.",
+	recipePieDesc = "A large pie that can be shared among several people.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

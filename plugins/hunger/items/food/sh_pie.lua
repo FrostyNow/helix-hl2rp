@@ -1,0 +1,10 @@
+ITEM.name = "Pie"
+ITEM.model = "models/griim/foodpack/pie.mdl"
+ITEM.description = "itemPieDesc"
+ITEM.hunger = 30
+ITEM.thirst = -10
+ITEM.price = 60
+ITEM.heal = 10
+ITEM.cookable = true
+ITEM.usenum = 4
+ITEM.classes = nil

@@ -253,4 +253,7 @@ LANGUAGE = {
 	recipeStewLargeDesc = "커다란 냄비에 온갖 재료를 쏟아붓고 끓여내어 대용량의 섞어찌개를 만듭니다.",
 	recipeSandwichDesc = "빵 사이에 야채와 고기를 끼워 넣어 샌드위치를 요리합니다.",
 	recipeMeatChunkDesc = "고깃조각을 요리합니다.",
+	recipePieDesc = "여러 명이 나누어 먹을 수 있는 큼지막한 파이입니다.",
+	recipeCrispsDesc = "감자를 얇게 썰어 기름에 튀겨 바삭한 감자칩을 만듭니다.",
+	recipeBoilWaterDesc = "더러운 물을 끓여서 마실 수 있는 상태로 만듭니다.",
 }

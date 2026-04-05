@@ -139,6 +139,8 @@ LANGUAGE = {
 	recipeBlueCheeseDesc = "Make blue cheese from milk.",
 	recipeCheeseCakeDesc = "Bake a cheese cake.",
 	recipeOnionRingsDesc = "Fry onion rings.",
+	recipeCrispsDesc = "Thinly slice potatoes and fry them in oil to make crispy potato chips.",
+	recipeBoilWaterDesc = "Boil dirty water to make it safe for consumption.",
 	recipeTeaDesc = "Make some tea.",
 	recipeCoffeeDesc = "Make some coffee.",
 	recipeSteakDesc = "Cook a steak from meat.",
@@ -152,4 +154,10 @@ LANGUAGE = {
 	recipeSandwichDesc = "Cook a sandwich by putting vegetables and meat between pieces of bread.",
 	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
 	recipeMeatChunkDesc = "Cook a meat chunk.",
+	recipePieDesc = "A large pie that can be shared among several people.",
+
+	["Potato Chips"] = "Potato Chips",
+	["Cheese & Onion Crisps"] = "Cheese & Onion Crisps",
+	["Ready Salted Crisps"] = "Ready Salted Crisps",
+	["Salt & Vinegar Crisps"] = "Salt & Vinegar Crisps",
 }

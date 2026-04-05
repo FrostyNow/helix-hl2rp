@@ -4,6 +4,7 @@ ITEM.description = "itemVegetableSoupDesc"
 ITEM.hunger = 27
 ITEM.thirst = 15
 ITEM.price = 15
+ITEM.usenum = 2
 ITEM.heal = 5
 ITEM.cookable = true
 ITEM.classes = nil

@@ -4,7 +4,7 @@ RECIPE.category = "Food"
 RECIPE.model = "models/tea/teacup.mdl"
 RECIPE.requirements = {
 	["misc_dried_tea"] = 1,
-	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1}},
+	["water_purified"] = {amount = 1, substitutes = {["water_purified_bottle"] = 1, ["water"] = 1, ["mineral_water"] = 1, ["water_boiled"] = 1}},
 	["misc_tool_coffeepot"] = {amount = 1, preserve = true, substitutes = {["pot"] = 1}},
 	["tea_empty"] = 1
 }
