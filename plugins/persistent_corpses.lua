@@ -299,6 +299,10 @@ if (SERVER) then
 		entity:SetNetVar("player", client)
 		entity.ShowPlayerInteraction = true
 
+		if (client:IsRestricted()) then
+			entity:SetNetVar("ixRestricted", true)
+		end
+
 		if (client:IsAdmin()) then
 			return
 		end
@@ -521,6 +525,7 @@ if (SERVER) then
 				entity.ixIsReviving = true
 				local bRestricted = entity:GetNetVar("ixRestricted")
 
+				target.ixIsReviving = true
 				target:Spawn()
 				timer.Simple(0, function()
 					if (IsValid(target)) then
@@ -683,6 +688,7 @@ if (SERVER) then
 					ragdoll.ixIsReviving = true
 
 					if (ragdoll:GetNetVar("ixRestricted")) then
+						target.ixIsReviving = true
 						timer.Simple(0, function()
 							if (IsValid(target)) then
 								target:SetRestricted(true)

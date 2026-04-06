@@ -227,14 +227,18 @@ if (SERVER) then
 		container:SetDisplayName(L("gearDumpContainerName", targetPly, targetPly:Nick()))
 
 		local targetCharID = charID
-		local oldUse = container.Use
+		local oldUse = container:GetTable().Use
 		container.Use = function(self, activator)
 			local actChar = activator:GetCharacter()
+
 			if (!actChar or actChar:GetID() != targetCharID) then
 				activator:NotifyLocalized("gearDumpNotOwner")
 				return
 			end
-			if (oldUse) then oldUse(self, activator) end
+
+			if (isfunction(oldUse)) then
+				oldUse(self, activator)
+			end
 		end
 
 		local containerEntID = container:EntIndex()

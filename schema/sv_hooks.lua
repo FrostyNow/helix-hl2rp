@@ -75,6 +75,11 @@ function Schema:PlayerUseDoor(client, door)
 end
 
 function Schema:PlayerLoadout(client)
+	if (client.ixIsReviving) then
+		client.ixIsReviving = nil
+		return
+	end
+
 	client:SetNetVar("restricted")
 end
 

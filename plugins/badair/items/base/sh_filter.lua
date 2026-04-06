@@ -11,6 +11,15 @@ ITEM.isStackable = true
 ITEM.maxStack = 2
 ITEM.factions = {FACTION_MPF, FACTION_OTA, FACTION_CONSCRIPT}
 
+if (CLIENT) then
+	function ITEM:PaintOver(item, w, h)
+		if (item:GetData("equip")) then
+			surface.SetDrawColor(110, 255, 110, 100)
+			surface.DrawRect(w - 14, h - 14, 8, 8)
+		end
+	end
+end
+
 function ITEM:OnInstanced()
 	if (self:GetData("Durability") == nil) then
 		self:SetData("Durability", self.maxDurability)
@@ -61,19 +70,22 @@ ITEM.functions.Use = {
 		local char = client:GetCharacter()
 		local invID = char:GetInventory():GetID()
 		local gearInvID = char:GetData("gearInvID")
+		local badair = ix.plugin.Get("badair")
 
-		return !item:GetData("equip") and (!IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID)))
+		return !item:GetData("equip") and (!IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))) and not badair:CanEquipInternalFilter(client)
 	end
 }
 
 ITEM.functions.Equip = {
-	name = "Equip",
-	tip = "equipTip",
-	icon = "icon16/tick.png",
+	name = "installFilter",
+	tip = "useTip",
+	icon = "icon16/wrench.png",
 	OnRun = function(item)
 		local client = item.player or item:GetOwner()
 		item:SetData("equip", true)
-		client:EmitSound("items/ammopickup.wav")
+		client:EmitSound("weapons/usp/usp_silencer_on.wav")
+
+		hook.Run("OnItemEquipped", item, client)
 
 		return false
 	end,
@@ -85,13 +97,15 @@ ITEM.functions.Equip = {
 }
 
 ITEM.functions.EquipUn = {
-	name = "Unequip",
-	tip = "equipTip",
-	icon = "icon16/cross.png",
+	name = "removeFilter",
+	tip = "useTip",
+	icon = "icon16/delete.png",
 	OnRun = function(item)
 		local client = item.player or item:GetOwner()
 		item:SetData("equip", false)
-		client:EmitSound("items/ammopickup.wav")
+		client:EmitSound("weapons/usp/usp_silencer_off.wav")
+
+		hook.Run("OnItemUnequipped", item, client)
 
 		return false
 	end,
@@ -108,13 +122,6 @@ if (CLIENT) then
 		durability:SetBackgroundColor(derma.GetColor("Warning", tooltip))
 		durability:SetText(string.format("%s: %d / %d", L("Filter Durability"), math.floor(self:GetData("Durability", self.maxDurability)), self.maxDurability))
 		durability:SizeToContents()
-
-		if (self:GetData("equip")) then
-			local equipped = tooltip:AddRow("equipped")
-			equipped:SetBackgroundColor(derma.GetColor("Success", tooltip))
-			equipped:SetText(L("equipped"))
-			equipped:SizeToContents()
-		end
 
 		local data = tooltip:AddRow("data")
 		data:SetBackgroundColor(team.GetColor(FACTION_MPF))

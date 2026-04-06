@@ -409,7 +409,8 @@ end
 local BASE_PRIO = {
 	["base_weapons"] = 1,
 	["base_armor"] = 2,
-	["base_houtfit"] = 3
+	["base_houtfit"] = 3,
+	["base_filter"] = 4
 }
 
 local CAT_PRIO = {

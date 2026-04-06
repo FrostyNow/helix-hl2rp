@@ -36,6 +36,7 @@ ix.lang.AddTable("english", {
 	novelizerPagerUse2 = "thumbs the button on the pager to send a signal.",
 	novelizerPagerUse3 = "sends a quick pulse through the pager.",
 
+	pagerButton = "Pager Button",
 	pagerButtonFail1 = "presses the button, but it makes a dry clicking sound with no further response.",
 	pagerButtonFail2 = "keys the button fruitlessly as it fails to connect with any active receiver.",
 	pagerButtonFail3 = "pushes the button, but only a faint electronic hum follows, indicating no signal was sent.",
@@ -73,6 +74,7 @@ ix.lang.AddTable("korean", {
 	novelizerPagerUse2 = "호출기의 버튼을 눌러 신호를 발신합니다.",
 	novelizerPagerUse3 = "호출기를 조작해 짧은 신호를 보냅니다.",
 
+	pagerButton = "호출 버튼",
 	pagerButtonFail1 = "버튼을 누르지만, 마른 클릭 소리만 날 뿐 아무런 반응이 없습니다.",
 	pagerButtonFail2 = "버튼을 조작하지만 연결된 수신기가 없어 신호가 전송되지 않습니다.",
 	pagerButtonFail3 = "버튼을 누르지만 희미한 전자음만 들릴 뿐 신호는 가지 않습니다.",

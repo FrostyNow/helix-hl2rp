@@ -72,6 +72,12 @@ function PLUGIN:GetItemFilterMaxDurability(item)
 		maxDurability = DEFAULT_FILTER_MAX_DURABILITY
 	end
 
+	local filterID = item:GetData("FilterID")
+	local filterTable = filterID and ix.item.list[filterID]
+	if (filterTable and filterTable.maxDurability) then
+		maxDurability = math.max(maxDurability, tonumber(filterTable.maxDurability) or 0)
+	end
+
 	return maxDurability
 end
 
@@ -218,10 +224,11 @@ function PLUGIN:InstallFilterOnItem(item, filterItem)
 		return false
 	end
 
+	local filterMax = tonumber(filterItem.maxDurability) or self:GetItemFilterMaxDurability(item)
 	local durability = math.Clamp(
-		tonumber(filterItem:GetData("Durability", filterItem.maxDurability or self:GetItemFilterMaxDurability(item))) or self:GetItemFilterMaxDurability(item),
+		tonumber(filterItem:GetData("Durability", filterMax)) or filterMax,
 		0,
-		self:GetItemFilterMaxDurability(item)
+		filterMax
 	)
 
 	if (durability <= 0) then
@@ -229,8 +236,8 @@ function PLUGIN:InstallFilterOnItem(item, filterItem)
 	end
 
 	self:SetItemFilterInstalled(item, true)
-	self:SetItemFilterDurability(item, durability)
 	item:SetData("FilterID", filterItem.uniqueID)
+	self:SetItemFilterDurability(item, durability)
 
 	return true
 end

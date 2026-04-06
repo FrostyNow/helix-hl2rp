@@ -30,7 +30,7 @@ SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = -1
 SWEP.Primary.Automatic = false
 SWEP.Primary.Ammo = ""
-SWEP.Primary.Damage = 10
+SWEP.Primary.Damage = 6
 SWEP.Primary.Delay = 0.7
 
 SWEP.Secondary.ClipSize = -1
@@ -191,15 +191,10 @@ function SWEP:PrimaryAttack()
 	self:SendWeaponAnim(ACT_VM_HITCENTER)
 
 	local damage = self.Primary.Damage
-	local character = self.Owner:GetCharacter()
-	local strength = (character and character:GetAttribute("str", 0)) or 0
-	local maxAttr = ix.config.Get("maxAttributes", 100)
 
-	if (self:GetActivated()) then
-		damage = damage * 0.5 + math.Clamp(3 + (strength / maxAttr * 17), 3, 20)
-	else
-		damage = math.Clamp(1 + (strength / maxAttr * 14), 1, 15)
-	end
+	-- if (self:GetActivated()) then
+	-- 	damage = 10
+	-- end
 
 	self.Owner:SetAnimation(PLAYER_ATTACK1)
 	self.Owner:ViewPunch(Angle(1, 0, 0.125))

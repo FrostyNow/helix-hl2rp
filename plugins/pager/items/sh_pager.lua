@@ -86,6 +86,7 @@ ITEM.functions.Toggle = {
 	OnRun = function(item)
 		local bEnabled = !item:GetData("power", false)
 		item:SetData("power", bEnabled)
+		item.player:EmitSound("buttons/lever7.wav", 50, math.random(170, 180), 0.25)
 
 		return false
 	end,
@@ -117,7 +118,7 @@ ITEM.functions.Signal = {
 		local lastSignal = item:GetData("lastSignal", 0)
 
 		-- 30-second cooldown check
-		if (curTime < lastSignal + 30) then
+		if (curTime < lastSignal + 10) then
 			client:NotifyLocalized("pagerCooldown")
 			return false
 		end

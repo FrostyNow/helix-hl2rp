@@ -92,6 +92,7 @@ PLUGIN.harvestables = {
 		},
 		classes = {
 			["npc_antlion_grub"] = true,
+			["npc_antliongrub"] = true,
 		},
 		canHarvestLive = true
 	}
@@ -228,7 +229,7 @@ function PLUGIN:GetHarvestData(entity)
 		end
 
 		return self.harvestables[harvestID], harvestID
-	elseif (entity:IsNPC()) then
+	elseif (entity:IsNPC() or string.find(entity:GetClass(), "antlion") or string.find(entity:GetClass(), "grub")) then
 		local harvestID = self:GetHarvestID(entity)
 
 		if (!harvestID) then
@@ -293,63 +294,46 @@ function PLUGIN:CanHarvestEntity(entity)
 end
 
 if (CLIENT) then
-	function PLUGIN:PatchEntityMenu(entity)
-		if (!IsValid(entity) or entity.ixHarvestMenuPatched) then
+	function PLUGIN:PopulateEntityMenu(entity, options)
+		if (!IsValid(entity)) then
 			return
 		end
 
-		if (entity:GetClass() != "prop_ragdoll" and !entity:IsNPC()) then
+		if (entity:GetNetVar("ixHarvestBusy", false)) then
 			return
 		end
 
-		entity.ixHarvestMenuPatched = true
-
-		local originalGetEntityMenu = entity.GetEntityMenu
-
-		entity.GetEntityMenu = function(this, client)
-			local options = CopyOptions(isfunction(originalGetEntityMenu) and originalGetEntityMenu(this, client) or nil)
-
-			if (PLUGIN:CanHarvestEntity(this) and !this:GetNetVar("ixHarvestBusy", false)) then
-				local label = this:IsNPC() and L("harvestNPC", client) or L(HARVEST_OPTION_KEY, client)
-				options[label] = true
+		if (self:CanHarvestEntity(entity)) then
+			local label = entity:IsNPC() and L("harvestNPC") or L(HARVEST_OPTION_KEY)
+			options[label] = function()
+				net.Start("ixHarvestNPC")
+					net.WriteEntity(entity)
+					net.WriteString(label)
+				net.SendToServer()
 			end
-
-			return options
 		end
-	end
-
-	function PLUGIN:OnEntityCreated(entity)
-		if (entity:GetClass() != "prop_ragdoll" and !entity:IsNPC()) then
-			return
-		end
-
-		timer.Simple(0, function()
-			if (IsValid(entity)) then
-				self:PatchEntityMenu(entity)
-			end
-		end)
 	end
 end
 
 if (SERVER) then
-	function PLUGIN:OnEntityCreated(entity)
-		if (!entity:IsNPC()) then
-			return
+	util.AddNetworkString("ixHarvestNPC")
+
+	net.Receive("ixHarvestNPC", function(len, client)
+		local entity = net.ReadEntity()
+
+		if (IsValid(entity) and IsValid(client) and client:Alive()) then
+			PLUGIN:BeginHarvest(client, entity)
 		end
+	end)
 
-		local data, harvestID = self:GetHarvestData(entity)
+	function PLUGIN:KeyPress(client, key)
+		if (key == IN_USE) then
+			local trace = client:GetEyeTraceNoCursor()
+			local entity = trace.Entity
 
-		if (harvestID) then
-			local originalOnOptionSelected = entity.OnOptionSelected
-
-			function entity:OnOptionSelected(client, option, data)
-				if (option == L("harvestNPC", client) or option == L(HARVEST_OPTION_KEY, client)) then
-					PLUGIN:BeginHarvest(client, self)
-					return
-				end
-
-				if (isfunction(originalOnOptionSelected)) then
-					return originalOnOptionSelected(self, client, option, data)
+			if (IsValid(entity) and self:CanHarvestEntity(entity)) then
+				if (client:GetPos():DistToSqr(entity:GetPos()) <= 96 ^ 2) then
+					self:BeginHarvest(client, entity)
 				end
 			end
 		end
@@ -579,7 +563,7 @@ if (SERVER) then
 		entity.ixHarvestBusyBy = client
 		entity:SetNetVar("ixHarvestBusy", true)
 		
-		local actionLabel = entity:IsNPC() and "harvestingNPC" or HARVEST_ACTION_KEY
+		local actionLabel = (data.item == "antlion_grub" or entity:IsNPC()) and "@harvestingNPC" or HARVEST_ACTION_KEY
 		client:SetAction(actionLabel, data.time or DEFAULT_HARVEST_TIME)
 
 		local uniqueID = "ixHarvestSound_" .. client:SteamID64()

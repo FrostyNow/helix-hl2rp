@@ -105,26 +105,6 @@ ITEM.damage = {1, 1, 1, 1, 1, 1, 1}
 ITEM.maxDurability = 100
 ITEM.intAttr = 1
 
---[[
--- This will change a player's skin after changing the model. Keep in mind it starts at 0.
-ITEM.newSkin = 1
--- This will change a certain part of the model.
-ITEM.replacements = {"group01", "group02"}
--- This will change the player's model completely.
-ITEM.replacements = "models/manhack.mdl"
--- This will have multiple replacements.
-ITEM.replacements = {
-	{"male", "female"},
-	{"group01", "group02"}
-}
-
--- This will apply body groups.
-ITEM.eqBodyGroups = {
-	["blade"] = 1,
-	["bladeblur"] = 1
-}
-]]--
-
 function ITEM:GetDescription()
 	if (self.entity) then
 		return (L(self.description) .. L("durabilityDesc") .. math.floor(self:GetData("Durability", self.maxDurability)).. " / ".. self.maxDurability)
@@ -134,7 +114,6 @@ function ITEM:GetDescription()
 end
 
 
--- Removed armorPlayer helper as armor is now managed via MaxArmor aggregation in UpdateResistance
 -- Inventory drawing
 if (CLIENT) then
 	function ITEM:PopulateAffiliationTooltip(tooltip, labelText, labelColor)
@@ -387,10 +366,6 @@ function ITEM:UpdateAppearance(client)
 		character:SetData("oldModelBase", client:GetModel())
 	end
 
-	-- Chain model transformations in stack order (bottom → top).
-	-- Each item's transformation is applied to the result of the layer below it,
-	-- so e.g. a vest replacement runs on top of a conscript duty model instead of
-	-- always reverting to the raw base citizen model.
 	local targetModel = baseModel
 	local topSkinItem = nil
 
@@ -407,10 +382,8 @@ function ITEM:UpdateAppearance(client)
 						targetModel = item.replacements
 					elseif (istable(item.replacements)) then
 						if (#item.replacements == 2 and isstring(item.replacements[1])) then
-							-- Simple pair: {"pattern", "replacement"}
 							targetModel = targetModel:gsub(item.replacements[1], item.replacements[2])
 						else
-							-- Array of pairs: {{"pattern", "replacement"}, ...}
 							for _, v in ipairs(item.replacements) do
 								if (istable(v)) then
 									targetModel = targetModel:gsub(v[1], v[2])
@@ -437,7 +410,7 @@ function ITEM:UpdateAppearance(client)
 		client:SetBodygroup(i, 0)
 	end
 
-	-- 3. Apply Character Base Groups (Always try by name, safe for MPF facialhair)
+	-- 3. Apply Character Base Groups
 	local baseGroups = character:GetData("groups", {})
 	local isSuitVisible = hasTopLayer
 
@@ -446,7 +419,6 @@ function ITEM:UpdateAppearance(client)
 		local name = nil
 
 		if (isnumber(k)) then
-			-- Numbers: Only apply on base character model for safety, OR try to resolve name
 			if (!isSuitVisible) then
 				index = k
 			elseif (baseModel) then
@@ -457,8 +429,6 @@ function ITEM:UpdateAppearance(client)
 		end
 
 		if (name) then
-			-- Names: ALWAYS try to apply ONLY if they are approved shared groups
-			-- We allow 'facialhair' by default, and also check if it's in the faction's shared list
 			local faction = ix.faction.Get(client:Team())
 			local nameLower = name:lower()
 			local isShared = (nameLower == "facialhair")
@@ -471,7 +441,6 @@ function ITEM:UpdateAppearance(client)
 				end
 			end
 
-			-- The user explicitly requested string matches to apply across model changes
 			if (isSuitVisible and !isShared) then
 				continue
 			end
@@ -484,22 +453,15 @@ function ITEM:UpdateAppearance(client)
 		end
 	end
 
-	-- 4. Audit Items (Visibility & Stats)
+	-- 4. Audit Items
 	local currentModel = targetModel:lower():gsub("\\", "/")
 
 	for _, item in pairs(items) do
 		if (item:GetData("equip")) then
-			-- 1. Hard Compatibility check: If item is definitely NOT for this model, hide it.
-			-- Also allow items whose allowedModels match the base (pre-replacement) model,
-			-- so that e.g. a vest whose allowedModels lists "novest" variants still applies
-			-- its bodygroups after its own replacement has transformed the model path.
-			-- NOTE: We also check IsTopLayer because if an item changed the model itself, 
-			-- it should be allowed to apply its own bodygroups to the result.
 			if (item.IsCompatibleWith and !item:IsCompatibleWith(currentModel) and !item:IsCompatibleWith(baseModel) and !IsTopLayer(item)) then
 				continue
 			end
 
-			-- Apply bodygroups if compatible
 			if (item.eqBodyGroups) then
 				for bgName, bgValue in pairs(item.eqBodyGroups) do
 					local index = client:FindBodygroupByName(bgName)
@@ -529,8 +491,6 @@ function ITEM:UpdateAppearance(client)
 	end
 end
 
--- makes another outfit depend on this outfit in terms of requiring this item to be equipped in order to equip the attachment
--- also unequips the attachment if this item is dropped
 function ITEM:AddAttachment(id)
 	local attachments = self:GetData("outfitAttachments", {})
 	attachments[id] = true
@@ -622,8 +582,6 @@ function ITEM:UpdateResistance(client)
 		client:SetNetVar("resistance", false)
 	end
 
-	-- also update gasmask state to be safe (though usually handled by Equip/Unequip logic, checking all items is safer)
-	-- Note: RemoveOutfit sets gasmask false blindly, so this restores it if other mask is present.
 	if (anyGasmask) then
 		client:SetNetVar("gasmask", true)
 	else
@@ -706,9 +664,6 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 		end
 
 		item:RemoveOutfit(item.player)
-
-		client:SetNetVar("gasmask", false)
-		client:SetNetVar("resistance", false)
 
 		return false
 	end,
@@ -854,9 +809,6 @@ ITEM.functions.Equip = {
 
 			for _, v in pairs(items) do
 				if (v.id != item.id and v:GetData("equip") and v.outfitCategory == item.outfitCategory) then
-					-- Allow equipping over a same-category bodygroup-only item that is dormant:
-					-- a non-model-replacing item whose allowedModels no longer matches the current
-					-- rendered model (e.g. a citizen head-scarf under a conscript suit).
 					local vIsModelChanger = (v.replacement != nil or v.replacements != nil or isfunction(v.OnGetReplacement))
 					if (!vIsModelChanger and v.IsCompatibleWith) then
 						local currentModel = client:GetModel():lower():gsub("\\", "/")
@@ -904,7 +856,6 @@ ITEM.functions.Repair = {
 		local character = client:GetCharacter()
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()
-		local number = 0
 		local repairSounds = {"interface/inv_repair_kit.ogg", "interface/inv_repair_kit_with_brushes.ogg"}
 		local randomsound = table.Random(repairSounds)
 		local int = character:GetAttribute("int", 0)
@@ -958,7 +909,6 @@ ITEM.functions.InstallFilter = {
 		local character = client:GetCharacter()
 		local filterItem = nil
 
-		-- Search all inventories associated with the character
 		for _, inv in pairs(ix.item.inventories) do
 			if (inv.owner == character:GetID()) then
 				filterItem = badair:GetFirstAvailableFilterItem(inv)
@@ -998,7 +948,6 @@ ITEM.functions.InstallFilter = {
 
 		local char = client:GetCharacter()
 		return !IsValid(item.entity) and item:GetOwner() == client
-			and badair:GetFirstAvailableFilterItem(char:GetInventory()) != nil -- Simplified check
 	end
 }
 

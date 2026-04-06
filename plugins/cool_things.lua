@@ -33,6 +33,26 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 	end
 })
 
+	local espcols = {
+		["Weapons"] = Color(255, 50, 50),
+		["Ammo"] = Color(155, 50, 50),
+		["Ammunition"] = Color(155, 50, 50),
+		["Food"] = Color(100, 255, 100),
+		["Alcohol"] = Color(100, 255, 100),
+		["Crafting"] = Color(150, 200, 50),
+		["Clothing"] = Color(65, 200, 150),
+		["Clothes"] = Color(65, 200, 150),
+		["Outfit"] = Color(65, 200, 150),
+		["Attachments"] = Color(50, 255, 175),
+		["Survival"] = Color(50, 255, 175),
+		["Medical"] = Color(29, 43, 124),
+		["Permits"] = Color(163, 108, 45),
+		["Utility"] = Color(116, 82, 160),
+		["Storage"] = Color(116, 82, 160),
+		["Containers"] = Color(116, 82, 160),
+		["Tools"] = Color(116, 82, 160)
+	}
+
 	function PLUGIN:HUDPaint()
 		local client = LocalPlayer()
 
@@ -42,47 +62,19 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 			if ix.option.Get("itemESP") then
 				for _, v in ipairs(ents.FindByClass("ix_item")) do
 					local distance = client:GetPos():Distance(v:GetPos())
-						local distance = client:GetPos():Distance(v:GetPos())
-						if (distance > 4096) then continue end
+					if (distance > 4096) then continue end
 
-						local screenPosition = v:GetPos():ToScreen()
-						
-						if not screenPosition.visible then continue end
+					local screenPosition = v:GetPos():ToScreen()
+					if not screenPosition.visible then continue end
 
-						local espcol = Color(255,255,255,255)
-						local x2, y2 = screenPosition.x, screenPosition.y
-						local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
-						local size2 = math.max(10, 32 * factor)
-						local alpha2 = math.max(255 * factor, 80)
-						local itemTable = v:GetItemTable()
-						local espcols = {
-							["Weapons"] = Color(255,50,50),
-							["Ammo"] = Color(155,50,50),
-							["Ammunition"] = Color(155,50,50),
-							["Food"] = Color(100,255,100),
-							["Alcohol"] = Color(100,255,100),
-							["Crafting"] = Color(150,200,50),
-							["Clothing"] = Color(65,200,150),
-							["Clothes"] = Color(65,200,150),
-							["Outfit"] = Color(65,200,150),
-							["Attachments"] = Color(50,255,175),
-							["Survival"] = Color(50,255,175),
-							["Medical"] = Color(29,43,124),
-							["Permits"] = Color(163,108,45),
-							["Utility"] = Color(116,82,160),
-							["Storage"] = Color(116,82,160),
-							["Containers"] = Color(116,82,160),
-							["Tools"] = Color(116,82,160)
-						}
+					local x2, y2 = screenPosition.x, screenPosition.y
+					local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
+					local size2 = math.max(10, 32 * factor)
+					local alpha2 = math.max(255 * factor, 80)
+					local itemTable = v:GetItemTable()
+					local espcol = espcols[itemTable.category] or Color(255, 255, 255, 255)
 
-						for k2, v2 in pairs(espcols) do
-							if itemTable.category == k2 then
-								espcol = v2
-							end
-						end
-						
-						draw.SimpleText(L(itemTable.name) or itemTable.name, "BudgetLabel", x2, y2 - size2, ColorAlpha(espcol, alpha2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-					end
+					draw.SimpleText(L(itemTable.name) or itemTable.name, "BudgetLabel", x2, y2 - size2, ColorAlpha(espcol, alpha2), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 				end
 			end
 
@@ -99,7 +91,7 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 				surface.SetDrawColor(teamColor.r, teamColor.g, teamColor.b, alpha)
 				surface.SetFont("BudgetLabel")
 				local text = v:Name()
-				
+
 				if not v.status then
 					v.status = "user"
 				elseif v:IsUserGroup("superadmin") then
@@ -150,15 +142,11 @@ function playerMeta:GetItemWeapon()
 	local items = inv:GetItems()
 	local weapon = self:GetActiveWeapon()
 
-	for k, v in pairs(items) do
-		if v.class then
-			if v.class == weapon:GetClass() then
-				if v:GetData("equip", false) then
-					return weapon, v
-				else
-					return false
-				end
-			end
+	for _, v in pairs(items) do
+		if (v.class and v.class == weapon:GetClass() and v:GetData("equip")) then
+			return weapon, v
 		end
 	end
+
+	return false
 end

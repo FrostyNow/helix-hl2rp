@@ -515,7 +515,7 @@ local function setNightVisionState(enabled, nightType)
 					tr.start = EP
 					tr.endpos = tr.start + EA * cv.aim_range:GetFloat()
 					tr.filter = state.ply
-					trace = util.TraceLine(tr)
+					local trace = util.TraceLine(tr)
 
 					if (!trace.Hit) then
 						if (CT > state.timeToVector) then
@@ -532,6 +532,8 @@ local function setNightVisionState(enabled, nightType)
 
 						state.dlight.Pos = trace.HitPos + Vector(0, 0, state.vector)
 					end
+					
+					state.trace = trace
 				else
 					state.dlight.Pos = state.ply:GetShootPos()
 				end
@@ -543,13 +545,14 @@ local function setNightVisionState(enabled, nightType)
 
 				if (cv.isib_status:GetInt() < 1) then
 					-- Significantly increased size and adjusted decay for a more "ambient" feel
-					state.dlight.Size = state.illumArea * state.curScale * 5.0
-					state.dlight.Decay = state.dlight.Size * 1.5
+					local size = state.illumArea * state.curScale * 5.0
+					state.dlight.Size = size
+					state.dlight.Decay = size * 1.5
 				else
 					if (aim > 0) then
 						-- Throttle this as well for aim mode
 						if (state.nextLightCheck < CT) then
-							local traceLights = _render.ComputeLighting(trace.HitPos, Vector(0, 0, -1)) - _render.ComputeDynamicLighting(trace.HitPos, Vector(0, 0, -1))
+							local traceLights = _render.ComputeLighting(state.trace.HitPos, Vector(0, 0, -1)) - _render.ComputeDynamicLighting(state.trace.HitPos, Vector(0, 0, -1))
 							state.cachedLightPos = traceLights:Length() * 33
 						end
 						clr = state.cachedLightPos
@@ -557,8 +560,9 @@ local function setNightVisionState(enabled, nightType)
 
 					-- Realistic Exposure: Increased intensity in dark, reduced in light
 					state.isibIntensity = Lerp(FT * 10, state.isibIntensity, clr * state.isibSens)
-					state.dlight.Size = math.Clamp((state.illumArea * state.curScale * 4.0) / state.isibIntensity, 0, state.illumArea * 5.0)
-					state.dlight.Decay = state.dlight.Size * 1.5
+					local size = math.Clamp((state.illumArea * state.curScale * 4.0) / state.isibIntensity, 0, state.illumArea * 5.0)
+					state.dlight.Size = size
+					state.dlight.Decay = size * 1.5
 				end
 
 				state.dlight.DieTime = CT + FT * 3
@@ -594,7 +598,7 @@ local function setNightVisionState(enabled, nightType)
 				tr.start = EP
 				tr.endpos = tr.start + EA * cv.etisd_sensitivity_range:GetFloat()
 				tr.filter = state.ply
-				trace = util.TraceLine(tr)
+				local trace = util.TraceLine(tr)
 				
 				-- Use cached light check here too
 				clr = state.cachedLightPos or clr
