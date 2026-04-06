@@ -41,8 +41,8 @@ function Schema:SaveVendingMachines()
 		["ix_pepsimachine"] = true,
 	}
 
-	for _, v in ipairs(ents.GetAll()) do
-		if (machineClasses[v:GetClass()]) then
+	for class, _ in pairs(machineClasses) do
+		for _, v in ipairs(ents.FindByClass(class)) do
 			data[#data + 1] = {
 				pos = v:GetPos(),
 				angles = v:GetAngles(),
@@ -94,8 +94,8 @@ function Schema:SaveMachines()
 		["ix_broadcast_console"] = true,
 	}
 
-	for _, v in ipairs(ents.GetAll()) do
-		if (machineClasses[v:GetClass()]) then
+	for class, _ in pairs(machineClasses) do
+		for _, v in ipairs(ents.FindByClass(class)) do
 			data[#data + 1] = {
 				pos = v:GetPos(),
 				angles = v:GetAngles(),

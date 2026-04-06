@@ -57,14 +57,9 @@ ix.command.Add("CleanUpItems", {
 		end
 
 		timer.Simple(time, function()
-			for _, v in ipairs(ents.GetAll()) do
-				if v:GetClass() == "ix_item" then 
-					v:Remove()
-
-				else continue end
-
+			for _, v in ipairs(ents.FindByClass("ix_item")) do
+				v:Remove()
 			end
-			
 		end)
 		
 		return client:NotifyLocalized("itemsRemoved")
@@ -84,12 +79,8 @@ ix.command.Add("ForceCleanUpItems", {
 
 		end
 
-		for _, v in ipairs(ents.GetAll()) do
-			if v:GetClass() == "ix_item" then 
-				v:Remove()
-
-			else continue end
-
+		for _, v in ipairs(ents.FindByClass("ix_item")) do
+			v:Remove()
 		end
 
 		return client:NotifyLocalized("itemsRemoved")

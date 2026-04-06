@@ -8,6 +8,8 @@ RECIPE.requirements = {
 	["scanner_gib02"] = 1,
 	["scanner_gib04"] = 1,
 	["scanner_gib05"] = 1,
+	["battery"] = 1,
+	["comp_circuitry"] = 1,
 	["resin"] = 1,
 }
 RECIPE.results = {
@@ -15,6 +17,6 @@ RECIPE.results = {
 }
 RECIPE.station = "workbench"
 
-RECIPE.attribs = {
-	["int"] = 6
-}
+-- RECIPE.attribs = {
+-- 	["int"] = 6
+-- }

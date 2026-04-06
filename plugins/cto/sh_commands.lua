@@ -258,7 +258,7 @@ do
 		local count = 0
 		local stuckEntities = {}
 
-		for _, v in ipairs(ents.GetAll()) do
+		for _, v in ents.Iterator() do
 			local phys = v:GetPhysicsObject()
 			if (IsValid(phys) and !phys:IsAsleep() and !v:IsPlayer()) then
 				-- Check for high velocity in objects that should be stationary

@@ -435,10 +435,10 @@ if SERVER then
 
 	function PLUGIN:SaveData()
 		local data = {}
+		local stoveClasses = {"ix_stove", "ix_bonfire", "ix_bucket"}
 
-		for _, v in ipairs(ents.GetAll()) do
-			local class = v:GetClass()
-			if (class == "ix_stove" or class == "ix_bonfire" or class == "ix_bucket") then
+		for _, class in ipairs(stoveClasses) do
+			for _, v in ipairs(ents.FindByClass(class)) do
 				data[#data + 1] = {
 					class = class,
 					pos = v:GetPos(),
@@ -565,7 +565,7 @@ function PLUGIN:AdjustStaminaOffset(client, offset)
 	elseif (thirst < 40) then
 		penalty = penalty - 0.25 -- Lightly Dehydrated (was -0.3)
 	elseif (thirst < 60) then
-		-- Only apply if they are also somewhat hungry, as per user request
+		-- Only apply if they are also somewhat hungry
 		if (hunger < 60) then
 			penalty = penalty - 0.1 -- Thirsty
 		end

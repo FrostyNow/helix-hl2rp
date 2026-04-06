@@ -18,19 +18,18 @@ ITEM.functions.Use = {
 		local pos = trace.HitPos
 		local min = ent:OBBMins()
 
-		for k, v in pairs(ents.GetAll()) do
-			if(v:IsPlayer()) then
-				if(v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
-					ent:AddEntityRelationship(v, D_LI, 99)
-				else
-					ent:AddEntityRelationship(v, D_HT, 99)
-				end
-			end
-		end
-
 		ent:SetPos(pos - Vector(0, 0, min.z))
 		ent:SetAngles(item.player:GetAngles())
 		ent:Spawn()
+		ent:Activate()
+
+		for _, v in ipairs(player.GetAll()) do
+			if (v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
+				ent:AddEntityRelationship(v, D_LI, 99)
+			else
+				ent:AddEntityRelationship(v, D_HT, 99)
+			end
+		end
 
 		return true
 	end,

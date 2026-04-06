@@ -41,6 +41,8 @@ ix.lang.AddTable("english", {
 	pagerButtonFail3 = "pushes the button, but only a faint electronic hum follows, indicating no signal was sent.",
 
 	sentButtonSignals = "Pager signal sent to %s paired pagers.",
+	pagerUnsync = "Unsync",
+	pagerUnsynced = "The pager has been unsynchronized.",
 })
 
 ix.lang.AddTable("korean", {
@@ -76,6 +78,9 @@ ix.lang.AddTable("korean", {
 	pagerButtonFail3 = "버튼을 누르지만 희미한 전자음만 들릴 뿐 신호는 가지 않습니다.",
 
 	sentButtonSignals = "호출기 %s개에 신호를 보냈습니다.",
+	["Toggle Power"] = "전원",
+	["Unsync"] = "비동기화",
+	pagerUnsynced = "호출기의 동기화가 해제되었습니다.",
 })
 
 -- Common function to send a localized chat message directly to players in range

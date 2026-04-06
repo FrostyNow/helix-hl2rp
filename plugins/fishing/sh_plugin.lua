@@ -210,7 +210,7 @@ ix.command.Add("Fish", {
 				
 				local effectData = EffectData()
 				effectData:SetOrigin(trace.HitPos)
-				effectData:SetScale(0.3)
+				effectData:SetScale(0.8)
 				util.Effect("WaterSplash", effectData)
 			end
 		end)

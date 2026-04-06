@@ -935,7 +935,7 @@ function PLUGIN:EntityRemoved(entity)
 end
 
 function PLUGIN:InitPostEntity()
-	for _, entity in ipairs(ents.GetAll()) do
+	for _, entity in ents.Iterator() do
 		if (self:IsComputerEntity(entity)) then
 			self.entities[entity:EntIndex()] = entity
 		end

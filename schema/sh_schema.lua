@@ -1245,3 +1245,9 @@ function ix.date.GetLocalizedTime(client)
 
 	return formatted
 end
+
+function Schema:CanPlayerHoldObject(ply, ent)
+	if IsValid(ent) and ent:GetClass() == "npc_turret_floor" then
+		return true
+	end
+end

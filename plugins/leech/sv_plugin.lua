@@ -84,7 +84,7 @@ function PLUGIN:InitializedPlugins()
 			targets[#targets + 1] = v
 		end
 
-		for _, v in ipairs(ents.GetAll()) do
+		for _, v in ents.Iterator() do
 			if (v:IsNPC() and v:GetClass() != "npc_vj_hlr1_leech" and v:GetClass() != "npc_leech") then
 				targets[#targets + 1] = v
 			end

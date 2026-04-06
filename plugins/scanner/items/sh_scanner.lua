@@ -1,12 +1,12 @@
 
-ITEM.name = "Combine Shield Scanner"
-ITEM.description = "itemShieldScannerDesc"
-ITEM.model = Model("models/shield_scanner.mdl")
+ITEM.name = "Combine Scanner"
+ITEM.description = "itemScannerDesc"
+ITEM.model = Model("models/Combine_Scanner.mdl")
 ITEM.category = "Utility"
 ITEM.width = 2
 ITEM.height = 2
-ITEM.price = 120
-ITEM.factions = {FACTION_OTA}
+ITEM.price = 100
+ITEM.classes = {CLASS_MPU, CLASS_EMP}
 
 ITEM.functions.Use = {
 	name = "Place It",
@@ -35,28 +35,33 @@ ITEM.functions.Use = {
 			entity:SetAngles(ply:GetAngles())
 			entity:Spawn()
 			entity:Activate()
-			entity:setClawScanner()
-			entity:SetNetVar("ixPlayer", ply)
+			entity:SetNetVar("ixPlayer", player or ply)
 
-			local name = ix.plugin.Get("scanner"):GenerateUniqueScannerName(true)
+			local name = ix.plugin.Get("scanner"):GenerateUniqueScannerName(false)
 			entity:SetNetVar("ixScannerName", name)
-		else
-			ply:Notify("Spawning npc_shieldscanner instead of ix_scanner!") -- Debug
-			local ent = ents.Create("npc_shieldscanner")
-
-			for k, v in pairs(ents.GetAll()) do
-				if v:IsPlayer() then
-					if v:IsCombine() then
-						ent:AddEntityRelationship(v, D_LI, 99)
-					else
-						ent:AddEntityRelationship(v, D_HT, 99)
-					end
-				end
+			
+			if (IsValid(player or ply)) then
+				(player or ply):Notify("SPAWNED: ix_scanner (" .. name .. ")")
 			end
+		else
+			-- if (IsValid(player or ply)) then
+			-- 	(player or ply):Notify("SPAWNED: npc_cscanner (PLUGIN NOT FOUND)")
+			-- end
+			-- ply:Notify("Spawning npc_cscanner instead of ix_scanner!") -- Debug
+			local ent = ents.Create("npc_cscanner")
 
 			ent:SetPos(ply:EyePos() + ( ply:GetAimVector() * 100))
 			ent:SetAngles(ply:GetAngles())
 			ent:Spawn()
+			ent:Activate()
+
+			for _, v in ipairs(player.GetAll()) do
+				if v:IsCombine() then
+					ent:AddEntityRelationship(v, D_LI, 99)
+				else
+					ent:AddEntityRelationship(v, D_HT, 99)
+				end
+			end
 		end
 
 		return true

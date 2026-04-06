@@ -14,6 +14,6 @@ RECIPE.results = {
 }
 RECIPE.station = {"workbench", "craftingtable"}
 
-RECIPE.attribs = {
-	["int"] = 6
-}
+-- RECIPE.attribs = {
+-- 	["int"] = 6
+-- }

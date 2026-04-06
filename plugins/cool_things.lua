@@ -40,8 +40,8 @@ ix.option.Add("itemESP", ix.type.bool, true, {
 			local scrW, scrH = ScrW(), ScrH()
 
 			if ix.option.Get("itemESP") then
-				for k, v in pairs(ents.GetAll()) do
-					if v:GetClass() == "ix_item" then
+				for _, v in ipairs(ents.FindByClass("ix_item")) do
+					local distance = client:GetPos():Distance(v:GetPos())
 						local distance = client:GetPos():Distance(v:GetPos())
 						if (distance > 4096) then continue end
 

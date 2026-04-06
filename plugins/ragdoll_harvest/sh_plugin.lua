@@ -89,7 +89,11 @@ PLUGIN.harvestables = {
 		decal = "YellowBlood",
 		models = {
 			["models/antlion_grub.mdl"] = true,
-		}
+		},
+		classes = {
+			["npc_antlion_grub"] = true,
+		},
+		canHarvestLive = true
 	}
 }
 
@@ -164,6 +168,7 @@ end
 
 function PLUGIN:GetHarvestID(npc, ragdoll)
 	local model = string.lower((IsValid(ragdoll) and ragdoll:GetModel()) or (IsValid(npc) and npc:GetModel()) or "")
+	local class = string.lower((IsValid(npc) and npc:GetClass()) or "")
 
 	if (model == "") then
 		return nil
@@ -171,6 +176,10 @@ function PLUGIN:GetHarvestID(npc, ragdoll)
 
 	for harvestID, data in pairs(self.harvestables) do
 		if (data.models and data.models[model]) then
+			return harvestID
+		end
+
+		if (class != "" and data.classes and data.classes[class]) then
 			return harvestID
 		end
 	end
@@ -226,7 +235,13 @@ function PLUGIN:GetHarvestData(entity)
 			return nil
 		end
 
-		return self.harvestables[harvestID], harvestID
+		local data = self.harvestables[harvestID]
+
+		if (!data or !data.canHarvestLive) then
+			return nil
+		end
+
+		return data, harvestID
 	end
 
 	return nil
@@ -322,7 +337,7 @@ if (SERVER) then
 			return
 		end
 
-		local harvestID = self:GetHarvestID(entity)
+		local data, harvestID = self:GetHarvestData(entity)
 
 		if (harvestID) then
 			local originalOnOptionSelected = entity.OnOptionSelected

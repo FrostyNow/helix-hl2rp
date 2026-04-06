@@ -461,7 +461,6 @@ function ENT:OnTakeDamage(dmgInfo)
 		self.bDead = true
 		self:die(dmgInfo)
 	else
-		-- 파일럿 체력에는 영향 없음
 		self:doDamageSound()
 	end
 end
@@ -476,6 +475,18 @@ function ENT:Use(activator, caller)
 			self:EmitSound("buttons/combine_button_locked.wav")
 			self.nextLockSoundTime = CurTime() + 1
 		end
+		return
+	end
+
+	-- Add functionality to return to item when holding walk (ALT)
+	if activator:KeyDown(IN_WALK) then
+		local pos = self:GetPos()
+		local ang = self:GetAngles()
+		local model = self:GetModel():lower()
+		local itemID = model:find("shield_scanner") and "scanner_claw" or "scanner"
+
+		ix.item.Spawn(itemID, pos, nil, ang)
+		self:Remove()
 		return
 	end
 

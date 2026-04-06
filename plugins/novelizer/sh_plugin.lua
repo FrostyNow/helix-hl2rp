@@ -1688,9 +1688,8 @@ function PLUGIN:GetIdleComputerEntities()
 		return entities
 	end
 
-	for _, entity in ipairs(ents.GetAll()) do
-		if (IsValid(entity)
-			and interactivePlugin:IsPrimaryComputerEntity(entity)
+	for _, entity in ents.Iterator() do
+		if (interactivePlugin:IsPrimaryComputerEntity(entity)
 			and entity.GetPowered
 			and entity:GetPowered()) then
 			entities[#entities + 1] = entity

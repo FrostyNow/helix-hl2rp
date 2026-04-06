@@ -15,19 +15,18 @@ ITEM.functions.Use = {
 			
 		local ent = ents.Create("npc_manhack")
 
-		for k, v in pairs(ents.GetAll()) do
-			if(v:IsPlayer()) then
-				if(v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
-					ent:AddEntityRelationship(v, D_LI, 99)
-				else
-					ent:AddEntityRelationship(v, D_HT, 99)
-				end
-			end
-		end
-
 		ent:SetPos(item.player:EyePos() + ( item.player:GetAimVector() * 100))
 		ent:SetAngles(item.player:GetAngles())
 		ent:Spawn()
+		ent:Activate()
+
+		for _, v in ipairs(player.GetAll()) do
+			if (v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
+				ent:AddEntityRelationship(v, D_LI, 99)
+			else
+				ent:AddEntityRelationship(v, D_HT, 99)
+			end
+		end
 
 		return true
 	end,

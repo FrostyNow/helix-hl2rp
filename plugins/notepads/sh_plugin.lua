@@ -28,8 +28,8 @@ if (CLIENT) then
 	end)
 else
 	function FindNoteByID(id)
-		for k, v in ipairs(ents.GetAll()) do
-			if (v:GetClass() == "ix_note" and v.id == id) then
+		for _, v in ipairs(ents.FindByClass("ix_note")) do
+			if (v.id == id) then
 				return v
 			end
 		end
@@ -109,12 +109,10 @@ else
 		local validNotes = {}
 		saveTable.noteEntities = {}
 
-		for _, v in ipairs(ents.GetAll()) do
-			if (v:GetClass() == "ix_note") then
-				local phys = v:GetPhysicsObject()
-				table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:GetOwner(), frozen = (phys:IsValid() and !phys:IsMoveable())})
-				table.insert(validNotes, v.id)
-			end
+		for _, v in ipairs(ents.FindByClass("ix_note")) do
+			local phys = v:GetPhysicsObject()
+			table.insert(saveTable.noteEntities, {pos = v:GetPos(), ang = v:GetAngles(), id = v.id, owner = v:GetOwner(), frozen = (phys:IsValid() and !phys:IsMoveable())})
+			table.insert(validNotes, v.id)
 		end
 
 		local validNoteData = {}

@@ -215,3 +215,12 @@ function PLUGIN:InitializedChatClasses()
 		end
 	end
 end
+
+function PLUGIN:CanPlayerHoldObject(client, entity)
+	if (IsValid(client:GetNetVar("ixScn"))) then
+		return false
+	end
+	if (IsValid(entity) and entity:GetClass() == "ix_scanner") then
+		return false
+	end
+end

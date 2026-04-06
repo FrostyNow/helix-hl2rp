@@ -12,11 +12,12 @@ if SERVER then
 	function PLUGIN:SaveData()
 		local data = {}
 
-		for _, v in ipairs(ents.GetAll()) do
+		for _, v in ents.Iterator() do
 			local class = v:GetClass()
-			local phys = v:GetPhysicsObject()
 
 			if (class == "ix_station" or string.match(class, "^ix_station_")) then
+				local phys = v:GetPhysicsObject()
+
 				data[#data + 1] = {
 					class = class,
 					pos = v:GetPos(),

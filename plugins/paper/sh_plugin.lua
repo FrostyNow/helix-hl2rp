@@ -35,14 +35,12 @@ else
 					v:SetData("PaperData", contents)
 				end
 			end
-			for k, v in pairs(ents.GetAll()) do
-				if v:GetClass() == "ix_item" then
-					local itemID = v.ixItemID
-					local item = ix.item.instances[itemID]
-					if (itemID == id) then
-						client:NotifyLocalized("paperWritten")
-						item:SetData("PaperData", contents)
-					end
+			for _, v in ipairs(ents.FindByClass("ix_item")) do
+				local itemID = v.ixItemID
+				local item = ix.item.instances[itemID]
+				if (itemID == id) then
+					client:NotifyLocalized("paperWritten")
+					item:SetData("PaperData", contents)
 				end
 			end
 		end

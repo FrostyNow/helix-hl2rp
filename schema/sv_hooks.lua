@@ -215,6 +215,28 @@ function Schema:PlayerLoadedCharacter(client, character, oldCharacter)
 	elseif (client:IsCombine()) then
 		client:AddCombineDisplayMessage("@cCombineLoaded")
 	end
+
+	self:UpdateAllRelations()
+end
+
+function Schema:UpdateAllRelations()
+	for _, ent in ipairs(ents.FindByClass("npc_turret_floor")) do
+		for _, v in ipairs(player.GetAll()) do
+			if (ent.ixIsResistance) then
+				if (v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
+					ent:AddEntityRelationship(v, D_HT, 99)
+				else
+					ent:AddEntityRelationship(v, D_LI, 99)
+				end
+			else
+				if (v:IsCombine() or v:Team() == FACTION_ADMIN or v:Team() == FACTION_CONSCRIPT) then
+					ent:AddEntityRelationship(v, D_LI, 99)
+				else
+					ent:AddEntityRelationship(v, D_HT, 99)
+				end
+			end
+		end
+	end
 end
 
 function Schema:CharacterVarChanged(character, key, oldValue, value)

@@ -10,12 +10,13 @@ RECIPE.requirements = {
 	["manhack_gib04"] = 1,
 	["manhack_gib05"] = 2,
 	["resin"] = 1,
+	["comp_circuitry"] = 1,
 }
 RECIPE.results = {
 	["manhack"] = 1
 }
 RECIPE.station = "workbench"
 
-RECIPE.attribs = {
-	["int"] = 6
-}
+-- RECIPE.attribs = {
+-- 	["int"] = 6
+-- }

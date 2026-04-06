@@ -144,7 +144,7 @@ ix.command.Add("CollectWater", {
 						
 						local effectData = EffectData()
 						effectData:SetOrigin(trace.HitPos)
-						effectData:SetScale(0.5) -- User defined scale
+						effectData:SetScale(0.8)
 						util.Effect("WaterSplash", effectData)
 					end
 

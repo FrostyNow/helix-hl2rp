@@ -140,6 +140,53 @@ if (SERVER) then
 			self:TouchRagdoll(entity)
 		end
 	end
+
+	function PLUGIN:OnNPCKilled(npc, attacker, inflictor)
+		if (npc:GetClass() == "npc_barnacle") then
+			local uniqueID = "ixBarnacleCleaner" .. npc:EntIndex()
+			
+			timer.Create(uniqueID, 30, 0, function()
+				if (!IsValid(npc)) then
+					timer.Remove(uniqueID)
+					return
+				end
+
+				local bVisible = false
+				local pos = npc:GetPos()
+
+				for _, ply in ipairs(player.GetAll()) do
+					if (!ply:Alive() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+					
+					-- Only check players within a reasonable distance
+					if (ply:GetPos():DistToSqr(pos) > 2500 * 2500) then continue end
+
+					local tr = util.TraceLine({
+						start = ply:EyePos(),
+						endpos = pos,
+						filter = {ply, npc},
+						mask = MASK_VISIBLE
+					})
+					
+					if (!tr.Hit) then 
+						-- Is it in their general field of view? (Approx. 130 degrees)
+						local aimVec = ply:GetAimVector()
+						local dirToPos = (pos - ply:EyePos()):GetNormalized()
+						local dot = aimVec:Dot(dirToPos)
+						
+						if (dot > 0.4) then
+							bVisible = true
+							break
+						end
+					end
+				end
+
+				if (!bVisible) then
+					npc:Remove()
+					timer.Remove(uniqueID)
+				end
+			end)
+		end
+	end
 end
 
 ix.command.Add("NPCRagdollClear", {

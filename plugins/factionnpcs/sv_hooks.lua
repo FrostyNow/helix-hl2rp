@@ -66,7 +66,7 @@ function PLUGIN:HandleNPCRelations(npc, client)
 end
 
 function PLUGIN:UpdateRelations(client)
-	for _, v in ipairs(ents.GetAll()) do
+	for _, v in ents.Iterator() do
 		if (v:IsNPC()) then
 			self:HandleNPCRelations(v, client)
 		end
@@ -74,8 +74,14 @@ function PLUGIN:UpdateRelations(client)
 end
 
 function PLUGIN:UpdateAllRelations()
-	for k, v in pairs(player.GetAll()) do
-		self:UpdateRelations(v)
+	local players = player.GetAll()
+
+	for _, v in ents.Iterator() do
+		if (v:IsNPC()) then
+			for _, client in ipairs(players) do
+				self:HandleNPCRelations(v, client)
+			end
+		end
 	end
 end
 
