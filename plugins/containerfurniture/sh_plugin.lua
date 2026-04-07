@@ -95,6 +95,7 @@ else
 		ghost:SetSolid(SOLID_VPHYSICS)
 		ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
 		ghost.itemID = itemID
+		ghost.angle = LocalPlayer():EyeAngles().y + 180
 		ix.gui.containerGhost = ghost
 
 		LocalPlayer():NotifyLocalized("containerFurniturePlaceMode")
@@ -112,7 +113,7 @@ else
 			})
 
 			local pos = trace.HitPos
-			local ang = Angle(0, client:EyeAngles().y + 180, 0)
+			local ang = Angle(0, ghost.angle, 0)
 
 			-- Align bottom to floor
 			local mins, maxs = ghost:GetModelBounds()
@@ -179,6 +180,12 @@ else
 
 				ghost:Remove()
 				surface.PlaySound("physics/wood/wood_panel_impact_soft1.wav")
+				return true
+			elseif (bind:find("invprev")) then
+				ghost.angle = ghost.angle + 10
+				return true
+			elseif (bind:find("invnext")) then
+				ghost.angle = ghost.angle - 10
 				return true
 			end
 		end
