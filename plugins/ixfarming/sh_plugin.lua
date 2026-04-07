@@ -96,6 +96,7 @@ if (CLIENT) then
 		local farmboxGhost = ents.CreateClientProp("models/noble/limelight/farmbox.mdl")
 		farmboxGhost:SetSolid(SOLID_VPHYSICS)
 		farmboxGhost:SetRenderMode(RENDERMODE_TRANSALPHA)
+		farmboxGhost.angle = LocalPlayer():EyeAngles().y + 180
 		ix.gui.farmboxGhost = farmboxGhost
 	end)
 
@@ -116,7 +117,7 @@ if (CLIENT) then
 			})
 
 			local pos = trace.HitPos
-			local ang = Angle(0, client:EyeAngles().y + 180, 0)
+			local ang = Angle(0, ix.gui.farmboxGhost.angle, 0)
 			ix.gui.farmboxGhost:SetAngles(ang)
 
 			-- Center the ghost based on its bounding box
@@ -164,6 +165,10 @@ if (CLIENT) then
 				else
 					surface.PlaySound("buttons/button10.wav")
 				end
+				return true
+			elseif (bind:find("invprev") or bind:find("invnext")) then
+				local multiplier = bind:find("invprev") and 1 or -1
+				ix.gui.farmboxGhost.angle = ix.gui.farmboxGhost.angle + (15 * multiplier)
 				return true
 			end
 		end
