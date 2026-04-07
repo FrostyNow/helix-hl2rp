@@ -75,7 +75,7 @@ PLUGIN.customWeaponInfo = {
 		purpose = "oicwDesc"
 	},
 	["arc9_hla_irifle"] = {
-		purpose = "ar2Desc"
+		purpose = "ar1Desc"
 	},
 	["arc9_hla_sniper"] = {
 		purpose = "sniperDesc"

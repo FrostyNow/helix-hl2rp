@@ -1,5 +1,5 @@
-ITEM.name = "Pulse-Rifle"
-ITEM.description = "ar2Desc"
+ITEM.name = "Pulse-Carbine"
+ITEM.description = "ar1Desc"
 ITEM.model = "models/weapons/w_irifle.mdl"
 ITEM.class = "arc9_hla_irifle"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
