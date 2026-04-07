@@ -224,7 +224,14 @@ function SWEP:PrimaryAttack()
 			if (entity:IsPlayer()) then
 				if (self:GetActivated()) then
 					entity.ixStuns = (entity.ixStuns or 0) + 1
-					entity.ixStunThreshold = entity.ixStunThreshold or math.random(3, 5)
+					if (!entity.ixStunThreshold) then
+						local character = entity:GetCharacter()
+						local endStat = character:GetAttribute("end", 0)
+						local lckStat = character:GetAttribute("lck", 0)
+						local maxAttr = ix.config.Get("maxAttributes", 100)
+
+						entity.ixStunThreshold = 1 + math.floor((endStat / maxAttr * 2) + (lckStat / maxAttr * 0.5))
+					end
 
 					timer.Simple(10, function()
 						if (!IsValid(entity)) then
