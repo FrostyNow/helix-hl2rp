@@ -9,7 +9,8 @@ function ENT:Draw()
 	self:DrawModel()
 
 	local bHasPairs = self:GetNetVar("hasPairs", false)
-	local color = bHasPairs and Color(0, 255, 0) or Color(255, 0, 0)
+	local bOnCooldown = CurTime() < self:GetNetVar("nextUseTime", 0)
+	local color = (bHasPairs and !bOnCooldown) and Color(0, 255, 0) or Color(255, 0, 0)
 	local position = self:GetPos() + self:GetUp() * 4 + self:GetForward() * 4
 
 	render.SetMaterial(GLOW_MATERIAL)

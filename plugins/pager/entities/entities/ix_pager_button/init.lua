@@ -17,6 +17,7 @@ function ENT:Initialize()
 
 	self.ixPairedItems = self.ixPairedItems or {}
 	self:SetNetVar("hasPairs", false)
+	self:SetNetVar("nextUseTime", 0)
 	self.nextUseTime = 0
 end
 
@@ -35,6 +36,7 @@ function ENT:Use(client)
 	
 	self:EmitSound("buttons/combine_button1.wav")
 	self.nextUseTime = CurTime() + 5
+	self:SetNetVar("nextUseTime", self.nextUseTime)
 	
 	local plugin = ix.plugin.Get("pager")
 	if (!plugin) then return end
