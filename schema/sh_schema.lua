@@ -190,8 +190,8 @@ end
 Schema.combineNameData = Schema.combineNameData or {
 	MPF = {
 		defaultRank = "RCT",
-		pattern = "^c17:MPF%-([%w]+)%.([A-Z]+):([1-9])$",
-		legacyPattern = "^c17:MPF%-([%w]+)%.([A-Z]+):(%d+)$",
+		pattern = "^([^:]*17):MPF%-([%w]+)%.([A-Z]+):([1-9])$",
+		legacyPattern = "^([^:]*17):MPF%-([%w]+)%.([A-Z]+):(%d+)$",
 		callsigns = {
 			"DEFENDER", "HERO", "JURY", "KING", "LINE", "PATROL", "QUICK", "ROLLER",
 			"STICK", "TAP", "UNION", "VICTOR", "XRAY", "YELLOW", "VICE"
@@ -201,7 +201,12 @@ Schema.combineNameData = Schema.combineNameData or {
 			["04"] = true,
 			["03"] = true,
 			["02"] = true,
-			["01"] = true
+			["01"] = true,
+			["i5"] = true,
+			["i4"] = true,
+			["i3"] = true,
+			["i2"] = true,
+			["i1"] = true
 		},
 		eliteRanks = {
 			EpU = true,
@@ -210,7 +215,7 @@ Schema.combineNameData = Schema.combineNameData or {
 			SeC = true,
 			CmD = true
 		},
-		orderedRanks = {"RCT", "05", "04", "03", "02", "01", "EpU", "OfC", "DvL", "SeC", "CmD"}
+		orderedRanks = {"RCT", "i5", "i4", "i3", "i2", "i1", "EpU", "OfC", "DvL", "SeC", "CmD"}
 	},
 	OTA = {
 		defaultRank = "OWS",
@@ -240,7 +245,14 @@ function Schema:GetCombineNameInfo(text)
 	end
 
 	for branch, data in pairs(self.combineNameData) do
-		local rank, callsign, number = text:match(data.pattern)
+		local captures = {text:match(data.pattern)}
+		local prefix, rank, callsign, number
+
+		if (#captures == 4) then
+			prefix, rank, callsign, number = unpack(captures)
+		elseif (#captures == 3) then
+			rank, callsign, number = unpack(captures)
+		end
 
 		if (rank) then
 			number = tonumber(number)
@@ -250,12 +262,19 @@ function Schema:GetCombineNameInfo(text)
 				rank = rank,
 				callsign = callsign,
 				number = number,
+				prefix = prefix,
 				unitID = string.format("%s-%d", callsign, number),
 				isLegacy = false
 			}
 		end
 
-		rank, callsign, number = text:match(data.legacyPattern)
+		captures = {text:match(data.legacyPattern)}
+
+		if (#captures == 4) then
+			prefix, rank, callsign, number = unpack(captures)
+		elseif (#captures == 3) then
+			rank, callsign, number = unpack(captures)
+		end
 
 		if (rank) then
 			local legacyNumber = tostring(number)
@@ -266,6 +285,7 @@ function Schema:GetCombineNameInfo(text)
 				rank = rank,
 				callsign = callsign,
 				number = collapsed,
+				prefix = prefix,
 				legacyNumber = legacyNumber,
 				unitID = string.format("%s-%s", callsign, legacyNumber),
 				isLegacy = true
@@ -302,7 +322,7 @@ function Schema:GetCombineUnitID(value)
 	return "???", nil
 end
 
-function Schema:FormatCombineName(branch, rank, callsign, number)
+function Schema:FormatCombineName(branch, rank, callsign, number, prefix)
 	local data = GetCombineNameData(branch)
 
 	if (!data) then
@@ -314,7 +334,7 @@ function Schema:FormatCombineName(branch, rank, callsign, number)
 	number = math.Clamp(math.floor(tonumber(number) or math.random(1, 9)), 1, 9)
 
 	if (branch == "MPF") then
-		return string.format("c17:MPF-%s.%s:%d", rank, callsign, number)
+		return string.format("%s:MPF-%s.%s:%d", prefix or "c̄17", rank, callsign, number)
 	end
 
 	if (branch == "OTA") then
@@ -340,7 +360,7 @@ function Schema:NormalizeCombineName(text, branchOverride)
 		number = tonumber(string.sub(source, -1)) or math.random(1, 9)
 	end
 
-	return self:FormatCombineName(branchOverride or info.branch, info.rank, info.callsign, number)
+	return self:FormatCombineName(branchOverride or info.branch, info.rank, info.callsign, number, info.prefix)
 end
 
 function Schema:IsCombineRank(text, rank)
@@ -580,7 +600,8 @@ function Schema:Promote(targetChar, client)
 			local index = 0
 
 			for k, v in ipairs(data.orderedRanks) do
-				if (v == currentRank) then
+				-- Support legacy 05-01 ranks by treating them as i5-i1 during promotion lookup
+				if (v == currentRank or v:gsub("^i", "0") == currentRank) then
 					index = k
 					break
 				end
@@ -644,7 +665,8 @@ function Schema:Demote(targetChar, client)
 			local index = 0
 
 			for k, v in ipairs(data.orderedRanks) do
-				if (v == currentRank) then
+				-- Support legacy 05-01 ranks by treating them as i5-i1 during demotion lookup
+				if (v == currentRank or v:gsub("^i", "0") == currentRank) then
 					index = k
 					break
 				end
