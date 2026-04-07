@@ -40,7 +40,9 @@ function ENT:ejectPilot()
 		pilot:SetNetVar("ixScn", nil)
 	end
 
+	self.VJ_NPC_Class = {"CLASS_COMBINE"}
 	self:SetPilot(NULL)
+	hook.Run("ScannerPilotChanged", pilot, self)
 end
 
 function ENT:setPilot(ply)
@@ -58,6 +60,14 @@ function ENT:setPilot(ply)
 	ply.ixScn = self -- Ensure the player has the member variable for KeyPress toggles!
 
 	ply:SetMoveType(MOVETYPE_NONE)
+	
+	if ply:IsCombine() then
+		self.VJ_NPC_Class = {"CLASS_COMBINE"}
+	elseif ply:Team() != FACTION_ADMIN then
+		self.VJ_NPC_Class = {"CLASS_PLAYER_ALLY", "CLASS_CITIZEN"}
+	end
+
+	hook.Run("ScannerPilotChanged", ply, self)
 end
 
 function ENT:createFlashSprite()
@@ -168,6 +178,8 @@ function ENT:Initialize()
 	self.health = self.maxHealth
 	self:SetMaxHealth(self.maxHealth)
 	self:SetHealth(self.maxHealth)
+
+	self.VJ_NPC_Class = {"CLASS_COMBINE"}
 end
 
 function ENT:setClawScanner()

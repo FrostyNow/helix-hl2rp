@@ -43,6 +43,10 @@ function ENT:SetupDataTables()
     self:NetworkVar("Entity", 0, "Pilot")
 end
 
+function ENT:Classify()
+	return CLASS_SCANNER
+end
+
 function ENT:canOperate(ply)
 	if not IsValid(ply) or not ply:IsPlayer() then return false end
 
