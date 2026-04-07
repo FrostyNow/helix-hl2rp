@@ -8,7 +8,7 @@ RECIPE.requirements = {
 	["pot"] = {amount = 1, preserve = true, substitutes = {["misc_tool_pressurecooker"] = 1, ["pan"] = 1}}
 }
 RECIPE.results = {
-	["brownie"] = 1
+	["brownie"] = 4
 }
 
 local stoves = {"ix_bucket", "ix_bonfire", "ix_stove"}
