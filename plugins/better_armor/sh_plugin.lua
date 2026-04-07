@@ -4,8 +4,6 @@ PLUGIN.author = "Subleader, Alex Grist | Modified by Frosty"
 PLUGIN.desc = "Compatible with bad air and localized damage, plus it adds damage resistance."
 
 ix.lang.AddTable("english", {
-	gasmaskRemoved = "You have removed your gasmask",
-	gasmaskEquipped = "You have put on your gasmask.",
 	repairToolsDesc = "Some tools for repairing armour.",
 	hazmatSuitDesc = "A military protective clothing that protects wearers from harmful environments.",
 	hazmatSuitCitizenDesc = "A protective clothing that protects wearers from harmful environments.",
@@ -28,11 +26,14 @@ ix.lang.AddTable("english", {
 	overwatch_vest_desc = "A bulletproof vest made from the equipment of the Overwatch Transhuman Arm.",
 	flak_jacket_desc = "A protective vest designed to shield against fragmentation and shrapnel.",
 	otaPlateDesc = "A bulletproof plate for the equipment of the Overwatch Transhuman Arm.",
+	noGasmaskFound = "You do not have a gasmask in your inventory.",
+	gasmaskCooldown = "You must wait %d more seconds before using this command.",
+	optGasmaskKey = "Gasmask Key",
+	optGasmaskKeyDesc = "Key used to toggle the gasmask. Use values like N, F6, KP_ENTER, or NONE to disable it.",
+	noFilterFound = "You do not have any usable filters in your inventory.",
 })
 ix.lang.AddTable("korean", {
 	["Intelligence"] = "지능",
-	gasmaskRemoved = "방독면 착용을 해제했습니다.",
-	gasmaskEquipped = "방독면을 착용했습니다.",
 	Repair = "수리하기",
 	["Repair Tools"] = "수리 공구",
 	repairToolsDesc = "방어구의 수리에 쓰이는 공구를 모아두었습니다.",
@@ -70,6 +71,11 @@ ix.lang.AddTable("korean", {
 	flak_jacket_desc = "파편을 방호할 수 있는 조끼입니다.",
 	["OTA Armor Plate"] = "감시부대 방탄판",
 	otaPlateDesc = "감시인 신인류 부대의 제식 장비를 위한 방탄판입니다.",
+	noGasmaskFound = "소지품에 방독면이 없습니다.",
+	gasmaskCooldown = "명령어를 다시 사용하려면 %d초 더 기다려야 합니다.",
+	optGasmaskKey = "방독면 단축키",
+	optGasmaskKeyDesc = "방독면을 쓰고 벗는 키입니다. N, F6, KP_ENTER 같은 값을 입력하고, NONE으로 비활성화할 수 있습니다.",
+	noFilterFound = "소지품에 사용할 수 있는 정화통이 없습니다.",
 })
 
 ix.util.Include("cl_plugin.lua")
@@ -183,6 +189,10 @@ end
 function PLUGIN:ScalePlayerDamage(client, hitgroup, dmginfo)
 	local bestScale, hitgroupProtected = GetArmorProtectionInfo(client, hitgroup, dmginfo)
 
+	if (SERVER) then
+		client.ixLastHitGroup = hitgroup
+	end
+
 	if (CLIENT and hitgroupProtected and dmginfo:IsDamageType(DMG_BULLET)) then
 		return true
 	end
@@ -208,7 +218,7 @@ function PLUGIN:PlayerHurt( client, attacker, health, damageTaken )
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()
 		
-		local hitgroup = client:LastHitGroup()
+		local hitgroup = client.ixLastHitGroup or client:LastHitGroup()
 
 		for k, v in pairs(items) do
 			if (v:GetData("equip")) then
@@ -232,29 +242,143 @@ function PLUGIN:PlayerHurt( client, attacker, health, damageTaken )
 				end
 			end
 		end
+
+		if (SERVER) then
+			client.ixLastHitGroup = nil
+		end
 	end
 end
 
--- ix.command.Add("Gasmask", {
--- 	description = "Wear or unwear your gasmask.",
--- 	adminOnly = false,
--- 	OnRun = function(self, client)
--- 		local character = client:GetCharacter()
--- 		local inventory = character:GetInventory()
--- 		local items = inventory:GetItems()
--- 		for k, v in pairs(items) do
--- 			if (v.gasmask == true) then
--- 				if client:GetNetVar("gasmask") then
--- 					client:SetNetVar("gasmask", false)
--- 					client:NotifyLocalized("gasmaskRemoved")
--- 				else
--- 					client:SetNetVar("gasmask", true)
--- 					client:NotifyLocalized("gasmaskEquipped")
--- 				end
--- 			end
--- 		end
--- 	end
--- })
+ix.command.Add("Gasmask", {
+	description = "Wear or unwear your gasmask.",
+	adminOnly = false,
+	OnRun = function(self, client)
+		if ((client.ixGasmaskCooldown or 0) > CurTime()) then
+			client:NotifyLocalized("gasmaskCooldown", math.ceil(client.ixGasmaskCooldown - CurTime()))
+			return
+		end
+
+		local character = client:GetCharacter()
+		local inventory = character:GetInventory()
+		local items = inventory:GetItems()
+		
+		local equippedMask = nil
+		local unequippedMask = nil
+		
+		for _, v in pairs(items) do
+			if (v.gasmask == true) then
+				if (v:GetData("equip")) then
+					equippedMask = v
+					break
+				else
+					if (!unequippedMask) then
+						unequippedMask = v
+					end
+				end
+			end
+		end
+
+		if (equippedMask) then
+			local func = equippedMask.functions.EquipUn
+			if (func and func.OnCanRun(equippedMask) != false) then
+				func.OnRun(equippedMask)
+				client.ixGasmaskCooldown = CurTime() + 5
+			end
+
+			return
+		end
+
+		if (unequippedMask) then
+			local func = unequippedMask.functions.Equip
+			if (func and func.OnCanRun(unequippedMask) != false) then
+				func.OnRun(unequippedMask)
+				client.ixGasmaskCooldown = CurTime() + 5
+			end
+
+			return
+		end
+
+		client:NotifyLocalized("noGasmaskFound")
+	end
+})
+
+ix.command.Add("FilterSwap", {
+	alias = {"Filter"},
+	description = "Swap your gasmask filter with the best one in your inventory (Hold key).",
+	OnRun = function(self, client)
+		if ((client.ixFilterCooldown or 0) > CurTime()) then
+			client:NotifyLocalized("gasmaskCooldown", math.ceil(client.ixFilterCooldown - CurTime()))
+			return
+		end
+
+		local char = client:GetCharacter()
+		local inv = char:GetInventory()
+		local badair = ix.plugin.list["badair"]
+
+		if (!badair) then return end
+
+		client.ixFilterCooldown = CurTime() + 1
+
+		-- 1. Remove existing filter first if any
+		if (badair:CanEquipInternalFilter(client)) then
+			local currentFilter = badair:GetEquippedBadAirProtectionItem(char, function(item)
+				return item.isGasmaskFilter == true
+			end)
+
+			if (currentFilter) then
+				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter, currentFilter.invID)
+			end
+		else
+			local targetMask = badair:GetEquippedBadAirProtectionItem(char, function(item)
+				return item.gasmask == true
+			end)
+
+			if (targetMask and badair:HasItemFilterInstalled(targetMask)) then
+				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask, targetMask.invID)
+			end
+		end
+
+		-- 2. Find the best filter in inventory (highest durability)
+		local bestFilter
+		local maxDura = -1
+
+		for _, item in pairs(inv:GetItems()) do
+			if (item.isGasmaskFilter and !item:GetData("equip")) then
+				local dura = item:GetData("Durability", item.maxDurability or 100)
+				if (dura > maxDura) then
+					maxDura = dura
+					bestFilter = item
+				end
+			end
+		end
+
+		if (!bestFilter) then
+			return "@noFilterFound"
+		end
+
+		-- 3. Install/Equip the best filter with a 0.5s delay
+		local itemID = bestFilter:GetID()
+		local charID = char:GetID()
+
+		timer.Simple(0.5, function()
+			if (!IsValid(client) or !client:GetCharacter() or client:GetCharacter():GetID() != charID) then
+				return
+			end
+
+			local item = ix.item.instances[itemID]
+			if (item and item:GetOwner() == client) then
+				if (badair:CanEquipInternalFilter(client)) then
+					ix.item.PerformInventoryAction(client, "Equip", item, item.invID)
+				else
+					ix.item.PerformInventoryAction(client, "Use", item, item.invID)
+				end
+			end
+		end)
+
+		-- We return nil here so the individual actions handle notifications.
+		return
+	end
+})
 
 local DEFAULT_ALLOWED_BASE_MODEL_CLASSES = {
 	citizen_female = true,
