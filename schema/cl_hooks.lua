@@ -37,21 +37,32 @@ local function ShouldRenderMasklessMetrocopAsAnonymous(viewer, client)
 end
 
 function Schema:PopulateCharacterInfo(client, character, tooltip)
-	if (client:IsRestricted()) then
-		local panel = tooltip:AddRowAfter("name", "ziptie")
-		panel:SetBackgroundColor(derma.GetColor("Warning", tooltip))
-		panel:SetText(L("tiedUp"))
-		panel:SizeToContents()
-	elseif (client:GetNetVar("tying")) then
-		local panel = tooltip:AddRowAfter("name", "ziptie")
-		panel:SetBackgroundColor(derma.GetColor("Warning", tooltip))
-		panel:SetText(L("beingTied"))
-		panel:SizeToContents()
-	elseif (client:GetNetVar("untying")) then
-		local panel = tooltip:AddRowAfter("name", "ziptie")
-		panel:SetBackgroundColor(derma.GetColor("Warning", tooltip))
-		panel:SetText(L("beingUntied"))
-		panel:SizeToContents()
+	local panel = tooltip:AddRowAfter("name", "ziptie")
+	panel:SetBackgroundColor(derma.GetColor("Warning", tooltip))
+	panel:SizeToContents()
+
+	function panel:Think()
+		local text = ""
+		local bVisible = true
+
+		if (client:IsRestricted()) then
+			text = L("tiedUp")
+		elseif (client:GetNetVar("tying")) then
+			text = L("beingTied")
+		elseif (client:GetNetVar("untying")) then
+			text = L("beingUntied")
+		else
+			bVisible = false
+		end
+
+		if (self:GetText() != text) then
+			self:SetText(text)
+			self:SizeToContents()
+		end
+
+		if (self:IsVisible() != bVisible) then
+			self:SetVisible(bVisible)
+		end
 	end
 end
 
