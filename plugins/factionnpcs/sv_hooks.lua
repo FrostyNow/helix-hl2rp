@@ -34,32 +34,62 @@ function PLUGIN:HandleNPCRelations(npc, client)
 		return
 	end
 
+	local disposition
+
 	if (self:IsNPCCombine(npc)) then
 		if (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT) then
-			npc:AddEntityRelationship(client, D_LI, 99)
-
-			if (npc.SetRelationshipMemory) then
-				npc:SetRelationshipMemory(client, "override_disposition", D_LI)
-			end
+			disposition = D_LI
 		else
-			npc:AddEntityRelationship(client, D_HT, 99)
-
-			if (npc.SetRelationshipMemory) then
-				npc:SetRelationshipMemory(client, "override_disposition", D_HT)
-			end
+			disposition = D_HT
 		end
 	elseif (self:IsNPCRebel(npc)) then
 		if (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT) then
-			npc:AddEntityRelationship(client, D_HT, 99)
-
-			if (npc.SetRelationshipMemory) then
-				npc:SetRelationshipMemory(client, "override_disposition", D_HT)
-			end
+			disposition = D_HT
 		else
-			npc:AddEntityRelationship(client, D_LI, 99)
+			disposition = D_LI
+		end
+	end
+
+	if (disposition) then
+		npc:AddEntityRelationship(client, disposition, 99)
+
+		if (npc.SetRelationshipMemory) then
+			npc:SetRelationshipMemory(client, "override_disposition", disposition)
+		end
+
+		local scanner = client:GetNetVar("ixScn")
+
+		if (IsValid(scanner)) then
+			npc:AddEntityRelationship(scanner, disposition, 99)
 
 			if (npc.SetRelationshipMemory) then
-				npc:SetRelationshipMemory(client, "override_disposition", D_LI)
+				npc:SetRelationshipMemory(scanner, "override_disposition", disposition)
+			end
+		end
+	end
+end
+
+function PLUGIN:ScannerPilotChanged(client, scanner)
+	if (IsValid(client)) then
+		self:UpdateRelations(client)
+	end
+
+	if (IsValid(scanner) and !IsValid(scanner:GetPilot())) then
+		for _, v in ents.Iterator() do
+			if (v:IsNPC()) then
+				if (self:IsNPCCombine(v)) then
+					v:AddEntityRelationship(scanner, D_LI, 99)
+
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(scanner, "override_disposition", D_LI)
+					end
+				elseif (self:IsNPCRebel(v)) then
+					v:AddEntityRelationship(scanner, D_HT, 99)
+
+					if (v.SetRelationshipMemory) then
+						v:SetRelationshipMemory(scanner, "override_disposition", D_HT)
+					end
+				end
 			end
 		end
 	end
