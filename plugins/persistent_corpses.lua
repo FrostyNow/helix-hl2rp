@@ -707,3 +707,42 @@ if (SERVER) then
 		if client:IsRagdoll() then return false end
 	end
 end
+
+properties.Add("corpse_view", {
+	MenuLabel = "View",
+	Order = 400,
+	MenuIcon = "icon16/eye.png",
+
+	Filter = function(self, entity, client)
+		if (entity:GetClass() != "prop_ragdoll") then return false end
+		if (!entity:GetNetVar("ixInventory")) then return false end
+		if (!client:IsAdmin()) then return false end
+
+		return true
+	end,
+
+	Action = function(self, entity)
+		self:MsgStart()
+			net.WriteEntity(entity)
+		self:MsgEnd()
+	end,
+
+	Receive = function(self, length, client)
+		local entity = net.ReadEntity()
+
+		if (!IsValid(entity)) then return end
+		if (!self:Filter(entity, client)) then return end
+
+		local inventory = ix.item.inventories[entity:GetNetVar("ixInventory")]
+
+		if (inventory) then
+			local name = L("corpseName", client, entity:GetNetVar("ixPlayerName") or "Unknown")
+
+			ix.storage.Open(client, inventory, {
+				name = name,
+				entity = entity,
+				searchTime = 0
+			})
+		end
+	end
+})

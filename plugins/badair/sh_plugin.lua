@@ -208,24 +208,23 @@ function PLUGIN:GetFilterInstallTarget(character)
 		return nil
 	end
 
-	local inventory = character:GetInventory()
-
-	if (!inventory) then
-		return nil
-	end
-
+	local charID = character:GetID()
 	local fallback
 
-	for _, item in pairs(inventory:GetItems()) do
-		if (!self:ItemRequiresGasmaskFilter(item) or self:HasItemFilterInstalled(item)) then
-			continue
-		end
+	for _, inventory in pairs(ix.item.inventories) do
+		if (inventory.owner == charID) then
+			for _, item in pairs(inventory:GetItems()) do
+				if (!self:ItemRequiresGasmaskFilter(item) or self:HasItemFilterInstalled(item)) then
+					continue
+				end
 
-		if (item:GetData("equip")) then
-			return item
-		end
+				if (item:GetData("equip")) then
+					return item
+				end
 
-		fallback = fallback or item
+				fallback = fallback or item
+			end
+		end
 	end
 
 	return fallback
@@ -312,19 +311,19 @@ function PLUGIN:GetEquippedBadAirProtectionItem(character, predicate)
 		return nil
 	end
 
-	local inventory = character:GetInventory()
+	local charID = character:GetID()
 
-	if (!inventory) then
-		return nil
-	end
+	for _, inventory in pairs(ix.item.inventories) do
+		if (inventory.owner == charID) then
+			for _, item in pairs(inventory:GetItems()) do
+				if (!item:GetData("equip") or !item.badAirProtection) then
+					continue
+				end
 
-	for _, item in pairs(inventory:GetItems()) do
-		if (!item:GetData("equip") or !item.badAirProtection) then
-			continue
-		end
-
-		if (!predicate or predicate(item)) then
-			return item
+				if (!predicate or predicate(item)) then
+					return item
+				end
+			end
 		end
 	end
 
@@ -381,69 +380,84 @@ if (!CLIENT) then
 			local char = client:GetCharacter()
 
 			if (client:Alive() and char) then
-				local isInGas = false
+				local isInBadAirArea = false
+				local toxicity = char:GetToxicity(0)
 
 				if (client:IsInArea()) then
 					local areaID = client:GetArea()
-					
+
 					if (areaID and areaID != "") then
 						local areaMeta = ix.area.stored[areaID]
-						
+
 						if (areaMeta and areaMeta.properties and areaMeta.properties.badair) then
-							local bIsProtected = client:GetMoveType() == MOVETYPE_NOCLIP
-							local bCombineProtected = false
+							isInBadAirArea = true
+						end
+					end
+				end
 
-							if (!bIsProtected and char.IsVortigaunt and char:IsVortigaunt()) then
-								bIsProtected = true
-							end
+				local bIsProtected = client:GetMoveType() == MOVETYPE_NOCLIP
+				local bCombineProtected = false
 
-							if (!bIsProtected and client:IsCombine()) then
-								if (Schema:IsConceptCombine(client)) then
-									local index = client:FindBodygroupByName("mask")
+				if (!bIsProtected and char.IsVortigaunt and char:IsVortigaunt()) then
+					bIsProtected = true
+				end
 
-									if (index != -1 and client:GetBodygroup(index) >= 1) then
-										local combineMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
-											return item.combineMaskProtection == true
-										end)
+				-- Only check complex protection if they are in bad air or have high toxicity
+				if (!bIsProtected and (isInBadAirArea or toxicity >= 20)) then
+					if (client:IsCombine()) then
+						if (Schema:IsConceptCombine(client)) then
+							local index = client:FindBodygroupByName("mask")
 
-										if (combineMask) then
-											bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, combineMask)
-											bCombineProtected = true
-										end
-									end
-								else
-									local activeFilter = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
-										return item.isGasmaskFilter == true
-									end)
+							if (index != -1 and client:GetBodygroup(index) >= 1) then
+								local combineMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+									return item.combineMaskProtection == true
+								end)
 
-									if (activeFilter) then
-										bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeFilter)
-									elseif (PLUGIN:CharacterRequiresGasmaskFilter(char)) then
-										bIsProtected = false
+								if (combineMask) then
+									if (isInBadAirArea) then
+										bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, combineMask)
 									else
-										bIsProtected = true
+										bIsProtected = PLUGIN:CanItemProtectFromBadAir(combineMask)
 									end
 									bCombineProtected = true
 								end
 							end
+						else
+							local activeFilter = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+								return item.isGasmaskFilter == true
+							end)
 
-							if (!bCombineProtected and client:GetNetVar("gasmask") and client:GetMoveType() != MOVETYPE_NOCLIP) then
-								local activeMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
-									return item.gasmask == true
-								end)
-
-								if (activeMask) then
-									bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeMask)
+							if (activeFilter) then
+								if (isInBadAirArea) then
+									bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeFilter)
+								else
+									bIsProtected = PLUGIN:CanItemProtectFromBadAir(activeFilter)
 								end
+							elseif (PLUGIN:CharacterRequiresGasmaskFilter(char)) then
+								bIsProtected = false
+							else
+								bIsProtected = true
 							end
+							bCombineProtected = true
+						end
+					end
 
-							if (!bIsProtected) then
-								isInGas = true
+					if (!bCombineProtected and client:GetNetVar("gasmask") and client:GetMoveType() != MOVETYPE_NOCLIP) then
+						local activeMask = PLUGIN:GetEquippedBadAirProtectionItem(char, function(item)
+							return item.gasmask == true
+						end)
+
+						if (activeMask) then
+							if (isInBadAirArea) then
+								bIsProtected = PLUGIN:TryProtectWithBadAirItem(client, activeMask)
+							else
+								bIsProtected = PLUGIN:CanItemProtectFromBadAir(activeMask)
 							end
 						end
 					end
 				end
 
+				local isInGas = isInBadAirArea and !bIsProtected
 				local wasInGas = client.ixInBadAir or false
 
 				if (isInGas and !wasInGas) then
@@ -466,8 +480,6 @@ if (!CLIENT) then
 					end
 				end
 
-				local toxicity = char:GetToxicity(0)
-
 				if (isInGas) then
 					toxicity = math.Clamp(toxicity + 3, 0, 100)
 					char:SetToxicity(toxicity)
@@ -477,18 +489,21 @@ if (!CLIENT) then
 						client:TakeDamage(dmg)
 						client:ScreenFade(1, ColorAlpha(color_white, 150), .5, 0)
 					end
-
-					if ((client.ixNextCough or 0) < CurTime()) then
-						client.ixNextCough = CurTime() + math.Rand(3, 5)
-						
-						local pitch = client:IsFemale() and math.random(115, 125) or math.random(95, 105)
-						client:EmitSound("ambient/voices/cough" .. math.random(1, 4) .. ".wav", 75, pitch)
-						client:ViewPunch(Angle(math.Rand(-3, 3), math.Rand(-2, 2), math.Rand(-1, 1)))
-					end
 				else
 					if (toxicity > 0) then
 						toxicity = math.Clamp(toxicity - 0.3, 0, 100)
 						char:SetToxicity(toxicity)
+					end
+				end
+
+				-- Cough logic: triggered by either being in gas or having high toxicity, provided not protected
+				if (!bIsProtected and (isInGas or toxicity >= 20)) then
+					if ((client.ixNextCough or 0) < CurTime()) then
+						client.ixNextCough = CurTime() + math.Rand(3, 5)
+
+						local pitch = client:IsFemale() and math.random(115, 125) or math.random(95, 105)
+						client:EmitSound("ambient/voices/cough" .. math.random(1, 4) .. ".wav", 75, pitch)
+						client:ViewPunch(Angle(math.Rand(-3, 3), math.Rand(-2, 2), math.Rand(-1, 1)))
 					end
 				end
 			end

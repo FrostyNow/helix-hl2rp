@@ -263,21 +263,37 @@ function Schema:CanPlayerViewObjectives(client)
 end
 
 function Schema:CanPlayerEditObjectives(client)
-	if (!client:IsCombine() or !client:GetCharacter()) then
+	if (client:IsAdmin()) then
+		return true
+	end
+
+	local character = client:GetCharacter()
+	if (!character or !client:IsCombine()) then
 		return false
 	end
 
-	local bCanEdit = false
-	local name = client:GetCharacter():GetName()
+	local name = character:GetName()
+	local info = self:GetCombineNameInfo(name)
 
-	for k, v in ipairs({"OfC", "EpU", "DvL", "SeC", "CmD"}) do
-		if (self:IsCombineRank(name, v)) then
-			bCanEdit = true
-			break
+	-- MPF Elite
+	if (info and info.branch == "MPF" and self.combineNameData.MPF.eliteRanks[info.rank]) then
+		return true
+	end
+
+	-- OTA
+	if (info and info.branch == "OTA" and (info.rank == "SGS" or info.rank == "EOW")) then
+		return true
+	end
+
+	-- etc.
+	local editorKeywords = {"LEADER"}
+	for _, keyword in ipairs(editorKeywords) do
+		if (self:IsCombineRank(name, keyword)) then
+			return true
 		end
 	end
 
-	return bCanEdit
+	return false
 end
 
 function Schema:CanDrive(client)

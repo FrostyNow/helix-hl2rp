@@ -119,23 +119,29 @@ if (SERVER) then
 			local itemTable = entity:GetItemTable()
 			if (!itemTable) then continue end
 
-			-- 1. Check if it's "un-takable" (cannotTake data)
-			if (itemTable:GetData("cannotTake")) then
+			-- 1. Check if it's "un-takable" (cannotTake data or property)
+			if (itemTable:GetData("cannotTake") or itemTable.cannotTake or itemTable.noCleanup) then
 				continue
 			end
 
-			-- 2. Check if it's in a no-cleanup area
+			-- 2. Check if it's on the config whitelist
+			local whitelist = ix.config.Get("itemCleanerWhitelist", "")
+			if (whitelist ~= "" and string.find("," .. whitelist:gsub("%s", "") .. ",", "," .. itemTable.uniqueID .. ",", 1, true)) then
+				continue
+			end
+
+			-- 3. Check if it's in a no-cleanup area
 			if (self:IsItemInNoCleanupArea(entity)) then
 				continue
 			end
 
-			-- 3. Check age/last interaction
+			-- 4. Check age/last interaction
 			local lastTouch = entity.ixLastInteraction or 0
 			if (currentTime - lastTouch < maxAge) then
 				continue
 			end
 
-			-- 4. Check visibility (Includes proximity check)
+			-- 5. Check visibility (Includes proximity check)
 			if (self:IsItemVisibleToPlayers(entity)) then
 				continue
 			end

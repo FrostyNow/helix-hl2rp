@@ -332,16 +332,21 @@ ix.command.Add("FilterSwap", {
 			end
 		end
 
-		-- 2. Find the best filter in inventory (highest durability)
+		-- 2. Find the best filter in any owned inventory (highest durability)
 		local bestFilter
 		local maxDura = -1
+		local charID = char:GetID()
 
-		for _, item in pairs(inv:GetItems()) do
-			if (item.isGasmaskFilter and !item:GetData("equip")) then
-				local dura = item:GetData("Durability", item.maxDurability or 100)
-				if (dura > maxDura) then
-					maxDura = dura
-					bestFilter = item
+		for _, inventory in pairs(ix.item.inventories) do
+			if (inventory.owner == charID) then
+				for _, item in pairs(inventory:GetItems()) do
+					if (item.isGasmaskFilter and !item:GetData("equip")) then
+						local dura = item:GetData("Durability", item.maxDurability or 100)
+						if (dura > maxDura) then
+							maxDura = dura
+							bestFilter = item
+						end
+					end
 				end
 			end
 		end

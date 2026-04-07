@@ -171,6 +171,18 @@ function PLUGIN:AdjustMouseSensitivity()
 	end
 end
 
+local function GetAreaNameAtPos(pos)
+	if (!ix.area or !ix.area.stored) then return "unknown" end
+
+	for id, info in pairs(ix.area.stored) do
+		if (pos:WithinAABox(info.startPosition, info.endPosition)) then
+			return (info.properties.name and info.properties.name != "") and info.properties.name or id
+		end
+	end
+
+	return "unknown"
+end
+
 function PLUGIN:HUDPaint()
 	if (not hidden) then return end
 
@@ -189,7 +201,7 @@ function PLUGIN:HUDPaint()
 	local position = IsValid(scanner) and scanner:GetPos() or LocalPlayer():GetPos()
 	local angle = IsValid(scanner) and scanner:GetAngles() or LocalPlayer():GetAimVector():Angle()
 	local scannerName = IsValid(scanner) and scanner:GetNetVar("ixScannerName", L("scannerName")) or LocalPlayer():Name()
-	local zone = LocalPlayer():GetAreaName() != "" and LocalPlayer():GetAreaName() or "unknown"
+	local zone = GetAreaNameAtPos(position)
 
 	draw.SimpleText("POS ("..math.floor(position[1])..", "..math.floor(position[2])..", "..math.floor(position[3])..")", "ixScannerFont", x + 8, y + 8, color_white)
 	draw.SimpleText("ANG ("..math.floor(angle[1])..", "..math.floor(angle[2])..", "..math.floor(angle[3])..")", "ixScannerFont", x + 8, y + 24, color_white)
@@ -199,7 +211,7 @@ function PLUGIN:HUDPaint()
 
 	if (IsValid(self.lastViewEntity)) then
 		data.start = self.lastViewEntity:GetPos()
-		data.endpos = data.start + LocalPlayer():GetAimVector() * 500
+		data.endpos = data.start + angle:Forward() * 500
 		data.filter = self.lastViewEntity
 
 		local entity = util.TraceLine(data).Entity

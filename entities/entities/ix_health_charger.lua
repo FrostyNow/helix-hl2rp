@@ -211,8 +211,15 @@ if (SERVER) then
 			local nextPaidUse = math.max(self.restoreAmount - self:GetFreeCharge(), 0) * self:GetCostPerHealth()
 			local nextCost = math.Round((self.sessionPaidUsed + nextPaidUse) * 100)
 
+			local easymedikit = ix.plugin.list["easymedikit"]
+			local bHasWounds = false
+
+			if (easymedikit and character) then
+				bHasWounds = character:GetBleeding() or character:GetFracture()
+			end
+
 			if (dist > 96 or !self.user:KeyDown(IN_USE) or self:GetUsed() >= 1 or
-				self.user:Health() >= self.user:GetMaxHealth() or !character or character:GetMoney() < nextCost) then
+				(self.user:Health() >= self.user:GetMaxHealth() and !bHasWounds) or !character or character:GetMoney() < nextCost) then
 				self:finishUse()
 				return
 			end
@@ -229,6 +236,10 @@ if (SERVER) then
 				if (toxicity > 0) then
 					self.user:SetLocalVar("toxicity", math.Clamp(toxicity - restored, 0, 100))
 				end
+			end
+
+			if (easymedikit and character and bHasWounds) then
+				easymedikit:ClearWounds(self.user)
 			end
 
 			if (restored > 0 and !self.beganCharging) then
@@ -294,7 +305,14 @@ if (SERVER) then
 		local character = client:GetCharacter()
 		local minCost = math.Round(self.restoreCost * 100)
 
-		if (!client.ixHealthCharging and !IsValid(self.user) and self:GetUsed() < 1 and client:Health() < client:GetMaxHealth()) then
+		local easymedikit = ix.plugin.list["easymedikit"]
+		local bHasWounds = false
+
+		if (easymedikit and character) then
+			bHasWounds = character:GetBleeding() or character:GetFracture()
+		end
+
+		if (!client.ixHealthCharging and !IsValid(self.user) and self:GetUsed() < 1 and (client:Health() < client:GetMaxHealth() or bHasWounds)) then
 			if (character and !self:IsFreeUseAvailable() and character:GetMoney() < minCost) then
 				client:Notify(L("healthChargerNoMoney", client))
 				self:EmitSound(self.denySound)

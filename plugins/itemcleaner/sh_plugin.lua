@@ -37,6 +37,10 @@ ix.config.Add("itemCleanerProximity", 15, "The distance (in meters) from players
 	category = "Item Cleaner"
 })
 
+ix.config.Add("itemCleanerWhitelist", "paper", "A comma-separated list of item uniqueIDs that will be ignored by the item cleaner.", nil, {
+	category = "Item Cleaner"
+})
+
 ix.lang.AddTable("english", {
 	itemCleanerConfig = "Item Cleaner",
 	itemCleanerRemoved = "Removed %d items from the map for inactivity.",

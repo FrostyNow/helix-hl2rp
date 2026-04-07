@@ -5,17 +5,14 @@
 - 브린캐스트: NPC Scenes 애드온으로 개선
 - NPC/박스 드랍템 대치
 - 출혈 시각적 효과
+- 방독면 내구도/단축키
+- DB inv context menu view
+- 오염도 있으면 계속 기침
+- 스캐너 UI에 target과 zone
 
 # 우선순위 높음
-- 방독면 내구도/단축키
-	- OTA가 홀드해서 정화통 장착 안됨
-- 작전 목표 작성 불가, 데이터 저장 버튼 안 보임
-- 아이템 청소에 화이트리스트 넣고 paper
 - ACT 고스트 의자 위에 앉기, 벽 대상
-- 사망자 inv 있으면 context menu view
-- 오염도 있으면 계속 기침
 - 감시인 용어집 컬러, 레이아웃 깨진거 수정
-- health charger로 골절, 출혈 회복
 - 나이트비전 IR 되다 안되다
 - SitAnywhere 화살표 고치기
 - 담배
@@ -23,7 +20,6 @@
 # 우선순위 낮음
 - 벨트를 제한 있는 가방으로
 - 적대 NPC가 스캐너 사격
-- 스캐너 UI에 target과 zone이 스캐너 기준이 아니라 조종사 기준
 - 삽으로 땅파기
 	- 흙이나 모래처럼 팔 수 있는 땅에서만
 	- 토큰 내지 ixloot 연동, shovel 장착 후 땅을 때렸을때
@@ -43,9 +39,6 @@
 	- npc_seagull or zb_hl2_seagull
 	- npc_crow or zb_hl2_crow
 	- zb_hl2_rat
-- 지뢰 관계도
-	- combine_mine
-	- combine_mine_resistance
 - 콤바인 감시인 본머지
 - 자동 디스패치
 - 미디어 플레이어 기반 화면 엔티티 추가
