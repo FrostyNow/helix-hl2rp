@@ -539,6 +539,7 @@ if (CLIENT) then
 				ghost:SetSolid(SOLID_VPHYSICS)
 				ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
 				ghost.furnitureIndex = k
+				ghost.angle = LocalPlayer():EyeAngles().y + 180
 				ix.gui.furnitureGhost = ghost
 
 				LocalPlayer():NotifyLocalized("furniturePlaceMode")
@@ -559,9 +560,8 @@ if (CLIENT) then
 			})
 
 			local pos = trace.HitPos
-			local ang = Angle(0, client:EyeAngles().y + 180, 0)
-			
 			local furnitureData = PLUGIN.FurnitureList[ghost.furnitureIndex]
+			local ang = (furnitureData and furnitureData.wall) and (client:EyeAngles().y + 180) or ghost.angle
 			local bValidSurface = false
 			
 			if (furnitureData and furnitureData.wall) then
@@ -575,7 +575,7 @@ if (CLIENT) then
 				bValidSurface = (trace.HitNormal.z > 0.6)
 			end
 
-			ghost:SetAngles(ang)
+			ghost:SetAngles(Angle(0, ang, 0))
 
 			local mins, _ = ghost:GetModelBounds()
 			local center = ghost:OBBCenter()
@@ -625,6 +625,15 @@ if (CLIENT) then
 					surface.PlaySound("buttons/button10.wav")
 				end
 				return true
+			elseif (bind:find("invprev") or bind:find("invnext")) then
+				local furnitureData = PLUGIN.FurnitureList[ghost.furnitureIndex]
+				
+				-- Only allow rotation for non-wall furniture
+				if (furnitureData and !furnitureData.wall) then
+					local multiplier = bind:find("invprev") and 1 or -1
+					ghost.angle = ghost.angle + (10 * multiplier)
+					return true
+				end
 			end
 		end
 	end
