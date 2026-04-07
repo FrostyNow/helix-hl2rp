@@ -10,6 +10,8 @@ ITEM.height = 1
 ITEM.price = 150
 ITEM.factions = {FACTION_CONSCRIPT}
 
+ITEM.isStackable = true
+
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")
