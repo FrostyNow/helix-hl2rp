@@ -44,5 +44,5 @@ Temporary Items
 
 # User Custom
 .antigravityignore
-.claude
-.vs
+.claude/
+.vs/
