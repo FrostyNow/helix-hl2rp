@@ -5,6 +5,9 @@ PLUGIN.desc = "Remastered Bad Air"
 
 ix.lang.AddTable("korean", {
 	toxicity = "오염도",
+	toxicityLow = "약간 거친 호흡",
+	toxicityMedium = "거친 호흡과 비틀거림",
+	toxicityHigh = "숨을 제대로 못 쉬고, 심하게 비틀거림",
 	badairEnter1 = "갑자기 숨 쉬기가 답답하고 쓰라린 듯 따갑습니다.",
 	badairEnter2 = "뭔가 매캐한 냄새가 나는 것 같습니다.",
 	badairEnter3 = "공기 중에 무거운 입자가 깔리는 듯한 느낌이 듭니다.",
@@ -27,6 +30,9 @@ ix.lang.AddTable("korean", {
 
 ix.lang.AddTable("english", {
 	toxicity = "Toxicity",
+	toxicityLow = "Slightly heavy breathing",
+	toxicityMedium = "Heavy breathing and staggering",
+	toxicityHigh = "Cannot breathe properly and severe staggering",
 	badairEnter1 = "It suddenly feels stuffy and your breathing stings.",
 	badairEnter2 = "It smells as if there's something acrid here.",
 	badairEnter3 = "It feels as though heavy particles are settling in the air.",
@@ -46,6 +52,16 @@ ix.lang.AddTable("english", {
 	installFilter = "Install Filter",
 	removeFilter = "Remove Filter"
 })
+
+do
+	ix.char.RegisterVar("toxicity", {
+		field = "toxicity",
+		fieldType = ix.type.float,
+		default = 0,
+		isLocal = false,
+		bNoDisplay = true
+	})
+end
 
 local badairEnterMessages = {
 	"badairEnter1",
@@ -450,11 +466,11 @@ if (!CLIENT) then
 					end
 				end
 
-				local toxicity = client:GetLocalVar("toxicity", 0)
+				local toxicity = char:GetToxicity(0)
 
 				if (isInGas) then
 					toxicity = math.Clamp(toxicity + 3, 0, 100)
-					client:SetLocalVar("toxicity", toxicity)
+					char:SetToxicity(toxicity)
 
 					if (toxicity >= 100) then
 						local dmg = math.max(1, client:GetMaxHealth() / 33)
@@ -472,7 +488,7 @@ if (!CLIENT) then
 				else
 					if (toxicity > 0) then
 						toxicity = math.Clamp(toxicity - 0.3, 0, 100)
-						client:SetLocalVar("toxicity", toxicity)
+						char:SetToxicity(toxicity)
 					end
 				end
 			end
@@ -480,8 +496,42 @@ if (!CLIENT) then
 	end)
 else
 	ix.bar.Add(function()
-		return math.max(LocalPlayer():GetLocalVar("toxicity", 0) / 100, 0)
+		local char = LocalPlayer():GetCharacter()
+		return char and math.max(char:GetToxicity(0) / 100, 0) or 0
 	end, Color(34, 139, 34), nil, "toxicity")
+
+	function PLUGIN:PopulateCharacterInfo(player, character, tooltip)
+		local row = tooltip:AddRow("toxicityStatus")
+		row:SetBackgroundColor(Color(34, 139, 34))
+		row:SetTextColor(color_white)
+		row:SizeToContents()
+
+		function row:Think()
+			local toxicity = character:GetToxicity(0)
+			local text = ""
+			local bVisible = false
+
+			if (toxicity >= 80) then
+				text = L("toxicityHigh")
+				bVisible = true
+			elseif (toxicity >= 50) then
+				text = L("toxicityMedium")
+				bVisible = true
+			elseif (toxicity >= 20) then
+				text = L("toxicityLow")
+				bVisible = true
+			end
+
+			if (self:GetText() != text) then
+				self:SetText(text)
+				self:SizeToContents()
+			end
+
+			if (self:IsVisible() != bVisible) then
+				self:SetVisible(bVisible)
+			end
+		end
+	end
 end
 
 ix.command.Add("AreaBadAir", {
