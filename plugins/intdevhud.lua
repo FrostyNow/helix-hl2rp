@@ -1,5 +1,5 @@
 PLUGIN.name = "In-Development Hud"
-PLUGIN.author = "Shooter#5269"
+PLUGIN.author = "Shooter#5269 | Modified by Frosty"
 PLUGIN.description = "Implements a small hud for players to see at all times, admins will have access to a dev varient as well."
 
 PLUGIN.servername = "TEAM FROSTY"
@@ -16,7 +16,7 @@ ix.lang.AddTable("korean", {
 
 ix.config.Add("DevHud", true, "Weather or not players see the hud at all.", nil, {
 	category = "appearance"
-})	
+})
 
 CAMI.RegisterPrivilege({
 	Name = "Helix - Staff Hud",
@@ -100,35 +100,59 @@ if (CLIENT) then
 						local entTrace = trace.Entity
 						--Dev Info
 						draw.SimpleText( 
-						"| Pos: ".. math.Round(lclient:GetPos().x, 2) .."," .. math.Round(lclient:GetPos().y, 2) .."," .. math.Round(lclient:GetPos().z, 2) .." | Angle: ".. math.Round(lclient:GetAngles().x, 2) ..",".. math.Round(lclient:GetAngles().y, 2) ..",".. math.Round(lclient:GetAngles().z, 2) .." | FPS: " ..  math.Round( 1 / FrameTime(), 0) .. " | Trace Dis: ".. math.Round(lclient:GetPos():Distance( trace.HitPos ), 2) .. " | ",
-						"DevHudText",
-						w/5.25,
-						h/1.10,
-						Color( 210, 210, 210, 255 ),
-						TEXT_ALIGN_LEFT,
-						TEXT_ALIGN_CENTER
+							"| Pos: ".. math.Round(lclient:GetPos().x, 2) .."," .. math.Round(lclient:GetPos().y, 2) .."," .. math.Round(lclient:GetPos().z, 2) .." | Angle: ".. math.Round(lclient:GetAngles().x, 2) ..",".. math.Round(lclient:GetAngles().y, 2) ..",".. math.Round(lclient:GetAngles().z, 2) .." | Speed: ".. math.Round(lclient:GetVelocity():Length(), 0) .." | FPS: " ..  math.Round( 1 / FrameTime(), 0) .. " | Trace Dis: ".. math.Round(lclient:GetPos():Distance( trace.HitPos ), 2) .. " | ",
+							"DevHudText",
+							w/5.25,
+							h/1.10,
+							Color( 210, 210, 210, 255 ),
+							TEXT_ALIGN_LEFT,
+							TEXT_ALIGN_CENTER
 						)
 						-- more info
 						draw.SimpleText( 
-						"| Trace Pos: ".. math.Round(trace.HitPos.x, 2) ..",".. math.Round(trace.HitPos.y, 2) ..",".. math.Round(trace.HitPos.z, 2) .." | Cur Health: " .. math.Round(lclient:Health(), 2) .. " | FrameTime: " .. FrameTime() .. " | PING: " ..lclient:Ping().. " | ",
-						"DevHudText",
-						w/5.25,
-						h/1.08,
-						Color( 210, 210, 210, 255 ),
-						TEXT_ALIGN_LEFT,
-						TEXT_ALIGN_CENTER
+							"| Trace Pos: ".. math.Round(trace.HitPos.x, 2) ..",".. math.Round(trace.HitPos.y, 2) ..",".. math.Round(trace.HitPos.z, 2) .." | Cur Health: " .. math.Round(lclient:Health(), 0) .. " | FrameTime: " .. math.Round(FrameTime(), 4) .. " | PING: " ..lclient:Ping().. " | Weapon: "..(IsValid(lclient:GetActiveWeapon()) and lclient:GetActiveWeapon():GetClass() or "None").." | ",
+							"DevHudText",
+							w/5.25,
+							h/1.08,
+							Color( 210, 210, 210, 255 ),
+							TEXT_ALIGN_LEFT,
+							TEXT_ALIGN_CENTER
 						)
 						if IsValid(entTrace) then
-						-- more info
-						draw.SimpleText( 
-						"| Cur Trace: ".. entTrace:GetClass() .." | Trace Model: " .. entTrace:GetModel() .. " | ",
-						"DevHudText",
-						w/5.25,
-						h/1.06,
-						Color( 210, 210, 210, 255 ),
-						TEXT_ALIGN_LEFT,
-						TEXT_ALIGN_CENTER
-						)
+							-- more info
+							local creationID = entTrace:MapCreationID()
+							local idString = (creationID > 0) and (" | ID: " .. creationID) or ""
+							
+							local targetInfo = ""
+							if entTrace:IsPlayer() then
+								local char = entTrace:GetCharacter()
+								local name = char and char:GetName() or entTrace:Nick()
+								local faction = char and ix.faction.Get(char:GetFaction()).name or "Unknown"
+								targetInfo = " | Name: " .. name .. " | Faction: " .. faction
+							end
+
+							draw.SimpleText( 
+								"| Cur Trace: ".. entTrace:GetClass() .." | Trace Model: " .. entTrace:GetModel() .. targetInfo .. idString .. " | ",
+								"DevHudText",
+								w/5.25,
+								h/1.06,
+								Color( 210, 210, 210, 255 ),
+								TEXT_ALIGN_LEFT,
+								TEXT_ALIGN_CENTER
+							)
+
+							-- local position info
+							local localPos = entTrace:WorldToLocal(trace.HitPos)
+							local hitNormal = trace.HitNormal
+							draw.SimpleText( 
+								"| Local Pos: ".. math.Round(localPos.x, 3) .."," .. math.Round(localPos.y, 3) .."," .. math.Round(localPos.z, 3) .." | Hit Normal: ".. math.Round(hitNormal.x, 3) ..",".. math.Round(hitNormal.y, 3) ..",".. math.Round(hitNormal.z, 3) .. " |",
+								"DevHudText",
+								w/5.25,
+								h/1.04,
+								Color( 210, 210, 210, 255 ),
+								TEXT_ALIGN_LEFT,
+								TEXT_ALIGN_CENTER
+							)
 						end
 					end
 				end
