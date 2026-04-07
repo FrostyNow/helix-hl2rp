@@ -57,6 +57,8 @@ ix.lang.AddTable("english", {
 	hintConscript = "The Civil Defense are the lowest rank of the Overwatch, serving as auxiliary forces for low-intensity combat such as pest control and civil security.",
 	hintLeech = "The ruthless alien species called Leech has destroyed the marine ecosystem and bites unlucky people who fall into the water...",
 	hintFishing = "Some people even try to catch leeches with empty tin cans to eat them... Yuck.",
+	hintCleaning = "You can pick up tokens or useful scraps while cleaning the floor.",
+	hintWorldview = "You can read about the worldview in the help tab.",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -105,6 +107,8 @@ ix.lang.AddTable("korean", {
 	hintConscript = "민방위는 감시 부대의 가장 말단에 있는 보조군의 역할로, 해수 구제 등의 강도 낮은 전투와 민간 치안 유지를 담당합니다.",
 	hintLeech = "거머리라고 불리는 무자비한 외계종이 해양 생태계도, 불운히 물에 빠진 사람도 물어뜯습니다...",
 	hintFishing = "거머리를 먹으려 빈 통조림 캔으로 낚시를 하는 사람들도 있다고 합니다... 우웩.",
+	hintCleaning = "바닥을 쓸다보면 때로는 잃어버린 토큰이나 쓸만한 폐품을 주울 수 있습니다.",
+	hintWorldview = "도움말 탭에는 세계관에 대한 읽을거리도 있습니다.",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -183,6 +187,10 @@ end
 
 if (ix.plugin.Get("vortigaunt_stuff")) then
 	ix.hints.Register("hintVortessence")
+	
+	if (ix.plugin.Get("ixloot")) then
+		ix.hints.Register("hintCleaning")
+	end
 end
 
 if (ix.plugin.Get("stormfox")) then
@@ -199,6 +207,10 @@ if (ix.plugin.Get("leech")) then
 	if (ix.plugin.Get("fishing")) then
 		ix.hints.Register("hintFishing")
 	end
+end
+
+if (ix.plugin.Get("webhelper")) then
+	ix.hints.Register("hintWorldview")
 end
 
 ix.command.Add("Hint", {

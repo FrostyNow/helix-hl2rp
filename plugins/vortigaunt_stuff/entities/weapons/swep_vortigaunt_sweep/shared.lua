@@ -1,5 +1,12 @@
 if ( SERVER ) then
 	AddCSLuaFile( "shared.lua" )
+	util.AddNetworkString("ixVortSweepDecal")
+else
+	net.Receive("ixVortSweepDecal", function()
+		local pos = net.ReadVector()
+		local radius = net.ReadFloat()
+		util.RemoveDecalsAt(pos, radius, 0, false)
+	end)
 end
 
 if (CLIENT) then
@@ -128,6 +135,52 @@ function SWEP:PrimaryAttack()
 						self.Owner:StopSound(soundPath)
 						-- Unfreeze player after sweep animation
 						self.Owner:Freeze(false)
+
+						-- Decal removal (vicinity only)
+						net.Start("ixVortSweepDecal")
+							net.WriteVector(self.Owner:GetPos())
+							net.WriteFloat(50) -- Radius
+						net.Broadcast()
+
+						local character = self.Owner:GetCharacter()
+						if (character) then
+							local luck = character:GetAttribute("lck", 0)
+							local multi = ix.config.Get("luckMultiplier", 1)
+							local maxAtt = ix.config.Get("maxAttributes", 30)
+
+							-- Base chance: 5%
+							-- Bonus chance: up to 10% more based on luck
+							local chance = 5 + (luck / maxAtt) * 10 * multi
+							
+							if (math.random(1, 100) <= chance) then
+								-- Success! Now roll for what to give.
+								local lootPlugin = ix.plugin.Get("ixloot")
+
+								if (lootPlugin and math.random(1, 100) <= 70) then
+									-- Trash
+									if (lootPlugin.randomLoot and lootPlugin.randomLoot.common) then
+										local items = lootPlugin.randomLoot.common
+										local itemID = items[math.random(#items)]
+										local inventory = character:GetInventory()
+
+										if (inventory) then
+											if (inventory:Add(itemID)) then
+												local itemTable = ix.item.list[itemID]
+												if (itemTable) then
+													self.Owner:NotifyLocalized("ixlootGained", itemTable:GetName())
+												end
+											end
+										end
+									end
+								else
+									-- Money
+									local bonus = (luck / maxAtt) * 100 * multi
+									local amount = math.Clamp(math.random(1, 50) + bonus, 1, 100)
+									character:GiveMoney(amount)
+									self.Owner:NotifyLocalized("vortSweepMoney", ix.currency.Get(amount, self.Owner))
+								end
+							end
+						end
 					end
 				end)
 			end

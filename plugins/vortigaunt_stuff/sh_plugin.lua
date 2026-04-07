@@ -58,6 +58,7 @@ ix.lang.AddTable("english", {
 	vortessenceName = "Vortessence",
 	vortUnintelligible = "*(unintelligible vortigese)*",
 	vortIDTitle = "<:: VORTIGAUNT IDENTIFICATION ::>",
+	vortSweepMoney = "You found %s on the floor while sweeping.",
 })
 
 ix.lang.AddTable("korean", {
@@ -121,6 +122,7 @@ ix.lang.AddTable("korean", {
 	vortessenceName = "보르티곤트 정수",
 	vortUnintelligible = "*(알아들을 수 없는 보르티곤트 언어)*",
 	vortIDTitle = "<:: 보르티곤트 식별증 ::>",
+	vortSweepMoney = "청소 도중 바닥에서 %s(을)를 발견했습니다.",
 })
 
 
