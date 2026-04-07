@@ -117,7 +117,7 @@ LANGUAGE = {
 	recipeScrapTheTerminalDesc = "Break down a newspaper for useful materials.",
 	recipeScrapWastePaperDesc = "Break down waste paper for useful materials.",
 	recipeScrapRequestDeviceDesc = "Disassemble a request device to extract parts.",
-
+	recipeScrapPagerDesc = "Disassemble a pager to extract parts.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",

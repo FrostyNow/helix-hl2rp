@@ -218,6 +218,8 @@ LANGUAGE = {
 	recipeScrapWateringCanDesc = "물뿌리개를 분해합니다.",
 	["Scrap Request Device"] = "신고 장치 분해",
 	recipeScrapRequestDeviceDesc = "신고 장치를 분해하여 부품을 추출합니다.",
+	["Scrap Pager"] = "호출기 분해",
+	recipeScrapPagerDesc = "호출기를 분해하여 부품을 추출합니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",
