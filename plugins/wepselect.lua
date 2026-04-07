@@ -54,6 +54,9 @@ PLUGIN.customWeaponInfo = {
 	["weapon_crossbow"] = {
 		purpose = "crossbowDesc"
 	},
+	["weapon_slam"] = {
+		purpose = "slamDesc"
+	},
 
 	-- HL2 RP
 	["arc9_hl2_pistol"] = {
@@ -72,7 +75,10 @@ PLUGIN.customWeaponInfo = {
 		purpose = "oicwDesc"
 	},
 	["arc9_hla_irifle"] = {
-		purpose = "ar1Desc"
+		purpose = "ar2Desc"
+	},
+	["arc9_hla_sniper"] = {
+		purpose = "sniperDesc"
 	},
 	["arc9_l4d2_mp5"] = {
 		purpose = "mp5kDesc"

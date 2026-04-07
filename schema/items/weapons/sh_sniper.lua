@@ -1,9 +1,9 @@
 ITEM.name = "Overwatch Sniper Rifle"
 ITEM.description = "sniperDesc"
-ITEM.class = "ix_csniper"
+ITEM.class = "arc9_hl2_sniper"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
-ITEM.model = "models/tnb/weapons/w_cisr.mdl"
+ITEM.model = "models/weapons/w_combine_sniper.mdl"
 ITEM.width = 5
 ITEM.height = 2
 ITEM.iconCam = {

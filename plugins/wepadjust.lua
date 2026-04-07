@@ -33,8 +33,9 @@ local BASH_MELEE_WEAPONS = {
 	["arc9_hl2_smg1"] = true,
 	["arc9_hla_hmg"] = true,
 	["arc9_hl2_pistol"] = true,
+	["arc9_hl2_sniper"] = true,
 	["arc9_l4d2_mp5"] = true,
-	["arc9_rtb_oicw"] = true
+	["arc9_rtb_oicw"] = true,
 }
 
 PLUGIN.name = "Weapon Stats Override"
@@ -117,6 +118,14 @@ function PLUGIN:InitializedPlugins()
 		swep.ForceDefaultClip = 0
 		swep.UBGLAmmo = "20x28mm grenade"
 		swep.Secondary.DefaultClip = 0
+	end
+
+	local swep = weapons.GetStored("arc9_hl2_sniper")
+	if (swep) then
+		swep.DamageMax = 40
+		swep.DamageMin = 20
+		swep.BashDamage = 10
+		swep.ForceDefaultClip = 0
 	end
 
 	// VJ
