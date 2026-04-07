@@ -15,6 +15,7 @@ function FACTION:OnCharacterCreated(client, character)
 
 	if (CLASS_SLAVE_VORT) then
 		character:SetClass(CLASS_SLAVE_VORT)
+		character:SetData("vortClass", "vortigaunt_slave")
 	end
 
 	local plugin = ix.plugin.Get("vortigaunt_stuff")
@@ -29,6 +30,7 @@ function FACTION:OnTransferred(character)
 
 	if (CLASS_SLAVE_VORT) then
 		character:SetClass(CLASS_SLAVE_VORT)
+		character:SetData("vortClass", "vortigaunt_slave")
 	end
 
 	local plugin = ix.plugin.Get("vortigaunt_stuff")

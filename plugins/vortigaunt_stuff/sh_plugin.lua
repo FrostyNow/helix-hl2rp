@@ -278,7 +278,7 @@ function PLUGIN:IsVortigauntClass(classIndex)
 end
 
 function PLUGIN:GetDefaultVortigauntClass()
-	return CLASS_SLAVE_VORT or CLASS_VORT
+	return CLASS_SLAVE_VORT or (ix.class.uniqueIDs["vortigaunt_slave"] and ix.class.uniqueIDs["vortigaunt_slave"].index) or CLASS_VORT
 end
 
 function PLUGIN:GetVortigauntWeaponSet(classIndex)
@@ -571,6 +571,12 @@ if SERVER then
 		end
 
 		character:SetClass(classIndex)
+
+		local class = ix.class.list[classIndex]
+		if (class) then
+			character:SetData("vortClass", class.uniqueID)
+		end
+
 		self:ApplyVortigauntClassState(character, client, classIndex)
 
 		return true
@@ -593,12 +599,30 @@ if SERVER then
 		end
 
 		local classIndex = character:GetClass()
+		local storedClass = character:GetData("vortClass")
+
+		-- Restore class from data if it exists and differs from current class
+		if (storedClass) then
+			local class = ix.class.uniqueIDs[storedClass]
+
+			if (class and class.index != classIndex) then
+				character:SetClass(class.index)
+				classIndex = class.index
+			end
+		end
+
+		-- If still not a valid vortigaunt class, fallback to default
 		if (!self:IsVortigauntClass(classIndex)) then
 			local defaultClass = self:GetDefaultVortigauntClass()
 
 			if (defaultClass) then
 				character:SetClass(defaultClass)
 				classIndex = defaultClass
+
+				local class = ix.class.list[classIndex]
+				if (class) then
+					character:SetData("vortClass", class.uniqueID)
+				end
 			end
 		end
 
