@@ -2601,7 +2601,9 @@ end
 
 function PLUGIN:GetMoneySubject(amount)
 	local name = (tonumber(amount) == 1) and (ix.currency.singular or "novelizerToken") or (ix.currency.plural or "novelizerTokens")
-	return BuildArgument(name, "object")
+	local text, phrase = ResolvePhraseReference(name)
+
+	return BuildArgument(text or name, "object", phrase)
 end
 
 function PLUGIN:GetItArguments(entity, key, phraseKey)
