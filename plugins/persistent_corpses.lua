@@ -538,7 +538,7 @@ if (SERVER) then
 							local trace = {
 								start = checkPos,
 								endpos = checkPos,
-								filter = {client, target, entity},
+								filter = {target, entity},
 								mins = playerMins,
 								maxs = playerMaxs,
 								mask = MASK_PLAYERSOLID

@@ -308,7 +308,7 @@ ix.command.Add("Revive", {
 					local trace = {
 						start = checkPos,
 						endpos = checkPos,
-						filter = {client, target, ragdoll},
+						filter = {target, ragdoll},
 						mins = playerMins,
 						maxs = playerMaxs,
 						mask = MASK_PLAYERSOLID
