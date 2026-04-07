@@ -16,21 +16,17 @@ PLUGIN.texts = PLUGIN.texts or {}
 ix.lang.AddTable("english", {
 	cmdFloatingTextAdd = "Add a persistent floating text at your looking position.",
 	cmdFloatingTextRemove = "Remove the nearest floating text.",
-	cmdFloatingTextClear = "Clear all floating texts in the map.",
 	floatingTextAdded = "Added floating text: '%s'",
 	floatingTextRemoved = "Removed floating text: '%s'",
-	floatingTextNotFound = "No floating text found nearby.",
-	floatingTextCleared = "Cleared all floating texts."
+	floatingTextNotFound = "No floating text found nearby."
 })
 
 ix.lang.AddTable("korean", {
 	cmdFloatingTextAdd = "바라보는 위치에 영구적인 떠 있는 텍스트를 추가합니다.",
 	cmdFloatingTextRemove = "가장 가까운 떠 있는 텍스트를 제거합니다.",
-	cmdFloatingTextClear = "맵의 모든 떠 있는 텍스트를 제거합니다.",
 	floatingTextAdded = "떠 있는 텍스트가 추가되었습니다: '%s'",
 	floatingTextRemoved = "떠 있는 텍스트가 제거되었습니다: '%s'",
-	floatingTextNotFound = "근처에 떠 있는 텍스트가 없습니다.",
-	floatingTextCleared = "모든 떠 있는 텍스트가 제거되었습니다."
+	floatingTextNotFound = "근처에 떠 있는 텍스트가 없습니다."
 })
 
 ix.config.Add("floatingTextRange", 300, "Maximum distance at which floating text is visible.", nil, {
@@ -42,7 +38,7 @@ ix.config.Add("floatingTextRange", 300, "Maximum distance at which floating text
 ix.command.Add("FloatingTextAdd", {
 	description = "@cmdFloatingTextAdd",
 	privilege = "Manage Floating Text",
-	superAdminOnly = true,
+	adminOnly = true,
 	arguments = {
 		ix.type.string
 	},
@@ -66,7 +62,7 @@ ix.command.Add("FloatingTextAdd", {
 ix.command.Add("FloatingTextRemove", {
 	description = "@cmdFloatingTextRemove",
 	privilege = "Manage Floating Text",
-	superAdminOnly = true,
+	adminOnly = true,
 	OnRun = function(self, client)
 		local pos = client:GetEyeTraceNoCursor().HitPos
 		local nearestIndex = nil
@@ -89,18 +85,6 @@ ix.command.Add("FloatingTextRemove", {
 		end
 
 		return L("floatingTextNotFound", client)
-	end
-})
-
-ix.command.Add("FloatingTextClear", {
-	description = "@cmdFloatingTextClear",
-	privilege = "Manage Floating Text",
-	superAdminOnly = true,
-	OnRun = function(self, client)
-		PLUGIN.texts = {}
-		PLUGIN:SaveData()
-		PLUGIN:SyncTexts()
-		return L("floatingTextCleared", client)
 	end
 })
 

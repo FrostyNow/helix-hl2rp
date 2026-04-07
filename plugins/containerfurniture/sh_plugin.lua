@@ -24,7 +24,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
-	containerFurniturePlaceMode = "배치 중... (좌클릭: 배치, 우클릭: 취소)",
+	containerFurniturePlaceMode = "배치 중... (좌클릭: 배치, 우클릭: 취소, 휠: 회전)",
 	containerFurniturePlaced = "보관함을 배치했습니다.",
 	containerFurnitureTooFar = "배치 위치가 너무 멉니다!",
 	containerFurnitureNoFloor = "바닥 위에만 설치할 수 있습니다!",

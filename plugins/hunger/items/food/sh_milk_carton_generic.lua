@@ -1,0 +1,10 @@
+ITEM.name = "Milk"
+ITEM.model = "models/props/milk_carton/milk_carton.mdl"
+ITEM.empty = "empty_milk_carton"
+ITEM.description = "itemMilkDesc"
+ITEM.thirst = 25
+ITEM.hunger = 5
+ITEM.price = 25
+ITEM.heal = 5
+ITEM.usenum = 2
+ITEM.isDrink = true

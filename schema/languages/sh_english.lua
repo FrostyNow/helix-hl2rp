@@ -315,8 +315,9 @@ LANGUAGE = {
 	lotteryRedeem = "Redeem",
 	lotteryRedeemTip = "Redeem this winning ticket for tokens.",
 	lotteryRedeemed = "You have redeemed your ticket for %s.",
-	["Lottery Box"] = "Lottery Box",
 	itemLotteryBoxDesc = "A box containing 5 lottery tickets.",
+	itemEmptyCartonDesc = "An empty milk carton.",
+	itemWaterLargeEmptyDesc = "An empty large bottle.",
 
 	itemMetropoliceDesc = "An uniform that metopolicue unit wears.\nIf wearer's identity is not correct, additional features will not work.",
 	itemCombineSoldierDesc = "An powered suit that Combine soldier wears.\nIf wearer's identity is not correct, additional features will not work.",

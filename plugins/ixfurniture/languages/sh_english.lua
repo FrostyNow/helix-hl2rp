@@ -2,7 +2,7 @@ LANGUAGE = {
 	furnitureTitle = "Furniture Catalog",
 	furniturePrice = "Price: %s",
 	furniturePlaced = "Furniture purchased and placed.",
-	furnitureRefundMsg = "Furniture picked up (Refund: %s)",
+	furnitureRefundMsg = "Furniture picked up and %s(을)를 돌려받았습니다.",
 	furnitureNoMoney = "You don't have enough money!",
 	furnitureNotOwner = "You are not the owner of this furniture.",
 	furnitureNotLooking = "You are not looking at any furniture.",
@@ -23,6 +23,7 @@ LANGUAGE = {
 	furnitureCooldown = "You must wait %s second(s) before placing another furniture.",
 	furnitureFlagDesc = "Authority to buy and place furniture.",
 	furnitureHP = "D: %s / %s",
+	furnitureRepairDesc = "Repair the furniture you are looking at for a certain amount of money.",
 	furnitureNoMoneyRepair = "You need %s to repair the furniture.",
 	furnitureRepaired = "You repaired the furniture for %s.",
 }

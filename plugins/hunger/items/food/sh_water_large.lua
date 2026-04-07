@@ -1,0 +1,11 @@
+ITEM.name = "Large Bottle of Water"
+ITEM.model = "models/props/water_bottle/water_bottle.mdl"
+ITEM.description = "itemWaterLargeDesc"
+ITEM.classes = nil
+ITEM.width = 2
+ITEM.height = 2
+ITEM.thirst = 25
+ITEM.price = 90
+ITEM.empty = "water_large_empty"
+ITEM.isDrink = true
+ITEM.usenum = 6

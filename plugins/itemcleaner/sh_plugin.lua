@@ -42,6 +42,7 @@ ix.lang.AddTable("english", {
 	itemCleanerRemoved = "Removed %d items from the map for inactivity.",
 	noopItemsRemoved = "No items were eligible for cleaning.",
 	cmdItemCleanForce = "Manually triggers the item cleaner cleaning sequence.",
+	noItemCleanup = "Keep Items",
 	areaNoCleanup = "Keep Items"
 })
 
@@ -50,6 +51,7 @@ ix.lang.AddTable("korean", {
 	itemCleanerRemoved = "비활성화된 아이템 %d개를 맵에서 제거했습니다.",
 	noopItemsRemoved = "청소할 수 있는 아이템이 없습니다.",
 	cmdItemCleanForce = "아이템 청소기의 청소 시퀀스를 수동으로 실행합니다.",
+	noItemCleanup = "아이템 유지",
 	areaNoCleanup = "아이템 유지"
 })
 

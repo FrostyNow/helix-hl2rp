@@ -657,13 +657,13 @@ ITEM.functions.EquipUn = { -- sorry, for name order.
 	tip = "equipTip",
 	icon = "icon16/cross.png",
 	OnRun = function(item)
-		local client = item.player
+		local client = item.player or item:GetOwner()
 
 		if (IsValid(client)) then
 			PlayRandomSound(client, item.unequipSound)
 		end
 
-		item:RemoveOutfit(item.player)
+		item:RemoveOutfit(client)
 
 		return false
 	end,
@@ -803,8 +803,12 @@ ITEM.functions.Equip = {
 	tip = "equipTip",
 	icon = "icon16/tick.png",
 	OnRun = function(item)
-			local client = item.player
+			local client = item.player or item:GetOwner()
+			if (!IsValid(client)) then return false end
+
 			local char = client:GetCharacter()
+			if (!char) then return false end
+
 			local items = char:GetInventory():GetItems()
 
 			for _, v in pairs(items) do
@@ -852,7 +856,9 @@ ITEM.functions.Equip = {
 ITEM.functions.Repair = {
 	icon = "icon16/bullet_wrench.png",
 	OnRun = function(item)
-		local client = item.player
+		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
 		local character = client:GetCharacter()
 		local inventory = character:GetInventory()
 		local items = inventory:GetItems()

@@ -118,6 +118,11 @@ LANGUAGE = {
 	recipeScrapWastePaperDesc = "Break down waste paper for useful materials.",
 	recipeScrapRequestDeviceDesc = "Disassemble a request device to extract parts.",
 	recipeScrapPagerDesc = "Disassemble a pager to extract parts.",
+	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
+	recipeLotteryBoxDesc = "Break down a lottery box into paper.",
+	recipeLotteryDesc = "Break down lottery tickets into paper.",
+	recipeEmptyCartonDesc = "Break down a carton into paper.",
+	recipeScrapLargeBottleDesc = "Break down a large bottle into steel pieces.",
 	
 	recipeCharcoalDesc = "Burn wood scraps to make charcoal.",
 	recipeTanningHideDesc = "Tan hide to process it into leather.",
@@ -152,7 +157,6 @@ LANGUAGE = {
 	recipeStewDesc = "Boil all kinds of leftover ingredients to make a mixed stew.",
 	recipeStewLargeDesc = "Pour all kinds of ingredients into a large pot and boil them to make a large mixed stew.",
 	recipeSandwichDesc = "Cook a sandwich by putting vegetables and meat between pieces of bread.",
-	recipeScrapPotLargeDesc = "Disassemble the large pot into pieces.",
 	recipeMeatChunkDesc = "Cook a meat chunk.",
 	recipePieDesc = "A large pie that can be shared among several people.",
 	

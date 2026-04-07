@@ -8,6 +8,8 @@ PLUGIN.description = "A simplified furniture shop integrated with Helix Area pro
 PLUGIN.FurnitureList = {
 	{model = "models/props_c17/FurnitureChair001a.mdl", price = 110},
 	{model = "models/props_c17/FurnitureTable001a.mdl", price = 240},
+	{model = "models/props_c17/FurnitureCouch001a.mdl", price = 500},
+	{model = "models/props_c17/FurnitureCouch002a.mdl", price = 500},
 	{model = "models/props_interiors/Furniture_Couch01a.mdl", price = 550},
 	{model = "models/props_c17/FurnitureShelf001b.mdl", price = 180, wall = true},
 	{model = "models/props_interiors/refrigerator01a.mdl", price = 925},
@@ -47,6 +49,20 @@ PLUGIN.FurnitureList = {
 	{model = "models/props_lab/desklamp01.mdl", price = 100},
 	{model = "models/nova/chair_plastic01.mdl", price = 90},
 	{model = "models/props_junk/TrashBin01a.mdl", price = 75},
+
+	-- Portal
+	{model = "models/props/table_reference.mdl", price = 200},
+	{model = "models/props/lab_chair/lab_chair.mdl", price = 150},
+	{model = "models/props/lab_desk01/lab_desk01.mdl", price = 350},
+	{model = "models/props/lab_desk02/lab_desk02.mdl", price = 350},
+	{model = "models/props/lab_desk03/lab_desk03.mdl", price = 350},
+	{model = "models/props/lab_desk04/lab_desk04.mdl", price = 350},
+	{model = "models/props/lab_desk05/lab_desk05.mdl", price = 350},
+	{model = "models/props/lab_shelf/lab_shelf.mdl", price = 400, wall = true},
+	{model = "models/props/lab_shelf_small/lab_shelf_small.mdl", price = 250, wall = true},
+	{model = "models/props_bts/bts_chair.mdl", price = 150},
+	{model = "models/props_bts/bts_stool_static.mdl", price = 150},
+	{model = "models/props_bts/bts_table_static.mdl", price = 260},
 
 	-- Addons
 	{model = "models/props_c17/bedwithmattress.mdl", price = 630},
@@ -280,7 +296,7 @@ ix.command.Add("FurnitureRemove", {
 				end
 
 				char:GiveMoney(refund)
-				client:NotifyLocalized("furnitureRefundMsg", ix.currency.Get(refund))
+				client:NotifyLocalized("furnitureRefundMsg", ix.currency.Get(refund, client))
 				entity:Remove()
 			else
 				client:NotifyLocalized("furnitureNotOwner")

@@ -77,7 +77,7 @@ PLUGIN.customWeaponInfo = {
 	["arc9_hla_irifle"] = {
 		purpose = "ar1Desc"
 	},
-	["arc9_hla_sniper"] = {
+	["arc9_hl2_sniper"] = {
 		purpose = "sniperDesc"
 	},
 	["arc9_l4d2_mp5"] = {
@@ -202,16 +202,22 @@ local function GetWeaponPrintName(weapon, item)
 	end
 
 	local class = IsValid(weapon) and weapon:GetClass() or ""
-	local stored = GetStoredWeapon(class)
-	local printName = stored and stored.PrintName or class
+	local helixName = L2(class)
 
-	if isstring(printName) and string.StartWith(printName, "#") then
-		printName = language.GetPhrase(string.sub(printName, 2))
-	else
-		printName = L(printName)
+	if helixName then
+		return helixName
 	end
 
-	return isstring(printName) and printName or class
+	local stored = GetStoredWeapon(class)
+	local printName = (IsValid(weapon) and weapon.GetPrintName and weapon:GetPrintName())
+		or (stored and stored.PrintName)
+		or class
+
+	if isstring(printName) and string.StartWith(printName, "#") then
+		printName = language.GetPhrase(printName)
+	end
+
+	return L(printName)
 end
 
 function PLUGIN:ShouldIgnoreWeapon(weapon)

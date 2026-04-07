@@ -57,14 +57,21 @@ function SWEP:Deploy()
 	if (!self.Owner:GetCharacter() or !self.Owner:GetCharacter():IsVortigaunt()) then return false end
 
 	if (SERVER) then
-	self.Owner.broomModel = ents.Create("prop_dynamic")
-	self.Owner.broomModel:SetModel("models/props_c17/pushbroom.mdl")
-	self.Owner.broomModel:SetMoveType(MOVETYPE_NONE)
-	self.Owner.broomModel:SetSolid(SOLID_NONE)
-	self.Owner.broomModel:SetParent(self.Owner)
-	self.Owner.broomModel:DrawShadow(true)
-	self.Owner.broomModel:Spawn()
-	self.Owner.broomModel:Fire("setparentattachment", "cleaver_attachment", 0.01)
+		if (IsValid(self.broomModel)) then
+			self.broomModel:Remove()
+		end
+
+		local broom = ents.Create("prop_dynamic")
+		broom:SetModel("models/props_c17/pushbroom.mdl")
+		broom:SetMoveType(MOVETYPE_NONE)
+		broom:SetSolid(SOLID_NONE)
+		broom:SetParent(self.Owner)
+		broom:DrawShadow(true)
+		broom:Spawn()
+		broom:Fire("setparentattachment", "cleaver_attachment", 0.01)
+
+		self.broomModel = broom
+		self.Owner.broomModel = broom
 	end
 
 end
@@ -78,14 +85,15 @@ if (CLIENT) then
 		return
 	end
 end
-function SWEP:Holster()
-	if (!IsValid(self.Owner)) then return true end
 
+function SWEP:Holster()
 	if (SERVER) then
-		if (self.Owner.broomModel) then
-			if (self.Owner.broomModel:IsValid()) then
-				self.Owner.broomModel:Remove()
-			end
+		if (IsValid(self.broomModel)) then
+			self.broomModel:Remove()
+		end
+
+		if (IsValid(self.Owner) and IsValid(self.Owner.broomModel)) then
+			self.Owner.broomModel:Remove()
 		end
 	end
 
@@ -94,13 +102,13 @@ end
 
 
 function SWEP:OnRemove()
-	if (!IsValid(self.Owner)) then return true end
-
 	if (SERVER) then
-		if (self.Owner.broomModel) then
-			if (self.Owner.broomModel:IsValid()) then
-				self.Owner.broomModel:Remove()
-			end
+		if (IsValid(self.broomModel)) then
+			self.broomModel:Remove()
+		end
+
+		if (IsValid(self.Owner) and IsValid(self.Owner.broomModel)) then
+			self.Owner.broomModel:Remove()
 		end
 	end
 
@@ -148,9 +156,9 @@ function SWEP:PrimaryAttack()
 							local multi = ix.config.Get("luckMultiplier", 1)
 							local maxAtt = ix.config.Get("maxAttributes", 30)
 
-							-- Base chance: 5%
+							-- Base chance: 10%
 							-- Bonus chance: up to 10% more based on luck
-							local chance = 5 + (luck / maxAtt) * 10 * multi
+							local chance = 10 + (luck / maxAtt) * 10 * multi
 							
 							if (math.random(1, 100) <= chance) then
 								-- Success! Now roll for what to give.
@@ -167,7 +175,7 @@ function SWEP:PrimaryAttack()
 											if (inventory:Add(itemID)) then
 												local itemTable = ix.item.list[itemID]
 												if (itemTable) then
-													self.Owner:NotifyLocalized("ixlootGained", itemTable:GetName())
+													self.Owner:NotifyLocalized("ixlootGained", L(itemTable:GetName(), self.Owner))
 												end
 											end
 										end
@@ -175,7 +183,7 @@ function SWEP:PrimaryAttack()
 								else
 									-- Money
 									local bonus = (luck / maxAtt) * 100 * multi
-									local amount = math.Clamp(math.random(1, 50) + bonus, 1, 100)
+									local amount = math.Clamp(math.random(1, 5) + bonus, 1, 100)
 									character:GiveMoney(amount)
 									self.Owner:NotifyLocalized("vortSweepMoney", ix.currency.Get(amount, self.Owner))
 								end

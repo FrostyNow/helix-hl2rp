@@ -278,7 +278,17 @@ function PLUGIN:IsVortigauntClass(classIndex)
 end
 
 function PLUGIN:GetDefaultVortigauntClass()
-	return CLASS_SLAVE_VORT or (ix.class.uniqueIDs["vortigaunt_slave"] and ix.class.uniqueIDs["vortigaunt_slave"].index) or CLASS_VORT
+	if (CLASS_SLAVE_VORT) then
+		return CLASS_SLAVE_VORT
+	end
+
+	for _, v in pairs(ix.class.list) do
+		if (v.uniqueID == "vortigaunt_slave") then
+			return v.index
+		end
+	end
+
+	return CLASS_VORT
 end
 
 function PLUGIN:GetVortigauntWeaponSet(classIndex)
@@ -603,7 +613,18 @@ if SERVER then
 
 		-- Restore class from data if it exists and differs from current class
 		if (storedClass) then
-			local class = ix.class.uniqueIDs[storedClass]
+			local class
+
+			if (ix.class.uniqueIDs) then
+				class = ix.class.uniqueIDs[storedClass]
+			else
+				for _, v in pairs(ix.class.list) do
+					if (v.uniqueID == storedClass) then
+						class = v
+						break
+					end
+				end
+			end
 
 			if (class and class.index != classIndex) then
 				character:SetClass(class.index)

@@ -1,0 +1,10 @@
+ITEM.name = "Canned Beans"
+ITEM.model = "models/props/food_can/food_can.mdl"
+ITEM.description = "itemCannedBeansDesc"
+ITEM.hunger = 15
+ITEM.thirst = 5
+ITEM.price = 10
+ITEM.empty = "empty_canned_beans"
+ITEM.heal = 5
+ITEM.cookable = true
+ITEM.sound = "interface/inv_eat_can.ogg"

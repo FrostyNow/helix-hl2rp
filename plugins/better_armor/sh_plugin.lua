@@ -279,21 +279,15 @@ ix.command.Add("Gasmask", {
 		end
 
 		if (equippedMask) then
-			local func = equippedMask.functions.EquipUn
-			if (func and func.OnCanRun(equippedMask) != false) then
-				func.OnRun(equippedMask)
-				client.ixGasmaskCooldown = CurTime() + 5
-			end
+			ix.item.PerformInventoryAction(client, "EquipUn", equippedMask, equippedMask.invID)
+			client.ixGasmaskCooldown = CurTime() + 5
 
 			return
 		end
 
 		if (unequippedMask) then
-			local func = unequippedMask.functions.Equip
-			if (func and func.OnCanRun(unequippedMask) != false) then
-				func.OnRun(unequippedMask)
-				client.ixGasmaskCooldown = CurTime() + 5
-			end
+			ix.item.PerformInventoryAction(client, "Equip", unequippedMask, unequippedMask.invID)
+			client.ixGasmaskCooldown = CurTime() + 5
 
 			return
 		end

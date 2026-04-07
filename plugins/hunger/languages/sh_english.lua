@@ -83,7 +83,7 @@ LANGUAGE = {
 	itemCrispsSaltedDesc = "A small bag of lightly salted potato crisps.",
 	itemCrispsVinegarDesc = "A small bag of salt and vinegar flavored potato crisps.",
 	itemPieDesc = "A crunchy, well-ripened pie.",
-	recipePieDesc = "A large pie that can be shared among several people.",
+	itemWaterLargeDesc = "A large bottle of water.",
 
 	starving = "Starving",
 	starvingEnter = "You feel an intense, gnawing pain in your stomach as starvation sets in.",

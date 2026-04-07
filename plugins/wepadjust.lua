@@ -126,6 +126,7 @@ function PLUGIN:InitializedPlugins()
 		swep.DamageMin = 20
 		swep.BashDamage = 10
 		swep.ForceDefaultClip = 0
+		swep.Ammo = "AR2"
 	end
 
 	// VJ

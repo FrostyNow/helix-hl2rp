@@ -637,6 +637,10 @@ LANGUAGE = {
 	lotteryRedeemed = "복권을 %s으로 교환했습니다.",
 	["Lottery Box"] = "복권 상자",
 	itemLotteryBoxDesc = "복권이 5장 들어있는 상자입니다.",
+	["Empty Carton"] = "빈 우유갑",
+	itemEmptyCartonDesc = "다 마시고 남은 종이 우유갑입니다.",
+	["Empty Large Bottle"] = "빈 대형 물병",
+	itemWaterLargeEmptyDesc = "다 따라내고 남은 대형 물병입니다.",
 
 	["Blue Beanie"] = "파란색 비니",
 	["Green Beanie"] = "초록색 비니",

@@ -44,7 +44,7 @@ PLUGIN.callsigns = {
 
 -- Unique Scanner names
 function PLUGIN:GenerateUniqueScannerName(isClaw)
-	local prefix = isClaw and "OTA.SHIELD-" or "c17:MPF-SCN."
+	local prefix = isClaw and "OTA.SHIELD-" or "c̄17:MPF-SCN."
 	local callsign = table.Random(self.callsigns)
 	local digit = math.random(1, 9)
 	local name = prefix .. callsign .. ":" .. digit

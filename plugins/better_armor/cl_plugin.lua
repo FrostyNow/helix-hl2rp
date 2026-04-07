@@ -75,11 +75,9 @@ local function getGasmaskBindCode()
 	return KEY_NONE
 end
 
-ix.option.Add("gasmaskKey", {
+ix.option.Add("gasmaskKey", ix.type.string, DEFAULT_GASMASK_BIND, {
 	name = "optGasmaskKey",
 	category = "Better Armor",
-	type = ix.type.string,
-	default = DEFAULT_GASMASK_BIND,
 	description = "optGasmaskKeyDesc",
 	OnChanged = function(oldValue, value)
 		local normalized = normalizeBindText(value)
@@ -166,9 +164,9 @@ function PLUGIN:PlayerButtonUp(client, button)
 		gasmaskKeyStart = 0
 
 		if (duration >= 2) then
-			LocalPlayer():Command("FilterSwap")
+			ix.command.Send("FilterSwap")
 		elseif (!gui.IsGameUIVisible() and !gui.IsConsoleVisible() and !vgui.GetKeyboardFocus()) then
-			LocalPlayer():Command("Gasmask")
+			ix.command.Send("Gasmask")
 		end
 	end
 end

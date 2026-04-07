@@ -15,7 +15,7 @@ ix.lang.AddTable("korean", {
 	["Combine Light"] = "콤바인 조명",
 	comlightDesc = "어두운 곳에서 콤바인 작전을 수행할 수 있도록 돕는 이동식 광원입니다.",
 	Place = "놓기",
-	combineLightPlaceMode = "배치 중... (좌클릭: 배치, 우클릭: 취소)",
+	combineLightPlaceMode = "배치 중... (좌클릭: 배치, 우클릭: 취소, 휠: 회전)",
 	combineLightPlaced = "조명을 배치했습니다.",
 	combineLightTooFar = "배치 위치가 너무 멉니다!",
 	combineLightNoFloor = "바닥 위에만 설치할 수 있습니다!",
