@@ -86,6 +86,11 @@ if (SERVER) then
 
 		client:GetCharacter():SetData("nextFarmboxTime", os.time() + 60)
 		client:NotifyLocalized("farmboxPlaced")
+
+		local item = client:GetCharacter():GetInventory():HasItem("shovel")
+		if (item) then
+			item:ReduceDurability(5)
+		end
 	end)
 end
 

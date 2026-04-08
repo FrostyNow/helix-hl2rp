@@ -4,33 +4,39 @@ local glossaryStyles = [[
 		background-color: #0c0d10;
 		color: #e0e0e0;
 		font-family: 'NanumBarunGothic', 'NanumGothic', 'Malgun Gothic', 'Inter', 'Segoe UI', sans-serif;
-		line-height: 1.8;
-		padding: 50px 80px;
+		line-height: 1.6;
+		padding: 40px 60px;
 		margin: 0;
 		-webkit-font-smoothing: antialiased;
 		overflow-y: auto;
+		box-sizing: border-box;
 	}
-	::-webkit-scrollbar { width: 6px; }
+	* { box-sizing: inherit; }
+
+	::-webkit-scrollbar { width: 8px; }
 	::-webkit-scrollbar-track { background: transparent; }
-	::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 3px; }
+	::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 4px; }
 	::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
 
 	.content {
-		animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+		max-width: 1400px;
+		margin: 0 auto;
+		animation: fadeIn 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 	@keyframes fadeIn {
-		from { opacity: 0; transform: translateY(20px); }
+		from { opacity: 0; transform: translateY(15px); }
 		to { opacity: 1; transform: translateY(0); }
 	}
 	h1 {
 		color: #fff;
-		font-size: 36px;
-		font-weight: 700;
+		font-size: 32px;
+		font-weight: 800;
 		margin-top: 0;
-		margin-bottom: 40px;
-		letter-spacing: -1px;
-		border-left: 4px solid #bf394b;
+		margin-bottom: 30px;
+		letter-spacing: -0.5px;
+		border-left: 4px solid #ff4d61;
 		padding-left: 20px;
+		text-transform: uppercase;
 	}
 	.divider {
 		height: 1px;
@@ -38,54 +44,66 @@ local glossaryStyles = [[
 		margin: 50px 0;
 	}
 	h2 {
-		color: #fff;
-		font-size: 22px;
+		color: rgba(255, 255, 255, 0.9);
+		font-size: 18px;
 		font-weight: 600;
 		margin-top: 40px;
-		margin-bottom: 25px;
+		margin-bottom: 20px;
 		text-transform: uppercase;
-		letter-spacing: 2px;
-		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-		padding-bottom: 15px;
-		display: block;
+		letter-spacing: 1.5px;
+		display: flex;
+		align-items: center;
+		gap: 15px;
+	}
+	h2::after {
+		content: '';
+		flex: 1;
+		height: 1px;
+		background: rgba(255, 255, 255, 0.05);
 	}
 	.term-list {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr));
 		gap: 15px;
 	}
 	.term-item {
-		padding: 16px 24px;
+		padding: 18px 24px;
 		background: rgba(255, 255, 255, 0.02);
-		border: 1px solid rgba(255, 255, 255, 0.04);
-		border-radius: 8px;
-		transition: all 0.3s ease;
+		border: 1px solid rgba(255, 255, 255, 0.05);
+		border-radius: 10px;
+		transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 		display: flex;
-		align-items: center;
+		align-items: flex-start;
 		gap: 20px;
+		position: relative;
+		overflow: hidden;
 	}
 	.term-item:hover {
 		background: rgba(255, 255, 255, 0.04);
-		border-color: rgba(255, 255, 255, 0.1);
-		transform: translateX(5px);
+		border-color: rgba(255, 255, 255, 0.15);
+		transform: translateY(-2px);
+		box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 	}
 	.term-name {
 		color: #ff4d61;
-		font-weight: 700;
-		font-size: 18px;
+		font-weight: 800;
+		font-size: 16px;
 		min-width: 100px;
 		flex-shrink: 0;
+		letter-spacing: 0.5px;
 	}
 	.term-content {
 		color: #b0b0b0;
-		font-size: 15px;
-		line-height: 1.4;
+		font-size: 14px;
+		line-height: 1.5;
 		border-left: 1px solid rgba(255, 255, 255, 0.1);
 		padding-left: 20px;
-		min-height: 1.4em;
-		display: flex;
-		align-items: center;
+		flex: 1;
 	}
+	.term-content:empty {
+		display: none;
+	}
+
 	.term-content:empty {
 		display: none;
 	}
@@ -632,7 +650,7 @@ PLUGIN.glossaryTranslations = {
 			</div>
 			<div class="term-item">
 				<span class="term-name">CPT/PT</span>
-				<div class="term-content">시민 보호 기동대/div>
+				<div class="term-content">시민 보호 기동대</div>
 			</div>
 			<div class="term-item">
 				<span class="term-name">DB</span>

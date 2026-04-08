@@ -22,7 +22,7 @@ ITEM.functions.Equip.OnCanRun = function(item)
 	local maxAttributes = math.max(ix.config.Get("maxAttributes", 100), 1)
 	local strReq = maxAttributes * 2 / 3
 
-	return char:GetAttribute("str", 0) >= strReq
+	return char:GetAttribute("str", 0) >= strReq and item:GetData("durability", 5) > 0
 end
 
 ITEM.functions.Pry = {
@@ -120,15 +120,13 @@ ITEM.functions.Pry = {
 				client:NotifyLocalized("crowbarPryFailed")
 			end
 			
-			-- remove
+			-- remove -> unequip
 			if (durability <= 0) then
 				client:NotifyLocalized("crowbarBroken")
 				
 				if (itemTable:GetData("equip")) then
-					client:StripWeapon(itemTable.class)
-					itemTable:SetData("equip", false)
+					itemTable.functions.Unequip.OnRun(itemTable)
 				end
-				itemTable:Remove()
 			end
 		end, 5, function()
 			bPrying = false
@@ -141,17 +139,45 @@ ITEM.functions.Pry = {
 		return false
 	end,
 	OnCanRun = function(itemTable)
-		return !IsValid(itemTable.entity)
+		return !IsValid(itemTable.entity) and itemTable:GetData("durability", 5) > 0
+	end
+}
+
+ITEM.functions.Repair = {
+	icon = "icon16/wrench.png",
+	OnRun = function(item)
+		local client = item.player
+		local char = client:GetCharacter()
+		local inventory = char:GetInventory()
+		local repairTools = inventory:HasItem("repair_tools")
+		
+		if (repairTools) then
+			item:SetData("durability", 5)
+			repairTools:Remove()
+			
+			client:EmitSound("interface/inv_repair_kit.ogg")
+			client:NotifyLocalized("crowbarRepaired")
+		else
+			client:NotifyLocalized("itemNoRepairKit")
+			return false
+		end
+		
+		return false
+	end,
+	OnCanRun = function(item)
+		local client = item.player
+		return !IsValid(item.entity) and item:GetData("durability", 5) < 5
 	end
 }
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
-		local durability = tooltip:AddRow("durability")
-		durability:SetBackgroundColor(Color(100, 100, 100))
-		durability:SetText(L("crowbarDurability")..": "..self:GetData("durability", 5))
-		durability:SetExpensiveShadow(0.5)
-		durability:SizeToContents()
+		local durability = self:GetData("durability", 5)
+		local durabilityRow = tooltip:AddRow("durability")
+		durabilityRow:SetBackgroundColor(durability <= 0 and Color(200, 0, 0) or Color(100, 100, 100))
+		durabilityRow:SetText(L("crowbarDurability")..": "..durability .. (durability <= 0 and " [BROKEN]" or ""))
+		durabilityRow:SetExpensiveShadow(0.5)
+		durabilityRow:SizeToContents()
 
 		local data = tooltip:AddRow("data")
 		data:SetBackgroundColor(Color(218, 24, 24))
