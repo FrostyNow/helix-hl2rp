@@ -16,7 +16,7 @@ PLUGIN.description = "Adds the ability to spawn Containers via an item, ideal if
 ]]--
 
 ix.lang.AddTable("english", {
-	containerFurniturePlaceMode = "Placing... (Left Click: Place, Right Click: Cancel)",
+	containerFurniturePlaceMode = "Placing... (Left Click: Place, Right Click: Cancel, Scroll: Rotate)",
 	containerFurniturePlaced = "The container has been placed.",
 	containerFurnitureTooFar = "You are too far away from the placement position!",
 	containerFurnitureNoFloor = "You can only place this on the floor!",

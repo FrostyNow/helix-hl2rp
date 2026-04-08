@@ -393,15 +393,18 @@ function ENT:die(dmgInfo)
 	if (SERVER) then
 		local pos = self:GetPos() + Vector(0, 0, 8)
 		local isClaw = self:GetModel():find("shield_scanner")
-		if (not isClaw) then
-			local items = {"scanner_gib01", "scanner_gib02", "scanner_gib04", "scanner_gib05"}
+		local items = isClaw and {
+			"shield_scanner_gib01", "shield_scanner_gib02", "shield_scanner_gib03",
+			"shield_scanner_gib04", "shield_scanner_gib05", "shield_scanner_gib06"
+		} or {
+			"scanner_gib01", "scanner_gib02", "scanner_gib04", "scanner_gib05"
+		}
 
-			table.Shuffle(items)
-			local count = math.random(1, #items)
-			
-			for i = 1, count do
-				ix.item.Spawn(items[i], pos + VectorRand(-8, 8))
-			end
+		table.Shuffle(items)
+		local count = math.random(1, #items)
+
+		for i = 1, count do
+			ix.item.Spawn(items[i], pos + VectorRand(-8, 8))
 		end
 
 		if (math.random(1, 100) <= 30) then

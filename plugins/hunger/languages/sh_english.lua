@@ -141,7 +141,15 @@ LANGUAGE = {
 	stoveTurnOff = "Turn Off",
 	lighting = "Lighting...",
 	extinguishing = "Extinguishing...",
-	["Cooking"] = "Cooking",
 	cooking_desc = "The ability to prepare food. A higher cooking skill will produce better quality dishes.",
-	["Vegetable Oil"] = "Vegetable Oil",
+	needFuel = "You need to add fuel first.",
+	fuelAdded = "Added %s as fuel. (%s minutes added)",
+	fuelStatus = "Remaining Fuel: Approx. %s minutes",
+	fuelFull = "Fuel slots are full. (Max %s items)",
+	fuelCountStatus = "Fuel Count: %s/%s",
+	stoveBroken = "Broken",
+	igniterInstalled = "Installed a battery for ignition.",
+	usesLeft = "Uses left: %s",
+	needFireStarter = "You need a match or lighter to light this!",
+	needFireStarterStove = "You need a installed battery or a fire starter!"
 }

@@ -15,6 +15,13 @@ ITEM.newSkin = 0
 ITEM.allowedBaseFactions = {FACTION_CITIZEN}
 ITEM.noDeathDrop = true
 
+-- belt
+ITEM.isBag = true
+ITEM.invWidth = 3
+ITEM.invHeight = 1
+ITEM.allowBases = {"base_ammo", "base_radios"}
+ITEM.allowItems = {"pistol", "357", "flaregun", "flashlight", "pager", "grenade", "manhack"}
+
 ITEM.functions.Equip.OnCanRun = function(item)
 	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then
 		return false

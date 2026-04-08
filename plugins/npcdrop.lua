@@ -221,20 +221,21 @@ function PLUGIN:OnNPCKilled(entity)
 			end)
 		end
 	end
-	if (class == "npc_cscanner") then
-		if rand == 1 then
-			timer.Simple(0, function()
-				ix.item.Spawn("comp_combine_steel", position)
-			end)
-		end
-	end
-	if (class == "npc_turret_floor") then
-		if rand == 1 then
-			timer.Simple(0, function()
-				ix.item.Spawn("comp_combine_steel", position)
-			end)
-		end
-	end
+	-- to do: replace gibs with items
+	-- if (class == "npc_cscanner") then
+	-- 	if rand == 1 then
+	-- 		timer.Simple(0, function()
+	-- 			ix.item.Spawn("comp_combine_steel", position)
+	-- 		end)
+	-- 	end
+	-- end
+	-- if (class == "npc_turret_floor") then
+	-- 	if rand == 1 then
+	-- 		timer.Simple(0, function()
+	-- 			ix.item.Spawn("comp_combine_steel", position)
+	-- 		end)
+	-- 	end
+	-- end
 
 	if (SERVER) then
 		local deathPos = entity:GetPos() + Vector(0, 0, 10)

@@ -6,7 +6,7 @@ RECIPE.model = "models/props_junk/gascan001a.mdl"
 RECIPE.station = "craftingtable"
 RECIPE.requirements = {
 	["misc_canister"] = 1,
-	["comp_oil"] = 20,
+	["comp_oil"] = 10,
 }
 RECIPE.results = {
 	["gascan"] = 1,

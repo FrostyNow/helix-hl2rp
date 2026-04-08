@@ -279,6 +279,69 @@ function Schema:CharacterVarChanged(character, key, oldValue, value)
 	end
 end
 
+local function GetEquippedGasCan(client)
+	local character = client:GetCharacter()
+	if (!character) then return end
+
+	local inventory = character:GetInventory()
+	if (!inventory) then return end
+
+	for _, v in pairs(inventory:GetItems()) do
+		if (v.class == "weapon_vfire_gascan" and v:GetData("equip")) then
+			return v
+		end
+	end
+end
+
+function Schema:PlayerTick(client, mv)
+	if (CLIENT) then return end
+	if (!client:Alive() or !client:GetCharacter()) then return end
+
+	local weapon = client:GetActiveWeapon()
+	if (IsValid(weapon) and weapon:GetClass() == "weapon_vfire_gascan") then
+		if (client:KeyDown(IN_ATTACK)) then
+			client.ixGasCanDelay = client.ixGasCanDelay or 0
+
+			if (client.ixGasCanDelay < CurTime()) then
+				local item = GetEquippedGasCan(client)
+				if (item) then
+					local fuel = item:GetData("fuel", 100)
+					fuel = fuel - 1 -- Reduce 1% every 0.1s => 10% per second
+
+					if (fuel <= 0) then
+						fuel = 0
+						item:SetData("fuel", 0)
+
+						-- Process depletion
+						local inventory = item:GetInventory()
+						
+						-- Force unequip
+						if (item.Unequip) then
+							item:Unequip(client)
+						end
+						
+						client:StripWeapon("weapon_vfire_gascan")
+						
+						item:Remove():Done(function()
+							if (inventory) then
+								inventory:Add("misc_canister", 1)
+							end
+
+							if (IsValid(client)) then
+								client:NotifyLocalized("gasCanEmpty")
+							end
+						end)
+					else
+						item:SetData("fuel", fuel)
+					end
+				end
+
+				client.ixGasCanDelay = CurTime() + 0.1
+			end
+		end
+	end
+end
+
 function Schema:PlayerFootstep(client, position, foot, soundName, volume)
 	local factionTable = ix.faction.Get(client:Team())
 

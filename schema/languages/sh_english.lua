@@ -24,6 +24,7 @@ LANGUAGE = {
 	radioNotOn = "Your radio isn't on!",
 	radioRequired = "You need a radio to do this.",
 	radioAlreadyOn = "You already have a radio that is turned on!",
+	igniteTip = "Creates a small ember on the surface you are looking at.",
 	chatDispatchFormat = "Dispatch broadcasts \"%s\"",
 	chatRadioFormat = "%s radios in \"%s\"",
 	chatRequestFormat = "%s requests \"%s\"",
@@ -202,9 +203,12 @@ LANGUAGE = {
 	itemManhackPartsDesc = "A part that consists a Manhack.",
 	itemScannerDesc = "A flying machine that a camera installed.",
 	itemScannerPartsDesc = "A part that consists a Combine Scanner.",
+	itemShieldScannerPartsDesc = "A part that consists a Combine Shield Scanner.",
 	itemWaterDrugDesc = "A drug known that has feature cleaning dirty water.",
 	itemWrenchDesc = "A normal, simple wrench.",
 	itemCigaretteDesc = "A cigarette is a narrow cylinder containing psychoactive material, typically tobacco, that is rolled into thin paper for smoking.",
+	itemMatchDesc = "A small box of matches.",
+	itemLighterDesc = "A simple, refillable butane lighter.",
 	itemMoneyDesc = "A bunch of paper money from the old world, and it's not worthy now.",
 	itemPressureCookerDesc = "A metal cooker that cooks food under high pressure.",
 	itemTeaPotDesc = "A metal cooker that cooks food under high pressure.",
@@ -232,6 +236,8 @@ LANGUAGE = {
 	itemFryingPanDesc = "A shallow, flat cooking pan with a long handle.",
 	itemCookingPanDesc = "A large, flat bottomed pan with a wooden handle, usually found in kitchens.",
 	itemGasCanisterDesc = "A bright red metal gasoline canister covered in rust, containing some amount of gas.",
+	fuel = "Fuel",
+	gasCanEmpty = "The fuel has been depleted and the canister is now empty."
 	itemPlasticDesc = "A lightweight, synthetic material made from natural polymers, plastic is a component used to make various items.",
 	itemOilDesc = "A bottle that contains flammable and/or slippery liquid.",
 	itemGlassDesc = "A hard, brittle, transparent material used for crafting various items.",
@@ -362,7 +368,6 @@ LANGUAGE = {
 
 	currencySingular = "token",
 	currencyPlural = "tokens",
-
 	facial_hair = "Facial Hair",
 	
 	broadcastConsole = "Broadcast Console",

@@ -10,14 +10,8 @@ models/noble/limelight/spinach_plant.mdl
 담배
 models/hls/alyxports/cigarette_pack.mdl
 
-성냥
-models/hls/alyxports/matchbox_0.mdl
-
 콤바인 모니터 (텍스트출력용
 models/hls/alyxports/monitor_medium.mdl
-
-라이터
-models/hls/alyxports/tabletop_lighter.mdl
 
 담배자판기
 models/props_downtown/cigarettemachine.mdl

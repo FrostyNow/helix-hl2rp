@@ -59,6 +59,10 @@ ix.lang.AddTable("english", {
 	hintFishing = "Some people even try to catch leeches with empty tin cans to eat them... Yuck.",
 	hintCleaning = "You can pick up tokens or useful scraps while cleaning the floor.",
 	hintWorldview = "You can read about the worldview in the help tab.",
+	hintLottery = "There are still lotteries being sold.",
+	hintCoin = "Collecting Union Coins, given in return for loyalty, will bring you good fortune.",
+	hintGambling = "You can try your luck at the slot machine in the general store.",
+	hintBlackmarket = "There are rumors of black marketeers conducting unauthorized trade everywhere...",
 	
 	cmdHintDesc = "Shows a random hint immediately.",
 })
@@ -109,6 +113,10 @@ ix.lang.AddTable("korean", {
 	hintFishing = "거머리를 먹으려 빈 통조림 캔으로 낚시를 하는 사람들도 있다고 합니다... 우웩.",
 	hintCleaning = "바닥을 쓸다보면 때로는 잃어버린 토큰이나 쓸만한 폐품을 주울 수 있습니다.",
 	hintWorldview = "도움말 탭에는 세계관에 대한 읽을거리도 있습니다.",
+	hintLottery = "여전히 판매되는 복권이 있기도 합니다.",
+	hintCoin = "충성을 대가로 받는 연합 주화를 모은다면 좋은 일이 있을 것입니다.",
+	hintGambling = "잡화점에서는 토큰을 걸고 슬롯머신 게임을 해볼 수도 있습니다.",
+	hintBlackmarket = "허가받지 않은 상거래를 하는 암상인들이 도처에 있다는 소문이 있습니다...",
 
 	cmdHintDesc = "무작위 도움말 중 하나를 즉시 확인합니다.",
 })
@@ -163,6 +171,9 @@ ix.hints.Register("hintOverwatch")
 ix.hints.Register("hintWorkers")
 ix.hints.Register("hintLabour")
 ix.hints.Register("hintConscript")
+ix.hints.Register("hintLottery")
+ix.hints.Register("hintCoin")
+ix.hints.Register("hintBlackmarket")
 
 if (ix.plugin.Get("hunger")) then
 	ix.hints.Register("hintCook")
@@ -211,6 +222,10 @@ end
 
 if (ix.plugin.Get("webhelper")) then
 	ix.hints.Register("hintWorldview")
+end
+
+if (ix.plugin.Get("gambling")) then
+	ix.hints.Register("hintGambling")
 end
 
 ix.command.Add("Hint", {

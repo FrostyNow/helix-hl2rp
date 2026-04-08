@@ -11,6 +11,12 @@ if (SERVER) then
 		self:PhysicsInit(SOLID_VPHYSICS)
 		self:SetMoveType(MOVETYPE_VPHYSICS)
 		self:SetNetVar("active", false)
+		self:SetNetVar("broken", false)
+		self:SetNetVar("fuel", 0)
+		self:SetNetVar("fuelCount", 0)
+		self:SetNetVar("fuelMax", 30)
+		self:SetNetVar("igniter", 0)
+		self.fuelList = {}
 		self:SetUseType(SIMPLE_USE)
 
 		local physicsObject = self:GetPhysicsObject()
@@ -23,15 +29,155 @@ if (SERVER) then
 	function ENT:OnRemove()
 	end
 
-	function ENT:Use(activator)
-		local bActive = !self:GetNetVar("active", false)
-		self:SetNetVar("active", bActive)
+	function ENT:OnTakeDamage(damageInfo)
+		self.fuelList = self.fuelList or {}
+		if (damageInfo:IsDamageType(DMG_BURN) and #self.fuelList > 0) then
+			local attacker = damageInfo:GetAttacker()
+			local pos = self:GetPos()
 
-		if bActive then
-			self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 100, 0.8)
-		else
-			self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 250, 0.8)
+			-- Consume all fuel and break the stove
+			self.fuelList = {}
+			self:UpdateFuelNetVars()
+			self:SetNetVar("active", false)
+			self:SetNetVar("broken", true)
+			self:SetNetVar("igniter", 0)
+			self:SetColor(Color(100, 100, 100))
+
+			-- Small explosion effect
+			local explode = ents.Create("env_explosion")
+			if (IsValid(explode)) then
+				explode:SetPos(pos)
+				explode:SetOwner(attacker)
+				explode:Spawn()
+				explode:SetKeyValue("iMagnitude", "50")
+				explode:Fire("Explode", 0, 0)
+			end
+
+			-- Blast damage (Approx 2m radius = 110 units)
+			util.BlastDamage(self, IsValid(attacker) and attacker or self, pos, 110, 50)
+
+			self:EmitSound("ambient/explosions/exp1.wav", 80, 100)
 		end
+	end
+
+	function ENT:AddFuel(seconds)
+		self.fuelList = self.fuelList or {}
+
+		if (self:GetNetVar("broken", false)) then
+			return false
+		end
+
+		if (#self.fuelList >= 30) then
+			return false
+		end
+
+		table.insert(self.fuelList, seconds)
+		self:UpdateFuelNetVars()
+		return true
+	end
+
+	function ENT:UpdateFuelNetVars()
+		self.fuelList = self.fuelList or {}
+		local total = 0
+		for _, s in ipairs(self.fuelList) do
+			total = total + s
+		end
+		self:SetNetVar("fuel", total)
+		self:SetNetVar("fuelCount", #self.fuelList)
+		self:SetNetVar("fuelMax", 30)
+	end
+
+	function ENT:Use(activator)
+		if (self:GetNetVar("broken", false)) then
+			activator:NotifyLocalized("stoveBroken")
+			return
+		end
+
+		local bActive = self:GetNetVar("active", false)
+		local action = bActive and "extinguishing" or "lighting"
+
+		if (!bActive) then
+			local fuel = self:GetNetVar("fuel", 0)
+			if (fuel <= 0) then
+				activator:NotifyLocalized("needFuel")
+				return
+			end
+
+			local igniter = self:GetNetVar("igniter", 0)
+			if (igniter <= 0) then
+				local hungerPlugin = ix.plugin.list["hunger"]
+				if (!hungerPlugin:HasRemainingFireStarter(activator)) then
+					activator:NotifyLocalized("needFireStarter")
+					return
+				end
+			end
+		end
+
+		activator:SetAction(L(action, activator), 1.5)
+		activator:DoStaredAction(self, function()
+			if (!IsValid(self) or !IsValid(activator) or activator:GetPos():DistToSqr(self:GetPos()) > 6400) then
+				activator:SetAction()
+				activator:NotifyLocalized("tooFar")
+				return
+			end
+
+			local bNewActive = !self:GetNetVar("active", false)
+			
+			if (bNewActive) then
+				local igniter = self:GetNetVar("igniter", 0)
+				if (igniter > 0) then
+					self:SetNetVar("igniter", igniter - 1)
+				else
+					local hungerPlugin = ix.plugin.list["hunger"]
+					local item = hungerPlugin:HasRemainingFireStarter(activator)
+
+					if (!item) then
+						activator:NotifyLocalized("needFireStarter")
+						return
+					end
+
+					hungerPlugin:ConsumeFireStarter(item)
+				end
+			end
+
+			self:SetNetVar("active", bNewActive)
+
+			if bNewActive then
+				self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 100, 0.8)
+			else
+				self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 250, 0.8)
+			end
+		end, 1.5, function()
+			activator:SetAction()
+		end)
+	end
+
+	function ENT:Think()
+		self.fuelList = self.fuelList or {}
+
+		if (self:GetNetVar("broken", false)) then
+			self:SetNetVar("active", false)
+			return
+		end
+
+		if (self:GetNetVar("active", false)) then
+			if (#self.fuelList > 0) then
+				local decrease = 0.5
+				self.fuelList[1] = self.fuelList[1] - decrease
+				
+				if (self.fuelList[1] <= 0) then
+					table.remove(self.fuelList, 1)
+				end
+				
+				self:UpdateFuelNetVars()
+			else
+				self:SetNetVar("active", false)
+				self:EmitSound("ambient/fire/mtov_flame2.wav", 60, 250, 0.8)
+			end
+		end
+
+		self:NextThink(CurTime() + 0.5)
+		return true
 	end
 else
 	local MAX_LIGHT_DIST = 800 * 800
@@ -140,5 +286,20 @@ else
 		local description = stove:AddRow("description")
 		description:SetText(L"stove_desc")
 		description:SizeToContents()
+
+		local fuel = stove:AddRow("fuel")
+		fuel:SetText(L("fuelStatus", math.ceil(self:GetNetVar("fuel", 0) / 60)))
+		fuel:SizeToContents()
+
+		local fuelCount = stove:AddRow("fuelCount")
+		fuelCount:SetText(L("fuelCountStatus", self:GetNetVar("fuelCount", 0), self:GetNetVar("fuelMax", 30)))
+		fuelCount:SizeToContents()
+
+		if (self:GetNetVar("broken", false)) then
+			local broken = stove:AddRow("broken")
+			broken:SetText(L"stoveBroken")
+			broken:SetBackgroundColor(Color(69, 14, 14))
+			broken:SizeToContents()
+		end
 	end
 end

@@ -234,4 +234,16 @@ LANGUAGE = {
 	extinguishing = "불을 끄는 중...",
 	["Cooking"] = "요리 실력",
 	cooking_desc = "음식을 조리하는 기술입니다. 요리 실력이 높을수록 더 좋은 품질의 요리를 만들어냅니다.",
+	needFuel = "먼저 연료를 넣어야 합니다.",
+	fuelAdded = "%s(을)를 연료로 넣었습니다. (+%s분)",
+	["Fill Fuel"] = "연료 넣기",
+	fuelStatus = "남은 시간: 약 %s분",
+	fuelFull = "연료를 %s개 이상 넣을 수 없습니다.",
+	fuelCountStatus = "연료: %s/%s",
+	stoveBroken = "고장남",
+	["Install Igniter"] = "점화 장치 설치",
+	igniterInstalled = "점화를 위한 전지를 설치했습니다.",
+	usesLeft = "남은 사용 횟수: %s",
+	needFireStarter = "불을 붙이려면 성냥이나 라이터가 필요합니다!",
+	needFireStarterStove = "점화 장치가 설치되어 있지 않거나, 성냥/라이터가 필요합니다!"
 }

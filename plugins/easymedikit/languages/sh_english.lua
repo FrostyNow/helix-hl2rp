@@ -20,4 +20,6 @@ LANGUAGE = {
 	startFracture1 = "A sharp cracking sound is followed by an intense wave of pain in your leg.",
 	startFracture2 = "You hear a sickening snap, and an unbearable pain surges through your leg.",
 	startFracture3 = "An agonizing sensation tells you that something in your leg has given way, making it impossible to stand properly.",
+	cmdBreakDesc = "Forcefully fractures the target character's legs.",
+	cmdBleedDesc = "Forcefully causes the target character to bleed.",
 }

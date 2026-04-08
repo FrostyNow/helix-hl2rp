@@ -3,6 +3,8 @@ PLUGIN.name = "Easy Medikit"
 PLUGIN.description = "A small base of medical kit (Heal yourself, heal others, works with medical attribute)"
 PLUGIN.author = "Subleader | Modified by Frosty"
 
+ix.util.Include("sv_hooks.lua", "server")
+
 do
 	ix.char.RegisterVar("bleeding", {
 		field = "bleeding",
@@ -109,4 +111,28 @@ if (CLIENT) then
 	end
 end
 
-ix.util.Include("sv_hooks.lua", "server")
+ix.command.Add("Break", {
+	description = "cmdBreakDesc",
+	adminOnly = true,
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		local player = target:GetPlayer()
+
+		if (IsValid(player) and player:Alive()) then
+			PLUGIN:SetFracture(player, true)
+		end
+	end
+})
+
+ix.command.Add("Bleed", {
+	description = "cmdBleedDesc",
+	adminOnly = true,
+	arguments = ix.type.character,
+	OnRun = function(self, client, target)
+		local player = target:GetPlayer()
+
+		if (IsValid(player) and player:Alive()) then
+			PLUGIN:SetBleeding(player, true)
+		end
+	end
+})

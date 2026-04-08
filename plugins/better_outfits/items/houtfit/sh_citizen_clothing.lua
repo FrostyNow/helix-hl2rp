@@ -129,8 +129,8 @@ local function DefineCitizenClothing()
 		{id = "black_shemagh", category = "headstrap", outfitCategory = "face", index = 6, model = "models/tnb/items/aphelion/facewrap.mdl", skin = 1, price = 50, noBusiness = true},
 
 		-- Belt
-		{id = "cp_belt", category = "belt", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true},
-		{id = "pistol_belt", category = "belt", index = 2, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true},
+		{id = "cp_belt", category = "belt", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true, isBag = true, invWidth = 3, invHeight = 1, allowBases = {"base_ammo", "base_radios"}, allowItems = {"pistol", "357", "flaregun", "flashlight", "pager", "grenade", "manhack"}},
+		{id = "pistol_belt", category = "belt", index = 2, model = "models/props_junk/cardboard_box004a.mdl", price = 50, noBusiness = true, isBag = true, invWidth = 3, invHeight = 1, allowBases = {"base_ammo", "base_radios"}, allowItems = {"pistol", "357", "flaregun", "flashlight", "pager", "grenade", "manhack"}},
 
 		-- Armband
 		{id = "armpad_lambda", category = "armband", index = 1, model = "models/props_junk/cardboard_box004a.mdl", price = 100, noBusiness = true},
@@ -157,6 +157,9 @@ local function DefineCitizenClothing()
 		ITEM.isBag = v.isBag or false
 		ITEM.invWidth = v.invWidth or 2
 		ITEM.invHeight = v.invHeight or 2
+
+		ITEM.allowBases = v.allowBases or nil
+		ITEM.allowItems = v.allowItems or nil
 
 		if (ITEM.isBag) then
 			ITEM:OnRegistered()

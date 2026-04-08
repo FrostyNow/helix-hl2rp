@@ -13,30 +13,19 @@ ITEM.iconCam = {
 	pos	= Vector(0, 200, 0)
 }
 
-ITEM.lock = 1
-
-ITEM.functions.Equip = {
-	name = "Equip",
-	tip = "equipTip",
-	icon = "icon16/tick.png",
-	OnRun = function(item)
-		local client = item.player
-
-		if (!client:IsCombine() and item:GetData("locked", true)) then
-			client:NotifyLocalized("needComkey")
-			return false
-		else
-			item:Equip(client)
-			return false
-		end
-	end,
-	OnCanRun = function(item)
-		local client = item.player
-
-		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and
-			hook.Run("CanPlayerEquipItem", client, item) != false
+function ITEM:OnInstanced()
+	if (!self:GetData("locked")) then
+		self:SetData("locked", true)
 	end
-}
+end
+
+ITEM.functions.Equip.OnCanRun = function(item)
+	if (item.baseTable.functions.Equip.OnCanRun(item) == false) then
+		return false
+	end
+
+	return item.player:IsCombine() or item:GetData("locked", true) == false
+end
 
 ITEM.functions.Unlock = {
 	icon = "icon16/key_go.png",
@@ -69,12 +58,6 @@ ITEM.functions.Unlock = {
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
-		local data = tooltip:AddRow("data")
-		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
-		data:SetText(L("securitizedItemTooltip"))
-		data:SetExpensiveShadow(0.5)
-		data:SizeToContents()
-
 		if (!LocalPlayer():IsCombine() and self:GetData("locked", true)) then
 			local lockedData = tooltip:AddRow("lockedData")
 			lockedData:SetBackgroundColor(Color(49, 62, 71))
@@ -82,5 +65,11 @@ if (CLIENT) then
 			lockedData:SetExpensiveShadow(0.5)
 			lockedData:SizeToContents()
 		end
+		
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
+		data:SetText(L("securitizedItemTooltip"))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
 	end
 end

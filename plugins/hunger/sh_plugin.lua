@@ -56,6 +56,34 @@ end
 
 local playerMeta = FindMetaTable("Player")
 
+function PLUGIN:HasRemainingFireStarter(client)
+	local character = client:GetCharacter()
+	if (!character) then return nil end
+
+	local inventory = character:GetInventory()
+	local items = inventory:GetItems()
+	local bestItem
+	local minUses = 999 
+
+	-- Find the item with the smallest usage count
+	for _, v in pairs(items) do
+		if (v.uniqueID == "match" or v.uniqueID == "lighter") then
+			local uses = v:GetData("uses", v.usenum or 10)
+			if (uses > 0 and uses < minUses) then
+				minUses = uses
+				bestItem = v
+			end
+		end
+	end
+
+	return bestItem
+end
+
+function PLUGIN:ConsumeFireStarter(item)
+	local uses = item:GetData("uses", item.usenum or 10)
+	item:SetData("uses", math.max(0, uses - 1))
+end
+
 function PLUGIN:HasIXCraft()
 	return ix.plugin.list["ixcraft"] != nil
 end
@@ -443,7 +471,10 @@ if SERVER then
 					class = class,
 					pos = v:GetPos(),
 					angles = v:GetAngles(),
-					active = v:GetNetVar("active")
+					active = v:GetNetVar("active"),
+					broken = v:GetNetVar("broken"),
+					igniter = v:GetNetVar("igniter"),
+					fuelList = v.fuelList or {}
 				}
 			end
 		end
@@ -462,6 +493,15 @@ if SERVER then
 				entity:Spawn()
 				entity:Activate()
 				entity:SetNetVar("active", v.active)
+				entity:SetNetVar("broken", v.broken or false)
+				if (v.broken) then
+					entity:SetColor(Color(100, 100, 100))
+				end
+				entity:SetNetVar("igniter", v.igniter or 0)
+				entity.fuelList = v.fuelList or {}
+				if (entity.UpdateFuelNetVars) then
+					entity:UpdateFuelNetVars()
+				end
 
 				local phys = entity:GetPhysicsObject()
 				if (IsValid(phys)) then
@@ -613,5 +653,76 @@ ix.command.Add("CharSetThirst", {
 			client:NotifyLocalized("charSetThirst02", target:GetName(), thirst)
 			target:NotifyLocalized("charSetThirst03", client:GetName(), thirst)
 		end
+	end
+})
+
+properties.Add("ixHungerFuelOverride", {
+	MenuLabel = "Override Fuel",
+	Order = 999,
+	MenuIcon = "icon16/clock_edit.png",
+	Filter = function(self, ent, ply)
+		if (!IsValid(ent)) then return false end
+		local classes = {["ix_bucket"] = true, ["ix_bonfire"] = true, ["ix_stove"] = true}
+		return classes[ent:GetClass()] and ply:IsAdmin()
+	end,
+	Action = function(self, ent)
+		Derma_StringRequest("Override Fuel", "Enter fuel duration in minutes:", "60", function(text)
+			local minutes = tonumber(text)
+			if (minutes) then
+				self:MsgStart()
+					net.WriteEntity(ent)
+					net.WriteUInt(minutes * 60, 32)
+				self:MsgEnd()
+			end
+		end)
+	end,
+	Receive = function(self, length, ply)
+		local ent = net.ReadEntity()
+		local seconds = net.ReadUInt(32)
+		if (!IsValid(ent) or !ply:IsAdmin()) then return end
+		
+		ent.fuelList = {seconds}
+		if (ent.UpdateFuelNetVars) then
+			ent:UpdateFuelNetVars()
+		end
+	end
+})
+
+properties.Add("ixHungerBatterySet", {
+	MenuLabel = "Install Battery",
+	Order = 1000,
+	MenuIcon = "icon16/lightning.png",
+	Filter = function(self, ent, ply)
+		return IsValid(ent) and ent:GetClass() == "ix_stove" and ply:IsAdmin()
+	end,
+	Action = function(self, ent)
+		self:MsgStart()
+			net.WriteEntity(ent)
+		self:MsgEnd()
+	end,
+	Receive = function(self, length, ply)
+		local ent = net.ReadEntity()
+		if (!IsValid(ent) or !ply:IsAdmin() or ent:GetClass() != "ix_stove") then return end
+		ent:SetNetVar("igniter", 100)
+	end
+})
+
+properties.Add("ixHungerRepair", {
+	MenuLabel = "Repair Stove",
+	Order = 1001,
+	MenuIcon = "icon16/wrench.png",
+	Filter = function(self, ent, ply)
+		return IsValid(ent) and ent:GetClass() == "ix_stove" and ent:GetNetVar("broken", false) and ply:IsAdmin()
+	end,
+	Action = function(self, ent)
+		self:MsgStart()
+			net.WriteEntity(ent)
+		self:MsgEnd()
+	end,
+	Receive = function(self, length, ply)
+		local ent = net.ReadEntity()
+		if (!IsValid(ent) or !ply:IsAdmin() or ent:GetClass() != "ix_stove") then return end
+		ent:SetNetVar("broken", false)
+		ent:SetColor(Color(255, 255, 255))
 	end
 })

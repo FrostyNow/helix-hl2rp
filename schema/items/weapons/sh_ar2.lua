@@ -13,76 +13,12 @@ ITEM.iconCam = {
 	pos	= Vector(0, 200, 0)
 }
 
--- HL2 vanilla ar2 does not really have genetic lock system. Only in Alyx does.
-
--- ITEM.lock = 1
-
--- ITEM.functions.Equip = {
--- 	name = "Equip",
--- 	tip = "equipTip",
--- 	icon = "icon16/tick.png",
--- 	OnRun = function(item)
--- 		local client = item.player
-
--- 		if (!client:IsCombine() and item:GetData("locked", true)) then
--- 			client:NotifyLocalized("needComkey")
--- 			return false
--- 		else
--- 			item:Equip(client)
--- 			return false
--- 		end
--- 	end,
--- 	OnCanRun = function(item)
--- 		local client = item.player
-
--- 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and
--- 			hook.Run("CanPlayerEquipItem", client, item) != false
--- 	end
--- }
-
--- ITEM.functions.Unlock = {
--- 	icon = "icon16/key_go.png",
--- 	OnRun = function(item)
--- 		local client = item.player
--- 		local character = client:GetCharacter()
--- 		local inventory = character:GetInventory()
--- 		local hasItem = inventory:HasItem("comkey")
-
--- 		if (item:GetData("locked", true)) then
--- 			if (client:IsCombine() or hasItem) then
--- 				item:SetData("locked", false)
--- 				client:EmitSound("weapons/ar2/ar2_reload_push.wav")
--- 				return false
--- 			else
--- 				client:NotifyLocalized("needComkey")
--- 				return false
--- 			end
--- 		else
--- 			client:NotifyLocalized("unknownError")
--- 			return false
--- 		end
--- 	end,
--- 	OnCanRun = function(item)
--- 		local client = item.player
-
--- 		return !IsValid(item.entity) and IsValid(client) and item:GetData("equip") != true and item:GetData("locked", true) == true
--- 	end
--- }
-
--- if (CLIENT) then
--- 	function ITEM:PopulateTooltip(tooltip)
--- 		local data = tooltip:AddRow("data")
--- 		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
--- 		data:SetText(L("securitizedItemTooltip"))
--- 		data:SetExpensiveShadow(0.5)
--- 		data:SizeToContents()
-
--- 		if (!LocalPlayer():IsCombine() and self:GetData("locked", true)) then
--- 			local lockedData = tooltip:AddRow("lockedData")
--- 			lockedData:SetBackgroundColor(Color(49, 62, 71))
--- 			lockedData:SetText(L("itemLockedTooltip"))
--- 			lockedData:SetExpensiveShadow(0.5)
--- 			lockedData:SizeToContents()
--- 		end
--- 	end
--- end
+if (CLIENT) then
+	function ITEM:PopulateTooltip(tooltip)		
+		local data = tooltip:AddRow("data")
+		data:SetBackgroundColor(team.GetColor(FACTION_MPF))
+		data:SetText(L("securitizedItemTooltip"))
+		data:SetExpensiveShadow(0.5)
+		data:SizeToContents()
+	end
+end

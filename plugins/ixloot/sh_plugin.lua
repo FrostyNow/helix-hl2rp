@@ -130,6 +130,8 @@ PLUGIN.randomLoot.common = {
 	"pesticide",
 	"watering_can",
 	"lottery",
+	"lighter",
+	"match",
 }
 
 PLUGIN.randomLoot.rare = {

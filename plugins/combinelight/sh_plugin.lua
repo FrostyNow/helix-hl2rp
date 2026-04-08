@@ -4,7 +4,7 @@ PLUGIN.description = "Portable light sources used to illuminate dark areas in su
 
 ix.lang.AddTable("english", {
 	comlightDesc = "Portable light sources used to illuminate dark areas in support of Combine operations.",
-	combineLightPlaceMode = "Placing... (Left Click: Place, Right Click: Cancel)",
+	combineLightPlaceMode = "Placing... (Left Click: Place, Right Click: Cancel, Scroll: Rotate)",
 	combineLightPlaced = "The light has been placed.",
 	combineLightTooFar = "You are too far away from the placement position!",
 	combineLightNoFloor = "You can only place this on the floor!",
@@ -132,6 +132,7 @@ else
 		ghost:SetSolid(SOLID_VPHYSICS)
 		ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
 		ghost.itemID = itemID
+		ghost.angle = LocalPlayer():EyeAngles().y + 180
 		ix.gui.combineLightGhost = ghost
 
 		LocalPlayer():NotifyLocalized("combineLightPlaceMode")
@@ -148,7 +149,7 @@ else
 			})
 
 			local pos = trace.HitPos
-			local ang = Angle(0, client:EyeAngles().y + 180, 0)
+			local ang = Angle(0, ghost.angle, 0)
 
 			-- Align bottom to floor
 			local mins, maxs = ghost:GetModelBounds()
@@ -211,6 +212,12 @@ else
 
 				ghost:Remove()
 				surface.PlaySound("physics/metal/metal_solid_impact_soft1.wav")
+				return true
+			elseif (bind:find("invprev")) then
+				ghost.angle = ghost.angle + 10
+				return true
+			elseif (bind:find("invnext")) then
+				ghost.angle = ghost.angle - 10
 				return true
 			end
 		end

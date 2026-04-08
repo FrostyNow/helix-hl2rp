@@ -195,6 +195,8 @@ LANGUAGE = {
 	Equip = "장착하기",
 	Preview = "미리 보기",
 	Use = "사용하기",
+	["Ignite"] = "불 붙이기",
+	igniteTip = "주변 사물이나 지면에 잠깐 동안 불씨를 붙입니다.",
 	["Use Forward"] = "앞에 사용",
 	Load = "사용",
 	["Load All"] = "모두 사용",
@@ -418,6 +420,8 @@ LANGUAGE = {
 	itemShieldScannerDesc = "카메라가 달린 날아다니는 생체 기계 장치입니다.",
 	["Scanner Parts"] = "스캐너 부품",
 	itemScannerPartsDesc = "콤바인 스캐너를 구성하는 부품 중 하나입니다.",
+	["Shield Scanner Parts"] = "실드 스캐너 부품",
+	itemShieldScannerPartsDesc = "콤바인 실드 스캐너를 구성하는 부품 중 하나입니다.",
 	["Water Drug"] = "물약",
 	itemWaterDrugDesc = "물을 정제하는 약이라고 알려져 있습니다...",
 	["Wrench"] = "렌치",
@@ -425,6 +429,10 @@ LANGUAGE = {
 	["Carton of Cigarettes"] = "담배 한 보루",
 	["Pack of Cigarettes"] = "담배 한 갑",
 	itemCigaretteDesc = "담뱃잎을 가공하여 불 붙여 피울 수 있도록 만든 가공 제품입니다.",
+	["Match"] = "성냥",
+	itemMatchDesc = "성냥 몇 개가 들어있는 작은 성냥갑입니다.",
+	["Lighter"] = "라이터",
+	itemLighterDesc = "휴대가 간편한 평범한 라이터입니다.",
 	["Pre-War Money"] = "전쟁 전 화폐",
 	itemMoneyDesc = "구 세계에서 쓰던 종이 화폐 다발로, 이제는 가치가 없다고 봐야 할 겁니다.",
 	["Pressure Cooker"] = "압력솥",
@@ -481,6 +489,8 @@ LANGUAGE = {
 	itemCookingPanDesc = "보통 부엌에서 발견되는 나무 손잡이가 달린 크고 바닥이 평평한 냄비입니다.",
 	["Gas Canister"] = "연료통",
 	itemGasCanisterDesc = "녹으로 덮인 밝은 빨간색 금속 가솔린 연료통으로, 일정량의 연료가 들어 있습니다",
+	fuel = "연료",
+	gasCanEmpty = "연료를 모두 소모하여 연료통이 비었습니다!"
 	["Plastic"] = "플라스틱",
 	itemPlasticDesc = "천연 고분자로 만들어진 가벼운 합성 물질로 다양한 품목을 만드는 데 사용되는 재료입니다.",
 	["Oil"] = "기름",
@@ -724,7 +734,6 @@ LANGUAGE = {
 
 	currencySingular = "토큰",
 	currencyPlural = "토큰",
-
 	[""] = "",
 	Desc = "",
 	
@@ -751,5 +760,3 @@ LANGUAGE = {
 	cmdHUDReset = "콤바인 HUD의 위치를 기본값으로 초기화합니다.",
 	hudResetMessage = "HUD의 위치가 초기화되었습니다.",
 }
-
-

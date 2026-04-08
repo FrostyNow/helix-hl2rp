@@ -48,6 +48,8 @@ LANGUAGE = {
 	recipeManhackDesc = "부품을 조립하여 맨핵을 만듭니다.",
 	["Combine Scanner"] = "콤바인 스캐너",
 	recipeScannerDesc = "부품을 조립하여 콤바인 스캐너를 만듭니다.",
+	["Combine Shield Scanner"] = "콤바인 실드 스캐너",
+	recipeShieldScannerDesc = "부품을 조립하여 콤바인 실드 스캐너를 만듭니다.",
 	["Breen's Water"] = "브린 박사의 물",
 	recipeWaterDesc = "브린 박사의 물을 제조합니다.",
 	recipeTurretDesc = "부품을 조립하여 콤바인 터렛을 만듭니다.",
@@ -127,6 +129,8 @@ LANGUAGE = {
 	recipeScrapScannerAntennaDesc = "스캐너 안테나를 분해하여 부품을 추출합니다.",
 	["Scrap Scanner Body"] = "스캐너 비행체 분해",
 	recipeScrapScannerBodyDesc = "스캐너 비행체를 분해하여 부품을 추출합니다.",
+	["Scrap Shield Scanner Part"] = "실드 스캐너 부품 분해",
+	recipeScrapShieldScannerPartDesc = "실드 스캐너 부품을 분해하여 유용한 자재를 추출합니다.",
 	["Scrap Aluminium Can"] = "알루미늄 캔 분해",
 	recipeScrapAluminiumCanDesc = "알루미늄 캔을 분해하여 부품을 추출합니다.",
 	["Scrap Telephone"] = "전화기 분해",
@@ -228,6 +232,12 @@ LANGUAGE = {
 	recipeEmptyCartonDesc = "우유갑을 찢어 종이로 만듭니다.",
 	["Scrap Large Bottle"] = "대형 물통 분해",
 	recipeScrapLargeBottleDesc = "대형 물통을 분해하여 강철 조각을 얻습니다.",
+	["Scrap Lighter"] = "라이터 분해",
+	recipeScrapLighterDesc = "사용이 끝난 라이터를 분해하여 플라스틱을 추출합니다.",
+	lighterNotEmpty = "라이터를 모두 사용해야 분해할 수 있습니다.",
+	["Scrap Match"] = "성냥 분해",
+	recipeScrapMatchDesc = "다 쓴 성냥갑을 분해하여 종이를 추출합니다.",
+	matchNotEmpty = "성냥을 모두 사용해야 분해할 수 있습니다.",
 	
 	["Charcoal"] = "숯",
 	recipeCharcoalDesc = "나무 조각을 태워 숯을 만듭니다.",
@@ -268,6 +278,5 @@ LANGUAGE = {
 	recipeCrispsDesc = "감자를 얇게 썰어 기름에 튀겨 바삭한 감자칩을 만듭니다.",
 	["Boil Water"] = "물 끓이기",
 	recipeBoilWaterDesc = "더러운 물을 끓여서 마실 수 있는 상태로 만듭니다.",
-	
 	recipePurifiedWaterFilterLowDurability = "정화통의 내구도가 부족합니다. (최소 50 필요)",
 }
