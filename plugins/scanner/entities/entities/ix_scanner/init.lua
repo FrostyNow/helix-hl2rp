@@ -163,11 +163,13 @@ function ENT:Initialize()
 	self:ResetSequence("idle")
 	self:SetPlaybackRate(1.0) 
 	self:AddFlags(FL_FLY)
+	self:AddFlags(67108864) -- FL_OBJECT
 	self:PrecacheGibs()
 
 	if (SERVER) then
 		self:createFlashSprite()
 		self:SetNetVar("ixScannerName", PLUGIN:GenerateUniqueScannerName(false))
+		hook.Run("ScannerPilotChanged", nil, self)
 	end
 
 	self.targetDir = Vector(0, 0, 0)

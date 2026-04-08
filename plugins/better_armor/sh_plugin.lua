@@ -97,12 +97,23 @@ local function GetArmorProtectionInfo(client, hitgroup, dmginfo)
 		return 1, false
 	end
 
-	local items = inventory:GetItems()
+	local charID = character:GetID()
+	local items = {}
+
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
+	end
+
 	local bestScale = 1
 	local hitgroupProtected = false
 
 	for _, item in pairs(items) do
-		if (item:GetData("equip") != true or item.base != "base_armor" or !item.resistance) then
+		-- Relaxed base check: allow items that have resistance data and are equipped.
+		if (item:GetData("equip") != true or !item.resistance) then
 			continue
 		end
 
@@ -215,14 +226,24 @@ end
 function PLUGIN:PlayerHurt( client, attacker, health, damageTaken )
 	if (client:IsPlayer()) then
 		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
-		local items = inventory:GetItems()
+		if (!character) then return end
+
+		local charID = character:GetID()
+		local items = {}
+
+		for _, inv in pairs(ix.item.inventories) do
+			if (inv.owner == charID) then
+				for _, v in pairs(inv:GetItems()) do
+					table.insert(items, v)
+				end
+			end
+		end
 		
 		local hitgroup = client.ixLastHitGroup or client:LastHitGroup()
 
 		for k, v in pairs(items) do
 			if (v:GetData("equip")) then
-				if (v.base == "base_armor" and v.resistance) then
+				if (v.resistance) then
 					-- Durability loss only if hitgroup matches
 					if (v.hitGroups and !table.HasValue(v.hitGroups, hitgroup or 0)) then
 						continue
@@ -259,35 +280,43 @@ ix.command.Add("Gasmask", {
 		end
 
 		local character = client:GetCharacter()
-		local inventory = character:GetInventory()
-		local items = inventory:GetItems()
+		local charID = character:GetID()
 		
 		local equippedMask = nil
 		local unequippedMask = nil
 		
-		for _, v in pairs(items) do
-			if (v.gasmask == true) then
-				if (v:GetData("equip")) then
-					equippedMask = v
-					break
-				else
-					if (!unequippedMask) then
-						unequippedMask = v
+		-- Robust search: Check all inventories owned by this character
+		-- This ensures masks in GearMenu (separate inventory) are found.
+		for _, inventory in pairs(ix.item.inventories) do
+			if (inventory.owner == charID) then
+				for _, v in pairs(inventory:GetItems(true)) do
+					if (v.gasmask == true) then
+						if (v:GetData("equip")) then
+							equippedMask = v
+							break
+						else
+							if (!unequippedMask) then
+								unequippedMask = v
+							end
+						end
 					end
 				end
 			end
+			if (equippedMask) then break end
 		end
 
 		if (equippedMask) then
-			ix.item.PerformInventoryAction(client, "EquipUn", equippedMask, equippedMask.invID)
-			client.ixGasmaskCooldown = CurTime() + 5
+			-- Use ID to ensure item.player is set in PerformInventoryAction
+			ix.item.PerformInventoryAction(client, "EquipUn", equippedMask:GetID(), equippedMask.invID)
+			client.ixGasmaskCooldown = CurTime() + 1
 
 			return
 		end
 
 		if (unequippedMask) then
-			ix.item.PerformInventoryAction(client, "Equip", unequippedMask, unequippedMask.invID)
-			client.ixGasmaskCooldown = CurTime() + 5
+			-- Use ID to ensure item.player is set in PerformInventoryAction
+			ix.item.PerformInventoryAction(client, "Equip", unequippedMask:GetID(), unequippedMask.invID)
+			client.ixGasmaskCooldown = CurTime() + 1
 
 			return
 		end
@@ -306,7 +335,6 @@ ix.command.Add("FilterSwap", {
 		end
 
 		local char = client:GetCharacter()
-		local inv = char:GetInventory()
 		local badair = ix.plugin.list["badair"]
 
 		if (!badair) then return end
@@ -320,7 +348,7 @@ ix.command.Add("FilterSwap", {
 			end)
 
 			if (currentFilter) then
-				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter, currentFilter.invID)
+				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter:GetID(), currentFilter.invID)
 			end
 		else
 			local targetMask = badair:GetEquippedBadAirProtectionItem(char, function(item)
@@ -328,7 +356,7 @@ ix.command.Add("FilterSwap", {
 			end)
 
 			if (targetMask and badair:HasItemFilterInstalled(targetMask)) then
-				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask, targetMask.invID)
+				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask:GetID(), targetMask.invID)
 			end
 		end
 
@@ -367,14 +395,13 @@ ix.command.Add("FilterSwap", {
 			local item = ix.item.instances[itemID]
 			if (item and item:GetOwner() == client) then
 				if (badair:CanEquipInternalFilter(client)) then
-					ix.item.PerformInventoryAction(client, "Equip", item, item.invID)
+					ix.item.PerformInventoryAction(client, "Equip", item:GetID(), item.invID)
 				else
-					ix.item.PerformInventoryAction(client, "Use", item, item.invID)
+					ix.item.PerformInventoryAction(client, "Use", item:GetID(), item.invID)
 				end
 			end
 		end)
 
-		-- We return nil here so the individual actions handle notifications.
 		return
 	end
 })
@@ -565,15 +592,15 @@ function PLUGIN:HasEquippedModelChangingOutfit(character)
 		return false
 	end
 
-	local inventory = ResolveCharacterInventory(character)
+	local charID = character:GetID()
 
-	if (!inventory) then
-		return false
-	end
-
-	for _, item in pairs(inventory:GetItems()) do
-		if (item:GetData("equip") and IsModelChangingItem(item)) then
-			return true
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, item in pairs(inv:GetItems()) do
+				if (item:GetData("equip") and IsModelChangingItem(item)) then
+					return true
+				end
+			end
 		end
 	end
 
@@ -823,13 +850,18 @@ function PLUGIN:GetExpectedAppearanceSkin(character, client)
 	end
 
 	local skin = tonumber(character:GetData("skin", IsValid(client) and client:GetSkin() or 0)) or 0
-	local inventory = ResolveCharacterInventory(character)
+	local charID = character:GetID()
+	local items = {}
 
-	if (!inventory) then
-		return skin
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
 	end
 
-	for _, item in pairs(inventory:GetItems()) do
+	for _, item in pairs(items) do
 		if (!item:GetData("equip") or item.newSkin == nil or !IsModelChangingItem(item)) then
 			continue
 		end
@@ -897,12 +929,21 @@ function PLUGIN:CanPlayerEquipItem(client, item)
 		return false
 	end
 
-	local inventory = character:GetInventory()
+	local charID = character:GetID()
+	local items = {}
 
-	if (inventory) then
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
+	end
+
+	if (#items > 0) then
 		local itemCategory = item.outfitCategory or (ix.item.list[item.uniqueID] and ix.item.list[item.uniqueID].outfitCategory)
 
-		for _, equippedItem in pairs(inventory:GetItems()) do
+		for _, equippedItem in pairs(items) do
 			if (equippedItem.id != item.id and equippedItem:GetData("equip") and IsModelChangingItem(equippedItem)) then
 				local equippedCategory = equippedItem.outfitCategory or (ix.item.list[equippedItem.uniqueID] and ix.item.list[equippedItem.uniqueID].outfitCategory)
 

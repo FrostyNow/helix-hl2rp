@@ -20,7 +20,12 @@ ITEM.functions.Fuel = {
 	name = "Fill Fuel",
 	icon = "icon16/fire.png",
 	OnCanRun = function(item)
-		local client = item.player
+		local client = item.player or (CLIENT and LocalPlayer())
+
+		if (!IsValid(client)) then
+			return false
+		end
+
 		local ent = client:GetEyeTrace().Entity
 		local allowed = {ix_bucket = true, ix_bonfire = true, ix_stove = true}
 		return IsValid(ent) and allowed[ent:GetClass()] and client:GetPos():DistToSqr(ent:GetPos()) < 10000 and ix.plugin.list["hunger"] != nil and ent:GetNetVar("fuelCount", 0) < ent:GetNetVar("fuelMax", 5)
@@ -36,7 +41,7 @@ ITEM.functions.Fuel = {
 				fuel = fuel - 10
 
 				if (fuel <= 0) then
-					local inventory = item:GetInventory()
+					local inventory = ix.item.inventories[item.invID]
 
 					if (item:GetData("equip")) then
 						if (item.Unequip) then
@@ -44,7 +49,7 @@ ITEM.functions.Fuel = {
 						end
 					end
 
-					item:Remove():Done(function()
+					if (item:Remove()) then
 						if (inventory) then
 							inventory:Add("misc_canister", 1)
 						end
@@ -52,7 +57,7 @@ ITEM.functions.Fuel = {
 						if (IsValid(client)) then
 							client:NotifyLocalized("gasCanEmpty")
 						end
-					end)
+					end
 				else
 					item:SetData("fuel", fuel)
 					client:NotifyLocalized("fuelAdded", item.name, 10)

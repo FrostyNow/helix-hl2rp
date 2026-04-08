@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "Molle Vest"
 ITEM.description = "molle_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebel_molle.mdl"
@@ -44,3 +45,4 @@ ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 
 ITEM.tooltipLabelText = "sociocidalItemTooltip"
 ITEM.tooltipLabelColor = Color(218, 24, 24)
+

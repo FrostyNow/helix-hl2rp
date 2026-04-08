@@ -86,12 +86,12 @@ local loreStyles = [[
         font-size: 15px;
         line-height: 1.6;
     }
-    .breen { color: #d6b3ff; font-weight: 600; }
-    .overwatch { color: #ff4d61; font-weight: 600; }
+    .breen { color: #815ab0; font-weight: 600; }
+    .overwatch { color: #87313a; font-weight: 600; }
     .ota { color: #ff9d5c; font-weight: 600; }
-    .cp { color: #7da5f5; font-weight: 600; }
+    .cp { color: #3e5582; font-weight: 600; }
     .cwu { color: #e6e385; font-weight: 600; }
-    .conscript { color: #bad1c5; font-weight: 600; }
+    .conscript { color: #52665b; font-weight: 600; }
     .vort { color: #72dbd6; font-weight: 600; }
     .rebel { color: #ff9d52; font-weight: 600; }
     .lambda { color: #ff9d52; font-weight: 800; }
@@ -118,7 +118,7 @@ PLUGIN.loreTranslations = {
         
         <div class="paragraph">이 지옥 같은 환경에서 살아남기 위해 시민들은 생존을 담보로 한 부역의 길을 택하곤 합니다. <span class="cwu">시민 노동 조합</span>에 가입하면 일반적인 강제 노역보다 상대적으로 수월한 노동 감독이나 상점 운영 같은 서비스업에 종사할 수 있는 기회를 얻습니다. 더 나아가 동족을 감시하고 탄압하는 <span class="cp">시민 보호 기동대</span>에 지원하는 이들도 존재합니다. 이들이 인간의 존엄성을 버리고 부역자가 되는 이유는 명확합니다. 비참한 수준의 기본 배급식보다 조금이라도 더 먹을만한 밥을 얻고, 아주 미미하게나마 나은 주거 환경을 보장받기 위해서입니다. 협조자들에게는 <span class="overwatch">감시인 정부</span>가 발행하는 유일한 화폐인 토큰이 지급되는데, 이 토큰이야말로 <span class="cp">17번 지구</span>에서 생존을 이어갈 수 있는 유일한 생명줄이자 힘의 도구로 작용합니다.</div>
         
-        <div class="paragraph">거리의 질서를 유지하는 방독면 쓴 <span class="cp">기동대</span> 너머에는, <span class="cp">우주 공동체</span>의 “자랑스러운” 신인류가 될 <span class="overwatch">감시 부대</span>의 병사들이 그림자처럼 도사리고 있습니다. 그러나 이들은 더 이상 인간이라 부를 수 없는 <span class="cp">우주 공동체</span>의 완벽한 부품들입니다.</div>
+        <div class="paragraph">거리의 질서를 유지하는 방독면 쓴 <span class="cp">기동대</span> 너머에는, <span class="cp">우주 공동체</span>의 “자랑스러운” 신인류가 될 <span class="ota">감시 부대</span>의 병사들이 그림자처럼 도사리고 있습니다. 그러나 이들은 더 이상 인간이라 부를 수 없는 <span class="cp">우주 공동체</span>의 완벽한 부품들입니다.</div>
         
         <div class="paragraph">무엇보다 잔인한 사실은 <span class="cp">콤바인</span>이 가동한 억제장으로 인해 지구상에서 더 이상 아이가 태어나지 않는다는 점입니다. <span class="breen">월리스 브린</span> 행정관은 연일 선전을 통해 이것이 인류를 번식이라는 원시적인 요람에서 해방시켜 진정한 영생으로 인도하는 진화의 과정이라 선전하지만, 이는 명백한 기만입니다. 실상은 인류를 철저히 소모품으로 부리다 조용히 멸종시키려는 우주적 수탈의 일환일 뿐입니다. 인류는 이제 <span class="cp">시타델</span>의 거대한 그림자 아래서, 다시는 오지 않을 내일을 기다리며 서서히 소멸해가는 마지막 세대로 남겨졌습니다.</div>
 
@@ -148,42 +148,42 @@ PLUGIN.loreTranslations = {
             </div>
 
             <div class="term-item">
-                <span class="term-name"><span class="overwatch">감시인</span> <span class="ota">신인류 부대</span></span>
+                <span class="term-name"><span class="ota">감시인 신인류 부대</span></span>
                 <div class="term-content">방독면과 전투복을 벗은 모습을 본 사람이 아무도 없는 미지의 군대입니다. 대규모 소요 사태나 군사적 투입이 필요한 상황이 닥치면 그림자처럼 나타나 압도적인 무력으로 상황을 정리합니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">신스</span>
+                <span class="term-name"><span class="ota">신스</span></span>
                 <div class="term-content">우주 공동체가 정복한 외계의 생명체들을 생체 개조하여 병기화한 존재들입니다. <span class="ota">7시간 전쟁</span> 당시 인류의 군대를 처참하게 무너뜨렸던 공포의 상징입니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">억제장</span>
+                <span class="term-name"><span class="cp">억제장</span></span>
                 <div class="term-content">인류의 번식 능력을 완전히 차단하여 더 이상 아이가 태어나지 않게 만드는 특정 파동입니다. 인류를 마지막 세대로 만들어 서서히 소멸시키려는 우주적 수탈의 수단입니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">노바 프로스펙트</span>
+                <span class="term-name"><span class="ota">노바 프로스펙트</span></span>
                 <div class="term-content">도시 외곽에 위치한 고도의 보안 수용소입니다. 한 번 이곳으로 끌려간 이들은 결코 돌아오지 못하며, 시민들에게는 '죽음'보다 더한 공포의 대상입니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">도시 스캐너와 카메라</span>
+                <span class="term-name"><span class="cp">도시 스캐너와 카메라</span></span>
                 <div class="term-content">공중을 부유하는 스캐너와 고정식 감시 카메라가 도처에서 시민들을 감시합니다. <span class="cp">17번 지구</span> 어디에서도 감시인의 눈을 벗어날 수 없습니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">반사회와 반시민</span>
+                <span class="term-name"><span class="cp">반사회와 반시민</span></span>
                 <div class="term-content"><span class="overwatch">감시인 정부</span>의 법령을 어긴 자들에게 찍히는 낙인입니다. 반시민으로 분류되는 순간 모든 생존 권한이 박탈되며 즉각적인 물리적 말살의 대상이 됩니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">배급 터미널</span>
+                <span class="term-name"><span class="cwu">배급 터미널</span></span>
                 <div class="term-content">시민들이 생존을 위한 정체 모를 배급식을 받는 기계입니다. 충성도에 따라 배급의 질이 달라지는, 인류의 굴욕적인 생존 현장입니다.</div>
             </div>
 
             <div class="term-item">
-                <span class="term-name">노예 <span class="vort">보르티곤트</span></span>
+                <span class="term-name"><span class="vort">노예 보르티곤트</span></span>
                 <div class="term-content">구속구에 묶여 도시의 단순 노역에 동원되는 외계 종족입니다. 인류와 함께 <span class="cp">콤바인</span>의 노예로 전락하여 무력하게 하루하루를 보냅니다.</div>
             </div>
 
@@ -193,7 +193,7 @@ PLUGIN.loreTranslations = {
             </div>
 
             <div class="term-item">
-                <span class="term-name">시민 거주지</span>
+                <span class="term-name"><span class="cwu">시민 거주지</span></span>
                 <div class="term-content">모든 시민이 의무적으로 숙식하는 열악한 공동 거주지입니다. 잠금 장치가 금지되어 있으며 수시로 <span class="cp">기동대</span>의 불심 검문이 이루어집니다.</div>
             </div>
         </div>

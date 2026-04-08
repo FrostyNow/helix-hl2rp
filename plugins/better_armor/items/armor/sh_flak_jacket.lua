@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "Flak Jacket"
 ITEM.description = "flak_jacket_desc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
@@ -44,3 +45,4 @@ ITEM.hitGroups = {HITGROUP_CHEST, HITGROUP_STOMACH}
 
 ITEM.tooltipLabelText = "sociocidalItemTooltip"
 ITEM.tooltipLabelColor = Color(218, 24, 24)
+

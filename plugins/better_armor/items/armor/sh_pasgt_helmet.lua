@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 
 ITEM.name = "PASGT Helmet"
 ITEM.description = "pasgtHelmetDesc"
@@ -47,3 +48,4 @@ ITEM.allowedModels = {
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
+

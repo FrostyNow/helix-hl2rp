@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 
 ITEM.name = "Hazmat Suit"
 ITEM.description = "hazmatSuitCitizenDesc"
@@ -46,3 +47,4 @@ ITEM.maxDurability = 100
 ITEM.badAirProtection = true
 ITEM.requiresGasmaskFilter = true
 ITEM.filterMaxDurability = 100
+

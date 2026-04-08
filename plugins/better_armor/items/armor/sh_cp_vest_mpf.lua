@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "CP Armor Vest"
 ITEM.description = "cp_vest_mpf_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl"
@@ -52,3 +53,4 @@ function ITEM:CanEquipOutfit()
 
 	return IsValid(client) and client:Team() == FACTION_MPF
 end
+

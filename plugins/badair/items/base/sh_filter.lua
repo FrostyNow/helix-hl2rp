@@ -67,12 +67,13 @@ ITEM.functions.Use = {
 		local client = item.player or item:GetOwner()
 		if (!IsValid(client)) then return false end
 
-		local char = client:GetCharacter()
-		local invID = char:GetInventory():GetID()
-		local gearInvID = char:GetData("gearInvID")
 		local badair = ix.plugin.Get("badair")
+		if (!badair) then return false end
 
-		return !item:GetData("equip") and (!IsValid(item.entity) and (item.invID == invID or (gearInvID and item.invID == gearInvID))) and not badair:CanEquipInternalFilter(client)
+		local char = client:GetCharacter()
+		if (!char) then return false end
+
+		return !item:GetData("equip") and !IsValid(item.entity) and item:GetOwner() == client and not badair:CanEquipInternalFilter(client)
 	end
 }
 
@@ -82,17 +83,21 @@ ITEM.functions.Equip = {
 	icon = "icon16/wrench.png",
 	OnRun = function(item)
 		local client = item.player or item:GetOwner()
-		item:SetData("equip", true)
-		client:EmitSound("weapons/usp/usp_silencer_on.wav")
+		if (IsValid(client)) then
+			item:SetData("equip", true)
+			client:EmitSound("weapons/usp/usp_silencer_on.wav")
 
-		hook.Run("OnItemEquipped", item, client)
+			hook.Run("OnItemEquipped", item, client)
+		end
 
 		return false
 	end,
 	OnCanRun = function(item)
 		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
 		local badair = ix.plugin.Get("badair")
-		return badair and !IsValid(item.entity) and !item:GetData("equip") and badair:CanEquipInternalFilter(client)
+		return badair and !IsValid(item.entity) and !item:GetData("equip") and badair:CanEquipInternalFilter(client) and item:GetOwner() == client
 	end
 }
 
@@ -102,17 +107,21 @@ ITEM.functions.EquipUn = {
 	icon = "icon16/delete.png",
 	OnRun = function(item)
 		local client = item.player or item:GetOwner()
-		item:SetData("equip", false)
-		client:EmitSound("weapons/usp/usp_silencer_off.wav")
+		if (IsValid(client)) then
+			item:SetData("equip", false)
+			client:EmitSound("weapons/usp/usp_silencer_off.wav")
 
-		hook.Run("OnItemUnequipped", item, client)
+			hook.Run("OnItemUnequipped", item, client)
+		end
 
 		return false
 	end,
 	OnCanRun = function(item)
 		local client = item.player or item:GetOwner()
+		if (!IsValid(client)) then return false end
+
 		local badair = ix.plugin.Get("badair")
-		return badair and !IsValid(item.entity) and item:GetData("equip") == true and badair:CanEquipInternalFilter(client)
+		return badair and !IsValid(item.entity) and item:GetData("equip") == true and badair:CanEquipInternalFilter(client) and item:GetOwner() == client
 	end
 }
 

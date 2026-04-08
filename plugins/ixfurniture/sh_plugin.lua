@@ -190,7 +190,7 @@ ix.config.Add("furnitureEnabled", true, "Wether furniture placement is enabled."
 })
 
 -- Register F flag
-ix.flag.Add("F", "furnitureFlagDesc")
+ix.flag.Add("F", "Access to buy and place furniture.")
 
 -- Setup Area Property
 function PLUGIN:SetupAreaProperties()

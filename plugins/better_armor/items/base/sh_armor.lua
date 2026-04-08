@@ -518,7 +518,16 @@ function ITEM:UpdateResistance(client)
 
 	local char = client:GetCharacter()
 	if (!char) then return end
-	local items = char:GetInventory():GetItems()
+	local charID = char:GetID()
+	local items = {}
+
+	for _, inv in pairs(ix.item.inventories) do
+		if (inv.owner == charID) then
+			for _, v in pairs(inv:GetItems()) do
+				table.insert(items, v)
+			end
+		end
+	end
 
 	local bestDamage = {1, 1, 1, 1, 1, 1, 1}
 	local anyResistance = false
@@ -527,7 +536,7 @@ function ITEM:UpdateResistance(client)
 	local totalArmorAmount = 0
 
 	for _, item in pairs(items) do
-		if (item:GetData("equip") and (item.base == "base_armor" or item.uniqueID == "base_armor")) then
+		if (item:GetData("equip") and item.resistance) then
 			if (item.gasmask) then anyGasmask = true end
 
 			local durability = item:GetData("Durability", item.maxDurability)
@@ -809,7 +818,16 @@ ITEM.functions.Equip = {
 			local char = client:GetCharacter()
 			if (!char) then return false end
 
-			local items = char:GetInventory():GetItems()
+			local charID = char:GetID()
+			local items = {}
+
+			for _, inv in pairs(ix.item.inventories) do
+				if (inv.owner == charID) then
+					for _, v in pairs(inv:GetItems()) do
+						table.insert(items, v)
+					end
+				end
+			end
 
 			for _, v in pairs(items) do
 				if (v.id != item.id and v:GetData("equip") and v.outfitCategory == item.outfitCategory) then

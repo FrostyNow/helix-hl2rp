@@ -21,7 +21,6 @@ LANGUAGE = {
 	furnitureDisabledMsg = "Furniture features are currently disabled on the server.",
 	furnitureNoFlag = "You do not have permission (F flag) to place furniture.",
 	furnitureCooldown = "You must wait %s second(s) before placing another furniture.",
-	furnitureFlagDesc = "Authority to buy and place furniture.",
 	furnitureHP = "D: %s / %s",
 	furnitureRepairDesc = "Repair the furniture you are looking at for a certain amount of money.",
 	furnitureNoMoneyRepair = "You need %s to repair the furniture.",

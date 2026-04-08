@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 
 ITEM.name = "PASGT Vest"
 ITEM.description = "pasgtBodyArmorDesc"

@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "OTA Armor Plate"
 ITEM.description = "otaPlateDesc"
 ITEM.model = "models/gibs/scanner_gib02.mdl"
@@ -27,3 +28,4 @@ function ITEM:CanEquipOutfit()
 
 	return IsValid(client) and client:Team() == FACTION_OTA
 end
+

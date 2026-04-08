@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 
 ITEM.name = "Hazmat Suit"
 ITEM.description = "hazmatSuitDesc"
@@ -25,3 +26,4 @@ ITEM.filterMaxDurability = 100
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
+

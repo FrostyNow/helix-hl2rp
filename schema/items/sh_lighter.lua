@@ -9,7 +9,7 @@ ITEM.usenum = 10
 ITEM.functions.Ignite = {
 	tip = "igniteTip",
 	icon = "icon16/fire.png",
-	onRun = function(item)
+	OnRun = function(item)
 		local client = item.player
 		local data = item:GetData("uses", item.usenum)
 
@@ -70,7 +70,7 @@ ITEM.functions.Ignite = {
 
 		return false
 	end,
-	onCanRun = function(item)
+	OnCanRun = function(item)
 		return item:GetData("uses", item.usenum) > 0
 	end
 }

@@ -313,7 +313,7 @@ function Schema:PlayerTick(client, mv)
 						item:SetData("fuel", 0)
 
 						-- Process depletion
-						local inventory = item:GetInventory()
+						local inventory = ix.item.inventories[item.invID]
 						
 						-- Force unequip
 						if (item.Unequip) then
@@ -322,7 +322,7 @@ function Schema:PlayerTick(client, mv)
 						
 						client:StripWeapon("weapon_vfire_gascan")
 						
-						item:Remove():Done(function()
+						if (item:Remove()) then
 							if (inventory) then
 								inventory:Add("misc_canister", 1)
 							end
@@ -330,7 +330,7 @@ function Schema:PlayerTick(client, mv)
 							if (IsValid(client)) then
 								client:NotifyLocalized("gasCanEmpty")
 							end
-						end)
+						end
 					else
 						item:SetData("fuel", fuel)
 					end

@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "CP Vest with Medic Bag"
 ITEM.description = "cp_vest_medic_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebel1.mdl"
@@ -39,7 +40,7 @@ ITEM.noBusiness = true
 
 ITEM.isBag = true
 ITEM.invWidth = 2
-ITEM.invHeight = 1
+ITEM.invHeight = 2
 
 ITEM.armorAmount = 50
 ITEM.damage = {.75, .75, .75, .75, .75, .75, .75}
@@ -48,3 +49,4 @@ ITEM.hitGroups = {HITGROUP_CHEST}
 
 ITEM.tooltipLabelText = "sociocidalItemTooltip"
 ITEM.tooltipLabelColor = Color(218, 24, 24)
+

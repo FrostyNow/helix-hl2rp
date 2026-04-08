@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "Combat Vest"
 ITEM.description = "combat_vest_desc"
 ITEM.model = "models/props_junk/cardboard_box004a.mdl"
@@ -44,3 +45,4 @@ ITEM.hitGroups = {HITGROUP_CHEST}
 
 ITEM.tooltipLabelText = "sociocidalItemTooltip"
 ITEM.tooltipLabelColor = Color(218, 24, 24)
+

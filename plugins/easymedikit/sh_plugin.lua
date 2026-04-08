@@ -112,7 +112,7 @@ if (CLIENT) then
 end
 
 ix.command.Add("Break", {
-	description = "cmdBreakDesc",
+	description = "@cmdBreakDesc",
 	adminOnly = true,
 	arguments = ix.type.character,
 	OnRun = function(self, client, target)
@@ -125,7 +125,7 @@ ix.command.Add("Break", {
 })
 
 ix.command.Add("Bleed", {
-	description = "cmdBleedDesc",
+	description = "@cmdBleedDesc",
 	adminOnly = true,
 	arguments = ix.type.character,
 	OnRun = function(self, client, target)

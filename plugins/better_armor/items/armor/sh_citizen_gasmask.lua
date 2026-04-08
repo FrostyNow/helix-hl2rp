@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "Gasmask"
 ITEM.description = "gasmask_desc"
 ITEM.model = "models/tnb/items/aphelion/gasmask.mdl"
@@ -46,3 +47,4 @@ ITEM.hitGroups = {HITGROUP_HEAD}
 
 ITEM.tooltipLabelText = "sociocidalItemTooltip"
 ITEM.tooltipLabelColor = Color(218, 24, 24)
+

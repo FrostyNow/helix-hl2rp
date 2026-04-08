@@ -662,7 +662,11 @@ function PANEL:RefreshGearInv()
 			if (item.functions) then
 				for k, v in SortedPairs(item.functions) do
 					if (k == "drop" or k == "combine" or k == "Equip" or k == "EquipUn") then continue end
-					if (v.OnCanRun and v.OnCanRun(item) == false) then continue end
+					item.player = LocalPlayer()
+					local bCanRun = v.OnCanRun and v.OnCanRun(item)
+					item.player = nil
+
+					if (v.OnCanRun and bCanRun == false) then continue end
 
 					menu:AddOption(L(v.name or k), function()
 						item.player = LocalPlayer()

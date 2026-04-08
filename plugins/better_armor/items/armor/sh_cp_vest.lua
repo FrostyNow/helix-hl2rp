@@ -1,3 +1,4 @@
+ITEM.base = "base_armor"
 ITEM.name = "CP Armor Vest"
 ITEM.description = "cp_vest_desc"
 ITEM.model = "models/tnb/items/aphelion/shirt_rebelmetrocop.mdl"
@@ -44,3 +45,4 @@ ITEM.hitGroups = {HITGROUP_CHEST}
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"
 ITEM.tooltipLabelFactionColor = FACTION_MPF
+

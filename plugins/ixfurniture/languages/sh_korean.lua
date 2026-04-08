@@ -22,7 +22,6 @@ LANGUAGE = {
 	furnitureDisabledMsg = "현재 가구 기능이 서버에서 비활성화되어 있습니다.",
 	furnitureNoFlag = "가구를 설치할 권한(F 플래그)이 없습니다.",
 	furnitureCooldown = "재배치까지 %s초 더 기다려야 합니다.",
-	furnitureFlagDesc = "가구를 구매하고 배치할 수 있는 권한입니다.",
 	furnitureHP = "내구도: %s / %s",
 	furnitureRepairDesc = "일정 금액을 내고 바라보고 있는 가구를 수리합니다.",
 	furnitureNoMoneyRepair = "수리에 %s(이)가 필요합니다.",

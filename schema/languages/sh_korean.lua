@@ -490,7 +490,7 @@ LANGUAGE = {
 	["Gas Canister"] = "연료통",
 	itemGasCanisterDesc = "녹으로 덮인 밝은 빨간색 금속 가솔린 연료통으로, 일정량의 연료가 들어 있습니다",
 	fuel = "연료",
-	gasCanEmpty = "연료를 모두 소모하여 연료통이 비었습니다!"
+	gasCanEmpty = "연료를 모두 소모하여 연료통이 비었습니다!",
 	["Plastic"] = "플라스틱",
 	itemPlasticDesc = "천연 고분자로 만들어진 가벼운 합성 물질로 다양한 품목을 만드는 데 사용되는 재료입니다.",
 	["Oil"] = "기름",
@@ -739,7 +739,7 @@ LANGUAGE = {
 	
 	facial_hair = "수염",
 	
-	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "1차 공격: 휘두르기.\nALT + 1차 공격: 전원 켜기/끄기.\n2차 공격: 밀기/노크하기.",
+	["Primary Fire: Stun.\nALT + Primary Fire: Toggle stun.\nSecondary Fire: Push/Knock."] = "1차 공격: 휘두르기.\n걷기 + 1차 공격: 전원 켜기/끄기.\n2차 공격: 밀기/노크하기.",
 	["To hold a suitcase around."] = "여행 가방을 들고 다닙니다.",
 	
 	broadcastConsole = "방송 콘솔",
