@@ -11,6 +11,7 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 ]]
 
 ix.lang.AddTable("english", {
+	cmdCollectWater = "Collect dirty water from a source in front of you.",
 	collectingWater = "Collecting water...",
 	waterTooFar = "You are too far away from the water source.",
 	waterNoSource = "You are not looking at a water source.",
@@ -19,6 +20,7 @@ ix.lang.AddTable("english", {
 })
 
 ix.lang.AddTable("korean", {
+	cmdCollectWater = "바로 앞에 있는 수원에서 더러운 물을 뜹니다. 대체로 싱크대나 물가에서만 가능합니다.",
 	collectingWater = "물을 뜨는 중...",
 	waterTooFar = "물에서 너무 멉니다.",
 	waterNoSource = "물을 뜰 수 있는 수원을 바라보고 있지 않습니다.",
@@ -100,7 +102,7 @@ local function GetWaterSource(client)
 end
 
 ix.command.Add("CollectWater", {
-	description = "Collect dirty water from a source in front of you.",
+	description = "@cmdCollectWater",
 	alias = {"GetWater", "Water"},
 	OnRun = function(self, client)
 		local character = client:GetCharacter()
