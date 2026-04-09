@@ -23,6 +23,22 @@ local weaponDamage = {
 	["weapon_357"] = 10 --40
 }
 
+local function GetDamageWeaponClass(attacker, inflictor)
+	local weapon = IsValid(attacker) and attacker.GetActiveWeapon and attacker:GetActiveWeapon() or nil
+
+	if (IsValid(weapon)) then
+		return weapon:GetClass(), weapon
+	end
+
+	if (IsValid(inflictor)) then
+		local class = inflictor:GetClass()
+
+		if (weaponDamage[class]) then
+			return class, inflictor
+		end
+	end
+end
+
 if (SERVER) then
 	function PLUGIN:EntityTakeDamage(target, dmgInfo)
 		local attacker = dmgInfo:GetAttacker()
@@ -38,16 +54,21 @@ if (SERVER) then
 				dmgInfo:SetDamage(damage)
 			end
 
-			local weapon = attacker:GetActiveWeapon()
+			local weaponClass, weapon = GetDamageWeaponClass(attacker, inflictor)
 
-			if (IsValid(weapon) and weaponDamage[weapon:GetClass()] and (inflictor == weapon or inflictor == attacker)) then
+			local inflictorMatches = inflictor == weapon or inflictor == attacker
+				or (IsValid(inflictor) and inflictor:GetClass() == weaponClass)
+
+			if (weaponClass and inflictorMatches) then
 				if (dmgInfo:IsDamageType(DMG_BULLET) or dmgInfo:IsDamageType(DMG_CLUB)) then
-					local damage = weaponDamage[weapon:GetClass()]
+					local damage = weaponDamage[weaponClass]
 
 					if (attacker:IsNPC()) then
 						damage = damage * ix.config.Get("npcDamageMultiplier", 0.5)
 					end
 
+					-- Cap HL2 weapon damage without undoing reductions already applied by armor or other hooks.
+					damage = math.min(dmgInfo:GetDamage(), damage)
 					dmgInfo:SetBaseDamage(damage)
 					dmgInfo:SetDamage(damage)
 				end
