@@ -910,6 +910,15 @@ function PLUGIN:ApplyTemporaryOutfitOverrides(client, character)
 end
 
 function PLUGIN:CanPlayerUnequipItem(client, item)
+	local character = client:GetCharacter()
+
+	if (character) then
+		local gearInvID = character:GetData("gearInvID")
+
+		if (gearInvID and item.invID == gearInvID) then
+			return true
+		end
+	end
 end
 
 function PLUGIN:CanTransferItem(item, curInv, inventory)
