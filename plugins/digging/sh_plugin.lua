@@ -33,24 +33,32 @@ ix.lang.AddTable("korean", {
 })
 
 if (SERVER) then
-	function PLUGIN:EntityTakeDamage(target, dmgInfo)
-		local attacker = dmgInfo:GetAttacker()
-
-		if (IsValid(attacker) and attacker:IsPlayer() and target:IsWorld()) then
-			local weapon = attacker:GetActiveWeapon()
+	function PLUGIN:KeyPress(client, key)
+		if (key == IN_ATTACK) then
+			local weapon = client:GetActiveWeapon()
 			
 			if (IsValid(weapon) and weapon:GetClass() == "weapon_hl2shovel") then
-				-- Small delay to prevent catching multiple hits in one attack
-				local lastDig = attacker.ixLastDigTime or 0
+				local lastDig = client.ixLastDigTime or 0
 				if (lastDig > CurTime()) then
 					return
 				end
-				attacker.ixLastDigTime = CurTime() + 1.2 -- Match shovel attack rate
+				client.ixLastDigTime = CurTime() + 1.2 -- Match shovel attack rate
 
-				local trace = attacker:GetEyeTrace()
-				if (trace.HitWorld and DIGGABLE_MATERIALS[trace.MatType]) then
-					self:HandleDig(attacker, trace.HitPos, trace.MatType)
-				end
+				-- Delay to sync with the shovel hitting the ground
+				timer.Simple(0.4, function()
+					if (IsValid(client) and client:Alive()) then
+						local wep = client:GetActiveWeapon()
+						
+						if (IsValid(wep) and wep:GetClass() == "weapon_hl2shovel") then
+							local trace = client:GetEyeTrace()
+							
+							-- Ensure it's a world hit, correct material, and within melee range
+							if (trace.HitWorld and trace.HitPos:Distance(client:GetShootPos()) <= 90 and DIGGABLE_MATERIALS[trace.MatType]) then
+								self:HandleDig(client, trace.HitPos, trace.MatType)
+							end
+						end
+					end
+				end)
 			end
 		end
 	end
