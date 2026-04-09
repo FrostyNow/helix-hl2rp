@@ -155,6 +155,8 @@ function PLUGIN:AdvanceSet()
 	local entry = entries[state.currentIndex]
 
 	if (!entry) then
+		self:TriggerButton()
+
 		if (state.stopAfterSet) then
 			self:ResetSchedule(true)
 			return
@@ -206,7 +208,16 @@ function PLUGIN:StartCurrentSet()
 	end
 
 	self:UpdateRelayScheduleState()
+	self:TriggerButton()
 	self:AdvanceSet()
+end
+
+function PLUGIN:TriggerButton()
+	local entity = ents.GetMapCreatedEntity(self.buttonID)
+
+	if (IsValid(entity)) then
+		entity:Fire("Use")
+	end
 end
 
 function PLUGIN:StartSet(setID)

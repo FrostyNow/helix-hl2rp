@@ -15,6 +15,7 @@ PLUGIN.defaultVolume = 80
 PLUGIN.defaultSpacing = 0.1
 PLUGIN.setLineDelay = 0.5
 PLUGIN.repeatDelay = 300
+PLUGIN.buttonID = 3889 // rp_industrial17_v1
 PLUGIN.broadcastSourceName = "Dr. Wallace Breen"
 PLUGIN.setAliases = {
 	["welcome"] = "welcome",
@@ -226,7 +227,7 @@ ix.lang.AddTable("korean", {
 })
 
 ix.command.Add("BreenCast", {
-	description = "Start or stop a scheduled Breencast set.",
+	description = "@breenCastUseHint",
 	adminOnly = true,
 	arguments = ix.type.text,
 	OnRun = function(self, client, value)
