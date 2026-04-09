@@ -28,7 +28,7 @@ ITEM.functions.Fuel = {
 
 		local ent = client:GetEyeTrace().Entity
 		local allowed = {ix_bucket = true, ix_bonfire = true, ix_stove = true}
-		return IsValid(ent) and allowed[ent:GetClass()] and client:GetPos():DistToSqr(ent:GetPos()) < 10000 and ix.plugin.list["hunger"] != nil and ent:GetNetVar("fuelCount", 0) < ent:GetNetVar("fuelMax", 5)
+		return !IsValid(item.entity) and IsValid(ent) and allowed[ent:GetClass()] and client:GetPos():DistToSqr(ent:GetPos()) < 10000 and ix.plugin.list["hunger"] != nil and ent:GetNetVar("fuelCount", 0) < ent:GetNetVar("fuelMax", 5)
 	end,
 	OnRun = function(item)
 		local client = item.player
