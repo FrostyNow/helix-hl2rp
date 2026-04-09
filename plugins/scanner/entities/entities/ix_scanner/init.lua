@@ -71,15 +71,15 @@ function ENT:setPilot(ply)
 end
 
 function ENT:createFlashSprite()
-	if (IsValid(self.spotlight)) then return end
+	if (IsValid(self.flashSprite)) then return end
 
-	local SCANNER_ATTACHMENT_LIGHT = "light"
+	local attachment = self:LookupAttachment("eyes")
+	if (attachment <= 0) then
+		attachment = self:LookupAttachment("light")
+	end
 
 	self.flashSprite = ents.Create("env_sprite")
-	self.flashSprite:SetAttachment(
-		self,
-		self:LookupAttachment(SCANNER_ATTACHMENT_LIGHT)
-	)
+	self.flashSprite:SetAttachment(self, attachment)
 	self.flashSprite:SetKeyValue("model", "sprites/blueflare1.vmt")
 	self.flashSprite:SetKeyValue("scale", 1.4)
 	self.flashSprite:SetKeyValue("rendermode", 3)
@@ -92,8 +92,8 @@ end
 function ENT:enableSpotlight()
 	if (IsValid(self.spotlight)) then return end
 
-	local SCANNER_ATTACHMENT_LIGHT = "light"
-	local attachment = self:LookupAttachment(SCANNER_ATTACHMENT_LIGHT)
+	local attachment = self:LookupAttachment("eyes")
+	local name = attachment > 0 and "eyes" or "light"
 	local position = self:GetAttachment(attachment)
 
 	if (not position) then return end
@@ -103,7 +103,7 @@ function ENT:enableSpotlight()
 	self.spotlight:SetPos(position.Pos)
 	self.spotlight:SetAngles(self:GetAngles())
 	self.spotlight:SetParent(self)
-	self.spotlight:Fire("SetParentAttachment", SCANNER_ATTACHMENT_LIGHT)
+	self.spotlight:Fire("SetParentAttachment", name)
 	self.spotlight:SetLocalAngles(self:GetForward():Angle())
 	self.spotlight:SetKeyValue("spotlightwidth", self.spotlightWidth)
 	self.spotlight:SetKeyValue("spotlightlength", self.spotlightLength)
@@ -195,6 +195,15 @@ function ENT:setClawScanner()
 
 	if (SERVER) then
 		self:SetNetVar("ixScannerName", PLUGIN:GenerateUniqueScannerName(true))
+
+		if (IsValid(self.flashSprite)) then
+			local attachment = self:LookupAttachment("eyes")
+			if (attachment <= 0) then
+				attachment = self:LookupAttachment("light")
+			end
+
+			self.flashSprite:SetAttachment(self, attachment)
+		end
 	end
 end
 
