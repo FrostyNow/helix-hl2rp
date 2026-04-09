@@ -114,6 +114,7 @@ function ENT:AlignToGround()
 end
 
 function ENT:ApplyIdleAnimation(force)
+	local targetActor = IsValid(self.ixBreencastActor) and self.ixBreencastActor or self
 	local sequence = self.ixBreencastIdleSequence
 
 	if (!force and self.ixBreencastLastSequence == sequence) then
@@ -124,30 +125,31 @@ function ENT:ApplyIdleAnimation(force)
 		return
 	end
 
-	self:ResetSequence(sequence)
-	self:ResetSequenceInfo()
-	self:SetCycle(0)
-	self:SetPlaybackRate(1)
+	targetActor:ResetSequence(sequence)
+	targetActor:ResetSequenceInfo()
+	targetActor:SetCycle(0)
+	targetActor:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
 end
 
 function ENT:PlayFallbackBroadcastAnimation()
+	local targetActor = IsValid(self.ixBreencastActor) and self.ixBreencastActor or self
 	self.ixBreencastFallbackIndex = (self.ixBreencastFallbackIndex or 0) + 1
 
 	if (self.ixBreencastFallbackIndex > #FALLBACK_BROADCAST_SEQUENCES) then
 		self.ixBreencastFallbackIndex = 1
 	end
 
-	local sequence = self:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
+	local sequence = targetActor:LookupSequence(FALLBACK_BROADCAST_SEQUENCES[self.ixBreencastFallbackIndex])
 
 	if (!IsValidSequence(sequence)) then
 		return
 	end
 
-	self:ResetSequence(sequence)
-	self:ResetSequenceInfo()
-	self:SetCycle(0)
-	self:SetPlaybackRate(1)
+	targetActor:ResetSequence(sequence)
+	targetActor:ResetSequenceInfo()
+	targetActor:SetCycle(0)
+	targetActor:SetPlaybackRate(1)
 	self.ixBreencastLastSequence = sequence
 end
 
@@ -180,18 +182,22 @@ function ENT:ResolveFlexControllers()
 end
 
 function ENT:SetFlexWeightSafe(key, weight)
-	if (!self.SetFlexWeight) then
+	local targetActor = IsValid(self.ixBreencastActor) and self.ixBreencastActor or self
+	if (!targetActor.SetFlexWeight) then
 		return
 	end
 
 	local flexID = self:ResolveFlexControllers()[key]
 
 	if (isnumber(flexID) and flexID >= 0) then
-		self:SetFlexWeight(flexID, math.Clamp(weight or 0, 0, 1))
+		targetActor:SetFlexWeight(flexID, math.Clamp(weight or 0, 0, 1))
 	end
 end
 
 function ENT:ClearBroadcastExpression()
+	-- Do not modify the generic_actor's flexes, or it will permanently break VCD facial animations!
+	if (IsValid(self.ixBreencastActor)) then return end
+
 	self:SetFlexWeightSafe("jaw", 0)
 	self:SetFlexWeightSafe("smileLeft", 0)
 	self:SetFlexWeightSafe("smileRight", 0)
@@ -204,6 +210,8 @@ function ENT:ClearBroadcastExpression()
 end
 
 function ENT:UpdateBroadcastExpression(currentTime)
+	if (IsValid(self.ixBreencastActor)) then return end
+
 	local pulse = math.abs(math.sin(currentTime * 7.5))
 	local sway = math.sin(currentTime * 1.35)
 	local glance = math.sin(currentTime * 0.85)
@@ -235,22 +243,32 @@ function ENT:StartSetScene(setID)
 
 	self:StopSetScene()
 
-	if (!scenePath or !file.Exists(scenePath, "GAME")) then
+	print("[DEBUG Breencast] StartSetScene called with setID:", setID, "scenePath:", scenePath)
+	if (!scenePath) then
+		print("[DEBUG Breencast] Scene path is missing.")
 		return false
 	end
 
 	if (!self.PlayScene) then
+		print("[DEBUG Breencast] PlayScene function is not available on this entity.")
 		return false
 	end
 
-	local sceneEntity = self:PlayScene(scenePath)
+	local targetActor = IsValid(self.ixBreencastActor) and self.ixBreencastActor or self
+	targetActor:SetName("breen")
+
+	print("[DEBUG Breencast] Calling PlayScene on generic_actor...")
+	local duration, sceneEntity = targetActor:PlayScene(scenePath)
+	print("[DEBUG Breencast] PlayScene returned - duration:", duration, "sceneEntity:", sceneEntity, "isValid?", IsValid(sceneEntity))
 
 	if (IsValid(sceneEntity)) then
 		self.ixBreencastSceneEntity = sceneEntity
 		self.ixBreencastSceneID = setID
+		print("[DEBUG Breencast] Scene entity validated and saved.")
 		return true
 	end
 
+	print("[DEBUG Breencast] Failed to get valid scene entity from PlayScene.")
 	return false
 end
 
@@ -293,6 +311,29 @@ function ENT:Initialize()
 	if (self.SetCapability) then
 		self:SetCapability(CAP_ANIMATEDFACE)
 		self:SetCapability(CAP_TURN_HEAD)
+	end
+
+	local actor = ents.Create("npc_breen")
+	if (IsValid(actor)) then
+		actor:SetModel(self:GetModel())
+		actor:SetPos(self:GetPos())
+		actor:SetAngles(self:GetAngles())
+		actor:Spawn()
+
+		if (actor.SetCapability) then
+			actor:SetCapability(CAP_ANIMATEDFACE)
+			actor:SetCapability(CAP_TURN_HEAD)
+		end
+
+		actor:SetParent(self)
+		actor:SetName("breen")
+		actor:SetSolid(SOLID_NONE)
+		actor:SetMoveType(MOVETYPE_NONE)
+		
+		self.ixBreencastActor = actor
+
+		self:SetNoDraw(true)
+		self:DrawShadow(false)
 	end
 
 	timer.Simple(0, function()
@@ -346,7 +387,7 @@ function ENT:FinishBroadcast(stopScene)
 	timer.Remove(GetTimerID(self, "clear"))
 end
 
-function ENT:StartRelay(text, duration, source, isLive)
+function ENT:StartRelay(text, duration, source, isLive, sounds)
 	duration = math.max(duration or 0, 0.1)
 
 	timer.Remove(GetTimerID(self, "clear"))
@@ -359,7 +400,10 @@ function ENT:StartRelay(text, duration, source, isLive)
 	self:SetBroadcastDuration(duration)
 
 	if (!IsValid(self.ixBreencastSceneEntity)) then
+		print("[DEBUG Breencast] StartRelay: No valid VCD scene entity, using fallback animation. duration=", duration)
 		self:PlayFallbackBroadcastAnimation()
+	else
+		print("[DEBUG Breencast] StartRelay: Has valid scene entity, ignoring fallback.")
 	end
 
 	timer.Create(GetTimerID(self, "clear"), duration, 1, function()
@@ -379,6 +423,9 @@ function ENT:OnRemove()
 	timer.Remove(GetTimerID(self, "clear"))
 	self:StopSetScene()
 	self:ClearBroadcastExpression()
+	if (IsValid(self.ixBreencastActor)) then
+		self.ixBreencastActor:Remove()
+	end
 end
 
 function ENT:Think()

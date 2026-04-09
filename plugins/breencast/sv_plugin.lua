@@ -53,9 +53,9 @@ function PLUGIN:UpdateRelayScheduleState()
 	end
 end
 
-function PLUGIN:RelayBroadcastToEntities(text, duration, source)
+function PLUGIN:RelayBroadcastToEntities(text, duration, source, sounds)
 	for _, entity in ipairs(self:GetRelayEntities()) do
-		entity:StartRelay(text, duration, source or self.broadcastSourceName, false)
+		entity:StartRelay(text, duration, source or self.broadcastSourceName, false, sounds)
 	end
 end
 
@@ -71,9 +71,10 @@ function PLUGIN:BroadcastBreencastLine(entry)
 	end
 
 	local duration = self:GetQueuedSoundDuration(sounds)
-	ix.chat.Send(NULL, "breencast", entry.key, false, player.GetAll())
+	local chatText = resolvedText or entry.text or entry.key
 
-	self:RelayBroadcastToEntities(resolvedText or entry.text or entry.key, duration, self.broadcastSourceName)
+	-- Chat dispatch is now directly synced with VCD audio emission in EntityEmitSound
+	self:RelayBroadcastToEntities(chatText, duration, self.broadcastSourceName, sounds)
 
 	return true, duration
 end
@@ -191,6 +192,15 @@ function PLUGIN:StartCurrentSet()
 	state.currentIndex = 0
 	state.currentLineEnd = 0
 
+	self.vcdChatQueue = {}
+	local entries = self:GetSetEntries(state.activeSetID)
+	if (entries) then
+		for _, entry in ipairs(entries) do
+			local _, resolvedText = Schema.voices.GetVoiceList("breencast", entry.key)
+			table.insert(self.vcdChatQueue, resolvedText or entry.text or entry.key)
+		end
+	end
+
 	for _, entity in ipairs(self:GetRelayEntities()) do
 		entity:StartSetScene(state.activeSetID)
 	end
@@ -298,3 +308,27 @@ function PLUGIN:OnEntityRemoved(entity)
 		end)
 	end
 end
+
+function PLUGIN:EntityEmitSound(data)
+	if (IsValid(data.Entity)) then
+		local class = data.Entity:GetClass()
+		if (class == "npc_breen" and IsValid(data.Entity:GetParent()) and data.Entity:GetParent():GetClass() == "ix_breencast") then
+			data.SoundLevel = 0
+			
+			if (data.Channel == CHAN_VOICE or string.find(string.lower(data.SoundName), "breen")) then
+				self.lastChatTime = self.lastChatTime or 0
+				if (CurTime() - self.lastChatTime > 0.5) then
+					self.lastChatTime = CurTime()
+					
+					if (self.vcdChatQueue and #self.vcdChatQueue > 0) then
+						local chatText = table.remove(self.vcdChatQueue, 1)
+						ix.chat.Send(NULL, "breencast", chatText, false, player.GetAll())
+					end
+				end
+			end
+			
+			return true
+		end
+	end
+end
+
