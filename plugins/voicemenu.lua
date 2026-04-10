@@ -263,14 +263,14 @@ if (CLIENT) then
 		end
 
 		if (isstring(info.text) and info.text != "") then
-			return info.text
+			return L(info.text)
 		end
 
 		if (istable(info.table) and #info.table > 0) then
 			local variant = info.table[1]
 
 			if (istable(variant) and isstring(variant[1]) and variant[1] != "") then
-				return variant[1] .. ((#info.table > 1) and " ..." or "")
+				return L(variant[1]) .. ((#info.table > 1) and " ..." or "")
 			end
 		end
 

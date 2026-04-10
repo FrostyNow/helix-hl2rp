@@ -64,7 +64,7 @@ function PLUGIN:BroadcastBreencastLine(entry)
 		return false
 	end
 
-	local sounds, resolvedText = Schema.voices.GetVoiceList("breencast", entry.key)
+	local sounds, resolvedText = Schema.voices.GetVoiceList("breencast", entry.key, nil, nil)
 
 	if (!sounds) then
 		return false
@@ -198,7 +198,7 @@ function PLUGIN:StartCurrentSet()
 	local entries = self:GetSetEntries(state.activeSetID)
 	if (entries) then
 		for _, entry in ipairs(entries) do
-			local _, resolvedText = Schema.voices.GetVoiceList("breencast", entry.key)
+			local _, resolvedText = Schema.voices.GetVoiceList("breencast", entry.key, nil, nil)
 			table.insert(self.vcdChatQueue, resolvedText or entry.text or entry.key)
 		end
 	end

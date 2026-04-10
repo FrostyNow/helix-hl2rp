@@ -7,7 +7,7 @@ resource.AddWorkshop("2291046370") -- the content addon
 function PLUGIN:PlayerMessageSend(speaker, chatType, text, anonymous, receivers, rawText)
 	if (chatType == "breencast") then
 		local voiceText = isstring(rawText) and rawText or text
-		local sounds, message = Schema.voices.GetVoiceList("breencast", voiceText)
+		local sounds, message = Schema.voices.GetVoiceList("breencast", voiceText, nil, speaker)
 
 		if (sounds) then
 			netstream.Start(nil, "voicePlay", sounds, 80, nil, false, "breencast")
@@ -27,7 +27,7 @@ function PLUGIN:PlayerMessageSend(speaker, chatType, text, anonymous, receivers,
 			end
 
 			local voiceText = isstring(rawText) and rawText or text
-			local sounds, message = Schema.voices.GetVoiceList(definition, voiceText)
+			local sounds, message = Schema.voices.GetVoiceList(definition, voiceText, nil, speaker)
 
 			if (sounds) then
 				local volume = 80

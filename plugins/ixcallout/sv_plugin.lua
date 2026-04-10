@@ -3337,14 +3337,15 @@ function PLUGIN:SendChatForVoice(client, text, radioData)
 			end
 		end
 
-		ix.chat.Send(client, "radio", text, false, receivers, chatData)
-		ix.chat.Send(client, "radio_eavesdrop", text, false, nil, eavesdropData)
+		local translated = L(text, client)
+		ix.chat.Send(client, "radio", translated, false, receivers, chatData)
+		ix.chat.Send(client, "radio_eavesdrop", translated, false, nil, eavesdropData)
 
 		return true, true, receivers
 	end
 
 	if (self:HasNearbyCombineICListener(client)) then
-		ix.chat.Send(client, "ic", text)
+		ix.chat.Send(client, "ic", L(text, client))
 
 		return true, false
 	end

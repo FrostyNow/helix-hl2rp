@@ -4,22 +4,30 @@ Schema.voices.classes = {}
 
 function Schema.voices.Add(class, key, text, sound, global, onModify)
 	class = string.lower(class)
-	key = string.lower(key)
 
-	Schema.voices.stored[class] = Schema.voices.stored[class] or {}
-	if !istable(text) then
-		Schema.voices.stored[class][key] = {
-			text = text,
-			sound = sound,
-			global = global,
-			onModify = onModify
-		}
-	else
-		Schema.voices.stored[class][key] = {
-			table = text,
-			global = sound,
-			onModify = global
-		}
+	-- Support for multiple keys (aliases)
+	-- Usage: Schema.voices.Add("Combine", {"10-8 duty", "10-8 수행 중"}, "Unit is on duty, 10-8.", "unitisonduty10-8.wav")
+	-- ["Unit is on duty, 10-8."] = "병력은 10-8 수행 중.",
+	local keys = istable(key) and key or {key}
+
+	for _, v in ipairs(keys) do
+		local k = string.lower(v)
+		Schema.voices.stored[class] = Schema.voices.stored[class] or {}
+
+		if !istable(text) then
+			Schema.voices.stored[class][k] = {
+				text = text,
+				sound = sound,
+				global = global,
+				onModify = onModify
+			}
+		else
+			Schema.voices.stored[class][k] = {
+				table = text,
+				global = sound,
+				onModify = global
+			}
+		end
 	end
 end
 
@@ -40,7 +48,7 @@ function Schema.voices.AddClass(class, condition)
 	}
 end
 
-function Schema.voices.GetVoiceList(class, text, delay)
+function Schema.voices.GetVoiceList(class, text, delay, client)
 	text = string.Trim(tostring(text))
 	local info = Schema.voices.stored[class]
 
@@ -113,6 +121,11 @@ function Schema.voices.GetVoiceList(class, text, delay)
 
 				if (istable(sound)) then
 					sound = table.Random(sound)
+				end
+
+				-- Apply localization if client is provided
+				if (IsValid(client)) then
+					replacement = L(replacement, client)
 				end
 
 				if (sound and sound != "") then

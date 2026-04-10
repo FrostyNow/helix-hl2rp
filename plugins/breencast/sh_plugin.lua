@@ -165,7 +165,7 @@ function PLUGIN:InitializedChatClasses()
 	end
 
 	function CLASS:OnChatAdd(speaker, text)
-		chat.AddText(self.color, L("breenCastChatFormat", text))
+		chat.AddText(self.color, L("breenCastChatFormat", L(text)))
 	end
 
 	ix.chat.Register("breencast", CLASS)
