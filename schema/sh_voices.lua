@@ -529,43 +529,43 @@ Schema.voices.Add("Dispatch", "소요사태2", "<:: 경보, 지상 지역 시민
 -- "Alert. Anticitizen One engaged. Vance subprime engaged. Expunge. Mandate removal of active signature imprint. Cauterize and expunge."
 
 -- Alyx Dispatch Voices
-Schema.voices.Add("Dispatch", "침입감지", "<:: 지상 병력 경보, 반시민에 의한 침입 작전이 감지되었다. 대응 코드: 교전, 진압, 조사. ::>", "npc/overwatch/cityvoice/f_alyx_invasive_op.wav", true)
+Schema.voices.Add("Dispatch", "침입감지", "<:: 지상 병력 경보, 반시민에 의한 침입 작전이 감지되었다. 대응 코드: 교전, 진압, 조사. ::>", "overwatch/overwatch_anticitizen.wav", true)
 -- Alert ground units, invasive operation of anti-citizen origin. Response code: Engage. Quell. Inquire.
-Schema.voices.Add("Dispatch", "대응배치", "<:: 지상 보호 기동대: 경보. 사건 대응 배치가 요구된다. 코드: 9-2-1-2. ::>", "npc/overwatch/cityvoice/f_alyx_incident_response.wav", true)
+Schema.voices.Add("Dispatch", "대응배치", "<:: 지상 보호 기동대: 경보. 사건 대응 배치가 요구된다. 코드: 9-2-1-2. ::>", "overwatch/overwatch_incident_response.wav", true)
 -- Ground Protection Team: Alert. Incident response deployment required. Nine-two-one-two.
-Schema.voices.Add("Dispatch", "약탈처벌", "<:: 주목. 접근은 허가되지 않는다. 반시민의 물자 약탈 행위는 즉각적인 극형 처벌로 이어진다. ::>", "npc/overwatch/cityvoice/f_alyx_scavenging.wav", true)
+Schema.voices.Add("Dispatch", "약탈처벌", "<:: 주목. 접근은 허가되지 않는다. 반시민의 물자 약탈 행위는 즉각적인 극형 처벌로 이어진다. ::>", "overwatch/overwatch_restricted3.wav", true)
 -- Attention please. Access is not permitted. Anti-citizen scavenging will result in immediate capital prosecution.
-Schema.voices.Add("Dispatch", "접근금지", "<:: 주목. 이 구역에 대한 접근은 허가되지 않는다. 지역 보안 병력이 배치되었으며 즉각적인 처벌을 위해 대기 중이다. ::>", "npc/overwatch/cityvoice/f_alyx_block_access.wav", true)
+Schema.voices.Add("Dispatch", "접근금지", "<:: 주목. 이 구역에 대한 접근은 허가되지 않는다. 지역 보안 병력이 배치되었으며 즉각적인 처벌을 위해 대기 중이다. ::>", "overwatch/overwatch_restricted2.wav", true)
 -- Attention please. Access to this block is not permitted. Local security deployed and designated to prosecute.
-Schema.voices.Add("Dispatch", "수신위반", "<:: 주목. 이 구역에 대한 접근은 허가되지 않는다. 현재 이 경고를 수신하고 있는 것 자체가 민법 위반에 해당한다. ::>", "npc/overwatch/cityvoice/f_alyx_civil_violation.wav", true)
+Schema.voices.Add("Dispatch", "수신위반", "<:: 주목. 이 구역에 대한 접근은 허가되지 않는다. 현재 이 경고를 수신하고 있는 것 자체가 민법 위반에 해당한다. ::>", "overwatch/overwatch_restricted.wav", true)
 -- Attention please. Access to this block is not permitted. To receive this message is to be in civil code violation.
-Schema.voices.Add("Dispatch", "비상코드무효", "<:: 지상 병력 경보, 지휘 병력 경보. 비상 코드: 무효. ::>", "npc/overwatch/cityvoice/f_alyx_code_void.wav", true)
+Schema.voices.Add("Dispatch", "비상코드무효", "<:: 지상 병력 경보, 지휘 병력 경보. 비상 코드: 무효. ::>", "overwatch/overwatch_alert.wav", true)
 -- Alert ground units. Alert command units. Emergency Code: Void.
-Schema.voices.Add("Dispatch", "구역2소탕", "<:: 감시인이 활동을 확인했다. 구역 02 확인, 잠재적인 네크로틱 간섭 위험이 있다. 구역을 소탕하고 봉쇄 상태를 보고하라. ::>", "npc/overwatch/cityvoice/f_alyx_necrotic_interference.wav", true)
+-- Schema.voices.Add("Dispatch", "구역2소탕", "<:: 감시인이 활동을 확인했다. 구역 02 확인, 잠재적인 네크로틱 간섭 위험이 있다. 구역을 소탕하고 봉쇄 상태를 보고하라. ::>", "overwatch/overwatch_distant_speaker.wav", true)
 -- Overwatch acknowledges activity. Confirm sector zero two, possible necrotic interference. Sweep sector, report containment status.
-Schema.voices.Add("Dispatch", "자산조정", "<:: 보안 경보. 재행정이 진행 중이다. 자산 할당 조정 코드: 수석, 검사, 박멸. 중요도: 즉각. ::>", "npc/overwatch/cityvoice/f_alyx_asset_allocation.wav", true)
+Schema.voices.Add("Dispatch", "자산조정", "<:: 보안 경보. 재행정이 진행 중이다. 자산 할당 조정 코드: 수석, 검사, 박멸. 중요도: 즉각. ::>", "overwatch/overwatch_security_alert.wav", true)
 -- Security alert. Re-administration in progress. Asset allocation adjustment code: Flint. Inspect. Extirpate. Priority: Immediate.
-Schema.voices.Add("Dispatch", "레벨5", "<:: 주목, 당신은 현재 다중 레벨 5 반시민 활동 위반으로 고발되었다. 지상 보호 기동대에 협조하라. 지상 보호 기동대: 경보. 코드: 교전, 격리, 제압. ::>", "npc/overwatch/cityvoice/f_alyx_level5_violation.wav", true)
+Schema.voices.Add("Dispatch", "레벨5", "<:: 주목, 당신은 현재 다중 레벨 5 반시민 활동 위반으로 고발되었다. 지상 보호 기동대에 협조하라. 지상 보호 기동대: 경보. 코드: 교전, 격리, 제압. ::>", "overwatch/overwatch_charged.wav", true)
 -- Individual, you are now charged with multiple level 5 anti-civil activity violations. Please cooperate with ground protection team. Ground protection team: alert. Code: Engage. Isolate. Neutralize.
-Schema.voices.Add("Dispatch", "시민반란발생", "<:: 보안 경보. 치명적인 시민 반란 발생. 49, 64, 77 구역에 기술 팀을 배치하라. 중요도 유지. ::>", "npc/overwatch/cityvoice/f_alyx_civil_insurrection.wav", true)
+Schema.voices.Add("Dispatch", "시민반란발생", "<:: 보안 경보. 치명적인 시민 반란 발생. 49, 64, 77 구역에 기술 팀을 배치하라. 중요도 유지. ::>", "overwatch/overwatch_security_alert2.wav", true)
 -- Security alert. Critical civil insurrection. Deploy technical teams to Blocks 49, 64, 77. Maintain priority.
-Schema.voices.Add("Dispatch", "영구이주경고", "<:: 보안 경보. 지상 팀에게 알린다: 임무 실패는 영구적 강제 이주로 이어진다. 대응 코드: 돌파, 기동, 접종. ::>", "npc/overwatch/cityvoice/f_alyx_mission_failure.wav", true)
+Schema.voices.Add("Dispatch", "영구이주경고", "<:: 보안 경보. 지상 팀에게 알린다: 임무 실패는 영구적 강제 이주로 이어진다. 대응 코드: 돌파, 기동, 접종. ::>", "overwatch/overwatch_security_alert3.wav", true)
 -- Security alert. Reminder, ground teams: Mission failure will result in permanent relocation. Response code: Breach. Maneuver. Inoculate.
-Schema.voices.Add("Dispatch", "치명적돌파", "<:: 치명적 돌파 발생. 대기하라. 대기하라. ::>", "npc/overwatch/cityvoice/f_alyx_critical_breach.wav", true)
+Schema.voices.Add("Dispatch", "치명적돌파", "<:: 치명적 돌파 발생. 대기하라. 대기하라. ::>", "overwatch/overwatch_standby.wav", true)
 -- Critical breach. Standby. Standby.
-Schema.voices.Add("Dispatch", "시스템경보", "<:: 전체 시스템 경보. 교전 작전 5-1-2-9. 즉각 동시다발적 병력 배치. 코드: 5-1-2-9. ::>", "npc/overwatch/cityvoice/f_alyx_system_alert.wav", true)
+Schema.voices.Add("Dispatch", "시스템경보", "<:: 전체 시스템 경보. 교전 작전 5-1-2-9. 즉각 동시다발적 병력 배치. 코드: 5-1-2-9. ::>", "overwatch/overwatch_system_alert.wav", true)
 -- Full system alert. Operation engagement Five-one-two-nine. Immediate, concurrent deployment. Five-one-two-nine.
-Schema.voices.Add("Dispatch", "대응코드", "<:: 대응 코드: 방패, 열쇠, 이주. ::>", "npc/overwatch/cityvoice/f_alyx_response_migrate.wav", true)
+Schema.voices.Add("Dispatch", "대응코드", "<:: 대응 코드: 방패, 열쇠, 이주. ::>", "overwatch/overwatch_response_code.wav", true)
 -- Response code: Shield. Key. Migrate.
-Schema.voices.Add("Dispatch", "과부하프로토콜", "<:: 경보. 대응 팀. 과부하 프로토콜: 각도, 제거, 섬광. 각도, 제거, 섬광. ::>", "npc/overwatch/cityvoice/f_alyx_overload_protocol.wav", true)
+Schema.voices.Add("Dispatch", "과부하프로토콜", "<:: 경보. 대응 팀. 과부하 프로토콜: 각도, 제거, 섬광. 각도, 제거, 섬광. ::>", "overwatch/overwatch_alert2.wav", true)
 -- Alert. Response team. Overload protocol: Angle. Cauterize. Flash. Angle. Cauterize. Flash.
-Schema.voices.Add("Dispatch", "시민감시", "<:: 시민에게 알린다: 문명화된 사회는 신속하고 정밀한 감시를 요구한다. 다른 시민이 공동체에 위협이 되는 행위를 방지하라. ::>", "npc/overwatch/cityvoice/f_alyx_citizen_reminder.wav", true)
+Schema.voices.Add("Dispatch", "시민감시", "<:: 시민에게 알린다: 문명화된 사회는 신속하고 정밀한 감시를 요구한다. 다른 시민이 공동체에 위협이 되는 행위를 방지하라. ::>", "overwatch/overwatch_citizen_reminder.wav", true)
 -- Citizen Reminder: A civilized society demands swift and targeted oversight. Prohibit fellow citizens from threatening the community.
-Schema.voices.Add("Dispatch", "제1목표처단", "<:: 구역 스테이션 1로 집결하라, 발포 허가. 목표물이 중요도 1 목표로 지정되었다. 발견 즉시 절단하라. ::>", "npc/overwatch/cityvoice/f_alyx_prosecute_on_sight.wav", true)
+Schema.voices.Add("Dispatch", "제1목표처단", "<:: 구역 스테이션 1로 집결하라, 발포 허가. 목표물이 중요도 1 목표로 지정되었다. 발견 즉시 절단하라. ::>", "overwatch/overwatch_weapons_free.wav", true)
 -- Converge sector station one, weapons free. Target has been designated as primary one objective. Prosecute on sight.
-Schema.voices.Add("Dispatch", "봉쇄실패지원", "<:: 감시인이 봉쇄 실패를 확인했다. 지원 병력 대기. 억제자가 투입 중이다. ::>", "npc/overwatch/cityvoice/f_alyx_containment_failure.wav", true)
+-- Schema.voices.Add("Dispatch", "봉쇄실패지원", "<:: 감시인이 봉쇄 실패를 확인했다. 지원 병력 대기. 억제자가 투입 중이다. ::>", "overwatch/overwatch_radio.wav", true)
 -- Overwatch acknowledges containment failure. Hold for reinforcement. Suppressor inbound.
-Schema.voices.Add("Dispatch", "코드갱신", "<:: 대응 병력 경보, 코드 갱신: 소탕, 호송, 계속. ::>", "npc/overwatch/cityvoice/f_alyx_update_code.wav", true)
+Schema.voices.Add("Dispatch", "코드갱신", "<:: 대응 병력 경보, 코드 갱신: 소탕, 호송, 계속. ::>", "overwatch/overwatch_update_code.wav", true)
 -- Alert response units, update code: Flush, Escort, Continue.
 
 Schema.voices.Add("Breencast", "협조자", "최근에 일부 시민들이 비열하다는 뜻으로 저를 협조자라고 부른다는 얘기를 들었습니다.", "vo/breencast/br_collaboration01.wav", true)
