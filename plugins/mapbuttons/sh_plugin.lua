@@ -14,26 +14,26 @@ ix.util.Include("sv_hooks.lua")
 
 ix.lang.AddTable("english", {
 	broadcastStaticNoise = "Static noise is heard simultaneously from broadcasting devices throughout the city.",
-	broadcastRation = "todo",
+	broadcastRation = "<:: Attention City 17, rations are now available, at the ration distribution terminal. ::>",
+	broadcastRationOffline = "<:: Attention City 17, the ration distribution terminal is now offline. ::>",
 })
 
 ix.lang.AddTable("korean", {
 	broadcastStaticNoise = "도시 이곳저곳의 방송 장치에서 일제히 잡음이 들립니다.",
-	broadcastRation = "시민에게 알린다. 배급소가 개방되었다. 위치로 이동하여 배급을 수령하라.",
+	broadcastRation = "<:: 17번 지구 주목. 현재 배급소에서 배급이 시작되었다. ::>",
+	broadcastRationOffline = "<:: 17번 지구 주목. 현재 배급소가 폐쇄되었다. ::>",
 })
 
 PLUGIN.buttonTriggers = {
 	["rp_industrial17_v1"] = {
-		[3889] = function(client, ent)
+		[5377] = function(client, ent)
 			ix.chat.Send(nil, "event", "@broadcastStaticNoise")
 		end,
-		-- [todo] = function(client, ent)
-		-- 	ix.chat.Send(nil, "event", "@broadcastRation")
-		-- end,
+		[4353] = function(client, ent)
+			ix.chat.Send(nil, "dispatch", "@broadcastRation")
+		end,
+		[4354] = function(client, ent)
+			ix.chat.Send(nil, "dispatch", "@broadcastRationOffline")
+		end,
 	},
-
-	-- Example for another map
-	-- ["rp_city17_v4"] = {
-	--     [5678] = function(client, ent) ... end,
-	-- }
 }

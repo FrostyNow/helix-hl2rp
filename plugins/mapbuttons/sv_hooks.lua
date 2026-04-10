@@ -11,11 +11,18 @@ function PLUGIN:InitPostEntity()
 		local entity = ents.GetMapCreatedEntity(id)
 
 		if (IsValid(entity)) then
-			entity:AddCallback("OnOutput", function(ent, name, activator, caller, data)
-				-- Handle both function and table based triggers
-				if (isfunction(trigger) and name:lower() == "onpressed") then
+			-- Using AcceptInput "Use" is more reliable than OnOutput for map entities 
+			-- that haven't been wired with connections in Hammer.
+			-- It also catches signals from scripts like Fire("Use").
+			entity:AddCallback("AcceptInput", function(ent, input, activator, caller, data)
+				if (input:lower() == "use" and isfunction(trigger)) then
 					trigger(activator, ent, data)
-				elseif (istable(trigger) and trigger[name]) then
+				end
+			end)
+
+			-- Keep OnOutput for table-based triggers (e.g. listening for OnOpen etc)
+			entity:AddCallback("OnOutput", function(ent, name, activator, caller, data)
+				if (istable(trigger) and trigger[name]) then
 					trigger[name](activator, ent, data)
 				end
 			end)
