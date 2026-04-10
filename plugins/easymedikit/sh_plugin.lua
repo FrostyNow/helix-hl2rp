@@ -78,16 +78,16 @@ if (CLIENT) then
 			local emitter = ParticleEmitter(pos)
 			if (emitter) then
 				for _ = 1, math.random(1, 2) do
-					local p = emitter:Add("effects/blood", pos + VectorRand() * 2)
+					local p = emitter:Add("effects/blood_drop", pos + VectorRand() * 2)
 					if (p) then
 						p:SetVelocity(VectorRand() * 5 + Vector(0, 0, -15))
 						p:SetDieTime(math.Rand(0.8, 1.2))
 						p:SetStartAlpha(220)
 						p:SetEndAlpha(0)
-						p:SetStartSize(math.Rand(1, 3))
-						p:SetEndSize(0.5)
+						p:SetStartSize(math.Rand(3, 5))
+						p:SetEndSize(math.Rand(1, 2))
 						p:SetRoll(math.Rand(0, 360))
-						p:SetColor(110, 0, 0)
+						p:SetColor(150, 0, 0)
 						p:SetGravity(Vector(0, 0, -600))
 						p:SetCollide(true)
 						p:SetBounce(0.2)
