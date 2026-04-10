@@ -174,6 +174,8 @@ LANGUAGE = {
 	itemBoiledWaterDesc = "더러운 물을 펄펄 끓이고 체에 걸러 독성 물질과 기생충을 제거한 물입니다. 물맛이 없지만 안전합니다.",
 	["Large Bottle of Water"] = "대형 물통",
 	itemWaterLargeDesc = "하얀색 금속 대형 물통에 물이라고 쓰여 있습니다.",
+	["Canned Beans"] = "통조림 콩",
+	itemCannedBeansDesc = "콩이 들어있는 통조림입니다.",
 
 	starving = "굶주림",
 	starvingEnter = "배가 너무 고파서 위장이 뒤틀리는 것 같습니다.",
