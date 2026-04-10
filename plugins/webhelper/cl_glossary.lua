@@ -562,6 +562,48 @@ PLUGIN.glossaryTranslations = {
 			<div class="term-item"><span class="term-name">Terminal prosecution</span></div>
 			<div class="term-item"><span class="term-name">Disassociation</span><div class="term-content">Disassociation from the civic populace</div></div>
 		</div>
+
+		<div class="divider"></div>
+
+		<h1>Overwatch Transhuman Army</h1>
+
+		<h2>Target names</h2>
+		<div class="term-list">
+			<div class="term-item"><span class="term-name">Parasitic</span><div class="term-content">Headcrab</div></div>
+			<div class="term-item"><span class="term-name">Necrotic</span><div class="term-content">Zombie</div></div>
+			<div class="term-item"><span class="term-name">Biotic</span><div class="term-content">Antlion</div></div>
+			<div class="term-item"><span class="term-name">Virome</span><div class="term-content">Antlion</div></div>
+			<div class="term-item"><span class="term-name">Exogen</span><div class="term-content">An exogenous creature, most commonly referring to Antlions.</div></div>
+		</div>
+
+		<h2>Phonetic alphabet</h2>
+		<div class="term-list">
+			<div class="term-item"><span class="term-name">A</span><div class="term-content">Apex</div></div>
+			<div class="term-item"><span class="term-name">B</span><div class="term-content">Boomer, black</div></div>
+			<div class="term-item"><span class="term-name">C</span><div class="term-content">Code</div></div>
+			<div class="term-item"><span class="term-name">D</span><div class="term-content">Delta</div></div>
+			<div class="term-item"><span class="term-name">E</span><div class="term-content">Echo</div></div>
+			<div class="term-item"><span class="term-name">F</span><div class="term-content">Flatline</div></div>
+			<div class="term-item"><span class="term-name">G</span><div class="term-content">Ghost</div></div>
+			<div class="term-item"><span class="term-name">H</span><div class="term-content">Helix</div></div>
+			<div class="term-item"><span class="term-name">I</span><div class="term-content">Ice, ion</div></div>
+			<div class="term-item"><span class="term-name">J</span><div class="term-content">Jet</div></div>
+			<div class="term-item"><span class="term-name">K</span><div class="term-content">Kilo</div></div>
+			<div class="term-item"><span class="term-name">L</span><div class="term-content">Line</div></div>
+			<div class="term-item"><span class="term-name">M</span><div class="term-content">Mace</div></div>
+			<div class="term-item"><span class="term-name">N</span><div class="term-content">Nova</div></div>
+			<div class="term-item"><span class="term-name">O</span><div class="term-content">Overwatch</div></div>
+			<div class="term-item"><span class="term-name">P</span><div class="term-content">Payback</div></div>
+			<div class="term-item"><span class="term-name">Q</span><div class="term-content">Quicksand</div></div>
+			<div class="term-item"><span class="term-name">R</span><div class="term-content">Ripcord</div></div>
+			<div class="term-item"><span class="term-name">S</span><div class="term-content">Sundown</div></div>
+			<div class="term-item"><span class="term-name">T</span><div class="term-content">Tango</div></div>
+			<div class="term-item"><span class="term-name">U</span><div class="term-content">Uniform</div></div>
+			<div class="term-item"><span class="term-name">V</span><div class="term-content">Victor</div></div>
+			<div class="term-item"><span class="term-name">X</span><div class="term-content">X-ray</div></div>
+			<div class="term-item"><span class="term-name">Y</span><div class="term-content">Yellow</div></div>
+			<div class="term-item"><span class="term-name">Z</span><div class="term-content">Zero</div></div>
+		</div>
 	</div>
 </body>
 </html>
@@ -1016,6 +1058,48 @@ PLUGIN.glossaryTranslations = {
 			<div class="term-item"><span class="term-name">즉시 절단</span></div>
 			<div class="term-item"><span class="term-name">사형 집행</span></div>
 			<div class="term-item"><span class="term-name">시민 분열</span></div>
+		</div>
+
+		<div class="divider"></div>
+
+		<h1>감시인 신인류 부대 용어집</h1>
+
+		<h2>목표 지칭</h2>
+		<div class="term-list">
+			<div class="term-item"><span class="term-name">기생충</span><div class="term-content">헤드크랩</div></div>
+			<div class="term-item"><span class="term-name">네크로틱</span><div class="term-content">좀비</div></div>
+			<div class="term-item"><span class="term-name">바이오틱</span><div class="term-content">개미귀신</div></div>
+			<div class="term-item"><span class="term-name">바이롬</span><div class="term-content">개미귀신</div></div>
+			<div class="term-item"><span class="term-name">외래종</span><div class="term-content">외래종, 주로 개미귀신을 지칭함</div></div>
+		</div>
+
+		<h2>음성 기호</h2>
+		<div class="term-list">
+			<div class="term-item"><span class="term-name">A</span><div class="term-content">에이펙스</div></div>
+			<div class="term-item"><span class="term-name">B</span><div class="term-content">부머, 블랙</div></div>
+			<div class="term-item"><span class="term-name">C</span><div class="term-content">코드</div></div>
+			<div class="term-item"><span class="term-name">D</span><div class="term-content">델타</div></div>
+			<div class="term-item"><span class="term-name">E</span><div class="term-content">에코</div></div>
+			<div class="term-item"><span class="term-name">F</span><div class="term-content">플랫라인</div></div>
+			<div class="term-item"><span class="term-name">G</span><div class="term-content">고스트</div></div>
+			<div class="term-item"><span class="term-name">H</span><div class="term-content">헬릭스</div></div>
+			<div class="term-item"><span class="term-name">I</span><div class="term-content">아이스, 이온</div></div>
+			<div class="term-item"><span class="term-name">J</span><div class="term-content">제트</div></div>
+			<div class="term-item"><span class="term-name">K</span><div class="term-content">킬로</div></div>
+			<div class="term-item"><span class="term-name">L</span><div class="term-content">라인</div></div>
+			<div class="term-item"><span class="term-name">M</span><div class="term-content">메이스</div></div>
+			<div class="term-item"><span class="term-name">N</span><div class="term-content">노바</div></div>
+			<div class="term-item"><span class="term-name">O</span><div class="term-content">오버워치</div></div>
+			<div class="term-item"><span class="term-name">P</span><div class="term-content">페이백</div></div>
+			<div class="term-item"><span class="term-name">Q</span><div class="term-content">퀵샌드</div></div>
+			<div class="term-item"><span class="term-name">R</span><div class="term-content">립코드</div></div>
+			<div class="term-item"><span class="term-name">S</span><div class="term-content">선다운</div></div>
+			<div class="term-item"><span class="term-name">T</span><div class="term-content">탱고</div></div>
+			<div class="term-item"><span class="term-name">U</span><div class="term-content">유니폼</div></div>
+			<div class="term-item"><span class="term-name">V</span><div class="term-content">빅터</div></div>
+			<div class="term-item"><span class="term-name">X</span><div class="term-content">엑스레이</div></div>
+			<div class="term-item"><span class="term-name">Y</span><div class="term-content">옐로</div></div>
+			<div class="term-item"><span class="term-name">Z</span><div class="term-content">제로</div></div>
 		</div>
 	</div>
 </body>
