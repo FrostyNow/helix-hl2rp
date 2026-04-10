@@ -2,7 +2,7 @@
 RECIPE.name = "Decant Water"
 RECIPE.description = "recipeDecantWaterLargeDesc"
 RECIPE.category = "Refill"
-RECIPE.model = "models/synapse/alyxports/water_bottle_04_lid.mdl"
+RECIPE.model = "models/props/water_bottle/water_bottle.mdl"
 RECIPE.requirements = {
 	["misc_plasticbottle"] = 1,
 	["water_large"] = {amount = 1, preserve = true}

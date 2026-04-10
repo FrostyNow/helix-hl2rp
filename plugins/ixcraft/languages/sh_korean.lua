@@ -278,6 +278,7 @@ LANGUAGE = {
 	recipeCrispsDesc = "감자를 얇게 썰어 기름에 튀겨 바삭한 감자칩을 만듭니다.",
 	["Boil Water"] = "물 끓이기",
 	recipeBoilWaterDesc = "더러운 물을 끓여서 마실 수 있는 상태로 만듭니다.",
+	["Refill"] = "채우기",
 	["Decant Water"] = "물 따라내기",
 	recipeDecantWaterLargeDesc = "대형 물통에서 물을 따라냅니다.",
 
