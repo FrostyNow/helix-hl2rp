@@ -165,6 +165,7 @@ LANGUAGE = {
 	recipeSandwichDesc = "Cook a sandwich by putting vegetables and meat between pieces of bread.",
 	recipeMeatChunkDesc = "Cook a meat chunk.",
 	recipePieDesc = "A large pie that can be shared among several people.",
+	recipeDecantWaterLargeDesc = "Decant water from a large water bottle.",
 	
 	recipePurifiedWaterFilterLowDurability = "Your filter durability is too low. (Minimum 50 required)",
 }
