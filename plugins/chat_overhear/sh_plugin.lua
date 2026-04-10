@@ -187,15 +187,9 @@ if (CLIENT) then
 		local function PatchHistoryTable(name)
 			local historyTable = vgui.GetControlTable(name)
 			if (historyTable and historyTable.AddLine) then
-				-- We don't call oldAddLine because we need to change how the buffer is constructed.
 				function historyTable:AddLine(elements, bShouldScroll)
 					local maxChatEntries = 100 -- Default Helix limit
 
-					local buffer = {
-						"<font=ixChatFont>"
-					}
-
-					-- Robustly extract overhearAlpha FIRST so it can be used for timestamps and special elements
 					local overhearAlpha = ix.overhearAlpha or 255
 					if (overhearAlpha == 255) then
 						if (CHAT_CLASS and CHAT_CLASS.uniqueID:find("_overhear$") and CHAT_CLASS.overhearAlpha) then
@@ -210,6 +204,10 @@ if (CLIENT) then
 							end
 						end
 					end
+
+					local buffer = {
+						string.format("<font=ixChatFont><color=255,255,255,%d>", overhearAlpha)
+					}
 
 					if (ix.option.Get("chatTimestamps", false)) then
 						local tsColor = Color(150, 150, 150, overhearAlpha)
@@ -261,6 +259,7 @@ if (CLIENT) then
 					local panel = self:Add("ixChatMessage")
 					panel:Dock(TOP)
 					panel:InvalidateParent(true)
+					buffer[#buffer + 1] = "</color>"
 					panel:SetMarkup(table.concat(buffer))
 					
 					-- MODIFIED: Attach the calculated transparency to the panel
@@ -272,10 +271,11 @@ if (CLIENT) then
 					local markupObj = panel.markup or panel.m_markup
 					if (markupObj and markupObj.blocks and overhearAlpha < 255) then
 						for _, block in ipairs(markupObj.blocks) do
-							if (block.colour) then
-								block.colour.a = overhearAlpha
-							elseif (block.color) then
-								block.color.a = overhearAlpha
+							local col = block.colour or block.color
+							if (col) then
+								col.a = overhearAlpha
+							else
+								block.colour = Color(255, 255, 255, overhearAlpha)
 							end
 						end
 					end

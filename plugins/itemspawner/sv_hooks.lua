@@ -143,6 +143,9 @@ function PLUGIN:ForceSpawn(client, spawner)
 end
 
 function PLUGIN:Think()
+	if ((self.nextSpawnerCheck or 0) > CurTime()) then return end
+	self.nextSpawnerCheck = CurTime() + 2
+
 	if (table.IsEmpty(PLUGIN.spawner.positions) or !(ix.config.Get("spawnerActive", false))) then return end
 
 	for k, v in pairs(PLUGIN.spawner.positions) do

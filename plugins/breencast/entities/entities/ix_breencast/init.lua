@@ -6,7 +6,9 @@ local MODEL_PATH = "models/breen.mdl"
 local SET_SCENES = {
 	welcome = "scenes/breencast/welcome.vcd",
 	instinct = "scenes/breencast/instinct.vcd",
-	collaboration = "scenes/breencast/collaboration_plaza.vcd"
+	collaboration = "scenes/breencast/collaboration_plaza.vcd",
+	disruptor = "scenes/breencast/disruptor.vcd",
+	overwatch = "scenes/breencast/overwatch.vcd"
 }
 local IDLE_SEQUENCE_NAMES = {
 	"idle_all_01",

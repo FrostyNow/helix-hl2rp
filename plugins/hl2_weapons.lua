@@ -63,6 +63,10 @@ if (SERVER) then
 				if (dmgInfo:IsDamageType(DMG_BULLET) or dmgInfo:IsDamageType(DMG_CLUB)) then
 					local damage = weaponDamage[weaponClass]
 
+					if (!damage) then
+						return
+					end
+
 					if (attacker:IsNPC()) then
 						damage = damage * ix.config.Get("npcDamageMultiplier", 0.5)
 					end

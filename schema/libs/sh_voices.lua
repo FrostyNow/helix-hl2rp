@@ -1,34 +1,119 @@
-Schema.voices = {}
-Schema.voices.stored = {}
-Schema.voices.classes = {}
+Schema.voices = Schema.voices or {}
+Schema.voices.stored = Schema.voices.stored or {}
+Schema.voices.classes = Schema.voices.classes or {}
+
+local langMapping = {
+	en = "english",
+	ko = "korean",
+	kr = "korean"
+}
+
+local function getVoiceContentId(info)
+	if (istable(info.table)) then
+		local parts = {}
+
+		for i = 1, #info.table do
+			local v = info.table[i]
+			parts[#parts + 1] = tostring(v[1]) .. ":" .. tostring(v[2])
+		end
+
+		table.sort(parts)
+		return "T:" .. table.concat(parts, "|")
+	end
+
+	local soundStr = istable(info.sound) and table.concat(info.sound, "|") or tostring(info.sound)
+	return "S:" .. tostring(info.text) .. "|" .. soundStr
+end
 
 function Schema.voices.Add(class, key, text, sound, global, onModify)
 	class = string.lower(class)
 
-	-- Support for multiple keys (aliases)
-	-- Usage: Schema.voices.Add("Combine", {"10-8 duty", "10-8 수행 중"}, "Unit is on duty, 10-8.", "unitisonduty10-8.wav")
-	-- ["Unit is on duty, 10-8."] = "병력은 10-8 수행 중.",
-	local keys = istable(key) and key or {key}
-
-	for _, v in ipairs(keys) do
-		local k = string.lower(v)
-		Schema.voices.stored[class] = Schema.voices.stored[class] or {}
-
-		if !istable(text) then
-			Schema.voices.stored[class][k] = {
-				text = text,
-				sound = sound,
-				global = global,
-				onModify = onModify
-			}
-		else
-			Schema.voices.stored[class][k] = {
-				table = text,
-				global = sound,
-				onModify = global
-			}
+	local keys = {}
+	if (isstring(key)) then
+		keys[1] = {key = key}
+	elseif (istable(key)) then
+		local i = 1
+		for k, v in pairs(key) do
+			if (isnumber(k)) then
+				-- Sequential: 1=EN, 2=KO
+				local lang = (k == 1) and "english" or (k == 2 and "korean" or nil)
+				keys[#keys + 1] = {key = v, lang = lang}
+			else
+				-- Explicit: en="Alert", ko="경고"
+				local lang = langMapping[k] or k
+				keys[#keys + 1] = {key = v, lang = lang}
+			end
 		end
 	end
+
+	for _, data in ipairs(keys) do
+		local k = string.lower(data.key)
+		Schema.voices.stored[class] = Schema.voices.stored[class] or {}
+
+		local info = {
+			global = global,
+			onModify = onModify,
+			language = data.lang
+		}
+
+		if (!istable(text)) then
+			info.text = text
+			info.sound = sound
+		else
+			info.table = text
+			info.global = sound
+			info.onModify = global
+		end
+
+		Schema.voices.stored[class][k] = info
+	end
+end
+
+function Schema.voices.GetDisplayable(class, client)
+	local allVoices = Schema.voices.stored[string.lower(class)]
+	if (!allVoices) then return {} end
+
+	local clientLang = SERVER and ix.option.Get(client, "language", "english") or ix.option.Get("language", "english")
+	clientLang = langMapping[clientLang] or clientLang
+
+	local groups = {}
+	for command, info in pairs(allVoices) do
+		local id = getVoiceContentId(info)
+		groups[id] = groups[id] or {}
+		table.insert(groups[id], {command = command, info = info})
+	end
+
+	local results = {}
+	for _, group in pairs(groups) do
+		local bestEntry = nil
+		local hasLanguageTags = false
+
+		for _, entry in ipairs(group) do
+			if (entry.info.language) then
+				hasLanguageTags = true
+				local voiceLang = langMapping[entry.info.language] or entry.info.language
+				
+				if (voiceLang == clientLang) then
+					bestEntry = entry
+					break
+				end
+			end
+		end
+
+		if (bestEntry) then
+			results[bestEntry.command] = bestEntry.info
+		elseif (hasLanguageTags) then
+			-- If they have tags but none match client language, default to first (usually English)
+			results[group[1].command] = group[1].info
+		else
+			-- Legacy or untagged entries, show all in group
+			for _, entry in ipairs(group) do
+				results[entry.command] = entry.info
+			end
+		end
+	end
+
+	return results
 end
 
 function Schema.voices.Get(class, key)

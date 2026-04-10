@@ -543,14 +543,14 @@ function Schema:PopulateHelpMenu(tabs)
 			end
 
 			if (isstring(info.text) and info.text != "") then
-				return info.text
+				return L2(info.text) or info.text
 			end
 
 			if (istable(info.table) and #info.table > 0) then
 				local variant = info.table[1]
 
 				if (istable(variant) and isstring(variant[1]) and variant[1] != "") then
-					return variant[1]
+					return (L2(variant[1]) or variant[1]) .. ((#info.table > 1) and " ..." or "")
 				end
 			end
 
@@ -635,9 +635,10 @@ function Schema:PopulateHelpMenu(tabs)
 			content.Paint = nil
 			category:SetContents(content)
 
+			local displayableVoices = Schema.voices.GetDisplayable(class)
 			local commands = {}
 
-			for command, info in pairs(self.voices.stored[class] or {}) do
+			for command, info in pairs(displayableVoices) do
 				commands[#commands + 1] = {
 					command = command,
 					info = info

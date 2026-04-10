@@ -263,14 +263,14 @@ if (CLIENT) then
 		end
 
 		if (isstring(info.text) and info.text != "") then
-			return L(info.text)
+			return L2(info.text) or info.text
 		end
 
 		if (istable(info.table) and #info.table > 0) then
 			local variant = info.table[1]
 
 			if (istable(variant) and isstring(variant[1]) and variant[1] != "") then
-				return L(variant[1]) .. ((#info.table > 1) and " ..." or "")
+				return (L2(variant[1]) or variant[1]) .. ((#info.table > 1) and " ..." or "")
 			end
 		end
 
@@ -563,26 +563,20 @@ if (CLIENT) then
 	function PANEL:GetFavoriteEntries()
 		local entries = {}
 		local classLookup = {}
+		local favorites = getFavoritesStorage()
 
-		for _, class in ipairs(self.availableClasses or {}) do
-			classLookup[string.lower(class)] = class
-		end
+		for className, commands in pairs(favorites) do
+			local classVoices = Schema.voices.GetDisplayable(className)
 
-		for classKey, commands in pairs(getFavoritesStorage()) do
-			local className = classLookup[classKey]
-			local classVoices = className and Schema.voices.stored[className] or nil
+			for command, isFavorite in pairs(commands) do
+				local info = classVoices[command]
 
-			if (istable(classVoices)) then
-				for command, isFavorite in pairs(commands) do
-					local info = classVoices[command]
-
-					if (isFavorite == true and info) then
-						entries[#entries + 1] = {
-							class = className,
-							command = command,
-							info = info
-						}
-					end
+				if (isFavorite == true and info) then
+					entries[#entries + 1] = {
+						class = className,
+						command = command,
+						info = info
+					}
 				end
 			end
 		end
@@ -929,39 +923,33 @@ if (CLIENT) then
 
 		local search = string.Trim(string.lower(self.searchEntry:GetValue() or ""))
 		local entries = {}
+		local rawEntries = {}
 		local found = 0
 
 		if (self.selectedClass == FAVORITES_CLASS) then
-			for _, entry in ipairs(self:GetFavoriteEntries()) do
-				local commandLower = string.lower(entry.command)
-				local preview = getVoicePreviewText(entry.command, entry.info):lower()
-				local matches = (search == "")
-					or matchesSearchTerm(commandLower, search)
-					or matchesSearchTerm(preview, search)
-
-				if (matches) then
-					entries[#entries + 1] = entry
-				end
-			end
+			rawEntries = self:GetFavoriteEntries()
 		else
-			local classVoices = Schema.voices.stored[self.selectedClass]
+			local filteredVoices = Schema.voices.GetDisplayable(self.selectedClass)
 
-			if (istable(classVoices)) then
-				for command, info in SortedPairs(classVoices) do
-					local commandLower = string.lower(command)
-					local preview = getVoicePreviewText(command, info):lower()
-					local matches = (search == "")
-						or matchesSearchTerm(commandLower, search)
-						or matchesSearchTerm(preview, search)
+			for command, info in pairs(filteredVoices) do
+				rawEntries[#rawEntries + 1] = {
+					class = self.selectedClass,
+					command = command,
+					info = info
+				}
+			end
+		end
 
-					if (matches) then
-						entries[#entries + 1] = {
-							class = self.selectedClass,
-							command = command,
-							info = info
-						}
-					end
-				end
+		-- Sorting and searching
+		for _, entry in ipairs(rawEntries) do
+			local commandLower = string.lower(entry.command)
+			local preview = getVoicePreviewText(entry.command, entry.info):lower()
+			local matches = (search == "")
+				or matchesSearchTerm(commandLower, search)
+				or matchesSearchTerm(preview, search)
+
+			if (matches) then
+				entries[#entries + 1] = entry
 			end
 		end
 

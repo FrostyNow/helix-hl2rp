@@ -147,12 +147,15 @@ function PLUGIN:RenderScreenspaceEffects()
 end
 
 local gasmaskKeyStart = 0
+local gasmaskHoldTarget = 1.5
 
 function PLUGIN:PlayerButtonDown(client, button)
 	local bindCode = getGasmaskBindCode()
 
 	if (CLIENT and !gui.IsGameUIVisible() and !gui.IsConsoleVisible() and !vgui.GetKeyboardFocus() and bindCode != KEY_NONE and button == bindCode) then
-		gasmaskKeyStart = CurTime()
+		if (gasmaskKeyStart == 0) then
+			gasmaskKeyStart = CurTime()
+		end
 	end
 end
 
@@ -163,10 +166,43 @@ function PLUGIN:PlayerButtonUp(client, button)
 		local duration = CurTime() - gasmaskKeyStart
 		gasmaskKeyStart = 0
 
-		if (duration >= 2) then
+		if (duration >= gasmaskHoldTarget) then
 			ix.command.Send("FilterSwap")
 		elseif (!gui.IsGameUIVisible() and !gui.IsConsoleVisible() and !vgui.GetKeyboardFocus()) then
 			ix.command.Send("Gasmask")
+		end
+	end
+end
+
+function PLUGIN:HUDPaint()
+	if (gasmaskKeyStart > 0) then
+		local duration = CurTime() - gasmaskKeyStart
+		local fraction = math.Clamp(duration / gasmaskHoldTarget, 0, 1)
+		
+		if (fraction > 0) then
+			local w, h = 200, 10
+			local x, y = (ScrW() - w) / 2, (ScrH() / 2) + 100
+			
+			-- Background with glassmorphism feel
+			surface.SetDrawColor(0, 0, 0, 150)
+			surface.DrawRect(x, y, w, h)
+			surface.SetDrawColor(255, 255, 255, 30)
+			surface.DrawOutlinedRect(x, y, w, h)
+			
+			-- Progress bar with gradient/glow
+			local barW = w * fraction
+			surface.SetDrawColor(60, 170, 255, 200)
+			surface.DrawRect(x + 2, y + 2, math.max(0, barW - 4), h - 4)
+			
+			-- Text
+			draw.SimpleText(L("filterStatus"):upper(), "ixSmallFont", x + w/2, y - 15, Color(255, 255, 255, 200), TEXT_ALIGN_CENTER)
+		end
+		
+		-- Auto-trigger swap if held long enough? 
+		-- Usually GMod handles release, but we could make it trigger immediately when reaching target.
+		-- However, the user's code was on release, so let's keep it safe.
+		if (fraction >= 1) then
+			-- Optional: subtle vibration or pulse effect when ready
 		end
 	end
 end

@@ -39,13 +39,15 @@ function PLUGIN:SpawnLeechSwarm(entity)
 		end
 	end
 
-	-- Spawn up to 10 NPCs around the target
-	if (#entity.ixLeechSwarm < 10) then
+	-- Spawn up to 10 NPCs around the target with a global throttle to prevent frame hits
+	if (#entity.ixLeechSwarm < 10 and (self.nextSpawnTime or 0) < CurTime()) then
 		local pos = entity:GetPos() + VectorRand(-50, 50)
 		pos.z = pos.z - 10 -- Spawn slightly below
 
 		local npc = ents.Create("npc_vj_hlr1_leech")
 		if (IsValid(npc)) then
+			self.nextSpawnTime = CurTime() + 0.2 -- Limit spams to 5 per second server-wide
+			
 			npc.ixIgnoreSpawner = true
 			npc:SetPos(pos)
 			npc:SetAngles(Angle(0, math.random(0, 360), 0))
@@ -76,34 +78,62 @@ end
 
 function PLUGIN:InitializedPlugins()
 	self.bHasVJLeech = list.Get("NPC")["npc_vj_hlr1_leech"] != nil
+	self.nextSpawnTime = 0
 
-	timer.Create("ixLeechTick", 0.5, 0, function()
+	timer.Create("ixLeechTick", 0.75, 0, function()
+		-- Performance - Only iterate over players and NPCs instead of every entity on the server
 		local targets = {}
-
-		for _, v in player.Iterator() do
-			targets[#targets + 1] = v
-		end
-
-		for _, v in ents.Iterator() do
-			if (v:IsNPC() and v:GetClass() != "npc_vj_hlr1_leech" and v:GetClass() != "npc_leech") then
-				targets[#targets + 1] = v
-			end
-		end
+		table.Add(targets, player.GetAll())
+		table.Add(targets, ents.FindByClass("npc_*"))
 
 		for _, entity in ipairs(targets) do
-			if (!IsValid(entity)) then
+			if (!IsValid(entity) or !entity:Alive()) then continue end
+
+			local isPlayer = entity:IsPlayer()
+			local isNPC = entity:IsNPC()
+
+			if (isNPC and (entity:GetClass() == "npc_vj_hlr1_leech" or entity:GetClass() == "npc_leech")) then continue end
+
+			if (isPlayer) then
+				if (!entity:GetCharacter() or entity:GetMoveType() == MOVETYPE_NOCLIP) then 
+					if (entity.ixLeechSwarm) then self:RemoveLeechSwarm(entity) end
+					continue 
+				end
+			end
+
+			-- Fast exit for dry entities to avoid expensive area checks
+			local waterLevel = entity:WaterLevel()
+			if (waterLevel < 1) then
+				if (isPlayer) then entity.ixInLeechWarningZone = false end
+
+				if (entity.ixLeechSwarm and #entity.ixLeechSwarm > 0) then
+					local bKeepActive = false
+					
+					-- Only check neighbors if they have a swarm - still a bit expensive but limited
+					for _, other in ipairs(ents.FindInSphere(entity:GetPos(), 300)) do
+						if (other == entity or !other:Alive()) then continue end
+						
+						if (other:IsPlayer()) then
+							if (other:GetMoveType() != MOVETYPE_NOCLIP and other:WaterLevel() >= 2) then
+								bKeepActive = true
+								break
+							end
+						elseif (other:IsNPC()) then
+							local class = other:GetClass()
+							if (class != "npc_vj_hlr1_leech" and class != "npc_leech" and other:WaterLevel() >= 2) then
+								bKeepActive = true
+								break
+							end
+						end
+					end
+
+					if (!bKeepActive) then
+						self:RemoveLeechSwarm(entity)
+					end
+				end
 				continue
 			end
 
-			local isPlayer = entity:IsPlayer()
-			local isAlive = entity:Alive()
-
-			if (isPlayer) then
-				if (!entity:GetCharacter()) then continue end
-				if (entity:GetMoveType() == MOVETYPE_NOCLIP) then continue end
-			end
-
-			local waterLevel = entity:WaterLevel()
 			local areaID = isPlayer and entity:GetArea() or self:GetEntityArea(entity)
 			local isLeechArea = false
 			local inLeechWarningZone = false
@@ -111,29 +141,25 @@ function PLUGIN:InitializedPlugins()
 			if (areaID and areaID != "") then
 				local area = ix.area.stored[areaID]
 				if (area and area.properties and area.properties.leeches) then
-					if (waterLevel >= 1) then
-						inLeechWarningZone = true
-					end
+					inLeechWarningZone = true
 
 					-- Smart attack logic
-					if (isAlive) then
-						if (!entity:IsOnGround() and waterLevel >= 2) then
-							isLeechArea = true
-						elseif (entity:IsOnGround() and waterLevel >= 3) then
-							if (isPlayer and entity:Crouching()) then
-								if (self:IsPointInWater(entity:GetPos() + Vector(0, 0, 72))) then
-									isLeechArea = true
-								end
-							else
+					if (!entity:IsOnGround() and waterLevel >= 2) then
+						isLeechArea = true
+					elseif (entity:IsOnGround() and waterLevel >= 3) then
+						if (isPlayer and entity:Crouching()) then
+							if (self:IsPointInWater(entity:GetPos() + Vector(0, 0, 72))) then
 								isLeechArea = true
 							end
+						else
+							isLeechArea = true
 						end
 					end
 				end
 			end
 
 			-- Warn the player
-			if (isPlayer and isAlive) then
+			if (isPlayer) then
 				local wasInLeechWarningZone = entity.ixInLeechWarningZone or false
 				if (inLeechWarningZone and !wasInLeechWarningZone) then
 					entity.ixInLeechWarningZone = true
@@ -148,38 +174,11 @@ function PLUGIN:InitializedPlugins()
 			end
 
 			-- Handle attack/NPC spawning
-			if (isLeechArea and isAlive) then
+			if (isLeechArea) then
 				if (self.bHasVJLeech) then
 					self:SpawnLeechSwarm(entity)
 				else
 					self:HurtByLeeches(entity)
-				end
-			else
-				-- Not in leech area or dead, clean up NPCs if no one else is near
-				if (entity.ixLeechSwarm and #entity.ixLeechSwarm > 0) then
-					local bKeepActive = false
-					
-					-- Check if any other living target (player or NPC) is close enough to keep these NPCs
-					for _, other in ipairs(ents.FindInSphere(entity:GetPos(), 300)) do
-						if (other == entity or !other:Alive()) then continue end
-						
-						if (other:IsPlayer()) then
-							if (other:GetMoveType() != MOVETYPE_NOCLIP) then
-								bKeepActive = true
-								break
-							end
-						elseif (other:IsNPC()) then
-							local class = other:GetClass()
-							if (class != "npc_vj_hlr1_leech" and class != "npc_leech") then
-								bKeepActive = true
-								break
-							end
-						end
-					end
-
-					if (!bKeepActive) then
-						self:RemoveLeechSwarm(entity)
-					end
 				end
 			end
 		end

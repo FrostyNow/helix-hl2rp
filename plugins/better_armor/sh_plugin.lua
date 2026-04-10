@@ -31,6 +31,7 @@ ix.lang.AddTable("english", {
 	optGasmaskKey = "Gasmask Key",
 	optGasmaskKeyDesc = "Key used to toggle the gasmask. Use values like N, F6, KP_ENTER, or NONE to disable it.",
 	noFilterFound = "You do not have any usable filters in your inventory.",
+	swappingFilter = "Swapping gasmask filter...",
 })
 ix.lang.AddTable("korean", {
 	["Intelligence"] = "지능",
@@ -76,6 +77,7 @@ ix.lang.AddTable("korean", {
 	optGasmaskKey = "방독면 단축키",
 	optGasmaskKeyDesc = "방독면을 쓰고 벗는 키입니다. N, F6, KP_ENTER 같은 값을 입력하고, NONE으로 비활성화할 수 있습니다.",
 	noFilterFound = "소지품에 사용할 수 있는 정화통이 없습니다.",
+	swappingFilter = "방독면 정화통을 교체하고 있습니다...",
 })
 
 ix.util.Include("cl_plugin.lua")
@@ -339,28 +341,7 @@ ix.command.Add("FilterSwap", {
 
 		if (!badair) then return end
 
-		client.ixFilterCooldown = CurTime() + 1
-
-		-- 1. Remove existing filter first if any
-		if (badair:CanEquipInternalFilter(client)) then
-			local currentFilter = badair:GetEquippedBadAirProtectionItem(char, function(item)
-				return item.isGasmaskFilter == true
-			end)
-
-			if (currentFilter) then
-				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter:GetID(), currentFilter.invID)
-			end
-		else
-			local targetMask = badair:GetEquippedBadAirProtectionItem(char, function(item)
-				return item.gasmask == true
-			end)
-
-			if (targetMask and badair:HasItemFilterInstalled(targetMask)) then
-				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask:GetID(), targetMask.invID)
-			end
-		end
-
-		-- 2. Find the best filter in any owned inventory (highest durability)
+		-- 1. Find the best filter in any owned inventory (highest durability)
 		local bestFilter
 		local maxDura = -1
 		local charID = char:GetID()
@@ -381,6 +362,28 @@ ix.command.Add("FilterSwap", {
 
 		if (!bestFilter) then
 			return "@noFilterFound"
+		end
+
+		client.ixFilterCooldown = CurTime() + 1.5
+		client:NotifyLocalized("swappingFilter")
+		
+		-- 2. Remove existing filter first if any
+		if (badair:CanEquipInternalFilter(client)) then
+			local currentFilter = badair:GetEquippedBadAirProtectionItem(char, function(item)
+				return item.isGasmaskFilter == true
+			end)
+
+			if (currentFilter) then
+				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter:GetID(), currentFilter.invID)
+			end
+		else
+			local targetMask = badair:GetEquippedBadAirProtectionItem(char, function(item)
+				return item.gasmask == true
+			end)
+
+			if (targetMask and badair:HasItemFilterInstalled(targetMask)) then
+				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask:GetID(), targetMask.invID)
+			end
 		end
 
 		-- 3. Install/Equip the best filter with a 0.5s delay

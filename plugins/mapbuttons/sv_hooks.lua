@@ -4,45 +4,48 @@ function PLUGIN:InitPostEntity()
 	local map = game.GetMap()
 	local mapTriggers = self.buttonTriggers[map]
 
-	-- Stop if no triggers are defined for the current map
-	if (!mapTriggers) then return end
+	if (!mapTriggers) then 
+		return 
+	end
+
+	self.registeredButtons = {}
 
 	for id, trigger in pairs(mapTriggers) do
 		local entity = ents.GetMapCreatedEntity(id)
 
 		if (IsValid(entity)) then
-			-- Using AcceptInput "Use" is more reliable than OnOutput for map entities 
-			-- that haven't been wired with connections in Hammer.
-			-- It also catches signals from scripts like Fire("Use").
-			entity:AddCallback("AcceptInput", function(ent, input, activator, caller, data)
-				if (input:lower() == "use" and isfunction(trigger)) then
-					trigger(activator, ent, data)
-				end
-			end)
-
-			-- Keep OnOutput for table-based triggers (e.g. listening for OnOpen etc)
-			entity:AddCallback("OnOutput", function(ent, name, activator, caller, data)
-				if (istable(trigger) and trigger[name]) then
-					trigger[name](activator, ent, data)
-				end
-			end)
+			self.registeredButtons[entity:EntIndex()] = id
+		else
+			print("[MapButtons] WARNING: Could not find entity for ID " .. id)
 		end
 	end
 end
 
-function PLUGIN:Trigger(id, activator, outputName, data)
-	local map = game.GetMap()
-	local mapTriggers = self.buttonTriggers[map]
-	if (!mapTriggers) then return end
+function PLUGIN:PlayerUse(client, entity)
+	if (!IsValid(entity)) then return end
+	
+	local entIndex = entity:EntIndex()
+	local buttonID = self.registeredButtons and self.registeredButtons[entIndex]
 
-	local trigger = mapTriggers[id]
-	outputName = outputName or "OnPressed"
+	if (buttonID) then
+		-- Add a cooldown to prevent multiple triggers (the x11 issue)
+		self.buttonCooldowns = self.buttonCooldowns or {}
+		if ((self.buttonCooldowns[entIndex] or 0) > CurTime()) then
+			return
+		end
+		self.buttonCooldowns[entIndex] = CurTime() + 2 -- 2 seconds cooldown
+		
+		local map = game.GetMap()
+		local trigger = self.buttonTriggers[map][buttonID]
 
-	if (trigger) then
-		if (isfunction(trigger) and outputName:lower() == "onpressed") then
-			trigger(activator, nil, data)
-		elseif (istable(trigger) and trigger[outputName]) then
-			trigger[outputName](activator, nil, data)
+		if (trigger and isfunction(trigger)) then
+			trigger(client, entity)
 		end
 	end
+end
+
+-- If the plugin is reloaded, InitPostEntity won't fire again.
+-- We check if entities already exist and call it manually.
+if (SERVER) then
+	PLUGIN:InitPostEntity()
 end

@@ -44,6 +44,8 @@ if (SERVER) then
 				end
 				client.ixLastDigTime = CurTime() + 1.2 -- Match shovel attack rate
 
+				local item = weapon.ixItem
+
 				-- Delay to sync with the shovel hitting the ground
 				timer.Simple(0.4, function()
 					if (IsValid(client) and client:Alive()) then
@@ -54,7 +56,7 @@ if (SERVER) then
 							
 							-- Ensure it's a world hit, correct material, and within melee range
 							if (trace.HitWorld and trace.HitPos:Distance(client:GetShootPos()) <= 90 and DIGGABLE_MATERIALS[trace.MatType]) then
-								self:HandleDig(client, trace.HitPos, trace.MatType)
+								self:HandleDig(client, trace.HitPos, trace.MatType, item)
 							end
 						end
 					end
@@ -63,17 +65,20 @@ if (SERVER) then
 		end
 	end
 
-	function PLUGIN:HandleDig(client, pos, matType)
+	function PLUGIN:HandleDig(client, pos, matType, item)
 		local character = client:GetCharacter()
 		if (!character) then return end
 
 		-- Reduce durability
-		local inventory = character:GetInventory()
-		local item = inventory:HasItem("shovel")
+		if (!item) then
+			local inventory = character:GetInventory()
+			item = inventory:HasItem("shovel")
+		end
+
 		if (item) then
 			item:ReduceDurability(1)
 			
-			if (item:GetData("durability", 100) <= 0) then
+			if (item:GetData("durability", 50) <= 0) then
 				client:NotifyLocalized("shovelBroken")
 				
 				if (item:GetData("equip")) then
@@ -101,9 +106,9 @@ if (SERVER) then
 		local luck = character:GetAttribute("lck", 0)
 		local maxAtt = ix.config.Get("maxAttributes", 30)
 		
-		-- Base chance: 10%
-		-- Bonus chance: up to 10% based on luck
-		local chance = 10 + (luck / maxAtt) * 10
+		-- Base chance: 5% (Reduced from 10%)
+		-- Bonus chance: up to 5% based on luck (Reduced from 10%)
+		local chance = 5 + (luck / maxAtt) * 5
 		
 		if (math.random(1, 100) <= chance) then
 			-- Money reward (30% chance when loot is found)

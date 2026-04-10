@@ -180,6 +180,29 @@ function PLUGIN:SelectRandomClass(classes)
 end
 
 function PLUGIN:FindValidSpawnPos(pos, class)
+	local function IsInWater(checkPos)
+		-- Check for water in the immediate vicinity of the position
+		local contents = util.PointContents(checkPos)
+		if (bit.band(contents, CONTENTS_WATER) != 0) then return true end
+		
+		-- Also check a bit below to be sure
+		local contentsBelow = util.PointContents(checkPos - Vector(0, 0, 10))
+		return bit.band(contentsBelow, CONTENTS_WATER) != 0
+	end
+
+	local function IsEmpty(checkPos)
+		if (IsInWater(checkPos)) then return false end
+
+		local tr = util.TraceHull({
+			start = checkPos + Vector(0, 0, 10),
+			endpos = checkPos + Vector(0, 0, 10),
+			mins = Vector(-16, -16, 0),
+			maxs = Vector(16, 16, 72),
+			mask = MASK_NPCSOLID
+		})
+		return not tr.Hit
+	end
+
 	if (class == "npc_barnacle") then
 		local upTr = util.TraceLine({
 			start = pos,
@@ -193,36 +216,40 @@ function PLUGIN:FindValidSpawnPos(pos, class)
 		return nil
 	end
 
-	local function IsEmpty(checkPos)
-		local tr = util.TraceHull({
-			start = checkPos + Vector(0, 0, 5),
-			endpos = checkPos + Vector(0, 0, 5),
-			mins = Vector(-16, -16, 0),
-			maxs = Vector(16, 16, 72),
-			mask = MASK_NPCSOLID
-		})
-		return not tr.Hit
+	-- Try to snap the base position to the actual floor first
+	local groundTr = util.TraceLine({
+		start = pos + Vector(0, 0, 64),
+		endpos = pos - Vector(0, 0, 256),
+		mask = MASK_NPCSOLID_BRUSHONLY
+	})
+
+	if (groundTr.Hit and !IsInWater(groundTr.HitPos)) then
+		local finalPos = groundTr.HitPos + Vector(0, 0, 15) -- Spawn 15 units above ground
+		if (IsEmpty(finalPos)) then
+			return finalPos
+		end
 	end
 
-	if IsEmpty(pos) then return pos end
+	-- Fallback to original position (with elevation)
+	local elevatedPos = pos + Vector(0, 0, 15)
+	if (IsEmpty(elevatedPos)) then return elevatedPos end
 
+	-- Search nearby
 	for i = 1, 15 do
 		local rad = math.rad(math.random(0, 360))
-		local dist = math.random(40, 150)
-		local offset = pos + Vector(math.cos(rad) * dist, math.sin(rad) * dist, 10)
+		local dist = math.random(40, 200)
+		local offset = pos + Vector(math.cos(rad) * dist, math.sin(rad) * dist, 64)
 		
-		if IsEmpty(offset) then
-			local dropTr = util.TraceLine({
-				start = offset,
-				endpos = offset - Vector(0, 0, 200),
-				mask = MASK_SOLID_BRUSHONLY
-			})
-			
-			if dropTr.Hit then
-				local finalPos = dropTr.HitPos
-				if IsEmpty(finalPos) then
-					return finalPos
-				end
+		local dropTr = util.TraceLine({
+			start = offset,
+			endpos = offset - Vector(0, 0, 400),
+			mask = MASK_NPCSOLID_BRUSHONLY
+		})
+		
+		if (dropTr.Hit and !IsInWater(dropTr.HitPos)) then
+			local finalPos = dropTr.HitPos + Vector(0, 0, 15) -- Spawn 15 units above ground
+			if (IsEmpty(finalPos)) then
+				return finalPos
 			end
 		end
 	end
