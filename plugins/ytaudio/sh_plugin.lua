@@ -35,6 +35,43 @@ function PLUGIN:ExtractVideoId(url)
 end
 
 -- ---------------------------------------------------------------------------
+-- Presets
+-- ---------------------------------------------------------------------------
+
+PLUGIN.presets = {
+	["calm"] = {
+		{url = "https://www.youtube.com/watch?v=vy3KBgT1dRw", title = "Triage at Dawn"},
+		{url = "https://www.youtube.com/watch?v=yLuSRTp3yF8", title = "Brotherhood of Steel"},
+		{url = "https://www.youtube.com/watch?v=FM0YP2--8GM", title = "Deference For Liber-tea"},
+		{url = "https://www.youtube.com/watch?v=tbpSvSe6xg0", title = "Let You Down"},
+	},
+	["blue"] = {
+		{url = "https://www.youtube.com/watch?v=sxDtDcxwRfU", title = "Ravenholm"},
+		{url = "https://www.youtube.com/watch?v=KR8IW2Z-zYg", title = "Hazardous Environment"},
+		{url = "https://www.youtube.com/watch?v=PMpkFNL0o74", title = "Slow Light"},
+		{url = "https://www.youtube.com/watch?v=CIq13K26hSo", title = "Vague Voices"},
+	},
+	["aggressive"] = {
+		{url = "https://www.youtube.com/watch?v=t7Gz8jJOLAk", title = "Guard Down"},
+		{url = "https://www.youtube.com/watch?v=D4DfQ8gUN68", title = "Penultimatum"},
+		{url = "https://www.youtube.com/watch?v=r-eMVfiT8_c", title = "Something Secret Steers Us"},
+		{url = "https://www.youtube.com/watch?v=VA4i-IoJcCI", title = "CP Violation"},
+		{url = "https://www.youtube.com/watch?v=O9pZOhAvMss", title = "Vortal Combat"},
+		{url = "https://www.youtube.com/watch?v=JYPg3pzCRKM", title = "Sector Sweep"},
+		{url = "https://www.youtube.com/watch?v=Mo8Tlo2JBL4", title = "You're Not Supposed To Be Here"},
+		{url = "https://www.youtube.com/watch?v=Lc3Y6jPYHWk", title = "LG Orbifold"},
+		{url = "https://www.youtube.com/watch?v=ct_nyBIa0zQ", title = "Last Legs"},
+		{url = "https://www.youtube.com/watch?v=U6673bY8sw8", title = "Brane Scan"},
+		{url = "https://www.youtube.com/watch?v=qWDaRg-cPwE", title = "Apprehension and Evasion"},
+		{url = "https://www.youtube.com/watch?v=3UiKY_e3qDQ", title = "We've Got Hostiles"},
+		{url = "https://www.youtube.com/watch?v=Vr1xs92ySXQ", title = "No One Rides For Free"},
+		{url = "https://www.youtube.com/watch?v=c8pQmdTCjg4", title = "Klaxon Beat"},
+		{url = "https://www.youtube.com/watch?v=BLJZnJe7KgU", title = "Ending Triumph"},
+		{url = "https://www.youtube.com/watch?v=G9UH9kWQdXw", title = "Beats to spill oil on Cyberstan"},
+	}
+}
+
+-- ---------------------------------------------------------------------------
 -- Options
 -- ---------------------------------------------------------------------------
 
@@ -98,6 +135,9 @@ ix.lang.AddTable("english", {
 	cmdYTSkip = "Skips the current YouTube video.",
 	ytaudioQueued = "♪  Queued: %s",
 	ytaudioSkipped = "YouTube audio skipped.",
+	ytaudioPresetQueued = "♪  Preset '%s' added to queue.",
+	ytaudioInvalidPreset = "Invalid preset name.",
+	cmdYTPreset = "Plays a preset list of YouTube audio.",
 	optYtaudioVolume = "YouTube Audio Volume",
 	optdYtaudioVolume = "Sets the volume of YouTube audio.",
 })
@@ -118,6 +158,9 @@ ix.lang.AddTable("korean", {
 	cmdYTSkip = "현재 재생 중인 YouTube 영상을 건너뜁니다.",
 	ytaudioQueued = "♪  대기열 추가: %s",
 	ytaudioSkipped = "YouTube 오디오를 건너뛰었습니다.",
+	ytaudioPresetQueued = "♪  프리셋 '%s'이(가) 대기열에 추가되었습니다.",
+	ytaudioInvalidPreset = "유효하지 않은 프리셋 이름입니다.",
+	cmdYTPreset = "YouTube 프리셋 목록을 재생합니다.",
 	optYtaudioVolume = "YouTube 오디오 음량",
 	optdYtaudioVolume = "YouTube 오디오의 음량을 설정합니다.",
 })
@@ -223,7 +266,7 @@ ix.command.Add("YTSync", {
 		end
 
 		plugin:SyncAll()
-		NotifyAll("ytaudioSynced")
+		plugin:NotifyAll("ytaudioSynced")
 	end,
 })
 
@@ -238,6 +281,35 @@ ix.command.Add("YTSkip", {
 	OnRun = function(self, client)
 		local plugin = ix.plugin.Get("ytaudio")
 		plugin:SkipVideo()
+	end,
+})
+
+---
+-- /ytpreset <name>
+-- Plays a preset list of YouTube audio.
+---
+ix.command.Add("YTPreset", {
+	description = "@cmdYTPreset",
+	adminOnly   = true,
+	arguments   = ix.type.string,
+
+	OnRun = function(self, client, name)
+		local plugin = ix.plugin.Get("ytaudio")
+		local preset = plugin.presets[name:lower()]
+
+		if not preset then
+			client:NotifyLocalized("ytaudioInvalidPreset")
+			return
+		end
+
+		for _, data in ipairs(preset) do
+			local videoId = plugin:ExtractVideoId(data.url)
+			if videoId then
+				plugin:PlayVideo(videoId, data.title)
+			end
+		end
+
+		client:NotifyLocalized("ytaudioPresetQueued", name)
 	end,
 })
 

@@ -19,7 +19,7 @@ PLUGIN.ytState = IX_YTAUDIO_STATE
 -- Internal helpers
 -- ---------------------------------------------------------------------------
 
-local function NotifyAll(key, ...)
+function PLUGIN:NotifyAll(key, ...)
 	local args = { ... }
 
 	-- Always log to server console
@@ -86,7 +86,7 @@ function PLUGIN:PlayVideo(videoId, title, volume)
 			title	= title or "Unknown",
 			volume	= volume
 		})
-		NotifyAll("ytaudioQueued", title or videoId)
+		self:NotifyAll("ytaudioQueued", title or videoId)
 		return
 	end
 
@@ -97,7 +97,7 @@ function PLUGIN:PlayVideo(videoId, title, volume)
 	state.playing	= true
 
 	SendPlay(nil, state.videoId, state.title, 0, state.volume)
-	NotifyAll("ytaudioStarted", state.title)
+	self:NotifyAll("ytaudioStarted", state.title)
 end
 
 ---
@@ -114,7 +114,7 @@ function PLUGIN:StopVideo()
 
 	SendStop(nil) -- Always broadcast stop to kill any orphans on clients
 	if wasPlaying then
-		NotifyAll("ytaudioStopped")
+		self:NotifyAll("ytaudioStopped")
 	end
 end
 
@@ -127,7 +127,7 @@ function PLUGIN:SkipVideo()
 
 	if #state.queue > 0 then
 		local nextItem = table.remove(state.queue, 1)
-		NotifyAll("ytaudioSkipped")
+		self:NotifyAll("ytaudioSkipped")
 		
 		-- Temporarily set playing to false so PlayVideo doesn't re-queue
 		state.playing = false
