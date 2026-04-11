@@ -19,9 +19,9 @@ Schema.npcClassLists.combine = {
 	["npc_turret_ground"] = true,
 	["npc_combine_camera"] = true,
 	["combine_mine"] = true,
+	["npc_apcdriver"] = true,
 	["mbn_apc_manager"] = true,
-	["hl2van_apcdriver_playermade"] = true,
-
+	["prop_vehicle_apc"] = true,
 	["npc_vj_hlvr_suppressor"] = true,
 	["npc_vj_hlvr_captain"] = true,
 	["npc_vj_hlvr_heavy"] = true,
@@ -106,12 +106,12 @@ Schema.antiCitizenModelPatterns = {
 	"models/monk"
 }
 
-function Schema:GetNPCClass(npc)
-	if (!IsValid(npc) or !npc:IsNPC()) then
+function Schema:GetNPCClass(ent)
+	if (!IsValid(ent)) then
 		return ""
 	end
 
-	return string.lower(npc:GetClass() or "")
+	return string.lower(ent:GetClass() or "")
 end
 
 function Schema:IsCombineNPC(npc)
