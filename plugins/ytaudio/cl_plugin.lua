@@ -47,6 +47,16 @@ local JS_SoftSeek = [[
 	}
 ]]
 
+local JS_MonitorEnd = [[
+	if (typeof player !== 'undefined' && player && typeof player.addEventListener === 'function') {
+		player.addEventListener('onStateChange', function(event) {
+			if (event.data === 0) { // YT.PlayerState.ENDED
+				console.log("ENDED:");
+			}
+		});
+	}
+]]
+
 -- ---------------------------------------------------------------------------
 -- Browser management
 -- ---------------------------------------------------------------------------
@@ -98,6 +108,7 @@ local function OpenBrowser(videoId, offset, volume)
 		-- We start playback at volume 0 and fade in over 2 seconds.
 		if string.StartWith(msg, "READY:") then
 			panel:RunJavascript(JS_SetVolumeAndPlay:format(0))
+			panel:RunJavascript(JS_MonitorEnd)
 
 			local duration = 2
 			local steps = 40
@@ -115,6 +126,11 @@ local function OpenBrowser(videoId, offset, volume)
 				if PLUGIN.ytMuted then vol = 0 end
 				panel:RunJavascript(JS_SetVolume:format(vol))
 			end)
+		end
+
+		if string.StartWith(msg, "ENDED:") then
+			net.Start("ixYTAudioVideoEnded")
+			net.SendToServer()
 		end
 	end
 

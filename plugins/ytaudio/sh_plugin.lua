@@ -135,6 +135,7 @@ if SERVER then
 	util.AddNetworkString("ixYTAudioStop")
 	util.AddNetworkString("ixYTAudioVolume")
 	util.AddNetworkString("ixYTAudioSync")
+	util.AddNetworkString("ixYTAudioVideoEnded")
 end
 
 -- ---------------------------------------------------------------------------

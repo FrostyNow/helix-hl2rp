@@ -166,6 +166,24 @@ function PLUGIN:SyncAll()
 end
 
 -- ---------------------------------------------------------------------------
+-- Network Receivers
+-- ---------------------------------------------------------------------------
+
+net.Receive("ixYTAudioVideoEnded", function(len, ply)
+	local plugin = ix.plugin.Get("ytaudio")
+	if not plugin then return end
+
+	-- Only skip if something is actually playing
+	if not plugin.ytState.playing then return end
+
+	-- Debounce: ignore reports for 2 seconds after a skip to allow sync to stabilize
+	if (plugin.lastAutoSkip or 0) > CurTime() then return end
+	plugin.lastAutoSkip = CurTime() + 2
+
+	plugin:SkipVideo()
+end)
+
+-- ---------------------------------------------------------------------------
 -- Hooks
 -- ---------------------------------------------------------------------------
 
