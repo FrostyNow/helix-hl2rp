@@ -147,7 +147,7 @@ function PLUGIN:RenderScreenspaceEffects()
 end
 
 local gasmaskKeyStart = 0
-local gasmaskHoldTarget = 1.5
+local gasmaskHoldTarget = 1
 
 function PLUGIN:PlayerButtonDown(client, button)
 	local bindCode = getGasmaskBindCode()
@@ -181,7 +181,7 @@ function PLUGIN:HUDPaint()
 		
 		if (fraction > 0) then
 			local w, h = 200, 10
-			local x, y = (ScrW() - w) / 2, (ScrH() / 2) + 100
+			local x, y = (ScrW() - w) / 2, ScrH() - 80
 			
 			-- Background with glassmorphism feel
 			surface.SetDrawColor(0, 0, 0, 150)
