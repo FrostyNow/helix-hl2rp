@@ -282,16 +282,25 @@ function PLUGIN:UpdateComputerVisualState(entity, state)
 	end
 
 	local definition = self:GetAssemblyDefinition(entity)
+	if (!definition) then
+		return
+	end
 
-	self:SetEntitySkinForState(entity, definition and definition.skins, state)
+	self:SetEntitySkinForState(entity, definition.skins, state)
 	
-	for _, candidate in pairs(self.entities) do
-		if (!IsValid(candidate) or !self:IsSupportComputer(candidate)) then
+	-- Only iterate over 'support' role entities to find candidates for skin matching.
+	local supports = self.entitiesByRole and self.entitiesByRole["support"]
+	if (!supports) then
+		return
+	end
+
+	for _, candidate in pairs(supports) do
+		if (!IsValid(candidate)) then
 			continue
 		end
 
 		local candidateDefinition = self:GetComputerDefinition(candidate:GetClass())
-		if (candidateDefinition and definition and candidateDefinition.family == definition.family) then
+		if (candidateDefinition and candidateDefinition.family == definition.family) then
 			local maxDistance = self:GetSupportMaxDistance(entity, nil, candidateDefinition.role)
 			if (entity:GetPos():DistToSqr(candidate:GetPos()) <= (maxDistance * maxDistance)) then
 				self:SetEntitySkinForState(candidate, candidateDefinition.skins, state)
@@ -834,31 +843,11 @@ function PLUGIN:TryBypassSecurity(client, entity)
 	self:OpenComputer(client, entity)
 end
 
-function PLUGIN:EntityRemoved(entity)
-	if (PLUGIN:IsComputerEntity(entity)) then
-		self.entities[entity:EntIndex()] = nil
-	end
-end
-
 function PLUGIN:PlayerDisconnected(client)
 	for _, entity in pairs(self.entities) do
 		if (IsValid(entity) and self:IsPrimaryComputerEntity(entity) and entity.ixActiveUser == client) then
 			entity.ixActiveUser = nil
 			self:ClearAccessSession(entity, client)
-		end
-	end
-end
-
-function PLUGIN:OnEntityCreated(entity)
-	if (self:IsComputerEntity(entity)) then
-		self.entities[entity:EntIndex()] = entity
-	end
-end
-
-function PLUGIN:InitPostEntity()
-	for _, entity in ents.Iterator() do
-		if (self:IsComputerEntity(entity)) then
-			self.entities[entity:EntIndex()] = entity
 		end
 	end
 end

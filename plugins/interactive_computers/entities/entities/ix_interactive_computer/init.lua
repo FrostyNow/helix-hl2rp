@@ -4,8 +4,8 @@ AddCSLuaFile("shared.lua")
 include("shared.lua")
 
 local GENERAL_BOOT_SOUND = "npc/scanner/combat_scan1.wav"
-local ACTIVE_CHECK_INTERVAL = 0.2
-local SUPPORT_CHECK_INTERVAL = 1
+local ACTIVE_CHECK_INTERVAL = 3.0 -- Throttled from 0.2s for server performance
+local SUPPORT_CHECK_INTERVAL = 5.0 -- Throttled from 1.0s
 
 function ENT:Initialize()
 	local plugin = ix.plugin.Get("interactive_computers")
@@ -103,6 +103,10 @@ function ENT:GetComputerData()
 	return table.Copy(self.ixComputerData or {})
 end
 
+function ENT:GetComputerDataReadOnly()
+	return self.ixComputerData or {}
+end
+
 function ENT:SetPowered(state, silent)
 	local plugin = ix.plugin.Get("interactive_computers")
 	state = state == true
@@ -162,6 +166,19 @@ function ENT:Think()
 		return true
 	end
 
+	-- Throttle assembly validation: only check if we moved or every few seconds.
+	local currentTime = CurTime()
+	local lastCheck = self.ixLastAssemblyCheck or 0
+	local pos = self:GetPos()
+
+	if (lastCheck + ACTIVE_CHECK_INTERVAL > currentTime and (self.ixLastAssemblyPos or Vector()):DistToSqr(pos) < 1) then
+		self:NextThink(currentTime + 1)
+		return true
+	end
+
+	self.ixLastAssemblyCheck = currentTime
+	self.ixLastAssemblyPos = pos
+
 	local bPowered = self:GetPowered()
 	local bValid = plugin:IsComputerAssemblyValid(self)
 	local bHasError = !bValid
@@ -188,7 +205,7 @@ function ENT:Think()
 		end
 	end
 
-	self:NextThink(CurTime() + ACTIVE_CHECK_INTERVAL)
+	self:NextThink(currentTime + 1)
 	return true
 end
 

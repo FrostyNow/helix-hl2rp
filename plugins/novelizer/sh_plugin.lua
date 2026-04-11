@@ -37,6 +37,32 @@ local NOVELIZER_3D_NET = "ixNovelizerDisplay3D"
 local IDLE_IT_RANDOM_WINDOW = 5
 local NOVELIZER_3D_SURFACE_PADDING = 2
 
+local IDLE_COMPUTER_CLASSES = {
+	"ix_computer",
+	"ix_terminal",
+	"ix_combinedisplay",
+	"ix_combinescreen"
+}
+
+local DAMAGE_DEFINITIONS = {
+	{key = "shock", hurt = "novelizerInjuredShock", death = "novelizerDeathShock", flags = {DMG_SHOCK}},
+	{key = "radiation", hurt = "novelizerInjuredRadiation", death = "novelizerDeathRadiation", flags = {DMG_RADIATION}},
+	{key = "burn", hurt = "novelizerInjuredBurn", death = "novelizerDeathBurn", flags = {DMG_BURN, DMG_SLOWBURN}},
+	{key = "blast", hurt = "novelizerInjuredBlast", death = "novelizerDeathBlast", flags = {DMG_BLAST}},
+	{key = "vehicle", hurt = "novelizerInjuredVehicle", death = "novelizerDeathVehicle", flags = {DMG_VEHICLE}},
+	{key = "sonic", hurt = "novelizerInjuredSonic", death = "novelizerDeathSonic", flags = {DMG_SONIC}},
+	{key = "energybeam", hurt = "novelizerInjuredEnergyBeam", death = "novelizerDeathEnergyBeam", flags = {DMG_ENERGYBEAM}},
+	{key = "fall", hurt = "novelizerInjuredFall", death = "novelizerDeathFall", flags = {DMG_FALL}},
+	{key = "gun", hurt = "novelizerInjuredGun", death = "novelizerDeathGun", flags = {DMG_BULLET, DMG_BUCKSHOT}},
+	{key = "slash", hurt = "novelizerInjuredSlash", death = "novelizerDeathSlash", flags = {DMG_SLASH}},
+	{key = "drown", hurt = "novelizerInjuredDrown", death = "novelizerDeathDrown", flags = {DMG_DROWN}},
+	{key = "acid", hurt = "novelizerInjuredAcid", death = "novelizerDeathAcid", flags = {DMG_ACID}},
+	{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
+	{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}},
+	{key = "bite", hurt = "novelizerInjuredBite", death = "novelizerDeathBite", flags = {}},
+	{key = "starve", hurt = "novelizerInjuredStarve", death = "novelizerDeathStarve", flags = {}}
+}
+
 if (SERVER) then
 	util.AddNetworkString(NOVELIZER_3D_NET)
 end
@@ -1688,11 +1714,18 @@ function PLUGIN:GetIdleComputerEntities()
 		return entities
 	end
 
-	for _, entity in ents.Iterator() do
-		if (interactivePlugin:IsPrimaryComputerEntity(entity)
-			and entity.GetPowered
-			and entity:GetPowered()) then
-			entities[#entities + 1] = entity
+	-- Optimize computer finding by using specific classes if available, otherwise fallback.
+	-- This is much faster than iterating over thousands of props/items with ents.Iterator().
+	local computerClasses = interactivePlugin.ComputerClasses or IDLE_COMPUTER_CLASSES
+	for _, className in ipairs(computerClasses) do
+		local found = ents.FindByClass(className)
+		for i = 1, #found do
+			local entity = found[i]
+			if (interactivePlugin:IsPrimaryComputerEntity(entity)
+				and entity.GetPowered
+				and entity:GetPowered()) then
+				entities[#entities + 1] = entity
+			end
 		end
 	end
 
@@ -1708,8 +1741,8 @@ function PLUGIN:ResolveItemSubjectData(item)
 	if (item) then
 		local uniqueID = string.lower(tostring(item.uniqueID or ""))
 		local className = string.lower(tostring(item.class or ""))
-		local isRation = "ration" or "ration_gr1" or "ration_gr2" or "ration_gr3" or "metropolice_ration"
-		if (uniqueID == isRation) then
+
+		if (uniqueID == "ration" or uniqueID == "ration_gr1" or uniqueID == "ration_gr2" or uniqueID == "ration_gr3" or uniqueID == "metropolice_ration") then
 			return "ration pack", "novelizerRationPack"
 		end
 
@@ -2730,46 +2763,29 @@ function PLUGIN:ClassifyDamageType(dmgInfo, victim)
 
 	local damageType = dmgInfo:GetDamageType()
 	local attacker = dmgInfo:GetAttacker()
-	local definitions = {
-		{key = "shock", hurt = "novelizerInjuredShock", death = "novelizerDeathShock", flags = {DMG_SHOCK}},
-		{key = "radiation", hurt = "novelizerInjuredRadiation", death = "novelizerDeathRadiation", flags = {DMG_RADIATION}},
-		{key = "burn", hurt = "novelizerInjuredBurn", death = "novelizerDeathBurn", flags = {DMG_BURN, DMG_SLOWBURN}},
-		{key = "blast", hurt = "novelizerInjuredBlast", death = "novelizerDeathBlast", flags = {DMG_BLAST}},
-		{key = "vehicle", hurt = "novelizerInjuredVehicle", death = "novelizerDeathVehicle", flags = {DMG_VEHICLE}},
-		{key = "sonic", hurt = "novelizerInjuredSonic", death = "novelizerDeathSonic", flags = {DMG_SONIC}},
-		{key = "energybeam", hurt = "novelizerInjuredEnergyBeam", death = "novelizerDeathEnergyBeam", flags = {DMG_ENERGYBEAM}},
-		{key = "fall", hurt = "novelizerInjuredFall", death = "novelizerDeathFall", flags = {DMG_FALL}},
-		{key = "gun", hurt = "novelizerInjuredGun", death = "novelizerDeathGun", flags = {DMG_BULLET, DMG_BUCKSHOT}},
-		{key = "slash", hurt = "novelizerInjuredSlash", death = "novelizerDeathSlash", flags = {DMG_SLASH}},
-		{key = "drown", hurt = "novelizerInjuredDrown", death = "novelizerDeathDrown", flags = {DMG_DROWN}},
-		{key = "acid", hurt = "novelizerInjuredAcid", death = "novelizerDeathAcid", flags = {DMG_ACID}},
-		{key = "poison", hurt = "novelizerInjuredPoison", death = "novelizerDeathPoison", flags = {DMG_POISON, DMG_NERVEGAS, DMG_PARALYZE}},
-		{key = "blunt", hurt = "novelizerInjuredBlunt", death = "novelizerDeathBlunt", flags = {DMG_CLUB, DMG_CRUSH}},
-		{key = "bite", hurt = "novelizerInjuredBite", death = "novelizerDeathBite", flags = {}},
-		{key = "starve", hurt = "novelizerInjuredStarve", death = "novelizerDeathStarve", flags = {}}
-	}
 
 	-- Handle starvation (self-damage from hunger/thirst plugin, or generic suicide)
 	if (IsValid(attacker) and attacker:IsPlayer() and (attacker == victim) and (damageType == 0 or damageType == DMG_DIRECT)) then
-		return definitions[16]
+		return DAMAGE_DEFINITIONS[16]
 	end
 
 	-- Handle bites/non-weapon creature attacks
 	if (self:HasDamageFlag(damageType, DMG_SLASH) and not self:IsDamageFromMeleeWeapon(dmgInfo)) then
-		return definitions[15]
+		return DAMAGE_DEFINITIONS[15]
 	end
 
 	if (self:IsDamageFromMeleeWeapon(dmgInfo)) then
 		if (self:HasDamageFlag(damageType, DMG_SLASH)) then
-			return definitions[10]
+			return DAMAGE_DEFINITIONS[10]
 		end
 
-		return definitions[14]
+		return DAMAGE_DEFINITIONS[14]
 	end
 
-	for _, definition in ipairs(definitions) do
-		for _, flag in ipairs(definition.flags) do
-			if (self:HasDamageFlag(damageType, flag)) then
+	for i = 1, #DAMAGE_DEFINITIONS do
+		local definition = DAMAGE_DEFINITIONS[i]
+		for j = 1, #definition.flags do
+			if (self:HasDamageFlag(damageType, definition.flags[j])) then
 				return definition
 			end
 		end
@@ -4455,15 +4471,17 @@ function PLUGIN:CanNarrateEntityUse(client, entity)
 	return true
 end
 
-function PLUGIN:HasNarrationListenerNear(entity, range)
+function PLUGIN:HasNarrationListenerNear(entity, range, listeners)
 	if (not IsValid(entity)) then
 		return false
 	end
 
 	local checkRange = tonumber(range) or GetNovelItRange()
 	local maxDist = checkRange * checkRange
+	local testPlayers = listeners or player.GetAll()
 
-	for _, client in ipairs(player.GetAll()) do
+	for i = 1, #testPlayers do
+		local client = testPlayers[i]
 		if (self:CanAutoNarrate(client) and client:GetPos():DistToSqr(entity:GetPos()) <= maxDist) then
 			return true
 		end
@@ -4521,108 +4539,126 @@ function PLUGIN:GetMusicRadioSignalState(entity)
 	return "radio_offfreq"
 end
 
-function PLUGIN:EmitIdleIt()
-	local idleDefinitions = {
-		{
-			finder = function()
-				return self:GetIdleComputerEntities()
-			end,
-			key = "machine_hum",
-			cooldownKey = "computer_idle"
-		},
-		{
-			classes = {"ix_forcefield"},
-			key = "forcefield_buzz",
-			cooldownKey = "forcefield_ambient",
-			canEmit = function(entity)
-				return entity.GetMode and entity:GetMode() ~= 1
-			end
-		},
-		-- {
-		-- 	classes = {"ix_vendingmachine", "ix_pepsimachine", "ix_coffeemachine"},
-		-- 	key = "vending_hum",
-		-- 	cooldownKey = "vending_idle"
-		-- },
-		{
-			classes = {"ix_stationary_radio", "ix_radiorepeater"},
-			key = "radio_static",
-			cooldownKey = "radio_idle"
-		},
-		{
-			classes = {"ix_music_radio"},
-			key = "radio_music",
-			cooldownKey = "music_radio_idle",
-			canEmit = function(entity)
-				return self:GetMusicRadioSignalState(entity) ~= nil
-			end,
-			getKey = function(entity)
-				return self:GetMusicRadioSignalState(entity)
-			end,
-			listenerRange = function()
-				return ix.config.Get("radioDist", 550)
-			end
-		},
-		{
-			classes = {"ix_stove"},
-			key = "stove_gas_heat",
-			cooldownKey = "stove_idle",
-			canEmit = function(entity)
-				return entity:GetNetVar("active", false) == true
-			end
-		},
-		{
-			classes = {"ix_bonfire", "ix_bucket"},
-			key = "stove_heat",
-			cooldownKey = "stove_idle",
-			canEmit = function(entity)
-				return entity:GetNetVar("active", false) == true
-			end
-		},
-		{
-			classes = {"ix_recycler"},
-			key = "machine_hum",
-			cooldownKey = "recycler_idle",
-			canEmit = function(entity)
-				return entity.GetIsActivated and entity:GetIsActivated() == true
-			end
-		},
-		{
-			classes = {"ix_washing_machine", "ix_washing_machine_small"},
-			key = "washer",
-			cooldownKey = "washer_idle",
-			canEmit = function(entity)
-				return entity.GetWashing and entity:GetWashing() == true
-			end
-		}
+local IDLE_DEFINITIONS = {
+	{
+		finder = function(plugin)
+			return plugin:GetIdleComputerEntities()
+		end,
+		key = "machine_hum",
+		cooldownKey = "computer_idle"
+	},
+	{
+		classes = {"ix_forcefield"},
+		key = "forcefield_buzz",
+		cooldownKey = "forcefield_ambient",
+		canEmit = function(entity)
+			return entity.GetMode and entity:GetMode() ~= 1
+		end
+	},
+	{
+		classes = {"ix_stationary_radio", "ix_radiorepeater"},
+		key = "radio_static",
+		cooldownKey = "radio_idle"
+	},
+	{
+		classes = {"ix_music_radio"},
+		key = "radio_music",
+		cooldownKey = "music_radio_idle",
+		canEmit = function(entity, plugin)
+			return plugin:GetMusicRadioSignalState(entity) ~= nil
+		end,
+		getKey = function(entity, plugin)
+			return plugin:GetMusicRadioSignalState(entity)
+		end,
+		listenerRange = function(entity, plugin)
+			return ix.config.Get("radioDist", 550)
+		end
+	},
+	{
+		classes = {"ix_stove"},
+		key = "stove_gas_heat",
+		cooldownKey = "stove_idle",
+		canEmit = function(entity)
+			return entity:GetNetVar("active", false) == true
+		end
+	},
+	{
+		classes = {"ix_bonfire", "ix_bucket"},
+		key = "stove_heat",
+		cooldownKey = "stove_idle",
+		canEmit = function(entity)
+			return entity:GetNetVar("active", false) == true
+		end
+	},
+	{
+		classes = {"ix_recycler"},
+		key = "machine_hum",
+		cooldownKey = "recycler_idle",
+		canEmit = function(entity)
+			return entity.GetIsActivated and entity:GetIsActivated() == true
+		end
+	},
+	{
+		classes = {"ix_washing_machine", "ix_washing_machine_small"},
+		key = "washer",
+		cooldownKey = "washer_idle",
+		canEmit = function(entity)
+			return entity.GetWashing and entity:GetWashing() == true
+		end
 	}
+}
 
-	for _, definition in ipairs(idleDefinitions) do
+function PLUGIN:EmitIdleIt()
+	local players = player.GetAll()
+	local validListeners = {}
+	
+	-- Pre-filter players to reduce distance checks in the inner loops
+	for i = 1, #players do
+		local client = players[i]
+		if (self:CanAutoNarrate(client)) then
+			validListeners[#validListeners + 1] = client
+		end
+	end
+
+	if (#validListeners == 0) then
+		return
+	end
+
+	for i = 1, #IDLE_DEFINITIONS do
+		local definition = IDLE_DEFINITIONS[i]
 		local entityLists = {}
 
 		if (isfunction(definition.finder)) then
-			entityLists[1] = definition.finder()
+			entityLists[1] = definition.finder(self)
 		else
-			for _, className in ipairs(definition.classes) do
-				entityLists[#entityLists + 1] = ents.FindByClass(className)
+			for j = 1, #definition.classes do
+				entityLists[#entityLists + 1] = ents.FindByClass(definition.classes[j])
 			end
 		end
 
-		for _, entityList in ipairs(entityLists) do
-			for _, entity in ipairs(entityList) do
-				local key = definition.getKey and definition.getKey(entity) or definition.key
-				local listenerRange = definition.listenerRange and definition.listenerRange(entity) or nil
-
-				if (IsValid(entity)
-					and IsFilledString(key)
-					and self:HasNarrationListenerNear(entity, listenerRange)
-					and self:CanEmitIdleNow(entity)
-					and (not isfunction(definition.canEmit) or definition.canEmit(entity))) then
-					self:EmitConditionalIt(entity, key, {
-						chatType = "novelit_idle",
-						cooldown = self:GetIdleItCooldown(),
-						cooldownKey = definition.cooldownKey,
-						range = math.min(GetNovelItRange() * 0.6, listenerRange or GetNovelItRange())
-					})
+		for j = 1, #entityLists do
+			local entityList = entityLists[j]
+			for k = 1, #entityList do
+				local entity = entityList[k]
+				
+				if (IsValid(entity)) then
+					local key = definition.getKey and definition.getKey(entity, self) or definition.key
+					local listenerRange = definition.listenerRange and definition.listenerRange(entity, self) or nil
+					
+					-- IMPORTANT: Check cooldown and entity state BEFORE expensive distance checks.
+					-- This reordering saves thousands of DistToSqr calls per cycle on populated servers.
+					if (IsFilledString(key)
+						and self:CanEmitIdleNow(entity)
+						and (not isfunction(definition.canEmit) or definition.canEmit(entity, self))
+						and self:HasNarrationListenerNear(entity, listenerRange, validListeners)) then
+						
+						self:EmitConditionalIt(entity, key, {
+							chatType = "novelit_idle",
+							cooldown = self:GetIdleItCooldown(),
+							cooldownKey = definition.cooldownKey,
+							range = math.min(GetNovelItRange() * 0.6, listenerRange or GetNovelItRange())
+						})
+					end
 				end
 			end
 		end

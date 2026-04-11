@@ -4,6 +4,7 @@ PLUGIN.name = "Interactive Computers"
 PLUGIN.author = "Frosty"
 PLUGIN.description = "Adds interactive computer terminals with DOS-style journal storage."
 PLUGIN.entities = PLUGIN.entities or {}
+PLUGIN.entitiesByRole = PLUGIN.entitiesByRole or {}
 
 PLUGIN.license = [[
 Copyright © 2026 Frosty
@@ -591,7 +592,10 @@ function PLUGIN:FindNearestSupportComputer(entity, requestedRole)
 	local bestCandidate
 	local bestDistance = math.huge
 
-	for _, candidate in pairs(self.entities) do
+	-- Optimize by iterating only over the requested role if specified.
+	local searchPool = (requestedRole and self.entitiesByRole and self.entitiesByRole[requestedRole]) or self.entities
+
+	for _, candidate in pairs(searchPool) do
 		if (!IsValid(candidate) or !self:IsSupportComputer(candidate)) then
 			continue
 		end
@@ -925,19 +929,40 @@ end
 function PLUGIN:OnEntityCreated(entity)
 	if (self:IsComputerEntity(entity)) then
 		self.entities[entity:EntIndex()] = entity
+
+		local definition = self:GetComputerDefinition(entity:GetClass())
+		if (definition and isstring(definition.role) and definition.role != "") then
+			self.entitiesByRole = self.entitiesByRole or {}
+			self.entitiesByRole[definition.role] = self.entitiesByRole[definition.role] or {}
+			self.entitiesByRole[definition.role][entity:EntIndex()] = entity
+		end
 	end
 end
 
 function PLUGIN:EntityRemoved(entity)
 	if (self:IsComputerEntity(entity)) then
-		self.entities[entity:EntIndex()] = nil
+		local index = entity:EntIndex()
+		self.entities[index] = nil
+
+		local definition = self:GetComputerDefinition(entity:GetClass())
+		if (definition and isstring(definition.role) and definition.role != "" and self.entitiesByRole and self.entitiesByRole[definition.role]) then
+			self.entitiesByRole[definition.role][index] = nil
+		end
 	end
 end
 
 function PLUGIN:InitPostEntity()
 	for _, entity in ents.Iterator() do
 		if (self:IsComputerEntity(entity)) then
-			self.entities[entity:EntIndex()] = entity
+			local index = entity:EntIndex()
+			self.entities[index] = entity
+
+			local definition = self:GetComputerDefinition(entity:GetClass())
+			if (definition and isstring(definition.role) and definition.role != "") then
+				self.entitiesByRole = self.entitiesByRole or {}
+				self.entitiesByRole[definition.role] = self.entitiesByRole[definition.role] or {}
+				self.entitiesByRole[definition.role][index] = entity
+			end
 		end
 	end
 end
