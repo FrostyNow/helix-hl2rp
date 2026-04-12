@@ -98,6 +98,7 @@ end
 function PLUGIN:PlayerSwitchFlashlight(ply, enabled)
 	local scanner = ply:GetNetVar("ixScn")
 	if (not IsValid(scanner)) then return end
+	if (scanner:GetModel():find("shield_scanner")) then return false end
 
 	if ((scanner.nextLightToggle or 0) >= CurTime()) then return false end
 	scanner.nextLightToggle = CurTime() + 0.5
@@ -197,7 +198,7 @@ if (SERVER) then
 	net.Receive("ixScannerToggleFlashlight", function(len, ply)
 		local scanner = ply:GetNetVar("ixScn")
 
-		if (IsValid(scanner)) then
+		if (IsValid(scanner) and not scanner:GetModel():find("shield_scanner")) then
 			if ((scanner.nextLightToggle or 0) >= CurTime()) then return end
 			scanner.nextLightToggle = CurTime() + 0.5
 

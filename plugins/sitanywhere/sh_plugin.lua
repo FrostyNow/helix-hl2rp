@@ -42,7 +42,7 @@ function SitAnywhere.GetAreaProfile(pos, resolution, simple)
 		trace.Distance2 = trace.HorizontalTrace.StartPos:Distance(trace.HorizontalTrace.HitPos)
 		trace.ang = I
 
-		if (not trace.Hit or trace.Distance > 14) and (not trace.HorizontalTrace.Hit or trace.Distance2 > 13) then
+		if (not trace.Hit or trace.Distance > 14) and (not trace.HorizontalTrace.Hit or trace.Distance2 > 20) then
 			if simple then return true end
 			table.insert(dists, trace)
 		end
@@ -72,7 +72,7 @@ function SitAnywhere.CheckValidAngForSit(pos, surfaceAng, ang)
 		filter = player.GetAll()
 	})
 
-	return hor_trace.StartPos:Distance(hor_trace.HitPos) > 13 and trace2.StartPos:Distance(trace2.HitPos) > 14
+	return hor_trace.StartPos:Distance(hor_trace.HitPos) > 20 and trace2.StartPos:Distance(trace2.HitPos) > 14
 end
 
 ix.config.Add("sittingEntMode", 3, "Which entities players are allowed to sit on.\n0 = No entities\n1 = World entities only\n2 = Self-Owned, World, Unowned\n3 = Any Entity", nil, {
@@ -95,6 +95,9 @@ ix.config.Add("sittingAntiToolAbuse", true, "Disables the use of the toolgun on 
 	category = "sitAnywhere"
 })
 ix.config.Add("sittingAllowTightPlaces", false, "Allows sitting in places where a player cannot physically stand", nil, {
+	category = "sitAnywhere"
+})
+ix.config.Add("sittingAllowWeaponsInSeat", false, "Allows players to use weapons while sitting.", nil, {
 	category = "sitAnywhere"
 })
 ix.config.Add("sittingForceNoWalk", false, "Disables the need for using walk to sit anywhere", nil, {

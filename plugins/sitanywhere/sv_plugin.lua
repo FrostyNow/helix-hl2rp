@@ -133,7 +133,7 @@ net.Receive("SitAnywhere", function(len, ply)
 	if netID == SitAnywhere.NET.SitWantedAng then
 		local wantedAng, traceStart, traceNormal = net.ReadFloat(), net.ReadVector(), net.ReadVector()
 
-		if traceStart:Distance(ply:GetShootPos()) > 64 then return end
+		if traceStart:Distance(ply:GetShootPos()) > 128 then return end
 		local trace = util.TraceLine({
 			start = traceStart,
 			endpos = traceStart + traceNormal * 12000,
@@ -255,6 +255,9 @@ local function Sit(ply, pos, ang, parent, parentbone, func, exit)
 	local prev = ply:GetAllowWeaponsInVehicle()
 	if prev then
 		ply.sitting_allowswep = nil
+	elseif ix.config.Get("sittingAllowWeaponsInSeat", false) then
+		ply.sitting_allowswep = prev
+		ply:SetAllowWeaponsInVehicle(true)
 	end
 
 	ply:EnterVehicle(vehicle)

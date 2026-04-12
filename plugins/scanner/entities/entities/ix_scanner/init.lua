@@ -90,6 +90,7 @@ function ENT:createFlashSprite()
 end
 
 function ENT:enableSpotlight()
+	if (self:GetModel():find("shield_scanner")) then return end
 	if (IsValid(self.spotlight)) then return end
 
 	local attachment = self:LookupAttachment("eyes")

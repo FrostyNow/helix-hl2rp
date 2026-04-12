@@ -17,34 +17,31 @@ local function StartSit(trace)
 
 	hook.Add("PostDrawOpaqueRenderables", TAG .. "PostDrawOpaqueRenderables", function(depth, skybox)
 		if CurTime() - start <= 0.25 then return end
-		if trace.StartPos:Distance(ply:GetShootPos()) > 40 then
+		if trace.StartPos:Distance(ply:GetShootPos()) > 128 then
 			cancelled, wantedAng = true, nil
 			hook.Remove("PostDrawOpaqueRenderables", TAG .. "PostDrawOpaqueRenderables")
 			return
 		end
 
 		local vec = util.IntersectRayWithPlane(ply:GetShootPos(), ply:EyeAngles():Forward(), trace.HitPos, Vector(0, 0, 1))
-		if not vec then
-			return
-		end
-
-		local posOnPlane = WorldToLocal(vec, Angle(0, 90, 0), trace.HitPos, Angle(0, 0, 0))
-		local testVec = posOnPlane:GetNormal() * traceScaled
-		local currentAng = (trace.HitPos - vec):Angle()
-		wantedAng = currentAng
-
-		if posOnPlane:Length() < 2 then
-			wantedAng = nil
-			return
+		
+		if vec then
+			local posOnPlane = WorldToLocal(vec, Angle(0, 90, 0), trace.HitPos, Angle(0, 0, 0))
+			
+			if posOnPlane:Length() >= 2 then
+				local currentAng = (trace.HitPos - vec):Angle()
+				wantedAng = currentAng
+			end
 		end
 
 		if wantedAng then
 			local goodSit = SitAnywhere.CheckValidAngForSit(trace.HitPos, trace.HitNormal:Angle(), wantedAng.y)
-			if not goodSit then wantedAng = nil end
+			local testVec = WorldToLocal(trace.HitPos - wantedAng:Forward() * traceDist, Angle(0, 90, 0), trace.HitPos, Angle(0, 0, 0))
+			
 			cam.Start3D2D(trace.HitPos + Vector(0, 0, 1), Angle(0, 0, 0), drawScale)
 				surface.SetDrawColor(goodSit and Color(255, 255, 255, 255) or Color(255, 0, 0, 255))
 				surface.SetMaterial(arrow)
-				surface.DrawTexturedRectRotated(testVec.x * 0.5, testVec.y * -0.5, 2 / drawScale, traceScaled, currentAng.y + 90)
+				surface.DrawTexturedRectRotated(testVec.x * 0.5, testVec.y * -0.5, 2 / drawScale, traceScaled, wantedAng.y + 90)
 			cam.End3D2D()
 		end
 	end)
@@ -78,7 +75,7 @@ local function DoSit(trace)
 	local playerTrace = not trace.HitWorld and IsValid(trace.Entity) and trace.Entity:IsPlayer()
 
 	local goodSit = SitAnywhere.GetAreaProfile(trace.HitPos + Vector(0, 0, 0.1), 24, true)
-	if math.abs(surfaceAng.pitch) >= 15 or not goodSit or playerTrace then
+	if math.abs(surfaceAng.pitch) >= 15 or playerTrace then
 		RunConsoleCommand"sit"
 		return
 	end

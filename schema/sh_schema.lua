@@ -156,31 +156,94 @@ ALWAYS_RAISED["gmod_gphone"] = true
 ALWAYS_RAISED["weapon_portalgun"] = true
 ALWAYS_RAISED["weapon_bmxs_headcrabbed"] = true
 
-game.AddAmmoType({name = "5.56x45mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "7.62x51mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "9x19mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = ".45 ACP", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "5.45x39mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "7.62x39mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "9x18mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "12 Gauge", dmgtype = DMG_BUCKSHOT, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = ".357 Magnum", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "7.62x25mm", dmgtype = DMG_BULLET, tracer = TRACER_LINE_AND_WHIZ})
-game.AddAmmoType({name = "Flares", dmgtype = DMG_BURN, tracer = TRACER_NONE})
-game.AddAmmoType({name = "20x28mm grenade", dmgtype = DMG_BLAST, tracer = TRACER_NONE})
+game.AddAmmoType({
+	name = "5.56x45mm",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+game.AddAmmoType({
+	name = "7.62x51mm",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+-- game.AddAmmoType({
+-- 	name = "9x19mm",
+-- 	dmgtype = DMG_BULLET,
+-- 	tracer = TRACER_LINE_AND_WHIZ
+-- })
+game.AddAmmoType({
+	name = ".45 ACP",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 150
+})
+game.AddAmmoType({
+	name = "5.45x39mm",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+game.AddAmmoType({
+	name = "7.62x39mm",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+-- game.AddAmmoType({
+-- 	name = "9x18mm",
+-- 	dmgtype = DMG_BULLET,
+-- 	tracer = TRACER_LINE_AND_WHIZ
+-- })
+-- game.AddAmmoType({
+-- 	name = "12 Gauge",
+-- 	dmgtype = DMG_BUCKSHOT,
+-- 	tracer = TRACER_LINE_AND_WHIZ
+-- })
+-- game.AddAmmoType({
+-- 	name = ".357 Magnum",
+-- 	dmgtype = DMG_BULLET,
+-- 	tracer = TRACER_LINE_AND_WHIZ
+-- })
+game.AddAmmoType({
+	name = "7.62x25mm",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+game.AddAmmoType({
+	name = "Flares",
+	dmgtype = DMG_BURN,
+	tracer = TRACER_NONE,
+	maxcarry = 5
+})
+game.AddAmmoType({
+	name = "20x28mm grenade",
+	dmgtype = DMG_BLAST,
+	tracer = TRACER_NONE,
+	maxcarry = 3
+})
+game.AddAmmoType({
+	name = "Combine Battery",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_NONE,
+	maxcarry = 150
+})
 
 ix.ammo.Register("5.56x45mm")
 ix.ammo.Register("7.62x51mm")
-ix.ammo.Register("9x19mm")
+-- ix.ammo.Register("9x19mm")
 ix.ammo.Register(".45 ACP")
 ix.ammo.Register("5.45x39mm")
 ix.ammo.Register("7.62x39mm")
-ix.ammo.Register("9x18mm")
-ix.ammo.Register("12 Gauge")
-ix.ammo.Register(".357 Magnum")
+-- ix.ammo.Register("9x18mm")
+-- ix.ammo.Register("12 Gauge")
+-- ix.ammo.Register(".357 Magnum")
 ix.ammo.Register("7.62x25mm")
 ix.ammo.Register("Flares")
 ix.ammo.Register("20x28mm grenade")
+ix.ammo.Register("Combine Battery")
 
 function Schema:ZeroNumber(number, length)
 	local amount = math.max(0, length - string.len(number))

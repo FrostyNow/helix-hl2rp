@@ -34,29 +34,48 @@ local function RegisterOverhear(baseType)
 	data.uniqueID = baseType .. "_overhear"
 	data.prefix = nil -- Cannot be used as a chat command
 	data.description = nil
-	
+
 	-- Override OnChatAdd to apply the received transparency
 	local oldOnChatAdd = data.OnChatAdd
 	data.OnChatAdd = function(self, speaker, text, anonymous, info)
 		local alpha = (info and info.overhearAlpha) or 255
 		self.overhearAlpha = alpha
 		local oldChatAddText = chat.AddText
-		
+
 		-- Temporarily intercept chat.AddText to apply alpha to all color arguments
 		chat.AddText = function(...)
-			local args = {...}
 			ix.overhearAlpha = alpha -- Pass alpha to AddLine reliably
 
-			for k, v in ipairs(args) do
+			-- Build a new args list, expanding Player objects into (color, name) pairs
+			-- so that the description for unrecognized characters always gets alpha applied,
+			-- regardless of which AddLine implementation handles the message.
+			local newArgs = {}
+			for _, v in ipairs({...}) do
 				if (istable(v) and v.r and v.g and v.b) then
-					args[k] = Color(v.r, v.g, v.b, (v.a or 255) * alpha / 255)
+					-- Colour object: apply overhear alpha
+					newArgs[#newArgs + 1] = Color(v.r, v.g, v.b, (v.a or 255) * alpha / 255)
+				elseif (type(v) == "Player" and IsValid(v)) then
+					-- Player object: pre-compute name colour and display name with alpha applied.
+					-- This ensures unrecognized character descriptions (name replacements) are
+					-- rendered with the correct transparency even in the original AddLine path.
+					local nameColour = hook.Run("GetPlayerChatColor", v, CHAT_CLASS)
+						or team.GetColor(v:Team())
+					local nameText = hook.Run("GetCharacterName", v, CHAT_CLASS and CHAT_CLASS.uniqueID)
+						or v:GetName()
+					newArgs[#newArgs + 1] = Color(
+						nameColour.r, nameColour.g, nameColour.b,
+						math.floor((nameColour.a or 255) * alpha / 255)
+					)
+					newArgs[#newArgs + 1] = nameText
+				else
+					newArgs[#newArgs + 1] = v
 				end
 			end
-			oldChatAddText(unpack(args))
+			oldChatAddText(unpack(newArgs))
 
 			ix.overhearAlpha = nil
 		end
-		
+
 		oldOnChatAdd(self, speaker, text, anonymous, info)
 		chat.AddText = oldChatAddText
 		self.overhearAlpha = nil
@@ -149,7 +168,7 @@ if (CLIENT) then
 			local overhearScale = ix.config.Get("overhearScale", 1.2)
 			-- Use baseRangeSqr if available, otherwise fallback to class.range
 			local rangeSqr = class.baseRangeSqr or class.range
-			
+
 			-- Attempt real-time range calculation if range property is missing
 			if (!rangeSqr and class.GetRange) then
 				local r = class:GetRange()
@@ -160,11 +179,11 @@ if (CLIENT) then
 				local dist = (speaker:GetPos() - LocalPlayer():GetPos()):Length()
 				-- Calculate the original range (1.0x)
 				local normalRange = math.sqrt(rangeSqr)
-				
+
 				local fadeStartScale = ix.config.Get("overhearFadeStart", 0.3)
 				local minDist = normalRange * fadeStartScale
 				local maxDist = normalRange * overhearScale
-				
+
 				-- Apply processing if distance exceeds the fade start point
 				if (dist > minDist) then
 					-- Calculate alpha based on distance ratio
@@ -172,7 +191,7 @@ if (CLIENT) then
 					-- Convert percentage config to 0-255 alpha value
 					local minAlpha = (ix.config.Get("overhearMinAlpha", 1) / 100) * 255
 					local alpha = Lerp(fraction, 255, minAlpha)
-					
+
 					info.data = info.data or {}
 					info.data.overhearAlpha = alpha
 					info.chatType = chatType .. "_overhear"
@@ -231,7 +250,7 @@ if (CLIENT) then
 						elseif (type(v) == "Player" or (istable(v) and v.IsPlayer and v:IsPlayer())) then
 							local color = hook.Run("GetPlayerChatColor", v, CHAT_CLASS) or team.GetColor(v:Team())
 							local name = hook.Run("GetCharacterName", v, CHAT_CLASS and CHAT_CLASS.uniqueID) or v:GetName()
-							
+
 							-- Apply overhear alpha to the player's name color
 							local r, g, b, a = color.r, color.g, color.b, (color.a or 255)
 							if (overhearAlpha < 255) then
@@ -261,7 +280,7 @@ if (CLIENT) then
 					panel:InvalidateParent(true)
 					buffer[#buffer + 1] = "</color>"
 					panel:SetMarkup(table.concat(buffer))
-					
+
 					-- MODIFIED: Attach the calculated transparency to the panel
 					panel.overhearAlpha = overhearAlpha
 
