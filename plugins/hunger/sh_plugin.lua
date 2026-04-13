@@ -343,10 +343,22 @@ if SERVER then
 			return
 		end
 
+		local inventory = char:GetInventory()
+		local woodItems = inventory:GetItemsByUniqueID("comp_wood")
+
+		if (#woodItems < 3) then
+			client:NotifyLocalized("notEnoughWood", #woodItems)
+			return
+		end
+
 		local pos = net.ReadVector()
 		local ang = net.ReadAngle()
 
 		if (client:GetPos():DistToSqr(pos) > 150000) then return end
+
+		for i = 1, 3 do
+			woodItems[i]:Remove()
+		end
 
 		local entity = ents.Create("ix_bonfire")
 		entity:SetPos(pos)
@@ -891,6 +903,13 @@ ix.command.Add("Bonfire", {
 
 		if (count >= 1) then
 			return "@bonfireLimitReached"
+		end
+
+		local inventory = char:GetInventory()
+		local countWood = #inventory:GetItemsByUniqueID("comp_wood")
+
+		if (countWood < 3) then
+			return "@notEnoughWood", countWood
 		end
 
 		net.Start("ixBonfirePlaceStart")

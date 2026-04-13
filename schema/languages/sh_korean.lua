@@ -471,6 +471,7 @@ LANGUAGE = {
 	itemHotPlateDesc = "전기 가열 소자가 하나 있는 탁상용 기기입니다.",
 	["Metal Bucket"] = "양동이",
 	itemMetalBucketDesc = "손상되었거나 멀쩡한 상태로 발견되는 둥근 강철 양동이입니다.",
+	["Deploy"] = "배치하기",
 	["Cafeteria Tray"] = "식판",
 	itemCafeteriaTrayDesc = "전쟁 전 구내식당 등지에서 사용하기 위해 만든 연한 파란색 플라스틱 쟁반입니다.",
 	["Camera"] = "카메라",

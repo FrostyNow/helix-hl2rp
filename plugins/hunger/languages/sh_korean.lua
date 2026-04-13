@@ -255,4 +255,5 @@ LANGUAGE = {
 	cmdBonfire = "모닥불을 배치합니다.",
 	bucketLimitReached = "이미 조리용 양동이를 설치했습니다! (최대 1개)",
 	bucketDeployed = "조리용 양동이를 설치했습니다.",
+	notEnoughWood = "모닥불을 설치하려면 나무 조각이 3개 필요합니다. (현재 %s개)",
 }

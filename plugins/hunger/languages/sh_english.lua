@@ -160,4 +160,5 @@ LANGUAGE = {
 	cmdBonfire = "Deploy a bonfire.",
 	bucketLimitReached = "You already have a bucket stove! (Max 1)",
 	bucketDeployed = "You have deployed a bucket stove.",
+	notEnoughWood = "You need 3 Wood Chunks to deploy a bonfire. (Current: %s)",
 }
