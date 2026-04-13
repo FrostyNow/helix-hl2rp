@@ -134,7 +134,7 @@ hook.Add("CalcView", "ThirdOTSCalcView", function(fply, pos, angles, fov)
 
 	-- Dynamic threshold: Use a smaller value when aiming for accuracy (40),
 	-- and a larger value when walking for smoothness (60).
-	local isAiming = fply.IsWeaponRaised and fply:IsWeaponRaised()
+	local isAiming = fply.IsWepRaised and fply:IsWepRaised()
 	local threshold = isAiming and 40 or 60
 	
 	if hitPos:DistToSqr(shootPos) < (threshold * threshold) then

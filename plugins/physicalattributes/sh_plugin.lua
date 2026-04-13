@@ -406,8 +406,8 @@ if (CLIENT) then
 		local client = LocalPlayer()
 		if (!IsValid(client) or !client:Alive() or !client:GetCharacter()) then return end
 		
-		-- Only apply when weapon is raised
-		if (!client:IsWeaponRaised()) then return end
+		-- Only apply when weapon is raised and not in noclip
+		if (!client:IsWepRaised() or client:GetMoveType() == MOVETYPE_NOCLIP) then return end
 
 		local weapon = client:GetActiveWeapon()
 		if (!IsValid(weapon)) then return end
@@ -422,7 +422,7 @@ if (CLIENT) then
 		local maxAttr = ix.config.Get("maxAttributes", 30)
 		
 		-- Higher endurance leads to much lower sway
-		local baseIntensity = ix.config.Get("aimSwayIntensity", 1) * math.max(0.02, 1 - (endurance / maxAttr)) * 0.12
+		local baseIntensity = ix.config.Get("aimSwayIntensity", 1) * math.max(0.02, 1 - (endurance / maxAttr)) * 0.05
 
 		-- Hybrid Approach: Intensity increases based on movement speed
 		local velocity = client:GetVelocity():Length2D()
