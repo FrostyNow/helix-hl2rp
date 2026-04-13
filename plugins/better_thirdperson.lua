@@ -129,7 +129,19 @@ hook.Add("CalcView", "ThirdOTSCalcView", function(fply, pos, angles, fov)
 	tr.filter = chkfunc
 	--tmppos,tmpang:Forward()*2147483647,filtertable
 	traceres = util.TraceLine(tr)
-	neweyeangles = PointDir(fply:GetShootPos(), traceres.HitPos)
+	local hitPos = traceres.HitPos
+	local shootPos = fply:GetShootPos()
+
+	-- Dynamic threshold: Use a smaller value when aiming for accuracy (40),
+	-- and a larger value when walking for smoothness (60).
+	local isAiming = fply.IsWeaponRaised and fply:IsWeaponRaised()
+	local threshold = isAiming and 40 or 60
+	
+	if hitPos:DistToSqr(shootPos) < (threshold * threshold) then
+		hitPos = tr.start + tmpang:Forward() * 1000
+	end
+
+	neweyeangles = PointDir(shootPos, hitPos)
 	neweyeangles:Normalize()
 	local vpan = fply:GetViewPunchAngles()
 	vpan:Normalize()
