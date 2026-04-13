@@ -65,7 +65,26 @@ function Schema.voices.Add(class, key, text, sound, global, onModify)
 			info.onModify = global
 		end
 
-		Schema.voices.stored[class][k] = info
+		local existing = Schema.voices.stored[class][k]
+
+		if (existing) then
+			-- If a key already exists, we merge them into a 'table' format for random selection
+			if (!existing.table) then
+				existing.table = {{existing.text, existing.sound}}
+				existing.text = nil
+				existing.sound = nil
+			end
+
+			if (!info.table) then
+				table.insert(existing.table, {info.text, info.sound})
+			else
+				for _, v in ipairs(info.table) do
+					table.insert(existing.table, v)
+				end
+			end
+		else
+			Schema.voices.stored[class][k] = info
+		end
 	end
 end
 

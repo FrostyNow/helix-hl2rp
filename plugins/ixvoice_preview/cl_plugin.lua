@@ -47,7 +47,7 @@ function PANEL:SetVoice(key, info)
 	end
 	
 	if (text and text != "") then
-		self.description:SetText(text)
+		self.description:SetText(L(text))
 	else
 		self.description:SetVisible(false)
 	end
