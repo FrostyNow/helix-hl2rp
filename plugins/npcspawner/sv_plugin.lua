@@ -273,6 +273,12 @@ function PLUGIN:Think()
 		local newSpawned = {}
 		for _, ent in ipairs(spawner.spawnedNPCs) do
 			if (IsValid(ent) and ent:IsNPC() and ent:Health() > 0) then
+				-- Automatically remove scared NPCs if they are far away and out of sight
+				if (Schema.npcClassLists.scared[ent:GetClass()] and !self:IsPlayerLookingOrNear(ent:GetPos(), spawner.minDistance)) then
+					ent:Remove()
+					continue
+				end
+
 				activeNPCs = activeNPCs + 1
 				table.insert(newSpawned, ent)
 			end

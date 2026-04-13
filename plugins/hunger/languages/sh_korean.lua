@@ -247,5 +247,12 @@ LANGUAGE = {
 	igniterInstalled = "점화를 위한 전지를 설치했습니다.",
 	usesLeft = "남은 사용 횟수: %s",
 	needFireStarter = "불을 붙이려면 성냥이나 라이터가 필요합니다!",
-	needFireStarterStove = "점화 장치가 설치되어 있지 않거나, 성냥/라이터가 필요합니다!"
+	needFireStarterStove = "점화 장치가 설치되어 있지 않거나, 성냥/라이터가 필요합니다!",
+	bonfireLimitReached = "이미 모닥불을 설치했습니다! (최대 1개)",
+	bonfirePlacementHelp = "좌클릭: 배치 | 우클릭: 취소 | 마우스 휠: 회전",
+	bonfireDeployed = "모닥불을 설치했습니다.",
+	bonfireOwner = "소유자: %s",
+	cmdBonfire = "모닥불을 배치합니다.",
+	bucketLimitReached = "이미 조리용 양동이를 설치했습니다! (최대 1개)",
+	bucketDeployed = "조리용 양동이를 설치했습니다.",
 }

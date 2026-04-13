@@ -31,6 +31,21 @@ ix.lang.AddTable("korean", {
 	containerFurnitureOverlap = "다른 물체와 겹쳐서 설치할 수 없습니다!",
 })
 
+function PLUGIN:InitializedPlugins()
+	local furniturePlugin = ix.plugin.list["ixfurniture"]
+	if (furniturePlugin) then
+		for k, v in pairs(ix.item.list) do
+			if (v.base == "base_containerfurniture") then
+				table.insert(furniturePlugin.FurnitureList, {
+					model = v.ContainerModel,
+					price = v.price or 100,
+					class = "prop_physics"
+				})
+			end
+		end
+	end
+end
+
 if (SERVER) then
 	util.AddNetworkString("ixContainerFurnitureStartPlacement")
 	util.AddNetworkString("ixContainerFurniturePlace")

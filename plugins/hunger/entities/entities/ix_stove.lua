@@ -5,6 +5,12 @@ ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.Category = "Helix"
 
+function ENT:SetupDataTables()
+	self:NetworkVar("String", 0, "FurnitureID")
+	self:NetworkVar("String", 1, "OwnerName")
+	self:NetworkVar("Int", 0, "OwnerCID")
+end
+
 if (SERVER) then
 	function ENT:Initialize()
 		self:SetModel("models/props_c17/furnitureStove001a.mdl")

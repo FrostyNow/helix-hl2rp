@@ -3,6 +3,9 @@
 # 테스트
 - 인식 안 된 ic의 이름이 투명해지지 않음
 - SitAnywhere 화살표
+- 나이트비전 단축키
+- 모닥불/버켓 설치
+- 가구 스토브
 
 # 우선순위 높음
 - 나이트비전 IR 되다 안되다
@@ -10,19 +13,6 @@
 
 # 우선순위 낮음
 - 하늘에 체공하는 플레어
-- 기관총/바리케이트 설치
-	- ent_mannable_ar3
-	- ent_mannable_airboatgun
-	- ent_mannable_combinesniper
-	- ent_mannable_combinecannon
-- 동물
-	- 아이템 모델로 ragdoll을 사용할 수 있는가?
-	- 새가 공중 스폰/비행/도망이 되는가?
-	- 도축 대상
-	- npc_pigeon or zb_hl2_pigeon
-	- npc_seagull or zb_hl2_seagull
-	- npc_crow or zb_hl2_crow
-	- zb_hl2_rat
 - 콤바인 감시인 본머지
 - 자동 디스패치
 - 미디어 플레이어 기반 화면 엔티티 추가

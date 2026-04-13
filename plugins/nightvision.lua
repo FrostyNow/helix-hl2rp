@@ -2,11 +2,25 @@ PLUGIN.name = "Night Vision - Helix"
 PLUGIN.author = "Black Tea | Modified by Frosty"
 PLUGIN.description = "Standalone night vision implementation for Helix."
 
+local DEFAULT_NV_BIND = "NONE"
+
 ix.lang.AddTable("english", {
 	cmdNightVision = "Toggles the night vision",
+	optNightVisionBind = "Night vision bind",
+	optdNightVisionBind = "Key used to toggle night vision. Use values like N, F6, KP_ENTER, or NONE to disable it.",
+	nightVisionBindUpdated = "Night vision bind set to %s.",
+	nightVisionBindDisabled = "Night vision bind disabled.",
+	nightVisionBindInvalid = "Invalid night vision bind. Use values like N, F6, KP_ENTER, or NONE.",
+	nightVisionBindCurrent = "Current night vision bind: %s."
 })
 ix.lang.AddTable("korean", {
-	cmdNightVision = "야간 투시를 전환합니다.",
+	cmdNightVision = "야간투시경을 전환합니다.",
+	optNightVisionBind = "야간투시경 키 지정",
+	optdNightVisionBind = "야간투시경을 발동하는 키입니다. N, F6, KP_ENTER 같은 값을 쓰고, NONE으로 비활성화할 수 있습니다.",
+	nightVisionBindUpdated = "야간투시경 키 지정을 %s(으)로 설정했습니다.",
+	nightVisionBindDisabled = "야간투시경 키 지정을 비활성화했습니다.",
+	nightVisionBindInvalid = "유효하지 않은 야간투시경 키 지정입니다. N, F6, KP_ENTER, NONE 같은 값을 사용해 주세요.",
+	nightVisionBindCurrent = "현재 야간투시경 키 지정: %s"
 })
 
 if (SERVER) then
@@ -138,6 +152,131 @@ CreateClientConVar("nv_fx_goggle_status", 0, true, false)
 CreateClientConVar("nv_fx_noise_status", 0, true, false)
 CreateClientConVar("nv_fx_noise_variety", 20, true, false)
 CreateClientConVar("nv_type", 1, true, false)
+
+local INVALID_BIND_CODES = {
+	[KEY_ESCAPE] = true,
+	[KEY_TAB] = true
+}
+local BIND_ALIASES = {
+	[""] = "NONE",
+	OFF = "NONE",
+	DISABLE = "NONE",
+	DISABLED = "NONE",
+	ESC = "ESCAPE",
+	RETURN = "ENTER"
+}
+local bUpdatingBindOption = false
+
+local function resolveBindCode(bindText)
+	local normalized = string.upper(string.Trim(tostring(bindText or "")))
+	normalized = normalized:gsub("^KEY_", "")
+	normalized = normalized:gsub("[%s%-]+", "_")
+	normalized = BIND_ALIASES[normalized] or normalized
+
+	if (normalized == "NONE") then
+		return KEY_NONE, normalized
+	end
+
+	local keyCode = input.GetKeyCode and input.GetKeyCode(normalized) or nil
+
+	if (isnumber(keyCode) and keyCode != KEY_NONE) then
+		return keyCode, normalized
+	end
+
+	keyCode = _G[normalized]
+
+	if (isnumber(keyCode)) then
+		return keyCode, normalized
+	end
+
+	keyCode = _G["KEY_" .. normalized]
+
+	if (isnumber(keyCode)) then
+		return keyCode, normalized
+	end
+end
+
+local function normalizeBindText(bindText)
+	local keyCode, normalized = resolveBindCode(bindText)
+
+	if (!isnumber(keyCode) or INVALID_BIND_CODES[keyCode]) then
+		return nil
+	end
+
+	if (keyCode == KEY_NONE) then
+		return "NONE", keyCode
+	end
+
+	local keyName = input.GetKeyName and input.GetKeyName(keyCode) or normalized
+
+	if (!isstring(keyName) or keyName == "") then
+		keyName = normalized
+	end
+
+	return string.upper(keyName), keyCode
+end
+
+local function applyNightVisionBind(bindText, bNotify)
+	local normalized, keyCode = normalizeBindText(bindText)
+
+	if (!normalized) then
+		if (bNotify and IsValid(LocalPlayer())) then
+			LocalPlayer():Notify(L("nightVisionBindInvalid"))
+		end
+
+		return false
+	end
+
+	if (ix.option.Get("nightVisionBind", DEFAULT_NV_BIND) != normalized) then
+		bUpdatingBindOption = true
+		ix.option.Set("nightVisionBind", normalized)
+		bUpdatingBindOption = false
+	end
+
+	if (bNotify and IsValid(LocalPlayer())) then
+		if (keyCode == KEY_NONE) then
+			LocalPlayer():Notify(L("nightVisionBindDisabled"))
+		else
+			LocalPlayer():Notify(L("nightVisionBindUpdated", normalized))
+		end
+	end
+
+	return true, keyCode, normalized
+end
+
+local function getNightVisionBindName()
+	local normalized = normalizeBindText(ix.option.Get("nightVisionBind", DEFAULT_NV_BIND))
+
+	return normalized or DEFAULT_NV_BIND
+end
+
+local function getNightVisionBindCode()
+	local _, keyCode = normalizeBindText(ix.option.Get("nightVisionBind", DEFAULT_NV_BIND))
+
+	if (isnumber(keyCode)) then
+		return keyCode
+	end
+
+	return KEY_NONE
+end
+
+ix.option.Add("nightVisionBind", ix.type.string, DEFAULT_NV_BIND, {
+	category = "general",
+	OnChanged = function(_, value)
+		if (bUpdatingBindOption) then
+			return
+		end
+
+		local normalized = normalizeBindText(value)
+		local nextValue = normalized or DEFAULT_NV_BIND
+
+		if (nextValue != value) then
+			bUpdatingBindOption = true
+			ix.option.Set("nightVisionBind", nextValue)
+			bUpdatingBindOption = false
+		end
+	end
+})
 
 -- Cache the ConVars for performance in a single table to reduce upvalues
 local cv = {
@@ -644,6 +783,39 @@ concommand.Add("nv_togg", function()
 		ix.command.Send("NightVision")
 	end
 end)
+
+concommand.Add("ix_nvbind", function(_, _, arguments)
+	local bindText = string.Trim(table.concat(arguments or {}, " "))
+
+	if (bindText == "") then
+		LocalPlayer():Notify(L("nightVisionBindCurrent", getNightVisionBindName()))
+		return
+	end
+
+	applyNightVisionBind(bindText, true)
+end)
+
+function PLUGIN:PlayerButtonDown(client, button)
+	local curTime = CurTime()
+	local bindCode = getNightVisionBindCode()
+
+	if (bindCode != KEY_NONE and button == bindCode) then
+		if ((client.nextNVBindOpen or 0) > curTime) then
+			return
+		end
+
+		if (Schema:CanPlayerSeeCombineOverlay(client) and client:Team() == FACTION_OTA) then
+			if (client:KeyDown(IN_WALK)) then
+				ix.command.Send("NightVision", "ir")
+			else
+				ix.command.Send("NightVision")
+			end
+		end
+
+		client.nextNVBindOpen = curTime + 0.2
+		return
+	end
+end
 
 concommand.Add("nv_generate_noise_textures", function()
 	if (state.genInProgress) then

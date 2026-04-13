@@ -95,6 +95,23 @@ PLUGIN.harvestables = {
 			["npc_antliongrub"] = true,
 		},
 		canHarvestLive = true
+	},
+	misc_animals = {
+		item = "meat_chunk",
+		amount = {1, 1},
+		time = DEFAULT_HARVEST_TIME,
+		sound = DEFAULT_HARVEST_SOUND,
+		effect = "blood_advisor_puncture_withdraw",
+		decal = "Blood",
+		classes = {
+			["npc_pigeon"] = true,
+			["npc_seagull"] = true,
+			["npc_crow"] = true,
+			["zb_hl2_pigeon"] = true,
+			["zb_hl2_seagull"] = true,
+			["zb_hl2_crow"] = true,
+			["zb_hl2_rat"] = true
+		}
 	}
 }
 

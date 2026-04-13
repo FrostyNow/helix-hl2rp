@@ -6,6 +6,11 @@ ENT.AdminOnly = true
 ENT.Category = "Helix"
 ENT.RenderGroup = RENDERGROUP_BOTH
 
+function ENT:SetupDataTables()
+	self:NetworkVar("Int", 0, "OwnerCID")
+	self:NetworkVar("String", 0, "OwnerName")
+end
+
 if (SERVER) then
 	function ENT:Initialize()
 		self:SetModel("models/props_junk/MetalBucket01a.mdl")
@@ -18,6 +23,9 @@ if (SERVER) then
 		self.fuelList = {} -- Server side list of fuel durations
 		self:SetUseType(SIMPLE_USE)
 
+		self:SetMaxHealth(100)
+		self:SetHealth(100)
+
 		local physicsObject = self:GetPhysicsObject()
 
 		if (IsValid(physicsObject)) then
@@ -29,6 +37,16 @@ if (SERVER) then
 	end
 
 	function ENT:OnTakeDamage(damageInfo)
+		if (!damageInfo:IsDamageType(DMG_BURN)) then
+			local damage = damageInfo:GetDamage()
+			self:SetHealth(self:Health() - damage)
+
+			if (self:Health() <= 0) then
+				self:Remove()
+				return
+			end
+		end
+
 		if (damageInfo:IsDamageType(DMG_BURN) and !self:GetNetVar("active", false)) then
 			local fuel = self:GetNetVar("fuel", 0)
 			if (fuel > 0) then

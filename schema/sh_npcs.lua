@@ -94,6 +94,16 @@ Schema.npcClassLists.hostile = {
 	["npc_antlion_grub"] = true
 }
 
+Schema.npcClassLists.scared = {
+	["npc_pigeon"] = true,
+	["npc_seagull"] = true,
+	["npc_crow"] = true,
+	["zb_hl2_pigeon"] = true,
+	["zb_hl2_seagull"] = true,
+	["zb_hl2_crow"] = true,
+	["zb_hl2_rat"] = true
+}
+
 Schema.antiCitizenModelPatterns = {
 	"models/humans/group03",
 	"models/humans/group03m",

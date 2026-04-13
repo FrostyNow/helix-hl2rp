@@ -152,5 +152,12 @@ LANGUAGE = {
 	igniterInstalled = "Installed a battery for ignition.",
 	usesLeft = "Uses left: %s",
 	needFireStarter = "You need a match or lighter to light this!",
-	needFireStarterStove = "You need a installed battery or a fire starter!"
+	needFireStarterStove = "You need a installed battery or a fire starter!",
+	bonfireLimitReached = "You already have a bonfire! (Max 1)",
+	bonfirePlacementHelp = "LMB: Confirm | RMB: Cancel | Scroll: Rotate",
+	bonfireDeployed = "You have deployed a bonfire.",
+	bonfireOwner = "Owner: %s",
+	cmdBonfire = "Deploy a bonfire.",
+	bucketLimitReached = "You already have a bucket stove! (Max 1)",
+	bucketDeployed = "You have deployed a bucket stove.",
 }

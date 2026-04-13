@@ -26,4 +26,5 @@ LANGUAGE = {
 	furnitureRepairDesc = "일정 금액을 내고 바라보고 있는 가구를 수리합니다.",
 	furnitureNoMoneyRepair = "수리에 %s(이)가 필요합니다.",
 	furnitureRepaired = "가구를 %s에 수리했습니다.",
+	specialFurnitureDesc = "특수한 기능을 가진 가구입니다. (보관함, 조리 도구 등)",
 }

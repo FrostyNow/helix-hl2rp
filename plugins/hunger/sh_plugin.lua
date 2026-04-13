@@ -8,6 +8,17 @@ PLUGIN.name = "Hunger+++ (merged with Survival System)"
 PLUGIN.author = "LiGyH, ZeMysticalTaco | Modified by Frosty"
 PLUGIN.description = "A survival system consisting of hunger and thirst."
 
+function PLUGIN:InitializedPlugins()
+	local furniturePlugin = ix.plugin.list["ixfurniture"]
+	if (furniturePlugin) then
+		table.insert(furniturePlugin.FurnitureList, {
+			model = "models/props_c17/furnitureStove001a.mdl",
+			price = 1200,
+			class = "ix_stove"
+		})
+	end
+end
+
 ix.config.Add("hungerDecaySpeed", 6048, "How long it takes for hunger to decay by 1.", nil, {
 	data = {min = 1, max = 10000},
 	category = "Survival"
@@ -281,6 +292,11 @@ if SERVER then
 		client.resetThirst = true
 	end
 
+	util.AddNetworkString("ixBonfirePlaceStart")
+	util.AddNetworkString("ixBonfirePlace")
+	util.AddNetworkString("ixBucketPlaceStart")
+	util.AddNetworkString("ixBucketPlace")
+
 	function PLUGIN:PlayerSpawn(client)
 		local char = client:GetCharacter()
 		
@@ -309,6 +325,92 @@ if SERVER then
 			end
 		end
 	end
+
+	net.Receive("ixBonfirePlace", function(len, client)
+		local char = client:GetCharacter()
+		if (!char) then return end
+
+		-- Check Count Limit
+		local count = 0
+		for _, v in ipairs(ents.FindByClass("ix_bonfire")) do
+			if (v:GetOwnerCID() == char:GetID()) then
+				count = count + 1
+			end
+		end
+
+		if (count >= 1) then
+			client:NotifyLocalized("bonfireLimitReached", 1)
+			return
+		end
+
+		local pos = net.ReadVector()
+		local ang = net.ReadAngle()
+
+		if (client:GetPos():DistToSqr(pos) > 150000) then return end
+
+		local entity = ents.Create("ix_bonfire")
+		entity:SetPos(pos)
+		entity:SetAngles(ang)
+		entity:Spawn()
+		
+		entity:SetOwnerCID(char:GetID())
+		entity:SetOwnerName(char:GetName())
+
+		local phys = entity:GetPhysicsObject()
+		if (IsValid(phys)) then
+			phys:EnableMotion(false)
+		end
+
+		client:NotifyLocalized("bonfireDeployed")
+	end)
+
+	net.Receive("ixBucketPlace", function(len, client)
+		local char = client:GetCharacter()
+		if (!char) then return end
+
+		-- Check Count Limit
+		local count = 0
+		for _, v in ipairs(ents.FindByClass("ix_bucket")) do
+			if (v:GetOwnerCID() == char:GetID()) then
+				count = count + 1
+			end
+		end
+
+		if (count >= 1) then
+			client:NotifyLocalized("bucketLimitReached", 1)
+			return
+		end
+
+		local pos = net.ReadVector()
+		local ang = net.ReadAngle()
+
+		if (client:GetPos():DistToSqr(pos) > 150000) then return end
+
+		local inventory = char:GetInventory()
+		local item = inventory:HasItem("bucket") 
+		
+		if (!item) then
+			-- Item might have been dropped or moved
+			return
+		end
+
+		item:Remove()
+
+		local entity = ents.Create("ix_bucket")
+		entity:SetPos(pos)
+		entity:SetAngles(ang)
+		entity:Spawn()
+		
+		entity:SetOwnerCID(char:GetID())
+		entity:SetOwnerName(char:GetName())
+
+		local phys = entity:GetPhysicsObject()
+		if (IsValid(phys)) then
+			phys:EnableMotion(true)
+		end
+
+		client:NotifyLocalized("bucketDeployed")
+	end)
 
 	local playerMeta = FindMetaTable("Player")
 
@@ -474,7 +576,10 @@ if SERVER then
 					active = v:GetNetVar("active"),
 					broken = v:GetNetVar("broken"),
 					igniter = v:GetNetVar("igniter"),
-					fuelList = v.fuelList or {}
+					fuelList = v.fuelList or {},
+					ownerCID = v.GetOwnerCID and v:GetOwnerCID(),
+					ownerName = v.GetOwnerName and v:GetOwnerName(),
+					health = v:Health()
 				}
 			end
 		end
@@ -499,6 +604,17 @@ if SERVER then
 				end
 				entity:SetNetVar("igniter", v.igniter or 0)
 				entity.fuelList = v.fuelList or {}
+				
+				if (v.ownerCID) then
+					entity:SetOwnerCID(v.ownerCID)
+				end
+				if (v.ownerName) then
+					entity:SetOwnerName(v.ownerName)
+				end
+				if (v.health) then
+					entity:SetHealth(v.health)
+				end
+
 				if (entity.UpdateFuelNetVars) then
 					entity:UpdateFuelNetVars()
 				end
@@ -536,6 +652,109 @@ if (CLIENT) then
 			ix_Fire_sprite.nextFrame = CurTime() + 0.05 * (1 - FrameTime())
 			ix_Fire_sprite.curFrame = (ix_Fire_sprite.curFrame or 0) + 1
 			ix_Fire_sprite.fire:SetFloat("$frame", ix_Fire_sprite.curFrame % 22 )
+		end
+
+		local ghost = ix.gui.hungerDeployGhost
+		if (IsValid(ghost)) then
+			local client = LocalPlayer()
+			local trace = util.TraceLine({
+				start = client:EyePos(),
+				endpos = client:EyePos() + client:GetAimVector() * 250,
+				filter = {client, ghost}
+			})
+
+			local pos = trace.HitPos
+			local ang = ghost.angle
+
+			ghost:SetAngles(Angle(0, ang, 0))
+
+			local mins, _ = ghost:GetModelBounds()
+			local center = ghost:OBBCenter()
+			local offset = ghost:LocalToWorld(Vector(center.x, center.y, mins.z)) - ghost:GetPos()
+			ghost:SetPos(pos - offset)
+
+			-- Valid if it's a flat surface
+			local bValidSurface = (trace.HitNormal.z > 0.6)
+
+			if (!bValidSurface) then
+				ghost:SetColor(Color(255, 0, 0, 150))
+				ghost.canPlace = false
+			else
+				ghost:SetColor(Color(0, 255, 0, 150))
+				ghost.canPlace = true
+			end
+		end
+	end
+
+	function PLUGIN:PlayerBindPress(client, bind, pressed)
+		if (pressed) then
+			local ghost = ix.gui.hungerDeployGhost
+
+			if (IsValid(ghost)) then
+				if (bind:find("attack2")) then
+					ghost:Remove()
+					surface.PlaySound("buttons/button10.wav")
+					return true
+				elseif (bind:find("attack")) then
+					if (ghost.canPlace) then
+						if (ghost.bIsBucket) then
+							net.Start("ixBucketPlace")
+								net.WriteVector(ghost:GetPos())
+								net.WriteAngle(ghost:GetAngles())
+							net.SendToServer()
+						else
+							net.Start("ixBonfirePlace")
+								net.WriteVector(ghost:GetPos())
+								net.WriteAngle(ghost:GetAngles())
+							net.SendToServer()
+						end
+
+						ghost:Remove()
+						surface.PlaySound("physics/metal/metal_box_impact_soft1.wav")
+					else
+						surface.PlaySound("buttons/button10.wav")
+					end
+					return true
+				elseif (bind:find("invprev") or bind:find("invnext")) then
+					local multiplier = bind:find("invprev") and 1 or -1
+					ghost.angle = (ghost.angle or 0) + (15 * multiplier)
+					return true
+				end
+			end
+		end
+	end
+
+	function PLUGIN:HUDPaint()
+		local client = LocalPlayer()
+		local entity = client:GetEyeTrace().Entity
+
+		if (IsValid(entity) and (entity:GetClass() == "ix_bonfire" or entity:GetClass() == "ix_bucket")) then
+			local w, h = ScrW(), ScrH()
+			local x, y = w / 2, h - 100
+			local alpha = 180
+			
+			local ownerName = entity:GetOwnerName()
+			local ownerID = entity:GetOwnerCID()
+
+			if (ownerName and ownerName != "" and ownerID != 0) then
+				draw.SimpleText(L("bonfireOwner", ownerName), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
+			
+			local barW, barH = 150, 4
+			local health = math.Clamp(entity:Health() / entity:GetMaxHealth(), 0, 1)
+			
+			surface.SetDrawColor(0, 0, 0, 100)
+			surface.DrawRect(x - barW / 2, y + 12, barW, barH)
+			
+			local color = Color(255, 150, 50, alpha) -- Fire-ish orange
+			if (health <= 0.25) then
+				color = Color(200, 50, 50, alpha)
+			elseif (health <= 0.5) then
+				color = Color(200, 150, 50, alpha)
+			end
+			
+			surface.SetDrawColor(color)
+			surface.DrawRect(x - barW / 2, y + 12, barW * health, barH)
 		end
 	end
 
@@ -655,6 +874,56 @@ ix.command.Add("CharSetThirst", {
 		end
 	end
 })
+
+ix.command.Add("Bonfire", {
+	description = "@cmdBonfire",
+	OnRun = function(self, client)
+		local char = client:GetCharacter()
+		if (!char) then return end
+
+		-- Check Count Limit
+		local count = 0
+		for _, v in ipairs(ents.FindByClass("ix_bonfire")) do
+			if (v:GetOwnerCID() == char:GetID()) then
+				count = count + 1
+			end
+		end
+
+		if (count >= 1) then
+			return "@bonfireLimitReached"
+		end
+
+		net.Start("ixBonfirePlaceStart")
+		net.Send(client)
+	end
+})
+
+if (CLIENT) then
+	net.Receive("ixBonfirePlaceStart", function()
+		if (IsValid(ix.gui.hungerDeployGhost)) then ix.gui.hungerDeployGhost:Remove() end
+
+		local ghost = ents.CreateClientProp("models/props_unique/firepit_campground.mdl")
+		ghost:SetSolid(SOLID_VPHYSICS)
+		ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
+		ghost.angle = LocalPlayer():EyeAngles().y + 180
+		ix.gui.hungerDeployGhost = ghost
+
+		LocalPlayer():NotifyLocalized("bonfirePlacementHelp")
+	end)
+
+	net.Receive("ixBucketPlaceStart", function()
+		if (IsValid(ix.gui.hungerDeployGhost)) then ix.gui.hungerDeployGhost:Remove() end
+
+		local ghost = ents.CreateClientProp("models/mosi/fallout4/props/junk/bucket.mdl")
+		ghost:SetSolid(SOLID_VPHYSICS)
+		ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
+		ghost.angle = LocalPlayer():EyeAngles().y + 180
+		ghost.bIsBucket = true
+		ix.gui.hungerDeployGhost = ghost
+
+		LocalPlayer():NotifyLocalized("bonfirePlacementHelp")
+	end)
+end
 
 properties.Add("ixHungerFuelOverride", {
 	MenuLabel = "Override Fuel",

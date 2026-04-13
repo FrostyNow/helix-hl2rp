@@ -25,4 +25,5 @@ LANGUAGE = {
 	furnitureRepairDesc = "Repair the furniture you are looking at for a certain amount of money.",
 	furnitureNoMoneyRepair = "You need %s to repair the furniture.",
 	furnitureRepaired = "You repaired the furniture for %s.",
+	specialFurnitureDesc = "A furniture with special functionality. (Storage, cooking, etc.)",
 }

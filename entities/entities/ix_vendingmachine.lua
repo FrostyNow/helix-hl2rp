@@ -95,7 +95,7 @@ if (SERVER) then
 
 		if (tracePosition) then
 			for k, v in ipairs(self.Items) do
-				local position = self:GetPos() + self:GetForward() * 18.2 + self:GetRight() * -24.4 + (self:GetUp() * 4.98 - Vector(0, 0, (k - 1) * 2.01))
+				local position = self:GetPos() + self:GetForward() * 17.8 + self:GetRight() * -24.4 + (self:GetUp() * 4.13 - Vector(0, 0, (k - 1) * 2.01))
 
 				if (position:DistToSqr(tracePosition) <= 1) then
 					return k

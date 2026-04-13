@@ -419,7 +419,7 @@ if (SERVER) then
 
 		local furnitureData = PLUGIN.FurnitureList[furnitureIndex]
 
-		if (!furnitureData or !char or !char:HasMoney(furnitureData.price)) then return end
+		if (!furnitureData or !util.IsValidModel(furnitureData.model) or !char or !char:HasMoney(furnitureData.price)) then return end
 
 		local bValidSurface = false
 		if (furnitureData.wall) then
@@ -437,19 +437,26 @@ if (SERVER) then
 
 		char:TakeMoney(furnitureData.price)
 
-		local entity = ents.Create("ix_furniture")
+		local entity = ents.Create(furnitureData.class or "ix_furniture")
 		entity:SetPos(pos)
 		entity:SetAngles(ang)
 		entity:SetModel(furnitureData.model)
 		entity:Spawn()
 		
-		entity:SetFurnitureID(tostring(furnitureIndex))
-		entity:SetOwnerCID(char:GetID())
-		entity:SetOwnerName(char:GetName())
+		if (entity:GetClass() == "prop_physics") then
+			hook.Run("PlayerSpawnedProp", client, furnitureData.model, entity)
+		end
+		
+		-- Use SetNetVar if it's a prop_physics, or standard setters for ix_furniture
+		if (entity:GetClass() == "ix_furniture" or entity.SetFurnitureID) then
+			entity:SetFurnitureID(tostring(furnitureIndex))
+			entity:SetOwnerCID(char:GetID())
+			entity:SetOwnerName(char:GetName())
+		end
 
 		local phys = entity:GetPhysicsObject()
 		if (IsValid(phys)) then
-			phys:EnableMotion(false)
+			phys:EnableMotion(entity:GetClass() ~= "ix_furniture")
 		end
 
 		-- Set Cooldown
@@ -517,16 +524,33 @@ if (CLIENT) then
 		grid:SetSpaceY(iconSpacing)
 
 		for k, v in ipairs(PLUGIN.FurnitureList) do
+			if (!util.IsValidModel(v.model)) then
+				continue
+			end
+
 			local icon = grid:Add("SpawnIcon")
 			icon:SetSize(110, 110)
 			icon:SetModel(v.model)
-			icon:SetTooltip(L("furniturePrice", ix.currency.Get(v.price)))
+			local tooltip = L("furniturePrice", ix.currency.Get(v.price))
+			if (v.class and v.class ~= "ix_furniture") then
+				tooltip = tooltip .. "\n" .. L("specialFurnitureDesc")
+			end
+			icon:SetTooltip(tooltip)
+
 			icon.PaintOver = function(s, w, h)
 				if (s:IsHovered()) then
 					surface.SetDrawColor(255, 255, 255, 5)
 					surface.DrawRect(0, 0, w, h)
 					surface.SetDrawColor(100, 200, 255, 200)
 					surface.DrawOutlinedRect(0, 0, w, h)
+				end
+
+				if (v.class and v.class ~= "ix_furniture") then
+					surface.SetDrawColor(0, 255, 0, 150)
+					surface.DrawRect(6, 6, 8, 8)
+
+					surface.SetDrawColor(255, 255, 255, 100)
+					surface.DrawOutlinedRect(6, 6, 8, 8)
 				end
 			end
 
