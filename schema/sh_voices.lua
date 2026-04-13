@@ -12,26 +12,26 @@ Schema.voices.Add("Combine", {en="blade", ko="블레이드"}, "Blade.", "npc/com
 Schema.voices.Add("Combine", {en="bodypack holding", ko="방탄복 양호"}, "Bodypack holding.", "npc/combine_soldier/vo/bodypackholding.wav")
 Schema.voices.Add("Combine", {en="boomer", ko="부머"}, "Boomer.", "npc/combine_soldier/vo/boomer.wav")
 Schema.voices.Add("Combine", {en="bouncer bouncer", ko="수류탄ㅌㅌ"}, "Bouncer! Bouncer!", "npc/combine_soldier/vo/bouncerbouncer.wav")
-Schema.voices.Add("Combine", {en="contact parasitics", ko="기생충 포착"}, "Call contact parasitics!", "npc/combine_soldier/vo/callcontactparasitics.wav") -- to do
-Schema.voices.Add("Combine", {en="contact target one", ko="목표1 포착"}, "Call contact target one.", "npc/combine_soldier/vo/callcontacttarget1.wav") -- to do
+Schema.voices.Add("Combine", {en="contact parasitics", ko="기생 포착"}, "Call contact parasitics.", "npc/combine_soldier/vo/callcontactparasitics.wav")
+Schema.voices.Add("Combine", {en="contact target one", ko="용의자 1"}, "Call contact target one.", "npc/combine_soldier/vo/callcontacttarget1.wav")
 Schema.voices.Add("Combine", {en="cleaned", ko="처리했다"}, "Cleaned.", "npc/combine_soldier/vo/cleaned.wav")
-Schema.voices.Add("Combine", {en="closing", ko="접근중"}, "Closing!", "npc/combine_soldier/vo/closing.wav")
+Schema.voices.Add("Combine", {en="closing", ko="접근중"}, "Closing!", {"npc/combine_soldier/vo/closing.wav", "npc/combine_soldier/vo/closing2.wav"})
 Schema.voices.Add("Combine", {en="sector not sterile", ko="미살균 확인"}, "Confirm sector not sterile.", "npc/combine_soldier/vo/confirmsectornotsterile.wav")
 Schema.voices.Add("Combine", {en="contact", ko="포착"}, "Contact!", "npc/combine_soldier/vo/contact.wav")
 Schema.voices.Add("Combine", {en="contact confirm", ko="포착 확인"}, "Contact confirm.", "npc/combine_soldier/vo/contactconfim.wav")
-Schema.voices.Add("Combine", {en="contact confirm prosecuting", ko="포착 확인 수행"}, "Contact confirm, prosecuting.", "npc/combine_soldier/vo/contactconfirmprosecuting.wav") -- to do
+Schema.voices.Add("Combine", {en="contact confirm prosecuting", ko="포착 확인 임무 수행"}, "Contact confirm, prosecuting.", "npc/combine_soldier/vo/contactconfirmprosecuting.wav")
 Schema.voices.Add("Combine", {en="contained", ko="격리되었다"}, "Contained.", "npc/combine_soldier/vo/contained.wav")
-Schema.voices.Add("Combine", {en="containment proceeding", ko="격리 진행 중"}, "Containment proceeding.", "npc/combine_soldier/vo/containmentproceeding.wav") -- to do
+Schema.voices.Add("Combine", {en="containment proceeding", ko="진압 진행 중"}, "Containment proceeding.", "npc/combine_soldier/vo/containmentproceeding.wav")
 Schema.voices.Add("Combine", {en="copy", ko="알았다"}, "Copy.", "npc/combine_soldier/vo/copy.wav")
 Schema.voices.Add("Combine", {en="copy that", ko="알았다"}, "Copy that.", "npc/combine_soldier/vo/copythat.wav")
-Schema.voices.Add("Combine", {en="cover", ko="엄호"}, "Cover!", "npc/combine_soldier/vo/cover.wav") -- to do
+Schema.voices.Add("Combine", {en="cover", ko="엄호하라"}, "Cover!", "npc/combine_soldier/vo/cover.wav")
 Schema.voices.Add("Combine", {en="cover hurt", ko="엄호하라"}, "Cover hurt!", "npc/combine_soldier/vo/coverhurt.wav")
-Schema.voices.Add("Combine", {en="cover me", ko="엄호해"}, "Cover me!", "npc/combine_soldier/vo/coverme.wav") -- to do
+Schema.voices.Add("Combine", {en="cover me", ko="엄호하라"}, "Cover me!", "npc/combine_soldier/vo/coverme.wav")
 Schema.voices.Add("Combine", {en="dagger", ko="대거"}, "대거.", "npc/combine_soldier/vo/dagger.wav")
 Schema.voices.Add("Combine", "-", "-", "npc/combine_soldier/vo/dash.wav")
 Schema.voices.Add("Combine", {en="degrees", ko="도"}, "degrees.", "npc/combine_soldier/vo/degrees.wav")
-Schema.voices.Add("Combine", {en="delivered", ko="선고되었다"}, "Delivered.", "npc/combine_soldier/vo/delivered.wav") -- to do
-Schema.voices.Add("Combine", {en="designate", ko="목표 지정"}, "Designate target as", "npc/combine_soldier/vo/designatetargetas.wav") -- to do
+Schema.voices.Add("Combine", {en="delivered", ko="처리 완료"}, "Delivered.", "npc/combine_soldier/vo/delivered.wav")
+Schema.voices.Add("Combine", {en="designate", ko="지명 목표"}, "Designate target as", "npc/combine_soldier/vo/designatetargetas.wav")
 Schema.voices.Add("Combine", {en="displace", ko="흩어져라"}, "Displace.", "npc/combine_soldier/vo/displace.wav")
 Schema.voices.Add("Combine", {en="displace!", ko="분산하라"}, "Displace!", "npc/combine_soldier/vo/displace2.wav")
 Schema.voices.Add("Combine", {en="echo", ko="에코"}, "Echo.", "npc/combine_soldier/vo/echo.wav")
@@ -39,9 +39,9 @@ Schema.voices.Add("Combine", {en="eight", ko="8"}, "Eight.", "npc/combine_soldie
 Schema.voices.Add("Combine", {en="eighteen", ko="18"}, "Eighteen.", "npc/combine_soldier/vo/eighteen.wav")
 Schema.voices.Add("Combine", {en="eighty", ko="80"}, "Eighty.", "npc/combine_soldier/vo/eighty.wav")
 Schema.voices.Add("Combine", {en="eleven", ko="11"}, "Eleven.", "npc/combine_soldier/vo/eleven.wav")
-Schema.voices.Add("Combine", {en="engaged in cleanup", ko="to do"}, "Engaged in clean up.", "npc/combine_soldier/vo/engagedincleanup.wav") -- to do
+Schema.voices.Add("Combine", {en="engaged in cleanup", ko="소탕 임무"}, "Engaged in clean up.", "npc/combine_soldier/vo/engagedincleanup.wav")
 Schema.voices.Add("Combine", {en="engaging", ko="수행 중"}, "Engaging!", "npc/combine_soldier/vo/engaging.wav")
-Schema.voices.Add("Combine", {en="executing full response", ko="to do"}, "Executing full response.", "npc/combine_soldier/vo/executingfullresponse.wav") -- to do
+Schema.voices.Add("Combine", {en="executing full response", ko="전체 상황 수행!"}, "Executing full response!", "npc/combine_soldier/vo/executingfullresponse.wav")
 Schema.voices.Add("Combine", {en="extractor away", ko="수류탄ㄹㄷ"}, "Extractor away.", "npc/combine_soldier/vo/extractoraway.wav")
 Schema.voices.Add("Combine", {en="extractor is live", ko="수류탄ㄱ"}, "Extractor is live!", "npc/combine_soldier/vo/extractorislive.wav")
 Schema.voices.Add("Combine", {en="fifteen", ko="15"}, "Fifteen.", "npc/combine_soldier/vo/fifteen.wav")
@@ -49,7 +49,7 @@ Schema.voices.Add("Combine", {en="fifty", ko="50"}, "Fifty.", "npc/combine_soldi
 Schema.voices.Add("Combine", {en="fist", ko="피스트"}, "Fist.", "npc/combine_soldier/vo/fist.wav")
 Schema.voices.Add("Combine", {en="five", ko="5"}, "Five.", "npc/combine_soldier/vo/five.wav")
 Schema.voices.Add("Combine", {en="fix sightlines", ko="고정 시선 이동"}, "Fix sightlines move in.", "npc/combine_soldier/vo/fixsightlinesmovein.wav")
-Schema.voices.Add("Combine", {en="flare down", ko="to do"}, "Flare down.", "npc/combine_soldier/vo/flaredown.wav") -- to do
+Schema.voices.Add("Combine", {en="flare down", ko="수류탄"}, "Flare down.", "npc/combine_soldier/vo/flaredown.wav")
 Schema.voices.Add("Combine", {en="flash", ko="플래시"}, "Flash.", "npc/combine_soldier/vo/flash.wav")
 Schema.voices.Add("Combine", {en="flatline", ko="플랫라인"}, "Flatline.", "npc/combine_soldier/vo/flatline.wav")
 Schema.voices.Add("Combine", {en="flush", ko="플러시"}, "Flush.", "npc/combine_soldier/vo/flush.wav")
@@ -57,16 +57,16 @@ Schema.voices.Add("Combine", {en="four", ko="4"}, "Four.", "npc/combine_soldier/
 Schema.voices.Add("Combine", {en="fourteen", ko="14"}, "Fourteen.", "npc/combine_soldier/vo/fourteen.wav")
 Schema.voices.Add("Combine", {en="fourty", ko="40"}, "Forty.", "npc/combine_soldier/vo/fourty.wav")
 Schema.voices.Add("Combine", {en="freeman", ko="프리맨"}, "Freeman.", "npc/combine_soldier/vo/freeman3.wav")
-Schema.voices.Add("Combine", {en="full active", ko="to do"}, "Full active.", "npc/combine_soldier/vo/fullactive.wav") -- to do
+Schema.voices.Add("Combine", {en="full active", ko="이상 무"}, "Full active.", "npc/combine_soldier/vo/fullactive.wav")
 Schema.voices.Add("Combine", {en="ghost", ko="고스트"}, "Ghost.", "npc/combine_soldier/vo/ghost.wav")
-Schema.voices.Add("Combine", {en="ghost two", ko="고스트2"}, "Ghost two.", "npc/combine_soldier/vo/ghost2.wav") -- to do
-Schema.voices.Add("Combine", {en="go active intercept", ko="to do"}, "Go active intercept.", "npc/combine_soldier/vo/goactiveintercept.wav") -- to do
+Schema.voices.Add("Combine", {en="ghost two", ko="고스트 2"}, "Ghost two.", "npc/combine_soldier/vo/ghost2.wav")
+Schema.voices.Add("Combine", {en="go active intercept", ko="차단하라"}, "Go active intercept!", "npc/combine_soldier/vo/goactiveintercept.wav")
 Schema.voices.Add("Combine", {en="go sharp", ko="ㄱㄱ"}, "Go sharp!", "npc/combine_soldier/vo/gosharp.wav")
 Schema.voices.Add("Combine", {en="go sharp go sharp", ko="ㄱㄱㄱ"}, "Go sharp, go sharp!", "npc/combine_soldier/vo/gosharpgosharp.wav")
 Schema.voices.Add("Combine", {en="grid", ko="그리드"}, "Grid.", "npc/combine_soldier/vo/grid.wav")
 Schema.voices.Add("Combine", {en="hammer", ko="해머"}, "Hammer.", "npc/combine_soldier/vo/hammer.wav")
-Schema.voices.Add("Combine", {en="harden position", ko="to do"}, "Harden that position.", "npc/combine_soldier/vo/hardenthatposition.wav") -- to do
-Schema.voices.Add("Combine", {en="no movement", ko="to do"}, "has negative movement.", "npc/combine_soldier/vo/hasnegativemovement.wav") -- to do
+Schema.voices.Add("Combine", {en="harden position", ko="위치 사수"}, "Harden that position!", "npc/combine_soldier/vo/hardenthatposition.wav")
+Schema.voices.Add("Combine", {en="no movement", ko="감지 안됨"}, "has negative movement!", "npc/combine_soldier/vo/hasnegativemovement.wav")
 Schema.voices.Add("Combine", {en="heavy resistance", ko="저항이 거세다"}, "Overwatch advise, we have heavy resistance!", "npc/combine_soldier/vo/heavyresistance.wav")
 Schema.voices.Add("Combine", {en="helix", ko="헬릭스"}, "Helix.", "npc/combine_soldier/vo/helix.wav")
 Schema.voices.Add("Combine", {en="hunter", ko="헌터"}, "Hunter.", "npc/combine_soldier/vo/hunter.wav")
@@ -75,9 +75,9 @@ Schema.voices.Add("Combine", {en="ice", ko="아이스"}, "Ice.", "npc/combine_so
 Schema.voices.Add("Combine", {en="inbound", ko="접근"}, "Inbound.", "npc/combine_soldier/vo/inbound.wav")
 Schema.voices.Add("Combine", {en="infected", ko="감염 확인"}, "Infected.", "npc/combine_soldier/vo/infected.wav")
 Schema.voices.Add("Combine", {en="ion", ko="이온"}, "Ion.", "npc/combine_soldier/vo/ion.wav")
-Schema.voices.Add("Combine", {en="at code", ko="to do"}, "is at code", "npc/combine_soldier/vo/isatcode.wav") -- to do
-Schema.voices.Add("Combine", {en="isfinalteamunitbackup", ko="to do"}, "is final team unit request backup!", "npc/combine_soldier/vo/isfinalteamunitbackup.wav") -- to do
-Schema.voices.Add("Combine", {en="isholdingatcode", ko="to do"}, "is holding at code", "npc/combine_soldier/vo/isholdingatcode.wav") -- to do
+Schema.voices.Add("Combine", {en="at code", ko="코드"}, "is at code", "npc/combine_soldier/vo/isatcode.wav")
+Schema.voices.Add("Combine", {en="final team", ko="최종 팀"}, "is final team unit request backup!", "npc/combine_soldier/vo/isfinalteamunitbackup.wav")
+Schema.voices.Add("Combine", {en="holding code", ko="대기 코드"}, "is holding at code", "npc/combine_soldier/vo/isholdingatcode.wav")
 Schema.voices.Add("Combine", {en="jet", ko="제트"}, "Jet.", "npc/combine_soldier/vo/jet.wav")
 Schema.voices.Add("Combine", {en="judge", ko="저지"}, "Judge.", "npc/combine_soldier/vo/judge.wav")
 Schema.voices.Add("Combine", {en="kilo", ko="킬로"}, "Kilo.", "npc/combine_soldier/vo/kilo.wav")
@@ -85,100 +85,100 @@ Schema.voices.Add("Combine", {en="leader", ko="리더"}, "Leader.", "npc/combine
 Schema.voices.Add("Combine", {en="lost contact", ko="추적 실패"}, "Lost contact!", "npc/combine_soldier/vo/lostcontact.wav")
 Schema.voices.Add("Combine", {en="mace", ko="메이스"}, "Mace.", "npc/combine_soldier/vo/mace.wav")
 Schema.voices.Add("Combine", {en="meters", ko="미터"}, "meters.", "npc/combine_soldier/vo/meters.wav")
-Schema.voices.Add("Combine", {en="motioncheckallradials", ko="to do"}, "Motion check all radials.", "npc/combine_soldier/vo/motioncheckallradials.wav") -- to do
+Schema.voices.Add("Combine", {en="motion check", ko="목표 추적"}, "Motion check all radials.", "npc/combine_soldier/vo/motioncheckallradials.wav")
 Schema.voices.Add("Combine", {en="move in", ko="진입하라"}, "Move in.", "npc/combine_soldier/vo/movein.wav")
-Schema.voices.Add("Combine", {en="necrotics", ko="to do"}, "Necrotics.", "npc/combine_soldier/vo/necrotics.wav") -- to do
-Schema.voices.Add("Combine", {en="necroticsinbound", ko="to do"}, "Necrotics inbound.", "npc/combine_soldier/vo/necroticsinbound.wav") -- to do
+Schema.voices.Add("Combine", {en="necrotics", ko="변종"}, "Necrotics.", "npc/combine_soldier/vo/necrotics.wav")
+Schema.voices.Add("Combine", {en="necrotic inbound", ko="변종 접근"}, "Necrotics inbound.", "npc/combine_soldier/vo/necroticsinbound.wav")
 Schema.voices.Add("Combine", {en="niner", ko="to do"}, "Niner.", "npc/combine_soldier/vo/niner.wav")
 Schema.voices.Add("Combine", {en="nineteen", ko="to do"}, "Nineteen.", "npc/combine_soldier/vo/nineteen.wav")
 Schema.voices.Add("Combine", {en="ninety", ko="to do"}, "Ninety.", "npc/combine_soldier/vo/ninety.wav")
 Schema.voices.Add("Combine", {en="nomad", ko="노매드"}, "Nomad.", "npc/combine_soldier/vo/nomad.wav")
 Schema.voices.Add("Combine", {en="nova", ko="노바"}, "Nova.", "npc/combine_soldier/vo/nova.wav")
-Schema.voices.Add("Combine", {en="no viscon", ko="포착 없음"}, "No viscon.", "npc/combine_soldier/vo/noviscon.wav") -- to do
+Schema.voices.Add("Combine", {en="no viscon", ko="추적 실패"}, "No viscon.", "npc/combine_soldier/vo/noviscon.wav")
 Schema.voices.Add("Combine", {en="one", ko="1"}, "One.", "npc/combine_soldier/vo/one.wav")
-Schema.voices.Add("Combine", {en="one down", ko="1명 사살"}, "One down.", "npc/combine_soldier/vo/onedown.wav") -- to do
-Schema.voices.Add("Combine", {en="duty vacated", ko="임무 해제"}, "One duty vacated.", "npc/combine_soldier/vo/onedutyvacated.wav") -- to do
+Schema.voices.Add("Combine", {en="one down", ko="사상자 발생"}, "One down!", "npc/combine_soldier/vo/onedown.wav")
+Schema.voices.Add("Combine", {en="duty vacated", ko="임무 해제"}, "One duty vacated!", "npc/combine_soldier/vo/onedutyvacated.wav")
 Schema.voices.Add("Combine", {en="one hundred", ko="100"}, "One hundred.", "npc/combine_soldier/vo/onehundred.wav")
 Schema.voices.Add("Combine", {en="outbreak", ko="확산"}, "Outbreak!", "npc/combine_soldier/vo/outbreak.wav")
 Schema.voices.Add("Combine", {en="outbreak status", ko="확산 상태"}, "Outbreak status is code", "npc/combine_soldier/vo/outbreakstatusiscode.wav")
 Schema.voices.Add("Combine", {en="overwatch", ko="감시인"}, "Overwatch.", "npc/combine_soldier/vo/overwatch.wav")
-Schema.voices.Add("Combine", {en="overwatchconfirmhvtcontained", ko="to do"}, "Overwatch, confirm HVT contained.", "npc/combine_soldier/vo/overwatchconfirmhvtcontained.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchreportspossiblehostiles", ko="to do"}, "Overwatch, reports possible hostiles inbound.", "npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchrequestreinforcement", ko="to do"}, "Overwatch, request reinforcement.", "npc/combine_soldier/vo/overwatchrequestreinforcement.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchrequestreserveactivation", ko="to do"}, "Overwatch, request reserve activation.", "npc/combine_soldier/vo/overwatchrequestreserveactivation.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchrequestskyshield", ko="to do"}, "Overwatch, request sky shield.", "npc/combine_soldier/vo/overwatchrequestskyshield.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchrequestwinder", ko="to do"}, "Overwatch, request winder dispatch.", "npc/combine_soldier/vo/overwatchrequestwinder.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchsectoroverrun", ko="to do"}, "Overwatch, sector overrun, repeat sector overrun.", "npc/combine_soldier/vo/overwatchsectoroverrun.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchtarget1sterilized", ko="to do"}, "Overwatch, Target 1 sterilized.", "npc/combine_soldier/vo/overwatchtarget1sterilized.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchtargetcontained", ko="to do"}, "Overwatch, target contained.", "npc/combine_soldier/vo/overwatchtargetcontained.wav") -- to do
-Schema.voices.Add("Combine", {en="overwatchteamisdown", ko="to do"}, "Overwatch, team is down, sector is not controlled.", "npc/combine_soldier/vo/overwatchteamisdown.wav") -- to do
-Schema.voices.Add("Combine", {en="ovewatchorders3ccstimboost", ko="to do"}, "Overwatch orders 3 cc stimboost.", "npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav") -- to do
+Schema.voices.Add("Combine", {en="hvt contained", ko="처리 완수"}, "Overwatch, confirm HVT contained.", "npc/combine_soldier/vo/overwatchconfirmhvtcontained.wav")
+Schema.voices.Add("Combine", {en="possible hostiles", ko="적 접근"}, "Overwatch, reports possible hostiles inbound.", "npc/combine_soldier/vo/overwatchreportspossiblehostiles.wav")
+Schema.voices.Add("Combine", {en="request reinforce", ko="증원 요청"}, "Overwatch, request reinforcement.", "npc/combine_soldier/vo/overwatchrequestreinforcement.wav")
+Schema.voices.Add("Combine", {en="request reserve", ko="지원군 요청"}, "Overwatch, request reserve activation.", "npc/combine_soldier/vo/overwatchrequestreserveactivation.wav")
+Schema.voices.Add("Combine", {en="request skyshield", ko="스카이쉴드 요청"}, "Overwatch, request sky shield.", "npc/combine_soldier/vo/overwatchrequestskyshield.wav") 
+Schema.voices.Add("Combine", {en="request winder", ko="와인더 요청"}, "Overwatch, request winder dispatch.", "npc/combine_soldier/vo/overwatchrequestwinder.wav")
+Schema.voices.Add("Combine", {en="sector overrun", ko="구역 넘어감"}, "Overwatch, sector overrun! repeat, sector overrun!", "npc/combine_soldier/vo/overwatchsectoroverrun.wav")
+Schema.voices.Add("Combine", {en="target 1 sterilized", ko="목표 1 처리"}, "Overwatch, Target 1 sterilized.", "npc/combine_soldier/vo/overwatchtarget1sterilized.wav")
+Schema.voices.Add("Combine", {en="target contained", ko="목표 처리"}, "Overwatch, target contained.", "npc/combine_soldier/vo/overwatchtargetcontained.wav")
+Schema.voices.Add("Combine", {en="team is down", ko="팀 전멸"}, "Overwatch, team is down, sector is not controlled.", "npc/combine_soldier/vo/overwatchteamisdown.wav")
+Schema.voices.Add("Combine", {en="stimboost", ko="스팀팩"}, "Overwatch orders 3 cc stimboost.", "npc/combine_soldier/vo/ovewatchorders3ccstimboost.wav")
 Schema.voices.Add("Combine", {en="payback", ko="페이백"}, "Payback.", "npc/combine_soldier/vo/payback.wav")
 Schema.voices.Add("Combine", {en="phantom", ko="팬텀"}, "Phantom.", "npc/combine_soldier/vo/phantom.wav")
-Schema.voices.Add("Combine", {en="prep for contact", ko="to do"}, "Prepare for contact, report in.", "npc/combine_soldier/vo/prepforcontact.wav") -- to do
-Schema.voices.Add("Combine", {en="priority one", ko="to do"}, "Priority 1 objective.", "npc/combine_soldier/vo/priority1objective.wav") -- to do
-Schema.voices.Add("Combine", {en="priority two", ko="to do"}, "Priority 2 escapee.", "npc/combine_soldier/vo/prioritytwoescapee.wav") -- to do
+Schema.voices.Add("Combine", {en="prep for contact", ko="ㄹㄷㄹㄷ"}, "Prepare for contact, report in.", "npc/combine_soldier/vo/prepforcontact.wav")
+Schema.voices.Add("Combine", {en="priority one", ko="1번 임무"}, "Priority 1 objective.", "npc/combine_soldier/vo/priority1objective.wav")
+Schema.voices.Add("Combine", {en="priority two", ko="2번 임무"}, "Priority 2 escapee.", "npc/combine_soldier/vo/prioritytwoescapee.wav")
 Schema.voices.Add("Combine", {en="prosecuting", ko="수행 중"}, "Prosecuting.", "npc/combine_soldier/vo/prosecuting.wav")
 Schema.voices.Add("Combine", {en="quicksand", ko="퀵샌드"}, "Quicksand.", "npc/combine_soldier/vo/quicksand.wav")
 Schema.voices.Add("Combine", {en="range", ko="범위"}, "Range:", "npc/combine_soldier/vo/range.wav")
 Schema.voices.Add("Combine", {en="ranger", ko="레인저"}, "Ranger.", "npc/combine_soldier/vo/ranger.wav")
 Schema.voices.Add("Combine", {en="razor", ko="레이저"}, "Razor.", "npc/combine_soldier/vo/razor.wav")
 Schema.voices.Add("Combine", {en="ready charges", ko="폭약 준비"}, "Ready charges!", "npc/combine_soldier/vo/readycharges.wav")
-Schema.voices.Add("Combine", {en="readyextractors", ko="to do"}, "Ready extractors.", "npc/combine_soldier/vo/readyextractors.wav") -- to do
+Schema.voices.Add("Combine", {en="ready extractors", ko="수류탄 준비"}, "Ready extractors!", "npc/combine_soldier/vo/readyextractors.wav")
 Schema.voices.Add("Combine", {en="ready weapons", ko="무기 준비"}, "Ready weapons!", "npc/combine_soldier/vo/readyweapons.wav")
 Schema.voices.Add("Combine", {en="reaper", ko="리퍼"}, "Reaper.", "npc/combine_soldier/vo/reaper.wav")
-Schema.voices.Add("Combine", {en="positions clear", ko="to do"}, "Report all positions clear.", "npc/combine_soldier/vo/reportallpositionsclear.wav") -- to do
-Schema.voices.Add("Combine", {en="radials free", ko="to do"}, "Report all radials free.", "npc/combine_soldier/vo/reportallradialsfree.wav") -- to do
+Schema.voices.Add("Combine", {en="positions clear", ko="모든 위치 보고"}, "Report all positions clear.", "npc/combine_soldier/vo/reportallpositionsclear.wav")
+Schema.voices.Add("Combine", {en="report all radials", ko="모든 구역 보고"}, "Report all radials free.", "npc/combine_soldier/vo/reportallradialsfree.wav")
 Schema.voices.Add("Combine", {en="reporting clear", ko="이상 없음"}, "Reporting clear.", "npc/combine_soldier/vo/reportingclear.wav")
-Schema.voices.Add("Combine", {en="request medical", ko="to do"}, "Request medical.", "npc/combine_soldier/vo/requestmedical.wav") -- to do
-Schema.voices.Add("Combine", {en="request stimdose", ko="to do"}, "Request stim dose.", "npc/combine_soldier/vo/requeststimdose.wav") -- to do
+Schema.voices.Add("Combine", {en="request medical", ko="의료 요청"}, "Request medical!", "npc/combine_soldier/vo/requestmedical.wav")
+Schema.voices.Add("Combine", {en="request stimdose", ko="스팀팩 요청"}, "Request stimdose.", "npc/combine_soldier/vo/requeststimdose.wav")
 Schema.voices.Add("Combine", {en="ripcord", ko="립코드"}, "Ripcord.", "npc/combine_soldier/vo/ripcord.wav")
 Schema.voices.Add("Combine", {en="run", ko="ㅌㅌ"}, "Ripcord, ripcord!", "npc/combine_soldier/vo/ripcordripcord.wav")
 Schema.voices.Add("Combine", {en="savage", ko="새비지"}, "Savage.", "npc/combine_soldier/vo/savage.wav")
 Schema.voices.Add("Combine", {en="scar", ko="스카"}, "Scar.", "npc/combine_soldier/vo/scar.wav")
 Schema.voices.Add("Combine", {en="sector", ko="구역"}, "Sector.", "npc/combine_soldier/vo/sector.wav")
 Schema.voices.Add("Combine", {en="not secure", ko="구역 미확보"}, "Sector is not secure.", "npc/combine_soldier/vo/sectorisnotsecure.wav")
-Schema.voices.Add("Combine", {en="secure novison", ko="to do"}, "Sector is secure, no viscon.", "npc/combine_soldier/vo/sectorissecurenovison.wav") -- to do
+Schema.voices.Add("Combine", {en="secure novison", ko="구역 확보"}, "Sector is secure, no viscon.", "npc/combine_soldier/vo/sectorissecurenovison.wav")
 Schema.voices.Add("Combine", {en="secure", ko="처리 완수"}, "Secure.", "npc/combine_soldier/vo/secure.wav")
 Schema.voices.Add("Combine", {en="seven", ko="7"}, "Seven.", "npc/combine_soldier/vo/seven.wav")
 Schema.voices.Add("Combine", {en="seventeen", ko="17"}, "Seventeen.", "npc/combine_soldier/vo/seventeen.wav")
 Schema.voices.Add("Combine", {en="seventy", ko="70"}, "Seventy.", "npc/combine_soldier/vo/seventy.wav")
 Schema.voices.Add("Combine", {en="shadow", ko="섀도"}, "Shadow.", "npc/combine_soldier/vo/shadow.wav")
 Schema.voices.Add("Combine", {en="sharpzone", ko="이동구역"}, "Sharpzone.", "npc/combine_soldier/vo/sharpzone.wav")
-Schema.voices.Add("Combine", {en="sightlineisclear", ko="to do"}, "Sight line is clear.", "npc/combine_soldier/vo/sightlineisclear.wav") -- to do
+Schema.voices.Add("Combine", {en="sightline clear", ko="가시거리"}, "Sightline is clear.", "npc/combine_soldier/vo/sightlineisclear.wav")
 Schema.voices.Add("Combine", {en="six", ko="6"}, "Six.", "npc/combine_soldier/vo/six.wav")
 Schema.voices.Add("Combine", {en="sixteen", ko="16"}, "Sixteen.", "npc/combine_soldier/vo/sixteen.wav")
 Schema.voices.Add("Combine", {en="sixty", ko="60"}, "Sixty.", "npc/combine_soldier/vo/sixty.wav")
-Schema.voices.Add("Combine", {en="skyshieldreportslostcontact", ko="to do"}, "Skyshield reports lost contact.", "npc/combine_soldier/vo/skyshieldreportslostcontact.wav") -- to do
+Schema.voices.Add("Combine", {en="skyshield lost", ko="스카이쉴드 교신 실패"}, "Skyshield reports lost contact.", "npc/combine_soldier/vo/skyshieldreportslostcontact.wav")
 Schema.voices.Add("Combine", {en="slam", ko="슬램"}, "Slam.", "npc/combine_soldier/vo/slam.wav")
 Schema.voices.Add("Combine", {en="slash", ko="슬래시"}, "Slash.", "npc/combine_soldier/vo/slash.wav")
 Schema.voices.Add("Combine", {en="spear", ko="스피어"}, "Spear.", "npc/combine_soldier/vo/spear.wav")
 Schema.voices.Add("Combine", {en="stab", ko="스탭"}, "Stab.", "npc/combine_soldier/vo/stab.wav")
-Schema.voices.Add("Combine", {en="stabilizationteamhassector", ko="to do"}, "Stabilization team has sector control.", "npc/combine_soldier/vo/stabilizationteamhassector.wav") -- to do
+Schema.voices.Add("Combine", {en="team has sector", ko="구역 통제 완수"}, "Stabilization team has sector control.", "npc/combine_soldier/vo/stabilizationteamhassector.wav")
 Schema.voices.Add("Combine", {en="holding in pos", ko="팀 대기 중"}, "Stabilization team holding in position.", "npc/combine_soldier/vo/stabilizationteamholding.wav")
 Schema.voices.Add("Combine", {en="standing by", ko="대기 중"}, "Standing by.", "npc/combine_soldier/vo/standingby].wav")
 Schema.voices.Add("Combine", {en="star", ko="스타"}, "Star.", "npc/combine_soldier/vo/star.wav")
 Schema.voices.Add("Combine", {en="stay alert", ko="경비하라"}, "Stay alert.", "npc/combine_soldier/vo/stayalert.wav")
-Schema.voices.Add("Combine", {en="stayalertreportsightlines", ko="to do"}, "Stay alert, report sightlines.", "npc/combine_soldier/vo/stayalertreportsightlines.wav") -- to do
+Schema.voices.Add("Combine", {en="report sightlines", ko="상황 보고"}, "Stay alert, report sightlines.", "npc/combine_soldier/vo/stayalertreportsightlines.wav")
 Schema.voices.Add("Combine", {en="stinger", ko="스팅어"}, "Stinger.", "npc/combine_soldier/vo/stinger.wav")
 Schema.voices.Add("Combine", {en="storm", ko="스톰"}, "Storm.", "npc/combine_soldier/vo/storm.wav")
 Schema.voices.Add("Combine", {en="striker", ko="스트라이커"}, "Striker.", "npc/combine_soldier/vo/striker.wav")
 Schema.voices.Add("Combine", {en="sundown", ko="선다운"}, "Sundown.", "npc/combine_soldier/vo/sundown.wav")
 Schema.voices.Add("Combine", {en="suppressing", ko="진압 중"}, "Suppressing.", "npc/combine_soldier/vo/suppressing.wav")
-Schema.voices.Add("Combine", {en="swarmoutbreakinsector", ko="to do"}, "Swarm outbreak in sector.", "npc/combine_soldier/vo/swarmoutbreakinsector.wav") -- to do
+Schema.voices.Add("Combine", {en="swarm outbreak", ko="보금 확산"}, "Swarm outbreak in sector.", "npc/combine_soldier/vo/swarmoutbreakinsector.wav")
 Schema.voices.Add("Combine", {en="sweeper", ko="스위퍼"}, "Sweeper.", "npc/combine_soldier/vo/sweeper.wav")
 Schema.voices.Add("Combine", {en="sweeping in", ko="정찰 중"}, "Sweeping in.", "npc/combine_soldier/vo/sweepingin.wav")
 Schema.voices.Add("Combine", {en="swift", ko="스위프트"}, "Swift.", "npc/combine_soldier/vo/swift.wav")
 Schema.voices.Add("Combine", {en="sword", ko="소드"}, "Sword.", "npc/combine_soldier/vo/sword.wav")
 Schema.voices.Add("Combine", {en="target", ko="목표"}, "Target.", "npc/combine_soldier/vo/target.wav")
-Schema.voices.Add("Combine", {en="targetblackout", ko="to do"}, "Target blackout sweep to resume.", "npc/combine_soldier/vo/targetblackout.wav") -- to do
-Schema.voices.Add("Combine", {en="targetcompromisedmovein", ko="to do"}, "Target compromised, move in.", "npc/combine_soldier/vo/targetcompromisedmovein.wav") -- to do
-Schema.voices.Add("Combine", {en="targetcontactat", ko="to do"}, "Target contact at.", "npc/combine_soldier/vo/targetcontactat.wav") -- to do
-Schema.voices.Add("Combine", {en="targetineffective", ko="to do"}, "Target ineffective.", "npc/combine_soldier/vo/targetineffective.wav") -- to do
-Schema.voices.Add("Combine", {en="targetisat", ko="to do"}, "Target is at.", "npc/combine_soldier/vo/targetisat.wav") -- to do
-Schema.voices.Add("Combine", {en="targetmyradial", ko="to do"}, "Target my radial.", "npc/combine_soldier/vo/targetmyradial.wav") -- to do
-Schema.voices.Add("Combine", {en="targetone", ko="to do"}, "Target One.", "npc/combine_soldier/vo/targetone.wav") -- to do
-Schema.voices.Add("Combine", {en="teamdeployedandscanning", ko="to do"}, "Team is deployed and scanning.", "npc/combine_soldier/vo/teamdeployedandscanning.wav") -- to do
+Schema.voices.Add("Combine", {en="target blackout", ko="정찰 재개"}, "Target blackout, sweep to resume!", "npc/combine_soldier/vo/targetblackout.wav")
+Schema.voices.Add("Combine", {en="target compromised", ko="목표 전투력 저하"}, "Target compromised, move in!", "npc/combine_soldier/vo/targetcompromisedmovein.wav")
+Schema.voices.Add("Combine", {en="target contact", ko="목표 포착"}, "Target contact at", "npc/combine_soldier/vo/targetcontactat.wav")
+Schema.voices.Add("Combine", {en="target ineffective", ko="손상 없음"}, "Target ineffective.", "npc/combine_soldier/vo/targetineffective.wav")
+Schema.voices.Add("Combine", {en="target is at", ko="목표 발견"}, "Target is at", "npc/combine_soldier/vo/targetisat.wav")
+Schema.voices.Add("Combine", {en="target my radial", ko="목표 포착"}, "Target my radial.", "npc/combine_soldier/vo/targetmyradial.wav")
+Schema.voices.Add("Combine", {en="target one", ko="목표 대상 1"}, "Target One.", "npc/combine_soldier/vo/targetone.wav")
+Schema.voices.Add("Combine", {en="team deployed", ko="팀 배치"}, "Team is deployed and scanning.", "npc/combine_soldier/vo/teamdeployedandscanning.wav")
 Schema.voices.Add("Combine", {en="ten", ko="10"}, "Ten.", "npc/combine_soldier/vo/ten.wav")
 Schema.voices.Add("Combine", {en="wrap it", ko="마무리"}, "That's it, wrap it up.", "npc/combine_soldier/vo/thatsitwrapitup.wav")
 Schema.voices.Add("Combine", {en="thirteen", ko="13"}, "Thirteen.", "npc/combine_soldier/vo/thirteen.wav")
@@ -191,36 +191,33 @@ Schema.voices.Add("Combine", {en="twenty", ko="20"}, "Twenty.", "npc/combine_sol
 Schema.voices.Add("Combine", {en="two", ko="2"}, "Two.", "npc/combine_soldier/vo/two.wav")
 Schema.voices.Add("Combine", {en="twohundred", ko="200"}, "Two hundred.", "npc/combine_soldier/vo/twohundred.wav")
 Schema.voices.Add("Combine", {en="uniform", ko="유니폼"}, "Uniform.", "npc/combine_soldier/vo/uniform.wav")
-Schema.voices.Add("Combine", {en="unitisclosing", ko="to do"}, "Unit is closing.", "npc/combine_soldier/vo/unitisclosing.wav") -- to do
+Schema.voices.Add("Combine", {en="unit is closing", ko="접근 중"}, "Unit is closing.", "npc/combine_soldier/vo/unitisclosing.wav")
 Schema.voices.Add("Combine", {en="unit inbound", ko="도착 중"}, "Unit is inbound.", "npc/combine_soldier/vo/unitisinbound.wav")
 Schema.voices.Add("Combine", {en="unit moving in", ko="이동 중"}, "Unit is moving in.", "npc/combine_soldier/vo/unitismovingin.wav")
 Schema.voices.Add("Combine", {en="vamp", ko="뱀프"}, "Vamp.", "npc/combine_soldier/vo/vamp.wav")
-Schema.voices.Add("Combine", {en="viscon", ko="to do"}, "Viscon.", "npc/combine_soldier/vo/viscon.wav") -- to do
-Schema.voices.Add("Combine", {en="visualonexogens", ko="엑소젠 발견"}, "Visual on exogens.", "npc/combine_soldier/vo/visualonexogens.wav")
-Schema.voices.Add("Combine", {en="weaponsoffsafeprepforcontact", ko="to do"}, "Weapons off safe, prepare for contact.", "npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav") -- to do
-Schema.voices.Add("Combine", {en="weareinaninfestationzone", ko="to do"}, "We are in an infestation zone.", "npc/combine_soldier/vo/weareinaninfestationzone.wav") -- to do
-Schema.voices.Add("Combine", {en="wehavefreeparasites", ko="to do"}, "We have free parasites.", "npc/combine_soldier/vo/wehavefreeparasites.wav") -- to do
-Schema.voices.Add("Combine", {en="wehavenontaggedviromes", ko="to do"}, "We have non-tagged viromes.", "npc/combine_soldier/vo/wehavenontaggedviromes.wav") -- to do
+Schema.voices.Add("Combine", {en="viscon", ko="포착 확인"}, "Viscon.", "npc/combine_soldier/vo/viscon.wav")
+Schema.voices.Add("Combine", {en="visual on exogens", ko="엑소젠 발견"}, "Visual on exogens.", "npc/combine_soldier/vo/visualonexogens.wav")
+Schema.voices.Add("Combine", {en="weapons off safe", ko="무기 안전 해제"}, "Weapons off safe, prepare for contact!", "npc/combine_soldier/vo/weaponsoffsafeprepforcontact.wav")
+Schema.voices.Add("Combine", {en="infest zone", ko="출몰 구역"}, "We are in an infestation zone!", "npc/combine_soldier/vo/weareinaninfestationzone.wav")
+Schema.voices.Add("Combine", {en="free parasites", ko="숙주 없는 기생"}, "We have free parasites!", "npc/combine_soldier/vo/wehavefreeparasites.wav")
+Schema.voices.Add("Combine", {en="non tagged viromes", ko="태그 없는 바이롬"}, "We have non-tagged viromes.", "npc/combine_soldier/vo/wehavenontaggedviromes.wav")
 Schema.voices.Add("Combine", {en="winder", ko="와인더"}, "Winder.", "npc/combine_soldier/vo/winder.wav")
 Schema.voices.Add("Combine", {en="zero", ko="0"}, "Zero.", "npc/combine_soldier/vo/zero.wav")
 
-Schema.voices.Add("Combine", {en="to highpoints", ko="to do"}, "All perimeter units, displace to internal highpoints and prepare for final prosecution.", "npc/combine_soldier/vo/prison_soldier_tohighpoints.wav") -- to do
+Schema.voices.Add("Combine", {en="to highpoints", ko="중요 지점으로"}, "All perimeter units, displace to internal highpoints and prepare for final prosecution.", "npc/combine_soldier/vo/prison_soldier_tohighpoints.wav")
 
-Schema.voices.Add("Combine", {en="block31mace", ko="to do"}, "Block 31 mace.", "npc/combine_soldier/vo/block31mace.wav") -- to do
-Schema.voices.Add("Combine", {en="block64jet", ko="to do"}, "Block 64 jet.", "npc/combine_soldier/vo/block64jet.wav") -- to do
-Schema.voices.Add("Combine", {en="callhotpoint", ko="to do"}, "Call hot point.", "npc/combine_soldier/vo/callhotpoint.wav") -- to do
-Schema.voices.Add("Combine", {en="closing2", ko="to do"}, "Closing.", "npc/combine_soldier/vo/closing2.wav") -- to do
-Schema.voices.Add("Combine", {en="gridsundown46", ko="to do"}, "Grid sundown 4-6.", "npc/combine_soldier/vo/gridsundown46.wav") -- to do
-Schema.voices.Add("Combine", {en="isfieldpromoted", ko="to do"}, "Is field promoted to leader 1 holding.", "npc/combine_soldier/vo/isfieldpromoted.wav") -- to do
-Schema.voices.Add("Combine", {en="onecontained", ko="to do"}, "One contained.", "npc/combine_soldier/vo/onecontained.wav") -- to do
-Schema.voices.Add("Combine", {en="sectionlockupdash4", ko="to do"}, "Section lockup dash 4.", "npc/combine_soldier/vo/sectionlockupdash4.wav") -- to do
+Schema.voices.Add("Combine", {en="block 31", ko="구역 31"}, "Block 31 mace.", "npc/combine_soldier/vo/block31mace.wav")
+Schema.voices.Add("Combine", {en="block 64", ko="구역 64"}, "Block 64 jet.", "npc/combine_soldier/vo/block64jet.wav")
+Schema.voices.Add("Combine", {en="grid sundown 46", ko="그리드 선다운 4-6"}, "Grid sundown 4-6.", "npc/combine_soldier/vo/gridsundown46.wav")
+Schema.voices.Add("Combine", {en="field promoted", ko="현장 승진"}, "is field promoted to leader 1 holding.", "npc/combine_soldier/vo/isfieldpromoted.wav")
+Schema.voices.Add("Combine", {en="one contained", ko="1명 진압"}, "One contained.", "npc/combine_soldier/vo/onecontained.wav")
+Schema.voices.Add("Combine", {en="section lock up", ko="구역 감금-4"}, "Section lockup-4.", "npc/combine_soldier/vo/sectionlockupdash4.wav")
 
--- to do: Resurgence 영어 문장 다시 듣기
 Schema.voices.Add("Combine", {en="administer antiseptic", ko="소독제 지급하라"}, "소독제, 지급하라.", "vj_hlr/src/npc/combine_soldier/administerantiseptic.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="alert", ko="주의"}, "Alert.", "vj_hlr/src/npc/combine_soldier/alert.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="alert motion", ko="동작 감지"}, "Alert motion.", "vj_hlr/src/npc/combine_soldier/alertmotion.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="antiseptic delivered", ko="소독제 처방했다"}, "Antiseptic delivered.", "vj_hlr/src/npc/combine_soldier/antisepticdelivered.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="block down", ko="차단"}, "Block down.", "vj_hlr/src/npc/combine_soldier/blockdown.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="block down", ko="구역 차단"}, "Block down.", "vj_hlr/src/npc/combine_soldier/blockdown.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="block secure", ko="구역 확보"}, "Block secure.", "vj_hlr/src/npc/combine_soldier/blocksecure.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="bodypack compromised", ko="방탄복 손상"}, "Bodypack compromised!", "vj_hlr/src/npc/combine_soldier/bodypackcompromised.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="bouncer", ko="수류탄"}, "Bouncer!", "vj_hlr/src/npc/combine_soldier/bouncer.wav") -- Resurgence
@@ -229,7 +226,7 @@ Schema.voices.Add("Combine", {en="compromised", ko="손상됐다"}, "Compromised
 Schema.voices.Add("Combine", {en="confirm", ko="확인"}, "Confirm.", "vj_hlr/src/npc/combine_soldier/confirm.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="confirm target is", ko="목표는"}, "Confirm target is", "vj_hlr/src/npc/combine_soldier/confirmtargetis.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="contact lost", ko="포착 실패"}, "Contact lost.", "vj_hlr/src/npc/combine_soldier/contactlost.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="contact parasitics", ko="기생충 포착"}, "Contact parasitics.", "vj_hlr/src/npc/combine_soldier/contactparasitics.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="contact parasitics", ko="기생 포착"}, "Contact parasitics.", "vj_hlr/src/npc/combine_soldier/contactparasitics.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="containment ready", ko="봉쇄 준비"}, "Containment ready.", "vj_hlr/src/npc/combine_soldier/containmentready.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="contain sector", ko="구역 봉쇄"}, "Contain sector.", "vj_hlr/src/npc/combine_soldier/containsector.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="down!", ko="숙여!"}, "Down, down, down!", "vj_hlr/src/npc/combine_soldier/downdowndown.wav") -- Resurgence
@@ -239,8 +236,8 @@ Schema.voices.Add("Combine", {en="escapee", ko="탈주자"}, "Escapee.", "vj_hlr
 Schema.voices.Add("Combine", {en="executing slam", ko="슬램 실행 중"}, "Executing slam.", "vj_hlr/src/npc/combine_soldier/executingslam.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="exogens", ko="엑소젠"}, "Exogens.", "vj_hlr/src/npc/combine_soldier/exogens.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="extractor active", ko="수류탄 활성화"}, "Extractor active.", "vj_hlr/src/npc/combine_soldier/extractoractive.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="fix sightlines", ko="사선 교정"}, "Fix sightlines.", "vj_hlr/src/npc/combine_soldier/fixsightlines.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="flare!", ko="수류탄!"}, "Flare!", "vj_hlr/src/npc/combine_soldier/flareflareflare.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="fix sightlines", ko="시선 교정"}, "Fix sightlines.", "vj_hlr/src/npc/combine_soldier/fixsightlines.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="flare!", ko="수류탄!"}, "Flare, flare, flare!", "vj_hlr/src/npc/combine_soldier/flareflareflare.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="full alert", ko="전방위 경계"}, "Full alert.", "vj_hlr/src/npc/combine_soldier/fullalert.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="go active", ko="활성화하라"}, "Go active.", "vj_hlr/src/npc/combine_soldier/goactive.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="hammer that position", ko="위치를 타격하라"}, "Hammer that position.", "vj_hlr/src/npc/combine_soldier/hammerthatposition.wav") -- Resurgence
@@ -251,40 +248,41 @@ Schema.voices.Add("Combine", {en="hostiles inbound", ko="적 접근 중"}, "Host
 Schema.voices.Add("Combine", {en="ineffective", ko="무력화"}, "Ineffective.", "vj_hlr/src/npc/combine_soldier/ineffective.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="is holding", ko="유지 중"}, "is holding.", "vj_hlr/src/npc/combine_soldier/isholding.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="motioncheck", ko="동작 확인"}, "Motion check.", "vj_hlr/src/npc/combine_soldier/motioncheck.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="moveinmovein", ko="진입하라, 진입하라"}, "Move in, move in.", "vj_hlr/src/npc/combine_soldier/moveinmovein.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="move in", ko="진입하라"}, "Move in, move in.", "vj_hlr/src/npc/combine_soldier/moveinmovein.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="no movement", ko="움직임 없음"}, "Negative movement.", "vj_hlr/src/npc/combine_soldier/negativemovement.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="noncitizen", ko="비시민"}, "Non-citizen.", "vj_hlr/src/npc/combine_soldier/noncitizen.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="objective", ko="목적"}, "Objective.", "vj_hlr/src/npc/combine_soldier/objective.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="outbreakcontained", ko="확산 격리됨"}, "Outbreak contained.", "vj_hlr/src/npc/combine_soldier/outbreakcontained.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="outbreak in sector", ko="구역에 확산"}, "Outbreak in sector.", "vj_hlr/src/npc/combine_soldier/outbreakinsector.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="overwatch advise", ko="지시 요청"}, "Overwatch advise.", "vj_hlr/src/npc/combine_soldier/overwatchadvise.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="overwatch advise", ko="지시 요청"}, "Overwatch, advise.", "vj_hlr/src/npc/combine_soldier/overwatchadvise.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="request backup", ko="지원 요청"}, "Overwatch, request backup.", "vj_hlr/src/npc/combine_soldier/overwatchrequestbackup.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="overwatchtargetcontained", ko="목표 격리"}, "Overwatch, target contained.", "vj_hlr/src/npc/combine_soldier/overwatchtargetcontained.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="ovewatch orders", ko="감시인 지시"}, "Ovewatch orders.", "vj_hlr/src/npc/combine_soldier/ovewatchorders.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="target contained", ko="목표 처리"}, "Overwatch, target contained.", "vj_hlr/src/npc/combine_soldier/overwatchtargetcontained.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="overwatch orders", ko="감시인 지시"}, "Overwatch orders:", "vj_hlr/src/npc/combine_soldier/ovewatchorders.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="payback delievered", ko="페이백 전달"}, "Swift payback delievered.", "vj_hlr/src/npc/combine_soldier/paybackdelievered.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="priority one", ko="중요도 1"}, "Priority one.", "vj_hlr/src/npc/combine_soldier/priority1.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="priority two", ko="중요도 2"}, "Priority two.", "vj_hlr/src/npc/combine_soldier/prioritytwo.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="priority one", ko="1번 임무"}, "Priority one.", "vj_hlr/src/npc/combine_soldier/priority1.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="priority two", ko="2번 임무"}, "Priority two.", "vj_hlr/src/npc/combine_soldier/prioritytwo.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="report all radials", ko="방위 보고"}, "Report all radials.", "vj_hlr/src/npc/combine_soldier/reportallradials.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="report in", ko="보고하라"}, "Report in.", "vj_hlr/src/npc/combine_soldier/reportin.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="reporting", ko="보고한다"}, "Reporting.", "vj_hlr/src/npc/combine_soldier/reporting.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="request backup", ko="지원 요청"}, "Request backup.", "vj_hlr/src/npc/combine_soldier/requestbackup.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="request cover", ko="엄호 요청"}, "Request cover.", "vj_hlr/src/npc/combine_soldier/requestcover.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="request medivac", ko="의료 요청"}, "Request medivac.", "vj_hlr/src/npc/combine_soldier/requestmedivac.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="request cover", ko="엄호 요청"}, "Request cover!", "vj_hlr/src/npc/combine_soldier/requestcover.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="request medivac", ko="의료 요청"}, "Request medivac!", "vj_hlr/src/npc/combine_soldier/requestmedivac.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="scanning", ko="수색 중"}, "Scanning.", "vj_hlr/src/npc/combine_soldier/scanning.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="sector not controlled", ko="구역 미통제"}, "Sector not controlled.", "vj_hlr/src/npc/combine_soldier/sectornotcontrolled.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="sector not sterile", ko="구역 미살균"}, "Sector not sterile.", "vj_hlr/src/npc/combine_soldier/sectornotsterile.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="sector secured", ko="구역 확보"}, "Sector secured.", "vj_hlr/src/npc/combine_soldier/sectorsecured.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="storming", ko="급습 중"}, "Storming.", "vj_hlr/src/npc/combine_soldier/storming.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="suppress that target", ko="목표제압"}, "Suppress that target.", "vj_hlr/src/npc/combine_soldier/suppressthattarget.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="suppress that target", ko="제압하라"}, "Suppress that target.", "vj_hlr/src/npc/combine_soldier/suppressthattarget.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="sweep him out", ko="쓸어버려"}, "Sweep him out.", "vj_hlr/src/npc/combine_soldier/sweephimout.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="target contained", ko="목표 격리됨"}, "Target contained.", "vj_hlr/src/npc/combine_soldier/targetcontained.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="team ineffective", ko="팀무력화"}, "Team ineffective.", "vj_hlr/src/npc/combine_soldier/teamineffective.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="team is down", ko="팀쓰러짐"}, "Team is down.", "vj_hlr/src/npc/combine_soldier/teamisdown.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="team ineffective", ko="팀무력화"}, "Team is ineffective.", "vj_hlr/src/npc/combine_soldier/teamineffective.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="team is down", ko="팀 전멸"}, "Team is down.", "vj_hlr/src/npc/combine_soldier/teamisdown.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="time", ko="시간"}, "Time.", "vj_hlr/src/npc/combine_soldier/time.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="unit has contact", ko="병력포착"}, "Unit has contact.", "vj_hlr/src/npc/combine_soldier/unithascontact.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="weapons off safe", ko="무기준비"}, "Weapons off safe.", "vj_hlr/src/npc/combine_soldier/weaponsoffsafe.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="weapons off safe", ko="무기 안전 해제"}, "Weapons off safe.", "vj_hlr/src/npc/combine_soldier/weaponsoffsafe.wav") -- Resurgence
 Schema.voices.Add("Combine", {en="weapons ready", ko="무기 준비"}, "Weapons ready.", "vj_hlr/src/npc/combine_soldier/weaponsready.wav") -- Resurgence
-Schema.voices.Add("Combine", {en="we got him now", ko="잡았다"}, "We got him now.", "vj_hlr/src/npc/combine_soldier/wegothimnow.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="got him", ko="잡았다"}, "We got him now.", "vj_hlr/src/npc/combine_soldier/wegothimnow.wav") -- Resurgence
+Schema.voices.Add("Combine", {en="we have freeman", ko="프리맨 잡았다"}, "We have freeman.", "vj_hlr/src/npc/combine_soldier/wehavefreeman.wav") -- Resurgence
 
 -- Metropolice
 Schema.voices.Add("Combine", {en="position to contain", ko="진압 대기"}, "Position to contain.", "npc/metropolice/hiding03.wav")
