@@ -17,6 +17,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ix.lang.AddTable("english", {
 	npcdrop_blunt = "Melee Weapon",
 	npcdrop_rifle = "Rifle",
+	npcdrop_shotgun = "Shotgun",
 	npcdrop_pistol = "Pistol",
 	npcdrop_grenade = "Grenade",
 	npcdrop_explosive = "Explosive",
@@ -26,6 +27,7 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	npcdrop_blunt = "근접 무기",
 	npcdrop_rifle = "소총",
+	npcdrop_shotgun = "산탄총",
 	npcdrop_pistol = "권총",
 	npcdrop_grenade = "수류탄",
 	npcdrop_explosive = "폭발물",
@@ -37,8 +39,8 @@ PLUGIN.items.common = {"pistol"}
 PLUGIN.items.rare = {"shotgun"}
 
 PLUGIN.replaceList = {
-	["item_healthvial"] = "healthvial",
-	["item_healthkit"] = "healthkit",
+	["item_healthvial"] = "health_vial",
+	["item_healthkit"] = "health_kit",
 	["item_battery"] = "battery",
 	["item_ammo_smg1"] = "smg1ammo",
 	["item_ammo_smg1_large"] = "smg1ammo",
@@ -50,7 +52,7 @@ PLUGIN.replaceList = {
 	["item_ammo_ar2_altfire"] = "ar2orbammo",
 	["item_ammo_357"] = "357ammo",
 	["item_ammo_357_large"] = "357ammo",
-	["item_box_buckshot"] = "buckshotammo",
+	["item_box_buckshot"] = "shotgunammo",
 	["item_ammo_crossbow"] = "crossbowammo",
 	["item_rpg_round"] = "rocketammo",
 
@@ -81,6 +83,7 @@ local holdTypeToLang = {
 	["ar2"] = "npcdrop_rifle",
 	["shotgun"] = "npcdrop_rifle",
 	["crossbow"] = "npcdrop_rifle",
+	["shotgun"] = "npcdrop_shotgun",
 	["pistol"] = "npcdrop_pistol",
 	["revolver"] = "npcdrop_pistol",
 	["melee"] = "npcdrop_blunt",
@@ -93,8 +96,13 @@ local holdTypeToLang = {
 function PLUGIN:GetCustomItemType(entity)
 	if (!IsValid(entity)) then return nil end
 
-	local holdType = entity.GetHoldType and entity:GetHoldType() or ""
 	local className = entity:GetClass()
+
+	-- Ignore NPC-only weapons (e.g. zombie claws, headcrab attacks) that are not
+	-- registered as scripted SWEPs and therefore cannot be used by players.
+	if (!weapons.Get(className)) then return nil end
+
+	local holdType = entity.GetHoldType and entity:GetHoldType() or ""
 
 	if (holdType == "") then
 		if (className:find("smg1") or className:find("ar2") or className:find("shotgun") or className:find("crossbow")) then holdType = "smg"
@@ -107,11 +115,11 @@ function PLUGIN:GetCustomItemType(entity)
 
 	local langKey = holdTypeToLang[holdType]
 	if (langKey) then
-		return L(langKey)
+		return langKey
 	end
 
 	if (entity:IsWeapon() or className:sub(1, 7) == "weapon_") then
-		return L("npcdrop_weapon")
+		return "npcdrop_weapon"
 	end
 
 	return nil
