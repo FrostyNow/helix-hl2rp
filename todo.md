@@ -5,7 +5,6 @@
 - SitAnywhere 화살표
 
 # 우선순위 높음
-- hl2 weapon sway
 - 담배
 
 # 우선순위 낮음

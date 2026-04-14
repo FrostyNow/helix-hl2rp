@@ -18,10 +18,10 @@ PLUGIN.BarricadeList = {
 }
 
 PLUGIN.EmplacementList = {
-	{class = "ent_mannable_ar3", model = "models/props_combine/combine_cannon001.mdl", price = 500},
-	{class = "ent_mannable_airboatgun", model = "models/props_combine/combine_airboatgun.mdl", price = 600},
-	{class = "ent_mannable_combinesniper", model = "models/props_combine/combine_sniper_turret.mdl", price = 700},
-	{class = "ent_mannable_combinecannon", model = "models/props_combine/combine_cannon001.mdl", price = 700},
+	{class = "ent_mannable_ar3", model = "models/props_combine/bunker_gun01.mdl", price = 500},
+	{class = "ent_mannable_airboatgun", model = "models/airboatgun.mdl", price = 600},
+	{class = "ent_mannable_combinesniper", model = "models/weapons/w_combine_sniper.mdl", price = 700},
+	{class = "ent_mannable_combinecannon", model = "models/combine_turrets/combine_cannon_gun.mdl", price = 700},
 }
 
 -- Configs
@@ -158,9 +158,9 @@ if (SERVER) then
 						pos = v:GetPos(),
 						ang = v:GetAngles(),
 						model = v:GetModel(),
-						owner = v:GetOwnerCID(),
-						ownerName = v:GetOwnerName(),
-						health = v:Health(),
+						owner = v.ixOwnerCID or 0,
+						ownerName = v:GetNWString("ixOwnerName", "Unknown"),
+						health = v.ixHealth or 100,
 						bEmplacement = true
 					}
 				end
@@ -183,15 +183,20 @@ if (SERVER) then
 				
 				if (v.bEmplacement) then
 					entity.ixIsEmplacement = true
+					entity.ixOwnerCID = v.owner or 0
 					entity:SetNWBool("ixIsEmplacement", true)
+					entity:SetNWInt("ixOwnerCID", entity.ixOwnerCID)
+					entity:SetNWString("ixOwnerName", v.ownerName or "Unknown")
+					entity.ixHealth = v.health or 100
+					entity:SetNWInt("ixHealth", entity.ixHealth)
+					entity:SetMoveType(MOVETYPE_NONE)
 				else
 					entity:SetBarricadeID(v.barricadeID)
+					if (entity.SetOwnerCID) then entity:SetOwnerCID(v.owner) end
+					if (entity.SetOwnerName) then entity:SetOwnerName(v.ownerName or "Unknown") end
+					entity:SetHealth(v.health or 100)
 				end
 
-				entity:SetOwnerCID(v.owner)
-				entity:SetOwnerName(v.ownerName or "Unknown")
-				entity:SetHealth(v.health or 100)
-				
 				local phys = entity:GetPhysicsObject()
 				if (IsValid(phys)) then
 					phys:EnableMotion(false)
@@ -206,12 +211,13 @@ if (SERVER) then
 				damage:SetDamage(0)
 				return
 			end
-		end
-	end
 
-	function PLUGIN:PostEntityTakeDamage(target, damage, bTook)
-		if (target.ixIsEmplacement and bTook) then
-			if (target:Health() <= 0) then
+			-- Manually track HP since mannable entities ignore SetHealth
+			target.ixHealth = (target.ixHealth or 100) - damage:GetDamage()
+			target:SetNWInt("ixHealth", math.max(0, target.ixHealth))
+			damage:SetDamage(0) -- prevent double-processing by the entity itself
+
+			if (target.ixHealth <= 0) then
 				target:Remove()
 			end
 		end
@@ -242,7 +248,7 @@ if (SERVER) then
 		local barricadeData = PLUGIN.BarricadeList[barricadeIndex]
 		if (!barricadeData or !char:HasMoney(barricadeData.price)) then return end
 
-		if (client:GetPos():DistToSqr(pos) > 150000) then return end
+		if (client:GetPos():DistToSqr(pos) > 17000) then return end
 
 		char:TakeMoney(barricadeData.price)
 
@@ -285,7 +291,7 @@ if (SERVER) then
 		local count = 0
 		for _, emplacement in ipairs(PLUGIN.EmplacementList) do
 			for _, v in ipairs(ents.FindByClass(emplacement.class)) do
-				if (v.ixIsEmplacement and v:GetOwnerCID() == char:GetID()) then
+				if (v.ixIsEmplacement and v.ixOwnerCID == char:GetID()) then
 					count = count + 1
 				end
 			end
@@ -305,13 +311,17 @@ if (SERVER) then
 		entity:Spawn()
 		
 		entity.ixIsEmplacement = true
+		entity.ixOwnerCID = char:GetID()
 		entity:SetNWBool("ixIsEmplacement", true)
-		entity:SetOwnerCID(char:GetID())
-		entity:SetOwnerName(char:GetName())
-		
-		entity:SetMaxHealth(100)
-		entity:SetHealth(100)
+		entity:SetNWInt("ixOwnerCID", char:GetID())
+		entity:SetNWString("ixOwnerName", char:GetName())
+		if (entity.SetOwnerCID) then entity:SetOwnerCID(char:GetID()) end
+		if (entity.SetOwnerName) then entity:SetOwnerName(char:GetName()) end
 
+		entity.ixHealth = 100
+		entity:SetNWInt("ixHealth", 100)
+
+		entity:SetMoveType(MOVETYPE_NONE)
 		local phys = entity:GetPhysicsObject()
 		if (IsValid(phys)) then
 			phys:EnableMotion(false)
@@ -328,26 +338,71 @@ if (CLIENT) then
 		end
 
 		local frame = vgui.Create("DFrame")
-		frame:SetTitle(L"barricadeMenuTitle")
-		frame:SetSize(500, 400)
+		frame:SetTitle("")
+		frame:SetSize(ScrW() * 0.45, ScrH() * 0.5)
 		frame:Center()
 		frame:MakePopup()
+		frame:ShowCloseButton(false)
 		ix.gui.barricadeMenu = frame
+
+		frame.Paint = function(s, w, h)
+			surface.SetDrawColor(25, 25, 30, 240)
+			surface.DrawRect(0, 0, w, h)
+			surface.SetDrawColor(40, 40, 45, 255)
+			surface.DrawRect(0, 0, w, 40)
+			draw.SimpleText(L("barricadeMenuTitle"):upper(), "ixMediumFont", 15, 20, Color(255, 255, 255, 180), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			surface.SetDrawColor(60, 60, 70, 255)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+
+		local close = frame:Add("DButton")
+		close:SetSize(40, 40)
+		close:SetPos(frame:GetWide() - 40, 0)
+		close:SetText("✕")
+		close:SetFont("ixMediumFont")
+		close:SetTextColor(Color(200, 200, 200))
+		close.Paint = function(s, w, h)
+			if (s:IsHovered()) then
+				surface.SetDrawColor(200, 50, 50, 150)
+				surface.DrawRect(0, 0, w, h)
+			end
+		end
+		close.DoClick = function()
+			frame:Remove()
+		end
 
 		local scroll = frame:Add("DScrollPanel")
 		scroll:Dock(FILL)
 
+		local iconSize = 110
+		local iconSpacing = 10
+		local frameWide = frame:GetWide() - 40
+		local cols = math.floor(frameWide / (iconSize + iconSpacing))
+		local totalGridWidth = (cols * iconSize) + ((cols - 1) * iconSpacing)
+		local sidePadding = math.max(10, (frameWide - totalGridWidth) / 2)
+
+		scroll:DockMargin(sidePadding, 50, sidePadding, 10)
+
 		local grid = scroll:Add("DIconLayout")
 		grid:Dock(TOP)
-		grid:SetSpaceX(5)
-		grid:SetSpaceY(5)
+		grid:SetSpaceX(iconSpacing)
+		grid:SetSpaceY(iconSpacing)
 
 		for k, v in ipairs(PLUGIN.BarricadeList) do
 			local icon = grid:Add("SpawnIcon")
-			icon:SetSize(64, 64)
+			icon:SetSize(110, 110)
 			icon:SetModel(v.model)
 			icon:SetTooltip(ix.currency.Get(v.price, LocalPlayer()))
-			
+
+			icon.PaintOver = function(s, w, h)
+				if (s:IsHovered()) then
+					surface.SetDrawColor(255, 255, 255, 5)
+					surface.DrawRect(0, 0, w, h)
+					surface.SetDrawColor(100, 200, 255, 200)
+					surface.DrawOutlinedRect(0, 0, w, h)
+				end
+			end
+
 			local label = icon:Add("DLabel")
 			label:SetText(ix.currency.Get(v.price, LocalPlayer()))
 			label:SetFont("ixSmallFont")
@@ -360,8 +415,23 @@ if (CLIENT) then
 			end
 
 			icon.DoClick = function()
-				if (!LocalPlayer():GetCharacter():HasMoney(v.price)) then
-					LocalPlayer():NotifyLocalized("barricadeNoMoney")
+				local client = LocalPlayer()
+				local char = client:GetCharacter()
+
+				if (!char:HasMoney(v.price)) then
+					client:NotifyLocalized("barricadeNoMoney")
+					return
+				end
+
+				local count = 0
+				for _, ent in ipairs(ents.FindByClass("ix_combine_barricade")) do
+					if (ent.GetOwnerCID and ent:GetOwnerCID() == char:GetID()) then
+						count = count + 1
+					end
+				end
+				local limit = ix.config.Get("barricadeLimit", 5)
+				if (count >= limit) then
+					client:NotifyLocalized("barricadeLimitReached", limit)
 					return
 				end
 
@@ -373,12 +443,14 @@ if (CLIENT) then
 				ghost:SetSolid(SOLID_VPHYSICS)
 				ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
 				ghost.barricadeIndex = k
-				ghost.angle = LocalPlayer():EyeAngles().y + 180
+				ghost.angle = math.Round(client:EyeAngles().y / 90) * 90
 				ix.gui.barricadeGhost = ghost
 
-				LocalPlayer():NotifyLocalized("barricadePlacementHelp")
+				client:NotifyLocalized("barricadePlacementHelp")
 			end
 		end
+
+		grid:InvalidateLayout(true)
 	end)
 
 	net.Receive("ixEmplacementOpenMenu", function()
@@ -387,29 +459,74 @@ if (CLIENT) then
 		end
 
 		local frame = vgui.Create("DFrame")
-		frame:SetTitle(L"emplacementMenuTitle")
-		frame:SetSize(400, 300)
+		frame:SetTitle("")
+		frame:SetSize(ScrW() * 0.45, ScrH() * 0.5)
 		frame:Center()
 		frame:MakePopup()
+		frame:ShowCloseButton(false)
 		ix.gui.barricadeMenu = frame
+
+		frame.Paint = function(s, w, h)
+			surface.SetDrawColor(25, 25, 30, 240)
+			surface.DrawRect(0, 0, w, h)
+			surface.SetDrawColor(40, 40, 45, 255)
+			surface.DrawRect(0, 0, w, 40)
+			draw.SimpleText(L("emplacementMenuTitle"):upper(), "ixMediumFont", 15, 20, Color(255, 255, 255, 180), TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
+			surface.SetDrawColor(60, 60, 70, 255)
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
+
+		local close = frame:Add("DButton")
+		close:SetSize(40, 40)
+		close:SetPos(frame:GetWide() - 40, 0)
+		close:SetText("✕")
+		close:SetFont("ixMediumFont")
+		close:SetTextColor(Color(200, 200, 200))
+		close.Paint = function(s, w, h)
+			if (s:IsHovered()) then
+				surface.SetDrawColor(200, 50, 50, 150)
+				surface.DrawRect(0, 0, w, h)
+			end
+		end
+		close.DoClick = function()
+			frame:Remove()
+		end
 
 		local scroll = frame:Add("DScrollPanel")
 		scroll:Dock(FILL)
 
+		local iconSize = 110
+		local iconSpacing = 10
+		local frameWide = frame:GetWide() - 40
+		local cols = math.floor(frameWide / (iconSize + iconSpacing))
+		local totalGridWidth = (cols * iconSize) + ((cols - 1) * iconSpacing)
+		local sidePadding = math.max(10, (frameWide - totalGridWidth) / 2)
+
+		scroll:DockMargin(sidePadding, 50, sidePadding, 10)
+
 		local grid = scroll:Add("DIconLayout")
 		grid:Dock(TOP)
-		grid:SetSpaceX(5)
-		grid:SetSpaceY(5)
+		grid:SetSpaceX(iconSpacing)
+		grid:SetSpaceY(iconSpacing)
 
 		for k, v in ipairs(PLUGIN.EmplacementList) do
 			-- Existence check on client
 			if (!scripted_ents.Get(v.class)) then continue end
 
 			local icon = grid:Add("SpawnIcon")
-			icon:SetSize(64, 64)
+			icon:SetSize(110, 110)
 			icon:SetModel(v.model)
 			icon:SetTooltip(ix.currency.Get(v.price, LocalPlayer()))
-			
+
+			icon.PaintOver = function(s, w, h)
+				if (s:IsHovered()) then
+					surface.SetDrawColor(255, 255, 255, 5)
+					surface.DrawRect(0, 0, w, h)
+					surface.SetDrawColor(100, 200, 255, 200)
+					surface.DrawOutlinedRect(0, 0, w, h)
+				end
+			end
+
 			local label = icon:Add("DLabel")
 			label:SetText(ix.currency.Get(v.price, LocalPlayer()))
 			label:SetFont("ixSmallFont")
@@ -422,8 +539,25 @@ if (CLIENT) then
 			end
 
 			icon.DoClick = function()
-				if (!LocalPlayer():GetCharacter():HasMoney(v.price)) then
-					LocalPlayer():NotifyLocalized("barricadeNoMoney")
+				local client = LocalPlayer()
+				local char = client:GetCharacter()
+
+				if (!char:HasMoney(v.price)) then
+					client:NotifyLocalized("barricadeNoMoney")
+					return
+				end
+
+				local count = 0
+				for _, emplacement in ipairs(PLUGIN.EmplacementList) do
+					for _, ent in ipairs(ents.FindByClass(emplacement.class)) do
+						if (ent:GetNWBool("ixIsEmplacement") and ent:GetNWInt("ixOwnerCID") == char:GetID()) then
+							count = count + 1
+						end
+					end
+				end
+				local limit = ix.config.Get("emplacementLimit", 1)
+				if (count >= limit) then
+					client:NotifyLocalized("emplacementLimitReached", limit)
 					return
 				end
 
@@ -435,37 +569,75 @@ if (CLIENT) then
 				ghost:SetSolid(SOLID_VPHYSICS)
 				ghost:SetRenderMode(RENDERMODE_TRANSALPHA)
 				ghost.emplacementIndex = k
-				ghost.angle = LocalPlayer():EyeAngles().y + 180
+				ghost.angle = math.Round(client:EyeAngles().y / 90) * 90
 				ix.gui.barricadeGhost = ghost
 
-				LocalPlayer():NotifyLocalized("barricadePlacementHelp")
+				client:NotifyLocalized("barricadePlacementHelp")
 			end
 		end
+
+		grid:InvalidateLayout(true)
 	end)
 
 	function PLUGIN:Think()
 		local ghost = ix.gui.barricadeGhost
 		if (IsValid(ghost)) then
 			local client = LocalPlayer()
-			local trace = util.TraceLine({
+			local eyeTrace = util.TraceLine({
 				start = client:EyePos(),
-				endpos = client:EyePos() + client:GetAimVector() * 250,
+				endpos = client:EyePos() + client:GetAimVector() * 85,
 				filter = {client, ghost}
 			})
 
-			local pos = trace.HitPos
-			local ang = ghost.angle
+			local hitBarricadeEnt = IsValid(eyeTrace.Entity) and eyeTrace.Entity:GetClass() == "ix_combine_barricade" and eyeTrace.Entity
+			local bDirectFloor = eyeTrace.Hit and eyeTrace.HitNormal.z > 0.6
 
+			local pos, bValidSurface
+
+			if (ghost.emplacementIndex and hitBarricadeEnt) then
+				-- Emplacement on barricade: use hit pos directly (emplacement origins are at model base)
+				pos = eyeTrace.HitPos
+				bValidSurface = true
+			elseif (bDirectFloor and not hitBarricadeEnt) then
+				-- Directly hitting the floor — use as-is
+				pos = eyeTrace.HitPos
+				bValidSurface = true
+			else
+				-- Hitting a wall, barricade (for barricade ghost), ceiling, or sky — drop down to find floor below
+				local floorTrace = util.TraceLine({
+					start = eyeTrace.HitPos + Vector(0, 0, 50),
+					endpos = eyeTrace.HitPos - Vector(0, 0, 300),
+					filter = {client, ghost}
+				})
+
+				if (floorTrace.Hit and floorTrace.HitNormal.z > 0.6) then
+					local floorIsBarricade = IsValid(floorTrace.Entity) and floorTrace.Entity:GetClass() == "ix_combine_barricade"
+					if (!floorIsBarricade) then
+						pos = floorTrace.HitPos
+						bValidSurface = true
+					else
+						pos = eyeTrace.HitPos
+						bValidSurface = false
+					end
+				else
+					pos = eyeTrace.HitPos
+					bValidSurface = false
+				end
+			end
+
+			local ang = ghost.angle
 			ghost:SetAngles(Angle(0, ang, 0))
 
 			local mins, _ = ghost:GetModelBounds()
 			local center = ghost:OBBCenter()
 			local offset = ghost:LocalToWorld(Vector(center.x, center.y, mins.z)) - ghost:GetPos()
-			ghost:SetPos(pos - offset)
 
-			-- Valid if it's a flat surface OR it's hitting a barricade
-			local bOnBarricade = (IsValid(trace.Entity) and trace.Entity:GetClass() == "ix_combine_barricade")
-			local bValidSurface = (trace.HitNormal.z > 0.6) or bOnBarricade
+			if (ghost.emplacementIndex) then
+				-- Emplacement model origins sit at the model base — no OBB offset needed
+				ghost:SetPos(pos)
+			else
+				ghost:SetPos(pos - offset)
+			end
 
 			if (!bValidSurface) then
 				ghost:SetColor(Color(255, 0, 0, 150))
@@ -526,10 +698,16 @@ if (CLIENT) then
 			local x, y = w / 2, h - 100
 			local alpha = 80
 			
-			draw.SimpleText(L("barricadeOwner", entity:GetOwnerName()), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			local ownerName = entity.GetOwnerName and entity:GetOwnerName() or entity:GetNWString("ixOwnerName", "Unknown")
+			draw.SimpleText(L("barricadeOwner", ownerName), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 			
 			local barW, barH = 150, 4
-			local health = math.Clamp(entity:Health() / entity:GetMaxHealth(), 0, 1)
+			local health
+			if (bEmplacement) then
+				health = math.Clamp(entity:GetNWInt("ixHealth", 100) / 100, 0, 1)
+			else
+				health = math.Clamp(entity:Health() / entity:GetMaxHealth(), 0, 1)
+			end
 			
 			surface.SetDrawColor(0, 0, 0, 50)
 			surface.DrawRect(x - barW / 2, y + 12, barW, barH)
