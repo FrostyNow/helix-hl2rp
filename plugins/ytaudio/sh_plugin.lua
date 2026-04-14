@@ -52,6 +52,8 @@ PLUGIN.presets = {
 		{url = "https://www.youtube.com/watch?v=CIq13K26hSo", title = "Vague Voices"},
 	},
 	["aggressive"] = {
+		{url = "https://www.youtube.com/watch?v=pdSzekGKFXo", title = "Anti-Citizen"},
+		{url = "https://www.youtube.com/watch?v=GEmlSwWORHI", title = "Scanning Hostile Biodats"},
 		{url = "https://www.youtube.com/watch?v=t7Gz8jJOLAk", title = "Guard Down"},
 		{url = "https://www.youtube.com/watch?v=D4DfQ8gUN68", title = "Penultimatum"},
 		{url = "https://www.youtube.com/watch?v=r-eMVfiT8_c", title = "Something Secret Steers Us"},
