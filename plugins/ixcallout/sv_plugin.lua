@@ -1901,6 +1901,12 @@ local MPF_TEMPLATE_SETS = {
 			text = "이 구역은 아무 이상이 없다, 647-E 보이지 않는다.",
 		},
 		{
+			sounds = {"npc/metropolice/vo/ten97.wav"},
+			text = "10-97.",
+		},
+	},
+	answer = {
+		{
 			sounds = {"npc/metropolice/vo/rodgerthat.wav"},
 			text = "알았다, 오버.",
 		},
@@ -1908,14 +1914,10 @@ local MPF_TEMPLATE_SETS = {
 			sounds = {"npc/metropolice/vo/ten4.wav"},
 			text = "10-4.",
 		},
-		{
-			sounds = {"npc/metropolice/vo/ten2.wav"},
-			text = "10-2.",
-		},
-		{
-			sounds = {"npc/metropolice/vo/ten97.wav"},
-			text = "10-97.",
-		},
+		-- {
+		-- 	sounds = {"npc/metropolice/vo/ten2.wav"},
+		-- 	text = "10-2.",
+		-- },
 		{
 			sounds = {"npc/metropolice/vo/affirmative.wav"},
 			text = "알았다.",
@@ -2654,7 +2656,7 @@ function PLUGIN:GetCombineDesignationParts(client)
 	local callsignKey = COMBINE_CALLSIGN_KEYS[info.callsign]
 	local callsignSound = callsignKey and self:GetVoiceSound("Combine", callsignKey) or nil
 	local callsignText = callsignKey and self:GetVoiceText("Combine", callsignKey) or info.callsign
-	if (callsignText) then callsignText = string.TrimRight(string.Trim(callsignText), ".,") end
+	if (callsignText) then callsignText = string.TrimRight(string.Trim(L(callsignText, client)), ".,") end
 	local numberSounds = self:BuildNumberSounds(info.number or 0)
 
 	return {
@@ -4714,3 +4716,128 @@ function PLUGIN:EntityRemoved(entity)
 		self.playerCooldowns[entity] = nil
 	end
 end
+
+-- Manual voice menu (CS-style quick callout)
+util.AddNetworkString("ixcallout_manual_voice")
+
+-- Checks whether a player can use the manual voice menu.
+-- Intentionally does NOT check the ixCalloutClientEnabled option so the menu
+-- works even when automatic reactions are turned off.
+function PLUGIN:CanManualVoice(client)
+	if (!self:IsVoicePluginAvailable()) then return false end
+	if (!IsValid(client) or !client:Alive()) then return false end
+	if (!self:IsConnectedToLink(client)) then return false end
+	if (client:GetMoveType() == MOVETYPE_NOCLIP or client:IsRagdoll()) then return false end
+	if (!client:GetCharacter()) then return false end
+	if (client.ixVoiceBusy and client.ixVoiceBusy > CurTime()) then return false end
+
+	return true
+end
+
+-- Find the nearest hostile entity within sight for use as context.
+local function findNearestEnemy(client, radius)
+	radius = radius or COMBAT_SIGHT_RADIUS
+
+	local best, bestDistSqr = nil, radius * radius
+
+	for _, ent in ipairs(ents.FindInSphere(client:GetPos(), radius)) do
+		if (ent == client) then continue end
+		if (!ent:IsPlayer() and !ent:IsNPC()) then continue end
+
+		local plug = ix.plugin.list["ixcallout"]
+		if (!plug or !plug:IsHostileToCombine(ent, client)) then continue end
+
+		local distSqr = client:GetPos():DistToSqr(ent:GetPos())
+
+		if (distSqr < bestDistSqr) then
+			local trace = util.TraceLine({
+				start = client:EyePos(),
+				endpos = ent:EyePos(),
+				filter = {client, ent},
+				mask = MASK_SHOT
+			})
+
+			if (!trace.Hit or (IsValid(trace.Entity) and trace.Entity:GetClass() == "prop_physics")) then
+				best = ent
+				bestDistSqr = distSqr
+			end
+		end
+	end
+
+	return best
+end
+
+net.Receive("ixcallout_manual_voice", function(_, client)
+	if (!PLUGIN:CanManualVoice(client)) then return end
+
+	-- Shared cooldown with auto-voice
+	if (!PLUGIN:CanUsePlayerCooldown(client, "manual_voice", PLAYER_COOLDOWN)) then return end
+
+	-- Validate: player must be in a supported faction
+	if (!PLUGIN:GetVoiceType(client)) then return end
+
+	local catIndex = net.ReadUInt(8)
+	local cats = PLUGIN.MANUAL_CATEGORIES
+	if (!cats) then return end
+
+	local category = cats[catIndex]
+	if (!category) then return end
+
+	-- voices: pick one voice key directly, get matching text+sound in one shot
+	if (istable(category.voices) and #category.voices > 0) then
+		local keys = table.Copy(category.voices)
+
+		-- Shuffle so a different key is tried first each time
+		for i = #keys, 2, -1 do
+			local j = math.random(i)
+			keys[i], keys[j] = keys[j], keys[i]
+		end
+
+		for _, voiceKey in ipairs(keys) do
+			local info = PLUGIN:GetVoiceInfo("Combine", voiceKey)
+			if (!info) then continue end
+
+			local text, sound
+			if (info.table) then
+				local selected = table.Random(info.table)
+				text  = selected[1]
+				sound = selected[2]
+			else
+				text  = info.text
+				sound = info.sound
+			end
+
+			if (!text or !sound) then continue end
+			if (istable(sound)) then sound = table.Random(sound) end
+
+			PLUGIN:EmitVoiceEvent(client, text, { sound }, 75)
+			return
+		end
+
+		return -- no usable voice found
+	end
+
+	-- templates: context-aware random playback via BuildTemplateEvent
+	if (istable(category.templates) and #category.templates > 0) then
+		local shuffled = table.Copy(category.templates)
+		for i = #shuffled, 2, -1 do
+			local j = math.random(i)
+			shuffled[i], shuffled[j] = shuffled[j], shuffled[i]
+		end
+
+		local nearestEnemy = findNearestEnemy(client)
+		local context = nearestEnemy and {
+			target   = nearestEnemy,
+			distance = client:GetPos():DistToSqr(nearestEnemy:GetPos()),
+			bearing  = (nearestEnemy:GetPos() - client:GetPos()):Angle().y
+		} or {}
+
+		for _, templateKey in ipairs(shuffled) do
+			local event = PLUGIN:BuildTemplateEvent(client, templateKey, context)
+			if (event) then
+				PLUGIN:EmitVoiceEvent(client, event.text, event.sounds, 75, event.forceLocal, event.isCheck)
+				return
+			end
+		end
+	end
+end)

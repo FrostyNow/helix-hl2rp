@@ -292,6 +292,48 @@ LANGUAGE = {
 	["Dispatch, we need airwatch, subject is 505."] = "공중 추적 지원 바람, 표적 505.",
 	["All right. you can go."] = "좋아, 가도 좋다.",
 	["All units BOL we have 34s at."] = "모든 병력 주의하라, 34-S 발생.",
+	["All units close on suspect!"] = "모든 병력, 용의자에 접근하라!",
+	["All units code 2!"] = "모든 병력, 코드 2!",
+	["Protection Team, hold this position."] = "보호 기동대, 이 위치를 사수하라.",
+	["All units move in!"] = "모든 병력, 진입하라!",
+	["All units report location of suspect!"] = "모든 병력, 용의자 위치 보고하라!",
+	["All units at location, respond code 3!"] = "현장의 모든 병력, 코드 3 응답하라!",
+	["Amputate."] = "절단.",
+	["Anti-citizen."] = "반시민.",
+	["Anyone else pickup a 647e reading?"] = "647-E 상태를 확인한 사람 또 있나?",
+	["Apply."] = "적용.",
+	["Assault point secure, advance!"] = "습격 지점 확보, 전진하라!",
+	["at checkpoint."] = "검문소.",
+	["Back me up, I'm out!"] = "엄호하라, 전탄 소진!", -- 엄호하라, 나간다!
+	["Back up!"] = "물러서!", -- 지원!
+	["Block."] = "구역.",
+	["Block is holding, cohesive."] = "구역 유지 중, 단결.",
+	["Break his cover!"] = "엄폐물 제거하라!",
+	["Canal."] = "운하.",
+	["Canal block."] = "운하 구역.",
+	["Catch that blip on the stabilization readout."] = "기기에 포착된 범죄 현장을 소탕하라.",
+	["Cauterize."] = "제거하라.",
+	["Check for miscount."] = "불일치 없는지 확인하라.",
+	["*(hehe)*"] = "*(조용한 웃음소리)*",
+	["Citizen."] = "시민.",
+	["Reporting citizen summoned to voluntary conscription for general public service detail T94-322."] = "일반 공공 서비스 T94-322에 자원한 시민을 보고한다. 지금 보내도록 하겠다.",
+	["Classify subject name as DB this block ready for cleanout."] = "대상 상태를 사상자로 분류하라. 이 구역은 곧 소탕된다.",
+	["Clear and Code 100."] = "이상 없음, 코드 100.",
+	["Clear, no 647, no 10-107."] = "이상 없음, 10-107 없음.",
+	["Code 100."] = "코드 100.",
+	["Code 7."] = "코드 7.",
+	["Condemned zone."] = "사형 선고 구역.", -- 저주받은 구역
+	["Confirmed ADW on that suspect. 10-0."] = "해당 용의자의 무기 소지 확인, 10-0.",
+	["Confirm priority 1 sighted."] = "중요도 1 용의자 발견했다.",
+	["Contact with 243 suspect, my 10-20 is."] = "243 용의자 포착했다, 현 10-20.", -- 243 용의자 포착했다, 10-20.
+	["Contact with a priority 2."] = "중요도 2 용의자 발견.",
+	["Control is 100 percent this location. No sign of that 647e."] = "이 구역은 아무 이상이 없다, 647-E 보이지 않는다.",
+	["Control section."] = "구역 통제.",
+	["Copy."] = "알았다.", -- 확인 바람
+	["Cover me, I'm going in!"] = "엄호하라, 들어간다!",
+	["CP we need airwatch to BOL for that 243."] = "243 수색 지원할 공중 추적 바람.",
+	["CP is compromised. Re-establish!"] = "CP가 넘어갔다, 재구축하라!", -- CP 연루돼 있다, 지원하라!
+	["CP is overrun, we have no containment!"] = "CP가 넘어갔다, 봉쇄가 무너졌다!", -- CP가 침략되었다, 봉쇄가 무너졌다!
 
 	["10-0, viscerator is hunting!"] = "10-0, 비저레이터가 수색 중이다!",
 	["Possible 10-103 my location, alert tag units."] = "10-103 예상, 후방 병력에 알려라.",
@@ -318,6 +360,10 @@ LANGUAGE = {
 
 
 	["is moving in!"] = "접근 중이다!",
+
+	["Team is in position, advance!"] = "팀 위치 도착, 전진!",
+	["Fall out, establish a new CP!"] = "후퇴하라, 새 CP를 구축하라!",
+	["All units maintain this CP!"] = "모든 병력, 이 CP 사수하라!",
 	
 	-- Dispatch voices
 	["<:: Individual - you are charged with failure to comply with civil request level 2. You are charged with anti-civil activity level 1. Protection Units: prosecution code: duty, sword, operate. ::>"] = "<:: 주목, 당신은 시민의 의무 레벨: 2, 시민의 의무 레벨: 2에 응하지 않아 고발되었다. 반동 세력 활동 레벨: 1로 고발되었다. 보호 기동대, 수행 코드: 근무, 무력, 작전. ::>",

@@ -23,6 +23,10 @@ PLUGIN.voiceTypes = PLUGIN.voiceTypes or {
 ix.lang.AddTable("english", {
 	optIxCalloutClientEnabled = "Automatic voice reactions",
 	optdIxCalloutClientEnabled = "Allows supported factions to automatically speak in response to nearby events.",
+	optCalloutMenuBind = "Callout menu bind",
+	optdCalloutMenuBind = "Key used to open the quick callout menu. Use values like Z, F5, KP_1, or NONE to disable.",
+	calloutMenuTitle = "Callout Menu",
+	calloutMenuPage = "Page %d / %d",
 	["sector_index"] = "Sector Index",
 	["calloutTheme"] = "Theme",
 })
@@ -30,6 +34,21 @@ ix.lang.AddTable("english", {
 ix.lang.AddTable("korean", {
 	optIxCalloutClientEnabled = "자동 보이스 반응",
 	optdIxCalloutClientEnabled = "지원되는 진영이 주변 상황에 자동으로 음성을 내도록 합니다.",
+	optCalloutMenuBind = "콜아웃 메뉴 바인드",
+	optdCalloutMenuBind = "빠른 콜아웃 메뉴를 여는 키입니다. Z, F5, KP_1 같은 값을 쓰고, NONE으로 비활성화할 수 있습니다.",
+	calloutMenuTitle = "콜아웃 메뉴",
+	calloutMenuPage = "%d / %d 페이지",
+	["Affirmative/Roger"] = "긍정",
+	["Negative"] = "부정",
+	["Contact"] = "포착",
+	["Attack"] = "공격",
+	["Sector Clear"] = "구역 확보",
+	["Need Backup"] = "지원 요청",
+	["GO"] = "전진",
+	["Take Cover"] = "엄폐",
+	["Fall Back"] = "후퇴",
+	["Report In"] = "상황 보고",
+	["Hold This Position"] = "위치 사수",
 	["sector_index"] = "구역 번호",
 	["calloutTheme"] = "테마",
 })
@@ -38,6 +57,48 @@ ix.option.Add("ixCalloutClientEnabled", ix.type.bool, true, {
 	category = "Helix Callout",
 	bNetworked = true
 })
+
+if (CLIENT) then
+	local bUpdatingCalloutBind = false
+	local BIND_ALIASES = {
+		[""] = "NONE", OFF = "NONE", DISABLE = "NONE", DISABLED = "NONE",
+		ESC = "ESCAPE", RETURN = "ENTER"
+	}
+
+	local function resolveCalloutBindCode(bindText)
+		local normalized = string.upper(string.Trim(tostring(bindText or "")))
+		normalized = normalized:gsub("^KEY_", "")
+		normalized = normalized:gsub("[%s%-]+", "_")
+		normalized = BIND_ALIASES[normalized] or normalized
+
+		if (normalized == "NONE") then return KEY_NONE, normalized end
+
+		local keyCode = input.GetKeyCode and input.GetKeyCode(normalized) or nil
+		if (isnumber(keyCode) and keyCode != KEY_NONE) then return keyCode, normalized end
+
+		keyCode = _G[normalized] or _G["KEY_" .. normalized]
+		if (isnumber(keyCode)) then return keyCode, normalized end
+	end
+
+	function PLUGIN:GetCalloutMenuBindCode()
+		local _, code = resolveCalloutBindCode(ix.option.Get("calloutMenuBind", "NONE"))
+		return code or KEY_NONE
+	end
+
+	ix.option.Add("calloutMenuBind", ix.type.string, "NONE", {
+		category = "Helix Callout",
+		OnChanged = function(_, value)
+			if (bUpdatingCalloutBind) then return end
+			local normalized = select(2, resolveCalloutBindCode(value))
+			local next = normalized or "NONE"
+			if (next != value) then
+				bUpdatingCalloutBind = true
+				ix.option.Set("calloutMenuBind", next)
+				bUpdatingCalloutBind = false
+			end
+		end
+	})
+end
 
 ix.config.Add("ixCalloutEnabled", true, "Whether or not the automatic callout system is enabled.", nil, {
 	category = "Helix Callout"
@@ -124,7 +185,60 @@ function PLUGIN:GetAreaCalloutTheme(areaID)
 	end
 end
 
+-- Manual voice menu categories (shared across all supported factions).
+-- templates: uses BuildTemplateEvent for context-aware random playback.
+-- voices:    picks one voice key directly from Schema.voices ("Combine" class).
+PLUGIN.MANUAL_CATEGORIES = {
+	-- Page 1
+	{
+		labelKey = "Affirmative/Roger",
+		templates = { "answer" }
+	},
+	{
+		labelKey = "Negative",
+		voices = { "10-2" }
+	},
+	{
+		labelKey = "Contact",
+		templates = { "go_alert", "leader_alert", "combatCallout" }
+	},
+	{
+		labelKey = "Attack",
+		templates = { "assault", "flank" }
+	},
+	{
+		labelKey = "Sector Clear",
+		templates = { "clear" }
+	},
+	{
+		labelKey = "Need Backup",
+		voices = { "heavy resistance", "request reinforce", "request reserve", "request backup", "request medivac", "11-99", "10-78" }
+	},
+	-- Page 2
+	{
+		labelKey = "GO",
+		voices = { "move in", "go sharp", "go sharp go sharp", "advance" }
+	},
+	{
+		labelKey = "Take Cover",
+		voices = { "cover", "cover hurt", "cover me", "request cover" }
+	},
+	{
+		labelKey = "Fall Back",
+		voices = { "run", "fall out" }
+	},
+	{
+		labelKey = "Report In",
+		templates = { "check" }
+	},
+	{
+		labelKey = "Hold This Position",
+		voices = { "harden position", "hold pos", "hold cp" }
+	},
+}
+
 ix.util.Include("sv_plugin.lua")
+ix.util.Include("cl_voicemenu.lua")
 
 function PLUGIN:IsVoicePluginAvailable()
 	return ix.config.Get("ixCalloutEnabled", true) and (ix.plugin.list["ixvoice"] != nil)
