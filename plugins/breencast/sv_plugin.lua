@@ -106,6 +106,28 @@ function PLUGIN:StopBecauseUnavailable()
 	self:ResetSchedule(true)
 end
 
+function PLUGIN:IsCurfewTime()
+	local sfPlugin = ix.plugin.Get("stormfox")
+	if (!sfPlugin) then return false end
+	return sfPlugin:IsCurfewTime()
+end
+
+function PLUGIN:CheckAndStartCycle()
+	if (!self:IsVoicePluginAvailable() or !self:HasRelayEntities()) then
+		self:StopBecauseUnavailable()
+		return
+	end
+
+	if (self:IsCurfewTime()) then
+		timer.Create(getCycleTimerID(), 60, 1, function()
+			self:CheckAndStartCycle()
+		end)
+		return
+	end
+
+	self:StartCurrentSet()
+end
+
 function PLUGIN:ScheduleNextCycle()
 	local state = self:GetState()
 
@@ -120,12 +142,7 @@ function PLUGIN:ScheduleNextCycle()
 	self:UpdateRelayScheduleState()
 
 	timer.Create(getCycleTimerID(), self.repeatDelay, 1, function()
-		if (!self:IsVoicePluginAvailable() or !self:HasRelayEntities()) then
-			self:StopBecauseUnavailable()
-			return
-		end
-
-		self:StartCurrentSet()
+		self:CheckAndStartCycle()
 	end)
 end
 
@@ -220,14 +237,14 @@ function PLUGIN:TriggerButton()
 	end
 end
 
-function PLUGIN:StartSet(setID)
+function PLUGIN:StartSet(setID, onceOnly)
 	local state = self:GetState()
 
 	if (!state.activeSetID or !state.isPlayingSet) then
 		self:ClearTimers()
 		state.activeSetID = setID
 		state.pendingSetID = nil
-		state.stopAfterSet = false
+		state.stopAfterSet = onceOnly == true
 		state.currentIndex = 0
 		state.currentLineEnd = 0
 		self:StartCurrentSet()

@@ -14,7 +14,7 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 PLUGIN.defaultVolume = 80
 PLUGIN.defaultSpacing = 0.1
 PLUGIN.setLineDelay = 0.5
-PLUGIN.repeatDelay = 300
+PLUGIN.repeatDelay = 900 // 15 minutes
 PLUGIN.buttonID = 3889 // rp_industrial17_v1
 PLUGIN.broadcastSourceName = "Dr. Wallace Breen"
 PLUGIN.setAliases = {
@@ -275,7 +275,7 @@ ix.command.Add("BreenCast", {
 			return client:NotifyLocalized("breenCastNoLines")
 		end
 
-		local result = plugin:StartSet(normalized)
+		local result = plugin:StartSet(normalized, true)
 		local displayName = plugin:GetSetDisplayName(normalized)
 
 		if (result == "queued") then

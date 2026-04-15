@@ -57,6 +57,12 @@ if SERVER then
 	PLUGIN.isDay = nil
 	PLUGIN.lastCurfewMinute = -1
 
+	function PLUGIN:IsCurfewTime()
+		local date = ix.date.Get()
+		local hour = date:gethours()
+		return (hour >= 23 or hour < 7)
+	end
+
 	function PLUGIN:Tick()
 		if (self.nextDayCheck > CurTime()) then return end
 		self.nextDayCheck = CurTime() + 1
