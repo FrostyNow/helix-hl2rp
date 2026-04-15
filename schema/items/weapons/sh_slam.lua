@@ -1,4 +1,4 @@
-ITEM.name = "SLAM"
+ITEM.name = "S.L.A.M"
 ITEM.description = "slamDesc"
 ITEM.model = "models/weapons/w_slam.mdl"
 ITEM.class = "weapon_slam"
