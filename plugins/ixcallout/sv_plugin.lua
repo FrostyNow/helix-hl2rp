@@ -4770,8 +4770,7 @@ end
 net.Receive("ixcallout_manual_voice", function(_, client)
 	if (!PLUGIN:CanManualVoice(client)) then return end
 
-	-- Shared cooldown with auto-voice
-	if (!PLUGIN:CanUsePlayerCooldown(client, "manual_voice", PLAYER_COOLDOWN)) then return end
+	if (!PLUGIN:CanUsePlayerCooldown(client, "manual_voice", 0.5)) then return end
 
 	-- Validate: player must be in a supported faction
 	if (!PLUGIN:GetVoiceType(client)) then return end

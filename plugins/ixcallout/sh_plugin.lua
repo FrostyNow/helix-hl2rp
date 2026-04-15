@@ -27,6 +27,7 @@ ix.lang.AddTable("english", {
 	optdCalloutMenuBind = "Key used to open the quick callout menu. Use values like Z, F5, KP_1, or NONE to disable.",
 	calloutMenuTitle = "Callout Menu",
 	calloutMenuPage = "Page %d / %d",
+	calloutMenuExit = "Exit",
 	["sector_index"] = "Sector Index",
 	["calloutTheme"] = "Theme",
 })
@@ -38,6 +39,7 @@ ix.lang.AddTable("korean", {
 	optdCalloutMenuBind = "빠른 콜아웃 메뉴를 여는 키입니다. Z, F5, KP_1 같은 값을 쓰고, NONE으로 비활성화할 수 있습니다.",
 	calloutMenuTitle = "콜아웃 메뉴",
 	calloutMenuPage = "%d / %d 페이지",
+	calloutMenuExit = "나가기",
 	["Affirmative/Roger"] = "긍정",
 	["Negative"] = "부정",
 	["Contact"] = "포착",
@@ -81,7 +83,7 @@ if (CLIENT) then
 	end
 
 	function PLUGIN:GetCalloutMenuBindCode()
-		local _, code = resolveCalloutBindCode(ix.option.Get("calloutMenuBind", "NONE"))
+		local code = resolveCalloutBindCode(ix.option.Get("calloutMenuBind", "NONE"))
 		return code or KEY_NONE
 	end
 
