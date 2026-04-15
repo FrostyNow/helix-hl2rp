@@ -89,9 +89,9 @@ Schema.voices.Add("Combine", {en="motion check", ko="목표 추적"}, "Motion ch
 Schema.voices.Add("Combine", {en="move in", ko="진입하라"}, "Move in.", "npc/combine_soldier/vo/movein.wav")
 Schema.voices.Add("Combine", {en="necrotics", ko="변종"}, "Necrotics.", "npc/combine_soldier/vo/necrotics.wav")
 Schema.voices.Add("Combine", {en="necrotic inbound", ko="변종 접근"}, "Necrotics inbound.", "npc/combine_soldier/vo/necroticsinbound.wav")
-Schema.voices.Add("Combine", {en="niner", ko="to do"}, "Niner.", "npc/combine_soldier/vo/niner.wav")
-Schema.voices.Add("Combine", {en="nineteen", ko="to do"}, "Nineteen.", "npc/combine_soldier/vo/nineteen.wav")
-Schema.voices.Add("Combine", {en="ninety", ko="to do"}, "Ninety.", "npc/combine_soldier/vo/ninety.wav")
+Schema.voices.Add("Combine", {en="niner", ko="9"}, "Niner.", "npc/combine_soldier/vo/niner.wav")
+Schema.voices.Add("Combine", {en="nineteen", ko="19"}, "Nineteen.", "npc/combine_soldier/vo/nineteen.wav")
+Schema.voices.Add("Combine", {en="ninety", ko="90"}, "Ninety.", "npc/combine_soldier/vo/ninety.wav")
 Schema.voices.Add("Combine", {en="nomad", ko="노매드"}, "Nomad.", "npc/combine_soldier/vo/nomad.wav")
 Schema.voices.Add("Combine", {en="nova", ko="노바"}, "Nova.", "npc/combine_soldier/vo/nova.wav")
 Schema.voices.Add("Combine", {en="no viscon", ko="추적 실패"}, "No viscon.", "npc/combine_soldier/vo/noviscon.wav")
@@ -289,7 +289,7 @@ Schema.voices.Add("Combine", {en="position to contain", ko="진압 대기"}, "Po
 Schema.voices.Add("Combine", {en="lock", ko="감금"}, "Lock.", "npc/metropolice/hiding04.wav")
 Schema.voices.Add("Combine", {en="take him down", ko="잡아"}, "Take him down!", "npc/metropolice/takedown.wav")
 
--- Schema.voices.Add("Combine", {en="pain", ko="고통"}, "*고통에 찬 소리*", {"npc/metropolice/pain1.wav", "npc/metropolice/pain2.wav", "npc/metropolice/pain3.wav", "npc/metropolice/pain4.wav"}) -- to do
+Schema.voices.Add("Combine", {en="pain", ko="고통"}, "*(pain!)*", {"npc/metropolice/pain1.wav", "npc/metropolice/pain2.wav", "npc/metropolice/pain3.wav", "npc/metropolice/pain4.wav"})
 Schema.voices.Add("Combine", "11-99", "11-99! Officer needs assistance!", "npc/metropolice/vo/11-99officerneedsassistance.wav")
 Schema.voices.Add("Combine", "404", "404 Zone.", "npc/metropolice/vo/404zone.wav")
 Schema.voices.Add("Combine", {en="acquiring on visual", ko="용의자 포착"}, "Acquiring on visual!", "npc/metropolice/vo/acquiringonvisual.wav")
@@ -320,7 +320,7 @@ Schema.voices.Add("Combine", {en="canal block", ko="운하 구역"}, "Canal bloc
 Schema.voices.Add("Combine", {en="catch blip", ko="소탕하라"}, "Catch that blip on the stabilization readout.", "npc/metropolice/vo/catchthatbliponstabilization.wav")
 Schema.voices.Add("Combine", {en="cauterize", ko="제거하라"}, "Cauterize.", "npc/metropolice/vo/cauterize.wav")
 Schema.voices.Add("Combine", {en="check for miscount", ko="불일치 확인하라"}, "Check for miscount.", "npc/metropolice/vo/checkformiscount.wav")
-Schema.voices.Add("Combine", {en="hehe", ko="ㅋㅋ"}, "*(hehe)*", "npc/metropolice/vo/chuckle.wav") -- to do
+Schema.voices.Add("Combine", {en="chuckle", ko="ㅋㅋ"}, "*(chuckle)*", "npc/metropolice/vo/chuckle.wav")
 Schema.voices.Add("Combine", {en="citizen", ko="시민"}, "Citizen.", "npc/metropolice/vo/citizen.wav")
 Schema.voices.Add("Combine", "T94-322", "Reporting citizen summoned to voluntary conscription for general public service detail T94-322.", "npc/metropolice/vo/citizensummoned.wav")
 Schema.voices.Add("Combine", {en="classify as db", ko="사상자로 분류하라"}, "Classify subject name as DB this block ready for cleanout.", "npc/metropolice/vo/classifyasdbthisblockready.wav")
@@ -614,9 +614,9 @@ Schema.voices.Add("Dispatch", {en="status evasion", ko="기피 대상"}, "<:: At
 Schema.voices.Add("Dispatch", {en="upi", ko="용의자"}, "<:: Attention please: unidentified person of interest - confirm your civil status with local protection team immediately. ::>", "npc/overwatch/cityvoice/f_confirmcivilstatus_1_spkr.wav", true)
 Schema.voices.Add("Dispatch", {en="unrest procedure", ko="소요 사태 진압"}, "<:: Attention community: unrest procedure code is now in effect. Inoculate, shield, pacify. Code: pressure, sword, sterilize. ::>", "npc/overwatch/cityvoice/f_unrestprocedure1_spkr.wav", true)
 Schema.voices.Add("Dispatch", {en="local unrest", ko="지역 소요"}, "<:: Alert: Community Ground Protection units: Local unrest structure detected. Assemble, administer, pacify. ::>", "npc/overwatch/cityvoice/f_localunrest_spkr.wav", true)
-Schema.voices.Add("Dispatch", {en="bypass detected", ko="바이패스 감지"}, "<:: Warning. Malignant Viral Interface bypass detected. Polyphasic core reprogramming detected. Sterilizers and containment fields may be compromised. ::>", "npc/overwatch/cityvoice/fprison_interfacebypass.wav", true) -- to do
-Schema.voices.Add("Dispatch", {en="restrictors disengaged", ko="to do"}, "<:: Priority warning: perimeter restrictors disengaged. All stabilization delegates move to incursion hard points immediately. ::>", "npc/overwatch/cityvoice/fprison_restrictorsdisengaged.wav", true) -- to do
-Schema.voices.Add("Dispatch", {en="nonstandard exogen", ko="to do"}, "<:: Alert. Nonstandard Exogen activity detected. Execute containment procedure and report. ::>", "npc/overwatch/cityvoice/fprison_nonstandardexogen.wav", true) -- to do
+Schema.voices.Add("Dispatch", {en="bypass detected", ko="바이패스 감지"}, "<:: Warning. Malignant Viral Interface bypass detected. Polyphasic core reprogramming detected. Sterilizers and containment fields may be compromised. ::>", "npc/overwatch/cityvoice/fprison_interfacebypass.wav", true)
+Schema.voices.Add("Dispatch", {en="restrictors disengaged", ko="방어선 해제"}, "<:: Priority warning: perimeter restrictors disengaged. All stabilization delegates move to incursion hard points immediately. ::>", "npc/overwatch/cityvoice/fprison_restrictorsdisengaged.wav", true)
+Schema.voices.Add("Dispatch", {en="nonstandard exogen", ko="비표준 엑소젠"}, "<:: Alert. Nonstandard Exogen activity detected. Execute containment procedure and report. ::>", "npc/overwatch/cityvoice/fprison_nonstandardexogen.wav", true)
 
 -- Episode One
 Schema.voices.Add("Dispatch", {en="alert alert alert", ko="경보 경보 경보"}, "<:: Alert. Alert. Alert. ::>", "ambient/levels/citadel/fcitadel_alert.wav", true)

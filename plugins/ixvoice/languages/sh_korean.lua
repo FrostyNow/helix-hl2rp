@@ -285,7 +285,8 @@ LANGUAGE = {
 	["Position to contain."] = "진압 지점 대기 중.",
 	["Lock."] = "감금.",
 	["Take him down!"] = "잡아!", -- 적용!
-
+	
+	["*(pain!)*"] = "*(고통에 찬 소리)*",
 	["11-99! Officer needs assistance!"] = "11-99, 긴급 지원 바란다!",
 	["404 Zone."] = "404 구역.",
 	["Acquiring on visual!"] = "용의자 포착됐다!",
@@ -314,7 +315,7 @@ LANGUAGE = {
 	["Catch that blip on the stabilization readout."] = "기기에 포착된 범죄 현장을 소탕하라.",
 	["Cauterize."] = "제거하라.",
 	["Check for miscount."] = "불일치 없는지 확인하라.",
-	["*(hehe)*"] = "*(조용한 웃음소리)*",
+	["*(chuckle)*"] = "*(조용한 웃음소리)*",
 	["Citizen."] = "시민.",
 	["Reporting citizen summoned to voluntary conscription for general public service detail T94-322."] = "일반 공공 서비스 T94-322에 자원한 시민을 보고한다. 지금 보내도록 하겠다.",
 	["Classify subject name as DB this block ready for cleanout."] = "대상 상태를 사상자로 분류하라. 이 구역은 곧 소탕된다.",
@@ -389,6 +390,9 @@ LANGUAGE = {
 	["<:: Attention please: unidentified person of interest - confirm your civil status with local protection team immediately. ::>"] = "<:: 주목, 임시 미확인된 용의자로 분류되었다. 불이익을 받지 않으려면 즉시 시민 보호 기동대에게 신분을 확인하라. ::>",
 	["<:: Attention community: unrest procedure code is now in effect. Inoculate, shield, pacify. Code: pressure, sword, sterilize. ::>"] = "<:: 지역 시민 주목, 현재 소요 사태 진압 절차 코드가 발효되었다. 코드: 접종, 보호, 진압. 코드: 압력, 무력, 격리. ::>",
 	["<:: Alert: Community Ground Protection units: Local unrest structure detected. Assemble, administer, pacify. ::>"] = "<:: 경보, 지상 지역 시민 보호 기동대. 해당 지역에 소요 사태가 감지되었다. 결집, 집행, 진압. ::>",
+	["<:: Warning. Malignant Viral Interface bypass detected. Polyphasic core reprogramming detected. Sterilizers and containment fields may be compromised. ::>"] = "<:: 경고, 악성 바이러스성 인터페이스 바이패스가 감지되었다. 다상성 코어 재프로그래밍이 감지되었다. 살균제 및 봉쇄 필드가 손상될 우려가 있다. 경고, 악성 바이러스성 인터페이스. ::>",
+	["<:: Priority warning: perimeter restrictors disengaged. All stabilization delegates move to incursion hard points immediately. ::>"] = "<:: 긴급 경고. 방어선 억제층이 해제되었다. 모든 진압 파견 병력은 즉시 진압 벙커로 이동하라. ::>",
+	["<::  Alert. Nonstandard Exogen activity detected. Execute containment procedure and report. ::>"] = "<:: 경보, 비표준 엑소젠 활동이 감지되었다. 표준 봉쇄 절차를 이행하고 보고하라. ::>",
 
 	["<:: Alert. Alert. Alert. ::>"] = "<:: 경보. 경보. 경보. ::>",
 	["<:: Alert. ::>"] = "<:: 경보. ::>",
