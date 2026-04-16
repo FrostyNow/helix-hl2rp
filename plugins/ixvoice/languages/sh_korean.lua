@@ -335,6 +335,30 @@ LANGUAGE = {
 	["CP we need airwatch to BOL for that 243."] = "243 수색 지원할 공중 추적 바람.",
 	["CP is compromised. Re-establish!"] = "CP가 넘어갔다, 재구축하라!", -- CP 연루돼 있다, 지원하라!
 	["CP is overrun, we have no containment!"] = "CP가 넘어갔다, 봉쇄가 무너졌다!", -- CP가 침략되었다, 봉쇄가 무너졌다!
+	["CP requests all units location report in."] = "모든 병력, 위치 요청한다. 보고하라.",
+	["CP we need to establish a perimeter at"] = "지역 구축 요청한다, 위치는",
+	["63, criminal trespass."] = "63, 비인가 구역 침입.",
+	["DB count is"] = "사망자 수",
+	["Defender."] = "디펜더.",
+	["Deserviced area."] = "제외 구역.", -- 관할 구역
+	["Designate suspect as"] = "용의자 지명",
+	["Destroy that cover!"] = "엄폐물 파괴하라!",
+	["Dismounting hardpoint."] = "거점 철수 중.", -- 바리케이드 철수 중
+	["Dispatch I need 10-78!"] = "10-78 지원, 대원이 위험하다!",
+	["Disp reports suspect incursion at location."] = "용의자가 이 지역에 진입했다.",
+	["Disp updating APB likeness."] = "사진을 갱신 중이다.",
+	["Distribution block."] = "유통 구역.",
+	["Document."] = "기록.",
+	["Don't move!"] = "동작 그만!",
+	["Fall out, establish a new CP!"] = "후퇴하라, 새 CP를 구축하라!",
+	["External jurisdiction."] = "외부 관할권.",
+	["Examine."] = "to do", -- to do
+	["Expired."] = "to do", -- to do
+	["Final verdict administered."] = "최종 평결, 집행 완료.",
+	["Final warning!"] = "최종 경고!",
+	["Fire to dislocate that interpose!"] = "사이를 쏴서 힘을 분산시켜라!",
+	["Firing to expose target!"] = "목표를 향해 쏴라!",
+	["First warning; move away!"] = "첫번째 경고다, 비켜라!",
 
 	["10-0, viscerator is hunting!"] = "10-0, 비저레이터가 수색 중이다!",
 	["Possible 10-103 my location, alert tag units."] = "10-103 예상, 후방 병력에 알려라.",
@@ -346,7 +370,6 @@ LANGUAGE = {
 	["Any unit, report in with 10-25 suspect."] = "아무 병력, 10-25 용의자 보고하라.",
 	["I have a 10-30 my 10-20 responding code 2."] = "10-20에 10-30이 있다, 코드 2 진행하겠다.",
 	["Unit is 10-65."] = "병력은 10-65 상태.",
-	["Dispatch I need 10-78!"] = "10-78 지원, 대원이 위험하다!",
 	["10-8, standing by."] = "10-8, 대기 중.",
 	["Unit is on duty 10-8."] = "병력은 10-8 수행 중.",
 	["10-91d count is."] = "10-91 사망자 수는...",
@@ -357,13 +380,11 @@ LANGUAGE = {
 	["I've got a 408 here at location."] = "이곳에 408 사태 발생했다.",
 	["is 415-B."] = "415-B 중.",
 	["603, unlawful entry."] = "603, 불법 침입.",
-	["63, criminal trespass."] = "63, 비인가 구역 침입.",
 
 
 	["is moving in!"] = "접근 중이다!",
 
 	["Team is in position, advance!"] = "팀 위치 도착, 전진!",
-	["Fall out, establish a new CP!"] = "후퇴하라, 새 CP를 구축하라!",
 	["All units maintain this CP!"] = "모든 병력, 이 CP 사수하라!",
 	
 	-- Dispatch voices
