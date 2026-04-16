@@ -148,6 +148,7 @@ ix.anim.SetModelClass("models/combine_soldiergrunt.mdl", "overwatch")
 ix.anim.SetModelClass("models/combine_soldier2000.mdl", "overwatch")
 ix.anim.SetModelClass("models/combine_darkelite_soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/combine_darkelite1_soldier.mdl", "overwatch")
+ix.anim.SetModelClass("models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl", "overwatch")
 
 -- Player
 ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")

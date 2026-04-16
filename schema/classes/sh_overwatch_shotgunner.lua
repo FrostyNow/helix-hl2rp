@@ -7,26 +7,26 @@ function CLASS:CanSwitchTo(client)
 end
 
 function CLASS:OnSet(client)
-	local character = client:GetCharacter()
-	local inventory = character:GetInventory()
+	-- local character = client:GetCharacter()
+	-- local inventory = character:GetInventory()
 
-	client:GetCharacter():SetModel("models/combine_soldierproto.mdl")
+	-- client:GetCharacter():SetModel("models/combine_soldierproto.mdl")
 
-	local bodygroupPlugin = ix.plugin.Get("bodygroupmanager")
+	-- local bodygroupPlugin = ix.plugin.Get("bodygroupmanager")
 
-	if (bodygroupPlugin) then
-		local player = character:GetPlayer()
-		local savedSkin = character:GetData("skin")
-		local skin = savedSkin == nil and 1 or (tonumber(savedSkin) or 1)
+	-- if (bodygroupPlugin) then
+	-- 	local player = character:GetPlayer()
+	-- 	local savedSkin = character:GetData("skin")
+	-- 	local skin = savedSkin == nil and 1 or (tonumber(savedSkin) or 1)
 
-		player:SetSkin(skin)
+	-- 	player:SetSkin(skin)
 
-		if (savedSkin == nil) then
-			bodygroupPlugin:SetPersistentAppearance(character, nil, skin)
-		end
-	else
-		client:SetSkin(tonumber(character:GetData("skin")) or 1)
-	end
+	-- 	if (savedSkin == nil) then
+	-- 		bodygroupPlugin:SetPersistentAppearance(character, nil, skin)
+	-- 	end
+	-- else
+	-- 	client:SetSkin(tonumber(character:GetData("skin")) or 1)
+	-- end
 end
 
 CLASS_SGS = CLASS.index

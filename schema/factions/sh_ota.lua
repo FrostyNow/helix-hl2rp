@@ -5,6 +5,7 @@ FACTION.color = Color(181, 110, 60, 255)
 FACTION.pay = 60
 FACTION.models = {
 	-- "models/Combine_Soldier.mdl"
+	"models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl",
 	"models/combine_soldierproto.mdl"
 }
 FACTION.isDefault = false

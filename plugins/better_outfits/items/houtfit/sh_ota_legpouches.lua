@@ -28,6 +28,8 @@ ITEM.allowedModels = {
 	"models/combine_soldier2000.mdl",
 	"models/combine_darkelite_soldier.mdl",
 	"models/combine_darkelite1_soldier.mdl",
+
+	"models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl",
 }
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"
