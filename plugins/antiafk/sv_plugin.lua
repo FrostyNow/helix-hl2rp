@@ -28,6 +28,8 @@ function PLUGIN:KickAFK(target, byAdmin)
 end
 
 function PLUGIN:Update(client)
+	if (client.isManualAFK) then return end
+
 	local aimVector = client:GetAimVector()
 	local posVector = client:GetPos()
 
