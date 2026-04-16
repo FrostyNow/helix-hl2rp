@@ -35,6 +35,11 @@ FACTION.bodyGroups = {
 		min = 1,
 		max = 1
 	},
+	["Filter"] = {
+		name = "Gasmask Filter",
+		min = 1,
+		max = 1
+	},
 }
 
 ix.inventory.Register(FACTION.inventoryType, FACTION.invWidth, FACTION.invHeight)

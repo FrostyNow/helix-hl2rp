@@ -360,14 +360,9 @@ ix.command.Add("FilterSwap", {
 			end
 		end
 
-		if (!bestFilter) then
-			return "@noFilterFound"
-		end
-
-		client.ixFilterCooldown = CurTime() + 1.5
-		client:NotifyLocalized("swappingFilter")
-		
 		-- 2. Remove existing filter first if any
+		local removedCurrent = false
+
 		if (badair:CanEquipInternalFilter(client)) then
 			local currentFilter = badair:GetEquippedBadAirProtectionItem(char, function(item)
 				return item.isGasmaskFilter == true
@@ -375,6 +370,7 @@ ix.command.Add("FilterSwap", {
 
 			if (currentFilter) then
 				ix.item.PerformInventoryAction(client, "EquipUn", currentFilter:GetID(), currentFilter.invID)
+				removedCurrent = true
 			end
 		else
 			local targetMask = badair:GetEquippedBadAirProtectionItem(char, function(item)
@@ -383,8 +379,19 @@ ix.command.Add("FilterSwap", {
 
 			if (targetMask and badair:HasItemFilterInstalled(targetMask)) then
 				ix.item.PerformInventoryAction(client, "RemoveFilter", targetMask:GetID(), targetMask.invID)
+				removedCurrent = true
 			end
 		end
+
+		if (!bestFilter) then
+			if (removedCurrent) then
+				client.ixFilterCooldown = CurTime() + 1.5
+			end
+			return "@noFilterFound"
+		end
+
+		client.ixFilterCooldown = CurTime() + 1.5
+		client:NotifyLocalized("swappingFilter")
 
 		-- 3. Install/Equip the best filter with a 0.5s delay
 		local itemID = bestFilter:GetID()

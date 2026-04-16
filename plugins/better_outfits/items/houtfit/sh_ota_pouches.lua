@@ -5,13 +5,15 @@ ITEM.height = 1
 ITEM.width = 1
 ITEM.price = 20
 ITEM.eqBodyGroups = {
-	["Tactic"] = 0
+	["Tactic"] = 0,
+	["Belly Pouches"] = 1,
 }
 ITEM.outfitCategory = "vest"
 
 ITEM.isBag = true
 ITEM.invWidth = 2
 ITEM.invHeight = 1
+ITEM.allowBases = {"ammo"}
 
 ITEM.allowedModels = {
 	"models/combine_soldierproto.mdl",

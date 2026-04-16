@@ -1,20 +1,16 @@
-ITEM.name = "Magazine Leg Pouches"
-ITEM.description = "magazinePouchesDesc"
+ITEM.name = "Haversack"
+ITEM.description = "haversackDesc"
 ITEM.model = "models/mosi/fallout4/props/junk/ammobag.mdl"
 ITEM.height = 1
 ITEM.width = 1
 ITEM.price = 20
 ITEM.eqBodyGroups = {
-	["TacticalLegs"] = 0,
-	["Left Thigh Pouch"] = 1,
-	["Right Thigh Pouch"] = 1
+	["Buttpack"] = 1,
 }
-ITEM.outfitCategory = "legs"
-ITEM.faction = {FACTION_OTA}
-ITEM.noDeathDrop = true
+ITEM.outfitCategory = "butt"
 
 ITEM.isBag = true
-ITEM.invWidth = 1
+ITEM.invWidth = 3
 ITEM.invHeight = 2
 
 ITEM.allowedModels = {
