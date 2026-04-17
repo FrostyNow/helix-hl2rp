@@ -41,6 +41,36 @@ FACTION.bodyGroups = {
 		min = 1,
 		max = 1
 	},
+	["Combine backpack"] = {
+		name = "Radio Backpack",
+		min = 1,
+		max = 1
+	},
+	["Radio backpack"] = {
+		name = "Radio Backpack",
+		min = 1,
+		max = 1
+	},
+	["Left bag"] = {
+		name = "Magazine Leg Pouches",
+		min = 1,
+		max = 1
+	},
+	["Reft bag"] = {
+		name = "Magazine Leg Pouches",
+		min = 1,
+		max = 1
+	},
+	["Left leg bag"] = {
+		name = "Magazine Leg Pouches",
+		min = 1,
+		max = 1
+	},
+	["Right leg bag"] = {
+		name = "Magazine Leg Pouches",
+		min = 1,
+		max = 1
+	},
 }
 
 ix.inventory.Register(FACTION.inventoryType, FACTION.invWidth, FACTION.invHeight)

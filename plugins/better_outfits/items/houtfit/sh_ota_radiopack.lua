@@ -1,11 +1,13 @@
-ITEM.name = "Radio Pack"
-ITEM.description = "radioPackDesc"
+ITEM.name = "Radio Backpack"
+ITEM.description = "radioBackpackDesc"
 ITEM.model = "models/mosi/fallout4/props/junk/ammobag.mdl"
 ITEM.height = 1
 ITEM.width = 1
 ITEM.price = 20
 ITEM.eqBodyGroups = {
 	["Backpack"] = 1,
+	["Radio backpack"] = 1,
+	["Combine backpack"] = 1,
 }
 ITEM.outfitCategory = "bag"
 
@@ -16,6 +18,8 @@ ITEM.allowBases = {"radios"}
 
 ITEM.allowedModels = {
 	"models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl",
+	"models/cultist/hl_a/combine_commander/npc/combine_commander.mdl",
+	"models/transition/soldiers/ordinal-eow/ordinal-eow.mdl",
 }
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"

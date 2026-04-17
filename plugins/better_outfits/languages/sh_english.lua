@@ -184,4 +184,6 @@ LANGUAGE = {
 	cpMaskDesc = "A standard-issue gas mask for Civil Protection units.",
 	hatDesc = "A cap worn by the military personnel in the field when a combat helmet is not required.",
 	magazinePouchesDesc = "A set of magazine pouches to attach to MOLLE system.",
+	haversackDesc = "A bag that is standard issue for Overwatch soldiers, for carrying various items.",
+	radioBackpackDesc = "A backpack designed for carrying heavy long-distance communication equipment and issued as standard to Overwatch soldiers.",
 }

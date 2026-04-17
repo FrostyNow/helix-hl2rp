@@ -7,7 +7,11 @@ ITEM.price = 20
 ITEM.eqBodyGroups = {
 	["TacticalLegs"] = 0,
 	["Left Thigh Pouch"] = 1,
-	["Right Thigh Pouch"] = 1
+	["Right Thigh Pouch"] = 1,
+	["Left bag"] = 1,
+	["Reft bag"] = 1,
+	["Left leg bag"] = 1,
+	["Right leg bag"] = 1,
 }
 ITEM.outfitCategory = "legs"
 ITEM.faction = {FACTION_OTA}
@@ -30,6 +34,8 @@ ITEM.allowedModels = {
 	"models/combine_darkelite1_soldier.mdl",
 
 	"models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl",
+	"models/cultist/hl_a/combine_commander/npc/combine_commander.mdl",
+	"models/transition/soldiers/ordinal-eow/ordinal-eow.mdl",
 }
 
 ITEM.tooltipLabelText = "securitizedItemTooltip"

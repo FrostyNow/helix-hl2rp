@@ -185,4 +185,8 @@ LANGUAGE = {
 	["Magazine Pouches"] = "탄창 파우치",
 	magazinePouchesDesc = "MOLLE 시스템에 부착할 수 있는 탄창 파우치입니다.",
 	["Magazine Leg Pouches"] = "허벅지 탄창 파우치",
+	["Haversack"] = "잡낭",
+	haversackDesc = "잡다한 물건을 담을 수 있는 감시 부대 제식 가방입니다.",
+	["Radio Backpack"] = "무전 배낭",
+	radioBackpackDesc = "무거운 장거리 통신장비를 휴대하기 위한 감시 부대 제식 배낭입니다.",
 }
