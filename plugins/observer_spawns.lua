@@ -15,10 +15,12 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 ix.lang.AddTable("english", {
 	optObserverSpawnpointESP = "Show Spawnpoint ESP",
 	optdObserverSpawnpointESP = "Shows the names and locations of each faction spawnpoint in the server.",
+	territorySpawnLabel = "%s Territory Spawn (%s)",
 })
 ix.lang.AddTable("korean", {
 	optObserverSpawnpointESP = "시작지점 ESP 보기",
 	optdObserverSpawnpointESP = "서버에 있는 각 세력의 시작지점의 이름과 위치를 표시합니다.",
+	territorySpawnLabel = "%s 점령 스폰 (%s)",
 })
 
 ix.option.Add("observerSpawnpointESP", ix.type.bool, true, {
@@ -96,6 +98,13 @@ else
 	end)
 
 	local dimDistance = 2048
+	local territoryMarkerColor = Color(255, 215, 80)
+
+	local function DrawSpawnMarker(x, y, size, color, alpha)
+		surface.SetDrawColor(color.r, color.g, color.b, alpha)
+		surface.DrawOutlinedRect(x - size / 2, y - size / 2, size, size)
+		surface.DrawOutlinedRect(x - size / 2 + 1, y - size / 2 + 1, size - 2, size - 2)
+	end
 
 	function PLUGIN:HUDPaint()
 		local client = LocalPlayer()
@@ -137,9 +146,7 @@ else
 						local size = math.max(10, 32 * factor)
 						local alpha = math.max(255 * factor, 80)
 
-						surface.SetDrawColor(drawColor.r, drawColor.g, drawColor.b, alpha)
-						surface.DrawOutlinedRect(x - size / 2, y - size / 2, size, size)
-						surface.DrawOutlinedRect(x - size / 2 + 1, y - size / 2 + 1, size - 2, size - 2)
+						DrawSpawnMarker(x, y, size, drawColor, alpha)
 
 						local text = factionName
 
@@ -149,6 +156,38 @@ else
 
 						ix.util.DrawText(text, x, y - size, ColorAlpha(drawColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha)
 					end
+				end
+			end
+
+			local territoryPlugin = ix.plugin.list["territorycontrol"]
+
+			if (territoryPlugin and territoryPlugin.GetTerritorySpawns) then
+				for _, spawnData in pairs(territoryPlugin:GetTerritorySpawns()) do
+					if (!spawnData.pos) then
+						continue
+					end
+
+					local distance = clientPos:Distance(spawnData.pos)
+					if (distance > dimDistance * 4) then
+						continue
+					end
+
+					local screenPosition = spawnData.pos:ToScreen()
+					if (!screenPosition.visible) then
+						continue
+					end
+
+					local x, y = screenPosition.x, screenPosition.y
+					local factor = 1 - math.Clamp(distance / dimDistance, 0, 1)
+					local size = math.max(12, 28 * factor)
+					local alpha = math.max(255 * factor, 80)
+					local teamName = territoryPlugin.GetCaptureTeamName and territoryPlugin:GetCaptureTeamName(spawnData.teamID, client) or spawnData.teamID
+					local areaName = territoryPlugin.GetAreaName and (territoryPlugin:GetAreaName(spawnData.areaID) or spawnData.areaID) or spawnData.areaID
+					local drawColor = territoryPlugin.GetCaptureTeamColor and territoryPlugin:GetCaptureTeamColor(spawnData.teamID) or territoryMarkerColor
+					local label = L("territorySpawnLabel", client, teamName, areaName)
+
+					DrawSpawnMarker(x, y, size, drawColor, alpha)
+					ix.util.DrawText(label, x, y - size, ColorAlpha(drawColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha)
 				end
 			end
 		end

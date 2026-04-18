@@ -1,0 +1,22 @@
+ix.lang.AddTable("korean", {
+	capturable = "점령 가능",
+	territoryTeamOverwatch = "감시 부대",
+	territoryTeamResistance = "저항군",
+	territoryUnclaimed = "중립",
+	territoryStatusUnclaimed = "아직 점령한 세력이 없습니다.",
+	territoryStatusHeldBy = "%s 점령 중",
+	territoryStatusCapturing = "%s 점령 진행 중",
+	territoryStatusContested = "대치 중",
+	territoryContestedShort = "대치 중",
+	cmdAreaSetNeutral = "현재 점령 가능 구역을 중립 상태로 만듭니다.",
+	cmdAreaSetController = "현재 점령 가능 구역의 점령 세력을 설정합니다.",
+	cmdTerritorySpawnAdd = "지정한 팀과 구역에 연결된 우선 점령 스폰을 추가합니다.",
+	cmdTerritorySpawnRemove = "근처의 우선 점령 스폰을 제거합니다.",
+	territoryAreaRequired = "점령 가능 구역 안에 서 있어야 합니다.",
+	territoryAreaNeutralized = "'%s' 구역이 중립 상태가 되었습니다.",
+	territoryUnknownTeam = "'%s' 점령 팀은 존재하지 않습니다.",
+	territoryAreaControlledBy = "'%s' 구역은 이제 %s의 통제 하에 있습니다.",
+	territoryAreaInvalid = "'%s' 점령 가능 구역을 찾을 수 없습니다.",
+	territorySpawnAdded = "%s번 점령 스폰을 추가했습니다. 팀: %s, 연결 구역: '%s'.",
+	territorySpawnRemoved = "%s개의 점령 스폰을 제거했습니다."
+})

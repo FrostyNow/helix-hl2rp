@@ -1,0 +1,21 @@
+ix.lang.AddTable("english", {
+	territoryTeamOverwatch = "Overwatch",
+	territoryTeamResistance = "Resistance",
+	territoryUnclaimed = "Unclaimed",
+	territoryStatusUnclaimed = "No one controls this area.",
+	territoryStatusHeldBy = "Controlled by %s",
+	territoryStatusCapturing = "%s is capturing this area",
+	territoryStatusContested = "Contested",
+	territoryContestedShort = "Stand-off",
+	cmdAreaSetNeutral = "Sets the current capturable area to neutral.",
+	cmdAreaSetController = "Sets the current capturable area's controller team.",
+	cmdTerritorySpawnAdd = "Adds a territory-priority spawn for the specified team and area.",
+	cmdTerritorySpawnRemove = "Removes nearby territory-priority spawns.",
+	territoryAreaRequired = "You must be standing inside a capturable area.",
+	territoryAreaNeutralized = "Area '%s' is now neutral.",
+	territoryUnknownTeam = "Unknown territory team '%s'.",
+	territoryAreaControlledBy = "Area '%s' is now controlled by %s.",
+	territoryAreaInvalid = "Unknown capturable area '%s'.",
+	territorySpawnAdded = "Territory spawn #%s added for %s linked to area '%s'.",
+	territorySpawnRemoved = "Removed %s territory spawn(s)."
+})
