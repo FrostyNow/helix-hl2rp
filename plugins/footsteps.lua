@@ -139,6 +139,7 @@ if CLIENT then
 
 	local ladderSurface = util.GetSurfaceData(util.GetSurfaceIndex("ladder"))
 	local wadeSurface = util.GetSurfaceData(util.GetSurfaceIndex("wade"))
+	local clothSurface = util.GetSurfaceData(util.GetSurfaceIndex("carpet"))
 
 	function GAMEMODE:GetDefaultStepSound(client, side)
 		if client:GetMoveType() == MOVETYPE_LADDER then
@@ -147,6 +148,10 @@ if CLIENT then
 			return side and wadeSurface.stepRightSound or wadeSurface.stepLeftSound, client:IsRunning() and 0.65 or 0.25
 		else
 			local prop = client:GetSurfaceData()
+
+			if not prop then
+				prop = clothSurface
+			end
 
 			return side and prop.stepRightSound or prop.stepLeftSound, client:IsRunning() and 1.0 or 0.5
 		end
