@@ -86,10 +86,17 @@ function PLUGIN:CalcView(client, origin, angles, fov)
 
 	if (realOrigin and realAngles) then
 		afkView.origin = realOrigin
-		afkView.angles = realAngles
+		afkView.angles = Angle(realAngles.p, realAngles.y, 0)
 		return afkView
 	end
 end
+
+function PLUGIN:ShouldDrawLocalPlayer(client)
+	if (client:GetNetVar("IsAFK") and ix.config.Get("afkMapScene") and afkSceneCache ~= nil) then
+		return false
+	end
+end
+
 
 function PLUGIN:HUDPaint()
 	local client = LocalPlayer()

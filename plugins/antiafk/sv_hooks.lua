@@ -22,3 +22,25 @@ function PLUGIN:CanPlayerEarnSalary(client, faction)
 		return false
 	end
 end
+
+function PLUGIN:SetupMove(client, mv, cmd)
+	if (client.isAFK) then
+		if (cmd:GetButtons() > 0 or cmd:GetMouseX() ~= 0 or cmd:GetMouseY() ~= 0) then
+			client.isManualAFK = nil
+			client.isAFK = nil
+			client:SetNetVar("IsAFK", false)
+			client.ixLastAimVector = client:GetAimVector()
+			client.ixLastPosition = client:GetPos()
+		end
+	end
+end
+
+function PLUGIN:PlayerSay(client, text)
+	if (client.isAFK) then
+		client.isManualAFK = nil
+		client.isAFK = nil
+		client:SetNetVar("IsAFK", false)
+		client.ixLastAimVector = client:GetAimVector()
+		client.ixLastPosition = client:GetPos()
+	end
+end

@@ -28,8 +28,6 @@ function PLUGIN:KickAFK(target, byAdmin)
 end
 
 function PLUGIN:Update(client)
-	if (client.isManualAFK) then return end
-
 	local aimVector = client:GetAimVector()
 	local posVector = client:GetPos()
 
@@ -37,6 +35,7 @@ function PLUGIN:Update(client)
 		client.ixLastAimVector = aimVector
 		client.ixLastPosition = posVector
 
+		client.isManualAFK = nil
 		client.isAFK = nil
 		client:SetNetVar("IsAFK", false)
 	else
