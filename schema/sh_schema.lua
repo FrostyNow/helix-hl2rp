@@ -150,10 +150,10 @@ ix.anim.SetModelClass("models/combine_darkelite_soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/combine_darkelite1_soldier.mdl", "overwatch")
 ix.anim.SetModelClass("models/jq/theparrygod/transition_period_overwatch_soldier_npc.mdl", "overwatch")
 ix.anim.SetModelClass("models/cultist/hl_a/combine_commander/npc/combine_commander.mdl", "overwatch")
-ix.anim.SetModelClass("models/transition/soldiers/ordinal-eow/ordinal-eow.mdl", "overwatch")
 
 -- Player
 ix.anim.SetModelClass("models/armacham/scientists/scientists_1.mdl", "player")
+ix.anim.SetModelClass("models/transition/soldiers/ordinal-eow/ordinal-eow.mdl", "player")
 
 ALWAYS_RAISED["gmod_gphone"] = true
 ALWAYS_RAISED["weapon_portalgun"] = true

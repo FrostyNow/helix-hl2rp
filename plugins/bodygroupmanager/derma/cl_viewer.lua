@@ -233,9 +233,8 @@ local function CreateEditorRow(parent, labelText, currentValue, onPrev, onNext, 
 	local label = row:Add("DLabel")
 	label:SetText(labelText:upper())
 	label:SetFont("ixSmallFont")
-	label:Dock(LEFT)
+	label:Dock(FILL)
 	label:DockMargin(16, 0, 0, 0)
-	label:SetWide(150)
 	label:SetTextColor(color_white)
 
 	local rightPanel = row:Add("Panel")
@@ -320,18 +319,19 @@ end
 
 function PANEL:PopulateBodygroupOptions()
 	self.bodygroupIndex = {}
-	
+
 	local client = LocalPlayer()
-	local character = client:GetCharacter()
+	local clientCharacter = client:GetCharacter()
 	local target = self.target
+	local targetCharacter = target:GetCharacter()
 	local isSelf = (target == client)
 	local canAdmin = ix.command.HasAccess(client, "CharEditBodygroup")
-	local faction = PLUGIN:GetBaseAppearanceFaction(character)
+	local faction = PLUGIN:GetBaseAppearanceFaction(targetCharacter)
 	local model = target:GetModel():lower()
 	local isFemale = model:find("female") or model:find("alyx") or model:find("mossman")
 
-	local canBodygroup = canAdmin or (isSelf and character:HasFlags("b"))
-	local canSkin = canAdmin or (isSelf and character:HasFlags("s"))
+	local canBodygroup = canAdmin or (isSelf and clientCharacter:HasFlags("b"))
+	local canSkin = canAdmin or (isSelf and clientCharacter:HasFlags("s"))
 
 	if (canSkin) then
 		local skinCount = target:SkinCount()
@@ -366,23 +366,30 @@ function PANEL:PopulateBodygroupOptions()
 			if (v.id == 0) then continue end
 			
 			local index = v.id
-			local config = PLUGIN:GetBodygroupConfig(character, target, index)
+			local config = PLUGIN:GetBodygroupConfig(targetCharacter, target, index)
 
-			-- If the faction has a bodyGroups table, only show groups that are in it
-			if (faction and faction.bodyGroups and !config) then
+			-- Admins bypass faction filter; regular players only see whitelisted groups
+			if (!canAdmin and faction and faction.bodyGroups and !config) then
 				continue
 			end
 
-			-- Check for exclusion based on model gender
-			if (config) then
+			-- Check for exclusion based on model gender (non-admin only)
+			if (!canAdmin and config) then
 				if (config.excludeModels == "female" and isFemale) then continue end
 				if (config.excludeModels == "male" and !isFemale) then continue end
 			end
 
 			local labelName = (config and config.name) or v.name:gsub("^%l", string.upper)
-			local min = (config and tonumber(config.min)) or 0
-			local max = (config and tonumber(config.max)) or (target:GetBodygroupCount(index) - 1)
-			local isFixed = (min == max)
+			local min, max, isFixed
+			if (canAdmin) then
+				min = 0
+				max = target:GetBodygroupCount(index) - 1
+				isFixed = (min == max)
+			else
+				min = (config and tonumber(config.min)) or 0
+				max = (config and tonumber(config.max)) or (target:GetBodygroupCount(index) - 1)
+				isFixed = (min == max)
+			end
 
 			self.bodygroupIndex[index] = CreateEditorRow(self.bodygroups, labelName, target:GetBodygroup(index), function()
 				if (self.bodygroupIndex[index].value <= min) then return end

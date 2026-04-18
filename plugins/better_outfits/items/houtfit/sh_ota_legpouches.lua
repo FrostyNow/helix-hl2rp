@@ -8,10 +8,10 @@ ITEM.eqBodyGroups = {
 	["TacticalLegs"] = 0,
 	["Left Thigh Pouch"] = 1,
 	["Right Thigh Pouch"] = 1,
-	["Left bag"] = 1,
-	["Reft bag"] = 1,
-	["Left leg bag"] = 1,
-	["Right leg bag"] = 1,
+	["Left bag"] = 0,
+	["Reft bag"] = 0,
+	["left_leg_bag"] = 0,
+	["right_leg_bag"] = 0,
 }
 ITEM.outfitCategory = "legs"
 ITEM.faction = {FACTION_OTA}

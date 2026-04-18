@@ -32,7 +32,17 @@ net.Receive("ixBodygroupTableSet", function(length, client)
 	local bodygroups = net.ReadTable()
 	local skin = net.ReadUInt(8)
 	local modelChangingOutfit = PLUGIN:HasEquippedModelChangingOutfit(targetCharacter)
-	local allowedGroups = PLUGIN:GetEditableBodygroupValues(targetCharacter, target, bodygroups)
+	local allowedGroups
+	if (canAdminEdit and !modelChangingOutfit) then
+		allowedGroups = {}
+		for k, v in pairs(bodygroups) do
+			local index = tonumber(k)
+			if (!index) then continue end
+			allowedGroups[index] = math.Clamp(tonumber(v) or 0, 0, target:GetBodygroupCount(index) - 1)
+		end
+	else
+		allowedGroups = PLUGIN:GetEditableBodygroupValues(targetCharacter, target, bodygroups)
+	end
 	local changedPersistentData = false
 
 	if (canEditBodygroups) then
