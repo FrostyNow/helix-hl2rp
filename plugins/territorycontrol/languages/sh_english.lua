@@ -4,7 +4,7 @@ ix.lang.AddTable("english", {
 	territoryUnclaimed = "Unclaimed",
 	territoryStatusUnclaimed = "No one controls this area.",
 	territoryStatusHeldBy = "Controlled by %s",
-	territoryStatusCapturing = "%s is capturing this area",
+	territoryStatusCapturing = "Capturing",
 	territoryStatusContested = "Contested",
 	territoryContestedShort = "Stand-off",
 	cmdAreaSetNeutral = "Sets the current capturable area to neutral.",

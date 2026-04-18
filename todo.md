@@ -3,7 +3,6 @@
 # 테스트
 - 인식 안 된 ic의 이름이 투명해지지 않음
 - SitAnywhere 화살표
-- afk mapscene
 
 # 우선순위 높음
 - 담배

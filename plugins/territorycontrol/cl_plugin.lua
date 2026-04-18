@@ -68,27 +68,35 @@ function PLUGIN:HUDPaint()
 	local statusText = self:GetCaptureStatusText(areaID, ownerTeamID, progressTeamID, contested, client)
 
 	local x = ScrW() * 0.5
-	local y = ScrH() - 110
+	local y = ScrH() - 120
 	local textColor = color_white
 	local accent = progressTeamID and self:GetCaptureTeamColor(progressTeamID)
 		or ownerTeamID and self:GetCaptureTeamColor(ownerTeamID)
 		or Color(210, 210, 210)
+	local radius = 24
+	local thickness = 5
+	local circleY = y - 18
 
-	draw.SimpleText(areaName, "ixTerritoryArea", x, y, Color(230, 230, 230, 220), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
-	draw.SimpleText(statusText, "ixTerritoryLabel", x, y + 18, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	if (ownerTeamID and !progressTeamID and !contested) then
+		textColor = accent
+	elseif (progressTeamID) then
+		textColor = accent
+	elseif (contested) then
+		textColor = Color(220, 120, 120, 220)
+	else
+		textColor = Color(210, 210, 210, 220)
+	end
+
+	draw.SimpleText(areaName, "ixTerritoryArea", x, y + 14, Color(230, 230, 230, 220), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	draw.SimpleText(statusText, "ixTerritoryLabel", x, y + 32, textColor, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
 	if (contested) then
-		draw.SimpleText(L("territoryContestedShort", client), "ixTerritoryLabel", x, y + 38, Color(220, 120, 120, 220), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 		return
 	end
 
 	if (!progressTeamID or progress <= 0) then
 		return
 	end
-
-	local radius = 24
-	local thickness = 5
-	local circleY = y - 8
 
 	DrawArc(x, circleY, radius, thickness, -90, 270, Color(20, 20, 20, 180))
 	DrawArc(x, circleY, radius, thickness, -90, -90 + (360 * progress), accent)

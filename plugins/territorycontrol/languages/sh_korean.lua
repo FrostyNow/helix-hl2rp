@@ -5,7 +5,7 @@ ix.lang.AddTable("korean", {
 	territoryUnclaimed = "중립",
 	territoryStatusUnclaimed = "아직 점령한 세력이 없습니다.",
 	territoryStatusHeldBy = "%s 점령 중",
-	territoryStatusCapturing = "%s 점령 진행 중",
+	territoryStatusCapturing = "점령 진행 중",
 	territoryStatusContested = "대치 중",
 	territoryContestedShort = "대치 중",
 	cmdAreaSetNeutral = "현재 점령 가능 구역을 중립 상태로 만듭니다.",

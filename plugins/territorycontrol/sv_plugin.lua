@@ -78,6 +78,7 @@ function PLUGIN:ResetPlayerAreaTracking(client)
 		if (self.activeAreaCounts[previousAreaID] <= 0) then
 			self.activeAreaCounts[previousAreaID] = nil
 			self.activeCaptureAreas[previousAreaID] = nil
+			self:ResetAreaCaptureProgress(previousAreaID)
 		end
 	end
 
@@ -109,6 +110,7 @@ function PLUGIN:UpdatePlayerAreaTracking(client)
 		if (self.activeAreaCounts[previousAreaID] <= 0) then
 			self.activeAreaCounts[previousAreaID] = nil
 			self.activeCaptureAreas[previousAreaID] = nil
+			self:ResetAreaCaptureProgress(previousAreaID)
 		end
 	end
 
@@ -188,6 +190,13 @@ function PLUGIN:ClearAreaOwner(areaID)
 	self:SaveData()
 end
 
+function PLUGIN:ResetAreaCaptureProgress(areaID)
+	local state = self:GetAreaState(areaID)
+	state.progressTeamID = nil
+	state.progress = 0
+	state.contested = false
+end
+
 function PLUGIN:GetNextTerritorySpawnID()
 	local highestID = 0
 
@@ -241,6 +250,10 @@ function PLUGIN:IsTerritorySpawnActive(spawnData)
 end
 
 function PLUGIN:GetActiveTerritorySpawnsForClient(client)
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		return {}
+	end
+
 	local teamID = self:GetPlayerCaptureTeamID(client)
 
 	if (!teamID) then
@@ -319,7 +332,23 @@ function PLUGIN:SyncTerritoryHUD(client)
 		return
 	end
 
-	local areaID = client:GetArea()
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		local previousHUD = client.ixTerritoryHUDState or {}
+
+		if (!table.IsEmpty(previousHUD)) then
+			client:SetLocalVar("territoryAreaID", nil)
+			client:SetLocalVar("territoryAreaName", nil)
+			client:SetLocalVar("territoryOwnerTeamID", nil)
+			client:SetLocalVar("territoryProgressTeamID", nil)
+			client:SetLocalVar("territoryProgress", 0)
+			client:SetLocalVar("territoryContested", false)
+			client.ixTerritoryHUDState = {}
+		end
+
+		return
+	end
+
+	local areaID = client:IsInArea() and client:GetArea() or nil
 
 	if (!self:IsCapturableArea(areaID)) then
 		local previousHUD = client.ixTerritoryHUDState or {}
@@ -378,6 +407,10 @@ function PLUGIN:Think()
 	self.ixNextTerritoryTick = self.ixNextTerritoryTick or 0
 	self.ixNextTerritoryFullRescan = self.ixNextTerritoryFullRescan or 0
 
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		return
+	end
+
 	if (self.ixNextTerritoryFullRescan <= CurTime()) then
 		self:RebuildActiveCaptureAreas()
 		self.ixNextTerritoryFullRescan = CurTime() + self.fullRescanInterval
@@ -400,7 +433,11 @@ function PLUGIN:PlayerTick(client)
 	self:UpdatePlayerAreaTracking(client)
 	local nextAreaID = client.ixTerritoryTrackedAreaID
 
-	if (previousAreaID != nextAreaID) then
+	local previousHUDAreaID = client.ixTerritoryHUDAreaID
+	local nextHUDAreaID = client:IsInArea() and client:GetArea() or nil
+	client.ixTerritoryHUDAreaID = nextHUDAreaID
+
+	if (previousAreaID != nextAreaID or previousHUDAreaID != nextHUDAreaID) then
 		self:SyncTerritoryHUD(client)
 	end
 end

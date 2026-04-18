@@ -19,6 +19,11 @@ ix.util.Include("cl_plugin.lua")
 PLUGIN.captureTickInterval = 1
 PLUGIN.defaultCaptureTime = 20
 PLUGIN.captureTeams = PLUGIN.captureTeams or {}
+
+ix.config.Add("territoryControlEnabled", false, "Whether territory control is enabled.", nil, {
+	category = "Territory Control"
+})
+
 PLUGIN.captureTeamPresets = {
 	{
 		id = "overwatch",
@@ -86,6 +91,10 @@ end
 function PLUGIN:GetCaptureAreas()
 	local captureAreas = {}
 
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		return captureAreas
+	end
+
 	if (!ix.area or !ix.area.stored) then
 		return captureAreas
 	end
@@ -109,7 +118,8 @@ function PLUGIN:GetAreaName(areaID)
 		return nil
 	end
 
-	return area.name or areaID
+	local properties = area.properties or {}
+	return (properties.name and properties.name != "") and properties.name or areaID
 end
 
 function PLUGIN:GetCaptureTeam(teamID)
@@ -136,6 +146,10 @@ function PLUGIN:GetCaptureTeamColor(teamID)
 end
 
 function PLUGIN:GetPlayerCaptureTeamID(client)
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		return nil
+	end
+
 	if (!IsValid(client) or !client.GetCharacter or !client:GetCharacter()) then
 		return nil
 	end
@@ -150,6 +164,10 @@ function PLUGIN:GetPlayerCaptureTeamID(client)
 end
 
 function PLUGIN:IsCapturableArea(areaID)
+	if (!ix.config.Get("territoryControlEnabled", false)) then
+		return false
+	end
+
 	if (!areaID or !ix.area or !ix.area.stored) then
 		return false
 	end
@@ -176,14 +194,14 @@ function PLUGIN:GetCaptureStatusText(areaID, ownerTeamID, progressTeamID, contes
 	end
 
 	if (progressTeamID) then
-		return L("territoryStatusCapturing", client, self:GetCaptureTeamName(progressTeamID, client))
+		return L("territoryStatusCapturing", client)
 	end
 
 	if (ownerTeamID) then
-		return L("territoryStatusHeldBy", client, self:GetCaptureTeamName(ownerTeamID, client))
+		return self:GetCaptureTeamName(ownerTeamID, client)
 	end
 
-	return L("territoryStatusUnclaimed", client)
+	return L("territoryUnclaimed", client)
 end
 
 function PLUGIN:GetTerritorySpawns()
@@ -191,34 +209,22 @@ function PLUGIN:GetTerritorySpawns()
 	return self.territorySpawns
 end
 
-ix.command.Add("AreaSetNeutral", {
-	description = "@cmdAreaSetNeutral",
+ix.command.Add("AreaSetController", {
+	description = "@cmdAreaSetController",
 	adminOnly = true,
-	OnRun = function(self, client)
+	arguments = bit.bor(ix.type.string, ix.type.optional),
+	OnRun = function(self, client, teamID)
 		local areaID = client:GetArea()
 
 		if (!PLUGIN:IsCapturableArea(areaID)) then
 			return "@territoryAreaRequired"
 		end
 
-		PLUGIN:ClearAreaOwner(areaID)
-		PLUGIN:SyncPlayersInArea(areaID)
+		if (!teamID or teamID == "") then
+			PLUGIN:ClearAreaOwner(areaID)
+			PLUGIN:SyncPlayersInArea(areaID)
 
-		return "@territoryAreaNeutralized", PLUGIN:GetAreaName(areaID) or areaID
-	end
-})
-
-ix.command.Add("AreaSetController", {
-	description = "@cmdAreaSetController",
-	adminOnly = true,
-	arguments = {
-		ix.type.text
-	},
-	OnRun = function(self, client, teamID)
-		local areaID = client:GetArea()
-
-		if (!PLUGIN:IsCapturableArea(areaID)) then
-			return "@territoryAreaRequired"
+			return "@territoryAreaNeutralized", PLUGIN:GetAreaName(areaID) or areaID
 		end
 
 		if (!PLUGIN:GetCaptureTeam(teamID)) then
@@ -236,7 +242,7 @@ ix.command.Add("TerritorySpawnAdd", {
 	description = "@cmdTerritorySpawnAdd",
 	adminOnly = true,
 	arguments = {
-		ix.type.text,
+		ix.type.string,
 		ix.type.text
 	},
 	OnRun = function(self, client, teamID, areaID)

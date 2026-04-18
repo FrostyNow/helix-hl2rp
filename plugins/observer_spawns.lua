@@ -15,12 +15,12 @@ To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-
 ix.lang.AddTable("english", {
 	optObserverSpawnpointESP = "Show Spawnpoint ESP",
 	optdObserverSpawnpointESP = "Shows the names and locations of each faction spawnpoint in the server.",
-	territorySpawnLabel = "%s Territory Spawn (%s)",
+	territorySpawnLabel = "%s (%s)",
 })
 ix.lang.AddTable("korean", {
 	optObserverSpawnpointESP = "시작지점 ESP 보기",
 	optdObserverSpawnpointESP = "서버에 있는 각 세력의 시작지점의 이름과 위치를 표시합니다.",
-	territorySpawnLabel = "%s 점령 스폰 (%s)",
+	territorySpawnLabel = "%s (%s)",
 })
 
 ix.option.Add("observerSpawnpointESP", ix.type.bool, true, {
@@ -35,11 +35,14 @@ if (SERVER) then
 
 	function PLUGIN:SyncSpawns(client)
 		local spawnsPlugin = ix.plugin.list["spawns"]
-		if (!spawnsPlugin) then return end
+		local territoryPlugin = ix.plugin.list["territorycontrol"]
+		local spawns = spawnsPlugin and spawnsPlugin.spawns or {}
+		local territorySpawns = territoryPlugin and territoryPlugin.GetTerritorySpawns and territoryPlugin:GetTerritorySpawns() or {}
 
 		if (client) then
 			net.Start("ixSpawnSync")
-				net.WriteTable(spawnsPlugin.spawns or {})
+				net.WriteTable(spawns)
+				net.WriteTable(territorySpawns)
 			net.Send(client)
 		else
 			local admins = {}
@@ -51,7 +54,8 @@ if (SERVER) then
 
 			if (#admins > 0) then
 				net.Start("ixSpawnSync")
-					net.WriteTable(spawnsPlugin.spawns or {})
+					net.WriteTable(spawns)
+					net.WriteTable(territorySpawns)
 				net.Send(admins)
 			end
 		end
@@ -92,9 +96,11 @@ if (SERVER) then
 	end
 else
 	PLUGIN.spawns = PLUGIN.spawns or {}
+	PLUGIN.territorySpawns = PLUGIN.territorySpawns or {}
 
 	net.Receive("ixSpawnSync", function()
 		PLUGIN.spawns = net.ReadTable()
+		PLUGIN.territorySpawns = net.ReadTable() or {}
 	end)
 
 	local dimDistance = 2048
@@ -161,8 +167,8 @@ else
 
 			local territoryPlugin = ix.plugin.list["territorycontrol"]
 
-			if (territoryPlugin and territoryPlugin.GetTerritorySpawns) then
-				for _, spawnData in pairs(territoryPlugin:GetTerritorySpawns()) do
+			if (territoryPlugin) then
+				for _, spawnData in pairs(self.territorySpawns or {}) do
 					if (!spawnData.pos) then
 						continue
 					end
@@ -184,7 +190,7 @@ else
 					local teamName = territoryPlugin.GetCaptureTeamName and territoryPlugin:GetCaptureTeamName(spawnData.teamID, client) or spawnData.teamID
 					local areaName = territoryPlugin.GetAreaName and (territoryPlugin:GetAreaName(spawnData.areaID) or spawnData.areaID) or spawnData.areaID
 					local drawColor = territoryPlugin.GetCaptureTeamColor and territoryPlugin:GetCaptureTeamColor(spawnData.teamID) or territoryMarkerColor
-					local label = L("territorySpawnLabel", client, teamName, areaName)
+					local label = L("territorySpawnLabel", teamName, areaName)
 
 					DrawSpawnMarker(x, y, size, drawColor, alpha)
 					ix.util.DrawText(label, x, y - size, ColorAlpha(drawColor, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER, nil, alpha)
