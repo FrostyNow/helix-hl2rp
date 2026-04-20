@@ -4502,6 +4502,14 @@ function PLUGIN:IsSeatLikeVehicle(vehicle)
 	local className = string.lower(tostring(vehicle:GetClass() or ""))
 	local model = string.lower(tostring(vehicle:GetModel() or ""))
 
+	local parent = vehicle:GetParent()
+	local parentClass = IsValid(parent) and string.lower(tostring(parent:GetClass() or "")) or ""
+
+	if (className:find("^glide_", 1) or className:find("^sim_fphys_", 1)
+		or parentClass:find("^glide_", 1) or parentClass:find("^sim_fphys_", 1)) then
+		return false
+	end
+
 	return className:find("chair", 1, true) or className:find("seat", 1, true)
 		or model:find("chair", 1, true) or model:find("seat", 1, true)
 end
