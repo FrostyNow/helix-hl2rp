@@ -827,11 +827,10 @@ ix.command.Add("CorpseClear", {
 				if (minutes == 0 or (currentTime - lastActivity) >= threshold) then
 					-- check is someone searching the body
 					local bInUse = false
-					for _, ply in ipairs(player.GetAll()) do
-						local storage = ply:GetStorage()
-						if (storage and storage.entity == v) then
-							bInUse = true
-							break
+					if (v.ixInventory) then
+						local inventory = ix.item.inventories[v.ixInventory]
+						if (inventory and inventory.storageInfo) then
+							bInUse = ix.storage.InUse(inventory)
 						end
 					end
 
