@@ -71,6 +71,9 @@ do
 		lowMedicalSkill = "You don't have enough medical skill to use this.",
 		searchingCorpse = "Searching...",
 		revivingCorpse = "Reviving...",
+		cmdCorpseClear = "Clears persistent corpses based on their last activity time.",
+		corpsesCleared = "Cleared %s persistent corpses.",
+		noCorpsesCleared = "No persistent corpses were eligible for removal.",
 	})
 
 	ix.lang.AddTable("korean", {
@@ -84,6 +87,9 @@ do
 		lowMedicalSkill = "이 도구를 사용하기 위한 의료 기술이 부족합니다.",
 		searchingCorpse = "수색 중...",
 		revivingCorpse = "소생 중...",
+		cmdCorpseClear = "마지막 활동 시간을 기준으로 시체 래그돌을 정리합니다.",
+		corpsesCleared = "%s개의 시체 래그돌을 정리했습니다.",
+		noCorpsesCleared = "정리할 시체 래그돌이 없습니다.",
 	})
 end
 
@@ -160,23 +166,72 @@ if (SERVER) then
 		self:CleanupCorpses()
 	end
 
-	function PLUGIN:CleanupCorpses(maxCorpses)
-		maxCorpses = maxCorpses or ix.config.Get("corpseMax", 8)
-		local toRemove = {}
+	timer.Create("ixCorpseMoveCheck", 5, 0, function()
+		for _, v in ipairs(PLUGIN.corpses) do
+			if (IsValid(v) and v:GetVelocity():LengthSqr() > 100) then
+				v.ixLastMoveTime = CurTime()
+			end
+		end
+	end)
 
-		if (#self.corpses > maxCorpses) then
-			for k, v in ipairs(self.corpses) do
-				if (!IsValid(v)) then
-					toRemove[#toRemove + 1] = k
-				elseif (#self.corpses - #toRemove > maxCorpses) then
-					v:Remove()
-					toRemove[#toRemove + 1] = k
-				end
+	function PLUGIN:CleanupCorpses(maxCorpses)
+		maxCorpses = maxCorpses or ix.config.Get("corpseMax", 30)
+		
+		-- Filter valid ragdolls
+		local valid = {}
+		for _, v in ipairs(self.corpses) do
+			if (IsValid(v)) then
+				valid[#valid + 1] = v
+			end
+		end
+		self.corpses = valid
+
+		if (#self.corpses <= maxCorpses) then
+			return
+		end
+
+		-- Filter candidate players
+		local players = {}
+		for _, v in ipairs(player.GetAll()) do
+			if (v:GetCharacter() and v:Alive() and v:GetMoveType() != MOVETYPE_NOCLIP) then
+				players[#players + 1] = v
 			end
 		end
 
-		for k, _ in ipairs(toRemove) do
-			table.remove(self.corpses, k)
+		-- Calculate removal score (higher score = removed first)
+		local scores = {}
+		local curTime = CurTime()
+		for _, v in ipairs(self.corpses) do
+			local age = curTime - (v.ixSpawnTime or curTime)
+			local moveAge = curTime - (v.ixLastMoveTime or v.ixSpawnTime or curTime)
+			
+			-- Base score = time since spawn + time since last move
+			local score = age + moveAge
+			
+			-- Protect players nearby (threshold: approx 1000 units)
+			for _, ply in ipairs(players) do
+				if (v:GetPos():DistToSqr(ply:GetPos()) < 1000000) then
+					score = score - 1000000 -- significantly lower removal priority
+					break
+				end
+			end
+			
+			scores[v] = score
+		end
+
+		-- Sort by score (highest removal priority)
+		table.sort(self.corpses, function(a, b)
+			return (scores[a] or 0) > (scores[b] or 0)
+		end)
+
+		-- Remove excess corpses
+		while (#self.corpses > maxCorpses) do
+			local corpse = self.corpses[1]
+			if (IsValid(corpse)) then
+				corpse:Remove()
+			else
+				table.remove(self.corpses, 1)
+			end
 		end
 	end
 
@@ -279,10 +334,12 @@ if (SERVER) then
 		-- remove reference to the player so no more damage can be dealt
 		entity.ixPlayer = nil
 
+		entity.ixSpawnTime = CurTime()
+		entity.ixLastMoveTime = CurTime()
 		self.corpses[#self.corpses + 1] = entity
 
 		-- clean up old corpses after we've added this one
-		if (#self.corpses >= maxCorpses) then
+		if (#self.corpses > maxCorpses) then
 			self:CleanupCorpses(maxCorpses)
 		end
 
@@ -607,6 +664,7 @@ if (SERVER) then
 		local isUntie = (option == L("unTying", client))
 
 		if (invID and isSearch) then
+			entity.ixLastMoveTime = CurTime()
 			local inventory = ix.item.inventories[invID]
 
 			if (inventory and (client.ixNextOpen or 0) < CurTime()) then
@@ -646,6 +704,7 @@ if (SERVER) then
 				end)
 			end
 		elseif (isRevive) then
+			entity.ixLastMoveTime = CurTime()
 			self:StartCorpseRevive(client, entity)
 		elseif (isUntie) then
 			if (!client:IsRestricted() and entity:GetNetVar("ixRestricted")) then
@@ -743,6 +802,55 @@ properties.Add("corpse_view", {
 				entity = entity,
 				searchTime = 0
 			})
+		end
+	end
+})
+
+ix.command.Add("CorpseClear", {
+	description = "@cmdCorpseClear",
+	adminOnly = true,
+	arguments = {
+		bit.bor(ix.type.number, ix.type.optional)
+	},
+	argumentNames = {"minutes"},
+	OnRun = function(self, client, minutes)
+		minutes = minutes or 0
+		local count = 0
+		local currentTime = CurTime()
+		local threshold = minutes * 60
+
+		local toRemove = {}
+		for _, v in ipairs(PLUGIN.corpses) do
+			if (IsValid(v)) then
+				local lastActivity = v.ixLastMoveTime or v.ixSpawnTime or 0
+
+				if (minutes == 0 or (currentTime - lastActivity) >= threshold) then
+					-- check is someone searching the body
+					local bInUse = false
+					for _, ply in ipairs(player.GetAll()) do
+						local storage = ply:GetStorage()
+						if (storage and storage.entity == v) then
+							bInUse = true
+							break
+						end
+					end
+
+					if (!bInUse) then
+						table.insert(toRemove, v)
+					end
+				end
+			end
+		end
+
+		for _, v in ipairs(toRemove) do
+			v:Remove()
+			count = count + 1
+		end
+
+		if (count > 0) then
+			return "@corpsesCleared", count
+		else
+			return "@noCorpsesCleared"
 		end
 	end
 })
