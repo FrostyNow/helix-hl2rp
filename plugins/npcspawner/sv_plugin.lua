@@ -12,18 +12,26 @@ function PLUGIN:AddSpawner(id, pos, template)
 			maxNearby = template.maxNearby,
 			spawnDelay = template.spawnDelay,
 			minDistance = template.minDistance,
+			activeRadius = template.activeRadius or 3000,
+			useArea = template.useArea or false,
+			visitCooldown = template.visitCooldown or 0,
 			lastSpawn = 0,
+			lastVisited = 0,
 			spawnedNPCs = {}
 		}
 	else
 		self.spawners[id] = {
 			pos = pos,
-			classes = {}, 
+			classes = {},
 			maxSpawned = 5,
 			maxNearby = 10,
 			spawnDelay = 60,
-			minDistance = 1000, 
+			minDistance = 1000,
+			activeRadius = 3000,
+			useArea = false,
+			visitCooldown = 0,
 			lastSpawn = 0,
+			lastVisited = 0,
 			spawnedNPCs = {}
 		}
 	end
@@ -47,7 +55,10 @@ function PLUGIN:SaveSpawners()
 			maxSpawned = spawner.maxSpawned,
 			maxNearby = spawner.maxNearby,
 			spawnDelay = spawner.spawnDelay,
-			minDistance = spawner.minDistance
+			minDistance = spawner.minDistance,
+			activeRadius = spawner.activeRadius,
+			useArea = spawner.useArea,
+			visitCooldown = spawner.visitCooldown
 		}
 	end
 	self:SetData(data)
@@ -63,7 +74,11 @@ function PLUGIN:LoadData()
 			maxNearby = spawner.maxNearby or 10,
 			spawnDelay = spawner.spawnDelay or 60,
 			minDistance = spawner.minDistance or 1000,
+			activeRadius = spawner.activeRadius or 3000,
+			useArea = spawner.useArea or false,
+			visitCooldown = spawner.visitCooldown or 0,
 			lastSpawn = 0,
+			lastVisited = 0,
 			spawnedNPCs = {}
 		}
 	end
@@ -78,7 +93,10 @@ function PLUGIN:SyncSpawners(client)
 			maxSpawned = spawner.maxSpawned,
 			maxNearby = spawner.maxNearby,
 			spawnDelay = spawner.spawnDelay,
-			minDistance = spawner.minDistance
+			minDistance = spawner.minDistance,
+			activeRadius = spawner.activeRadius,
+			useArea = spawner.useArea,
+			visitCooldown = spawner.visitCooldown
 		}
 	end
 
@@ -107,6 +125,9 @@ net.Receive("ixNpcSpawnerEdit", function(len, client)
 		PLUGIN.spawners[id].maxNearby = data.maxNearby
 		PLUGIN.spawners[id].spawnDelay = data.spawnDelay
 		PLUGIN.spawners[id].minDistance = data.minDistance
+		PLUGIN.spawners[id].activeRadius = data.activeRadius
+		PLUGIN.spawners[id].useArea = data.useArea or false
+		PLUGIN.spawners[id].visitCooldown = data.visitCooldown or 0
 		
 		PLUGIN:SaveSpawners()
 		PLUGIN:SyncSpawners()
@@ -124,6 +145,28 @@ function PLUGIN:GetGlobalNPCCount()
 	return count
 end
 
+function PLUGIN:IsNPCSafeToRemove(npc)
+	local npcPos = npc:GetPos()
+
+	local enemy = npc:GetEnemy()
+	if (IsValid(enemy) and enemy:IsPlayer()) then return false end
+
+	for _, ply in ipairs(player.GetAll()) do
+		if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+
+		if (ply:GetPos():Distance(npcPos) < 1500) then return false end
+
+		local eyePos = ply:EyePos()
+		local tr = util.TraceLine({start = eyePos, endpos = npcPos, filter = ply})
+		if (not tr.HitWorld) then
+			local dot = ply:GetAimVector():Dot((npcPos - eyePos):GetNormalized())
+			if (dot > 0.5) then return false end
+		end
+	end
+
+	return true
+end
+
 function PLUGIN:GetNearbyNPCCount(pos, radius)
 	local count = 0
 	for _, ent in ipairs(ents.FindInSphere(pos, radius)) do
@@ -134,9 +177,31 @@ function PLUGIN:GetNearbyNPCCount(pos, radius)
 	return count
 end
 
+local VISIT_PROXIMITY = 400
+
+function PLUGIN:IsPlayerVisitingSpawner(spawner)
+	for _, ply in ipairs(player.GetAll()) do
+		if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+
+		local dist = ply:GetPos():Distance(spawner.pos)
+
+		if (dist <= VISIT_PROXIMITY) then return true end
+
+		if (dist <= spawner.minDistance) then
+			local eyePos = ply:EyePos()
+			local tr = util.TraceLine({start = eyePos, endpos = spawner.pos, filter = ply})
+			if (not tr.HitWorld) then
+				local dot = ply:GetAimVector():Dot((spawner.pos - eyePos):GetNormalized())
+				if (dot > 0.7) then return true end
+			end
+		end
+	end
+	return false
+end
+
 function PLUGIN:IsPlayerLookingOrNear(pos, minDistance)
 	for _, ply in ipairs(player.GetAll()) do
-		if (not ply:Alive() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+		if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
 		
 		local dist = ply:GetPos():Distance(pos)
 		if (dist < minDistance) then
@@ -263,18 +328,51 @@ function PLUGIN:Think()
 
 	local globalLimit = ix.config.Get("npcSpawnerGlobalLimit", 50)
 	local globalCount = self:GetGlobalNPCCount()
-	
-	if (globalCount >= globalLimit) then return end
 
 	for id, spawner in pairs(self.spawners) do
-		if ((spawner.lastSpawn + spawner.spawnDelay) > CurTime()) then continue end
-		
+		local hasNearbyPlayer = false
+		if (spawner.useArea and ix.area and ix.area.stored) then
+			for _, area in pairs(ix.area.stored) do
+				if (spawner.pos:WithinAABox(area.startPosition, area.endPosition)) then
+					for _, ply in ipairs(player.GetAll()) do
+						if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+						if ((ply:GetPos() + ply:OBBCenter()):WithinAABox(area.startPosition, area.endPosition)) then
+							hasNearbyPlayer = true
+							break
+						end
+					end
+					break
+				end
+			end
+		else
+			local activeRadius = spawner.activeRadius or 3000
+			for _, ply in ipairs(player.GetAll()) do
+				if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
+				if (ply:GetPos():Distance(spawner.pos) <= activeRadius) then
+					hasNearbyPlayer = true
+					break
+				end
+			end
+		end
+
+		local now = CurTime()
+		local inVisitCooldown = spawner.visitCooldown > 0 and (now < (spawner.lastVisited + spawner.visitCooldown))
+
 		local activeNPCs = 0
 		local newSpawned = {}
 		for _, ent in ipairs(spawner.spawnedNPCs) do
 			if (IsValid(ent) and ent:IsNPC() and ent:Health() > 0) then
-				-- Automatically remove scared NPCs if they are far away and out of sight
+				local shouldRemove = false
+
 				if (Schema.npcClassLists.scared[ent:GetClass()] and !self:IsPlayerLookingOrNear(ent:GetPos(), spawner.minDistance)) then
+					shouldRemove = true
+				end
+
+				if (not hasNearbyPlayer and not inVisitCooldown and self:IsNPCSafeToRemove(ent)) then
+					shouldRemove = true
+				end
+
+				if (shouldRemove) then
 					ent:Remove()
 					continue
 				end
@@ -285,16 +383,24 @@ function PLUGIN:Think()
 		end
 		spawner.spawnedNPCs = newSpawned
 
+		if (activeNPCs > 0 and spawner.visitCooldown > 0 and self:IsPlayerVisitingSpawner(spawner)) then
+			spawner.lastVisited = now
+		end
+
+		if (not hasNearbyPlayer) then continue end
+		if (inVisitCooldown) then continue end
+		if (globalCount >= globalLimit) then continue end
+		if ((spawner.lastSpawn + spawner.spawnDelay) > CurTime()) then continue end
 		if (activeNPCs >= spawner.maxSpawned) then continue end
-		
+
 		local nearbyCount = self:GetNearbyNPCCount(spawner.pos, 1000)
 		if (nearbyCount >= spawner.maxNearby) then continue end
-		
+
 		if (self:IsPlayerLookingOrNear(spawner.pos, spawner.minDistance)) then continue end
-		
+
 		local class = self:SelectRandomClass(spawner.classes)
 		if (not class) then continue end
-		
+
 		local spawnPos = self:FindValidSpawnPos(spawner.pos, class)
 		if (not spawnPos) then continue end
 
@@ -322,14 +428,11 @@ function PLUGIN:Think()
 			ent:SetPos(spawnPos)
 			ent:Spawn()
 			ent:Activate()
-			
+
 			table.insert(spawner.spawnedNPCs, ent)
 			spawner.lastSpawn = CurTime()
-			
+
 			globalCount = globalCount + 1
-			if (globalCount >= globalLimit) then
-				break
-			end
 		end
 	end
 end

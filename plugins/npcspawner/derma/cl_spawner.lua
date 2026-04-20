@@ -14,6 +14,9 @@ function PANEL:Init()
     self.maxNearby = self:AddRow(L("spawnerMaxNearby"))
     self.minDistance = self:AddRow(L("spawnerMinDistance"))
     self.spawnDelay = self:AddRow(L("spawnerSpawnDelay"))
+    self.activeRadius = self:AddRow(L("spawnerActiveRadius"))
+    self.useArea = self:AddCheckRow(L("spawnerUseArea"))
+    self.visitCooldown = self:AddRow(L("spawnerVisitCooldown"))
 
     local classLabel = self.scroll:Add("DLabel")
     classLabel:Dock(TOP)
@@ -76,18 +79,35 @@ function PANEL:AddRow(text)
     local pnl = self.scroll:Add("Panel")
     pnl:Dock(TOP)
     pnl:SetTall(30)
-    
+
     local label = pnl:Add("DLabel")
     label:Dock(LEFT)
     label:SetWide(180)
     label:SetText(text)
     label:SetTextColor(color_white)
-    
+
     local entry = pnl:Add("DTextEntry")
     entry:Dock(FILL)
     entry:SetNumeric(true)
-    
+
     return entry
+end
+
+function PANEL:AddCheckRow(text)
+    local pnl = self.scroll:Add("Panel")
+    pnl:Dock(TOP)
+    pnl:SetTall(30)
+
+    local label = pnl:Add("DLabel")
+    label:Dock(LEFT)
+    label:SetWide(180)
+    label:SetText(text)
+    label:SetTextColor(color_white)
+
+    local cb = pnl:Add("DCheckBox")
+    cb:Dock(LEFT)
+
+    return cb
 end
 
 function PANEL:SetSpawner(id, data)
@@ -97,6 +117,9 @@ function PANEL:SetSpawner(id, data)
     self.maxNearby:SetValue(data.maxNearby or 10)
     self.minDistance:SetValue(data.minDistance or 1000)
     self.spawnDelay:SetValue(data.spawnDelay or 60)
+    self.activeRadius:SetValue(data.activeRadius or 3000)
+    self.useArea:SetValue(data.useArea or false)
+    self.visitCooldown:SetValue(data.visitCooldown or 0)
     
     for class, weight in pairs(data.classes or {}) do
         self.classList:AddLine(class, weight)
@@ -109,6 +132,9 @@ function PANEL:Save()
     data.maxNearby = tonumber(self.maxNearby:GetValue()) or 10
     data.minDistance = tonumber(self.minDistance:GetValue()) or 1000
     data.spawnDelay = tonumber(self.spawnDelay:GetValue()) or 60
+    data.activeRadius = tonumber(self.activeRadius:GetValue()) or 3000
+    data.useArea = self.useArea:GetChecked()
+    data.visitCooldown = tonumber(self.visitCooldown:GetValue()) or 0
     
     data.classes = {}
     for _, line in pairs(self.classList:GetLines()) do

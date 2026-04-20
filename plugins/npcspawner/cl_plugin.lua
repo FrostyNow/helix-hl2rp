@@ -18,6 +18,51 @@ net.Receive("ixNpcSpawnerEdit", function()
     ix.gui.npcSpawnerEdit:SetSpawner(id, data)
 end)
 
+local CIRCLE_SEGMENTS = 64
+local CIRCLE_COLOR = Color(100, 200, 255, 200)
+
+hook.Add("PostDrawTranslucentRenderables", "ixNpcSpawnerActiveRadius", function()
+    if (not ix.option.Get("npcSpawnerESP", true)) then return end
+
+    local client = LocalPlayer()
+    if (not client:IsAdmin() or client:GetMoveType() ~= MOVETYPE_NOCLIP) then return end
+
+    local eyePos = client:EyePos()
+    local aimVec = client:GetAimVector()
+    local bestDot = 0.97
+    local bestSpawner = nil
+
+    for id, spawner in pairs(PLUGIN.spawners or {}) do
+        local dist = eyePos:Distance(spawner.pos)
+        if (dist > 8192) then continue end
+
+        local dot = aimVec:Dot((spawner.pos - eyePos):GetNormalized())
+        if (dot > bestDot) then
+            bestDot = dot
+            bestSpawner = spawner
+        end
+    end
+
+    if (not bestSpawner) then return end
+
+    if (bestSpawner.useArea) then return end
+
+    local center = bestSpawner.pos
+    local radius = bestSpawner.activeRadius or 3000
+
+    render.SetColorMaterial()
+
+    local prev = nil
+    for i = 0, CIRCLE_SEGMENTS do
+        local angle = (i / CIRCLE_SEGMENTS) * math.pi * 2
+        local point = center + Vector(math.cos(angle) * radius, math.sin(angle) * radius, 0)
+        if (prev) then
+            render.DrawLine(prev, point, CIRCLE_COLOR, false)
+        end
+        prev = point
+    end
+end)
+
 function PLUGIN:HUDPaint()
     if (not ix.option.Get("npcSpawnerESP", true)) then return end
 
@@ -39,6 +84,10 @@ function PLUGIN:HUDPaint()
                 
                 local delayText = L("npcSpawnerESPInfo", spawner.spawnDelay or 0, spawner.maxSpawned or 0, spawner.maxNearby or 0)
                 draw.SimpleText(delayText, "BudgetLabel", pos.x, pos.y + 15, Color(255, 255, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
+
+                local modeText = spawner.useArea and "Area mode" or ("Radius: " .. (spawner.activeRadius or 3000))
+                local cooldownText = (spawner.visitCooldown and spawner.visitCooldown > 0) and (" | Visit CD: " .. spawner.visitCooldown .. "s") or ""
+                draw.SimpleText(modeText .. cooldownText, "BudgetLabel", pos.x, pos.y + 30, Color(100, 200, 255, 200), TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP)
                 
                 local classLines = {L("npcSpawnerESPClasses") .. ":"}
                 local count = 0
