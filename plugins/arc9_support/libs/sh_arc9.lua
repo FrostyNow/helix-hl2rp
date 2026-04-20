@@ -2284,19 +2284,10 @@ if (CLIENT) then
     end
 
     function ix.arc9.DrawItemEntity(itemTable, entity, dataSource)
-        local itemID = itemTable.id
-        local runtime = itemID and ix.arc9.runtimeCache[itemID]
+        local runtime = ix.arc9.BuildRuntimeRenderData(itemTable, dataSource)
 
         if (not runtime) then
-            runtime = ix.arc9.BuildRuntimeRenderData(itemTable, dataSource)
-
-            if (not runtime) then
-                return false
-            end
-
-            if (itemID) then
-                ix.arc9.runtimeCache[itemID] = runtime
-            end
+            return false
         end
 
         local renderEntity = ix.arc9.GetRenderModel(runtime.visualModel)
