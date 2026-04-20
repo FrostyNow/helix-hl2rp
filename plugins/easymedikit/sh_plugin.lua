@@ -34,27 +34,43 @@ if (CLIENT) then
 	}
 
 	function PLUGIN:PopulateCharacterInfo(player, character, tooltip)
+		local bBleeding = character:GetBleeding()
 		local bleeding = tooltip:AddRow("bleeding")
 		bleeding:SetText(L("isBleeding"))
 		bleeding:SetBackgroundColor(Color(200, 0, 0))
 		bleeding:SetTextColor(color_white)
 		bleeding:SizeToContents()
+		bleeding:SetVisible(bBleeding)
+		
 		function bleeding:Think()
 			local bActive = character:GetBleeding()
 			if (self:IsVisible() != bActive) then
 				self:SetVisible(bActive)
+				
+				local parent = self:GetParent()
+				if (IsValid(parent)) then
+					parent:SizeToContents()
+				end
 			end
 		end
 
+		local bFracture = character:GetFracture()
 		local fracture = tooltip:AddRow("fracture")
 		fracture:SetText(L("isFractured"))
 		fracture:SetBackgroundColor(Color(200, 0, 0))
 		fracture:SetTextColor(color_white)
 		fracture:SizeToContents()
+		fracture:SetVisible(bFracture)
+		
 		function fracture:Think()
 			local bActive = character:GetFracture()
 			if (self:IsVisible() != bActive) then
 				self:SetVisible(bActive)
+				
+				local parent = self:GetParent()
+				if (IsValid(parent)) then
+					parent:SizeToContents()
+				end
 			end
 		end
 	end

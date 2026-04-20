@@ -516,25 +516,28 @@ else
 	end, Color(34, 139, 34), nil, "toxicity")
 
 	function PLUGIN:PopulateCharacterInfo(player, character, tooltip)
+		local bVisible = character:GetToxicity(0) >= 20
+
 		local row = tooltip:AddRow("toxicityStatus")
 		row:SetBackgroundColor(Color(34, 139, 34))
 		row:SetTextColor(color_white)
 		row:SizeToContents()
+		row:SetVisible(bVisible)
 
 		function row:Think()
 			local toxicity = character:GetToxicity(0)
 			local text = ""
-			local bVisible = false
+			local bShouldVisible = false
 
 			if (toxicity >= 80) then
 				text = L("toxicityHigh")
-				bVisible = true
+				bShouldVisible = true
 			elseif (toxicity >= 50) then
 				text = L("toxicityMedium")
-				bVisible = true
+				bShouldVisible = true
 			elseif (toxicity >= 20) then
 				text = L("toxicityLow")
-				bVisible = true
+				bShouldVisible = true
 			end
 
 			if (self:GetText() != text) then
@@ -542,8 +545,13 @@ else
 				self:SizeToContents()
 			end
 
-			if (self:IsVisible() != bVisible) then
-				self:SetVisible(bVisible)
+			if (self:IsVisible() != bShouldVisible) then
+				self:SetVisible(bShouldVisible)
+				
+				local parent = self:GetParent()
+				if (IsValid(parent)) then
+					parent:SizeToContents()
+				end
 			end
 		end
 	end
