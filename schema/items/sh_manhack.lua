@@ -10,9 +10,9 @@ ITEM.price = 75
 ITEM.functions.Use = {
 	name = "Place It",
 	icon = "icon16/cursor.png",
-	OnRun = function(item, player, client)
+	OnRun = function(item)
 		item.player:EmitSound( "npc/turret_floor/deploy.wav", 75, 200 )
-			
+
 		local ent = ents.Create("npc_manhack")
 
 		ent:SetPos(item.player:EyePos() + ( item.player:GetAimVector() * 100))
