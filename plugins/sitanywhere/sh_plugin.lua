@@ -120,9 +120,9 @@ ix.option.Add("sittingForceLeftAlt", ix.type.bool, false, {
 	category = "sitAnywhere",
 	default = false
 })
-ix.option.Add("sittingAllowOnMe", ix.type.bool, true, {
+ix.option.Add("sittingAllowOnMe", ix.type.bool, false, {
 	category = "sitAnywhere",
-	default = true,
+	default = false,
 	bNetworked = true
 })
 
