@@ -6,9 +6,13 @@ ITEM.price = 75
 ITEM.category = "Utility"
 ITEM.isStackable = true
 
+-- Combine Sniper
+ITEM.ammo = "Combine Battery" -- type of the ammo
+ITEM.ammoAmount = 30 -- amount of the ammo
+
 ITEM.classes = {CLASS_MPU, CLASS_EMP, CLASS_OWS, CLASS_EOW}
 
-ITEM.functions.Use = {
+ITEM.functions.Apply = {
 	icon = "icon16/asterisk_orange.png",
 	OnRun = function(item)
 		local client = item.player
