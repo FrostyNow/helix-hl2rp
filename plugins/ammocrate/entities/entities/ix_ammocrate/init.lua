@@ -74,20 +74,36 @@ function ENT:Use(activator)
 	-- Success: Play animations and replenish ammo
 	local openSeq = self:LookupSequence("Open")
 	local closeSeq = self:LookupSequence("Close")
-	
+	local openDuration = self:SequenceDuration(openSeq)
+	local closeDuration = self:SequenceDuration(closeSeq)
+
 	self:ResetSequence(openSeq)
+	self:SetPlaybackRate(1)
 	self:EmitSound("items/ammo_pickup.wav")
 	self.bOpening = true
-	
+
 	activator:SetAmmo(maxAmmo, ammoType)
-	
+
 	-- Set 5 minutes cooldown (300 seconds)
 	self.cooldowns[charID] = curTime + 300
-	
-	timer.Simple(2, function()
-		if (IsValid(self)) then
+
+	-- Hold at last frame of Open, then play Close
+	timer.Simple(openDuration, function()
+		if (!IsValid(self)) then return end
+		self:SetCycle(1)
+		self:SetPlaybackRate(0)
+
+		timer.Simple(0.5, function()
+			if (!IsValid(self)) then return end
 			self:ResetSequence(closeSeq)
-			self.bOpening = false
-		end
+			self:SetPlaybackRate(1)
+
+			timer.Simple(closeDuration, function()
+				if (!IsValid(self)) then return end
+				self:SetCycle(1)
+				self:SetPlaybackRate(0)
+				self.bOpening = false
+			end)
+		end)
 	end)
 end
