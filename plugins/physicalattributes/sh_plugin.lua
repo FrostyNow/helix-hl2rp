@@ -95,8 +95,8 @@ ix.config.Add("maxAimPunch", 30, "The maximum degrees a player's aim can be punc
 	category = "Attributes"
 })
 
-ix.config.Add("aimSwayIntensity", 0.1, "The intensity of the noise-based aim sway.", nil, {
-	data = {min = 0, max = 5, decimals = 1},
+ix.config.Add("aimSwayIntensity", 0.05, "The intensity of the noise-based aim sway.", nil, {
+	data = {min = 0, max = 1, decimals = 2},
 	category = "Attributes"
 })
 
