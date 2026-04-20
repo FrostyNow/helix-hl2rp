@@ -39,7 +39,7 @@ ix.command.Add("Barricade", {
 	description = "@barricadeDesc",
 	OnRun = function(self, client)
 		local char = client:GetCharacter()
-		if (!char:IsCombine()) then
+		if (!char:IsCombine() and !client:IsAdmin()) then
 			return "@barricadeNoCombine"
 		end
 
@@ -52,7 +52,7 @@ ix.command.Add("Emplacement", {
 	description = "@emplacementDesc",
 	OnRun = function(self, client)
 		local char = client:GetCharacter()
-		if (!char:IsCombine()) then
+		if (!char:IsCombine() and !client:IsAdmin()) then
 			return "@barricadeNoCombine"
 		end
 
@@ -146,7 +146,8 @@ if (SERVER) then
 				barricadeID = v:GetBarricadeID(),
 				owner = v:GetOwnerCID(),
 				ownerName = v:GetOwnerName(),
-				health = v:Health()
+				health = v:Health(),
+				hideOwner = v:GetNWBool("ixHideOwner", false)
 			}
 		end
 
@@ -161,7 +162,8 @@ if (SERVER) then
 						owner = v.ixOwnerCID or 0,
 						ownerName = v:GetNWString("ixOwnerName", "Unknown"),
 						health = v.ixHealth or 100,
-						bEmplacement = true
+						bEmplacement = true,
+						hideOwner = v:GetNWBool("ixHideOwner", false)
 					}
 				end
 			end
@@ -197,6 +199,10 @@ if (SERVER) then
 					entity:SetHealth(v.health or 100)
 				end
 
+				if (v.hideOwner) then
+					entity:SetNWBool("ixHideOwner", true)
+				end
+
 				local phys = entity:GetPhysicsObject()
 				if (IsValid(phys)) then
 					phys:EnableMotion(false)
@@ -225,20 +231,22 @@ if (SERVER) then
 
 	net.Receive("ixBarricadePlace", function(len, client)
 		local char = client:GetCharacter()
-		if (!char or !char:IsCombine()) then return end
+		if (!char or (!char:IsCombine() and !client:IsAdmin())) then return end
 
 		-- Check Count Limit
-		local count = 0
-		for _, v in ipairs(ents.FindByClass("ix_combine_barricade")) do
-			if (v:GetOwnerCID() == char:GetID()) then
-				count = count + 1
+		if (!client:IsAdmin()) then
+			local count = 0
+			for _, v in ipairs(ents.FindByClass("ix_combine_barricade")) do
+				if (v:GetOwnerCID() == char:GetID()) then
+					count = count + 1
+				end
 			end
-		end
 
-		local limit = ix.config.Get("barricadeLimit", 5)
-		if (count >= limit) then
-			client:NotifyLocalized("barricadeLimitReached", limit)
-			return
+			local limit = ix.config.Get("barricadeLimit", 5)
+			if (count >= limit) then
+				client:NotifyLocalized("barricadeLimitReached", limit)
+				return
+			end
 		end
 
 		local barricadeIndex = net.ReadUInt(8)
@@ -260,7 +268,13 @@ if (SERVER) then
 		
 		entity:SetBarricadeID(tostring(barricadeIndex))
 		entity:SetOwnerCID(char:GetID())
-		entity:SetOwnerName(char:GetName())
+
+		if (char:IsCombine()) then
+			entity:SetOwnerName(char:GetName())
+		else
+			entity:SetOwnerName("")
+			entity:SetNWBool("ixHideOwner", true)
+		end
 
 		local phys = entity:GetPhysicsObject()
 		if (IsValid(phys)) then
@@ -272,7 +286,7 @@ if (SERVER) then
 
 	net.Receive("ixEmplacementPlace", function(len, client)
 		local char = client:GetCharacter()
-		if (!char or !char:IsCombine()) then return end
+		if (!char or (!char:IsCombine() and !client:IsAdmin())) then return end
 
 		local emplacementIndex = net.ReadUInt(8)
 		local pos = net.ReadVector()
@@ -288,19 +302,21 @@ if (SERVER) then
 		end
 
 		-- Check Count Limit
-		local count = 0
-		for _, emplacement in ipairs(PLUGIN.EmplacementList) do
-			for _, v in ipairs(ents.FindByClass(emplacement.class)) do
-				if (v.ixIsEmplacement and v.ixOwnerCID == char:GetID()) then
-					count = count + 1
+		if (!client:IsAdmin()) then
+			local count = 0
+			for _, emplacement in ipairs(PLUGIN.EmplacementList) do
+				for _, v in ipairs(ents.FindByClass(emplacement.class)) do
+					if (v.ixIsEmplacement and v.ixOwnerCID == char:GetID()) then
+						count = count + 1
+					end
 				end
 			end
-		end
 
-		local limit = ix.config.Get("emplacementLimit", 1)
-		if (count >= limit) then
-			client:NotifyLocalized("emplacementLimitReached", limit)
-			return
+			local limit = ix.config.Get("emplacementLimit", 1)
+			if (count >= limit) then
+				client:NotifyLocalized("emplacementLimitReached", limit)
+				return
+			end
 		end
 
 		char:TakeMoney(emplacementData.price)
@@ -314,9 +330,16 @@ if (SERVER) then
 		entity.ixOwnerCID = char:GetID()
 		entity:SetNWBool("ixIsEmplacement", true)
 		entity:SetNWInt("ixOwnerCID", char:GetID())
-		entity:SetNWString("ixOwnerName", char:GetName())
+
+		if (char:IsCombine()) then
+			entity:SetNWString("ixOwnerName", char:GetName())
+			if (entity.SetOwnerName) then entity:SetOwnerName(char:GetName()) end
+		else
+			entity:SetNWString("ixOwnerName", "")
+			entity:SetNWBool("ixHideOwner", true)
+		end
+
 		if (entity.SetOwnerCID) then entity:SetOwnerCID(char:GetID()) end
-		if (entity.SetOwnerName) then entity:SetOwnerName(char:GetName()) end
 
 		entity.ixHealth = 100
 		entity:SetNWInt("ixHealth", 100)
@@ -423,16 +446,18 @@ if (CLIENT) then
 					return
 				end
 
-				local count = 0
-				for _, ent in ipairs(ents.FindByClass("ix_combine_barricade")) do
-					if (ent.GetOwnerCID and ent:GetOwnerCID() == char:GetID()) then
-						count = count + 1
+				if (!client:IsAdmin()) then
+					local count = 0
+					for _, ent in ipairs(ents.FindByClass("ix_combine_barricade")) do
+						if (ent.GetOwnerCID and ent:GetOwnerCID() == char:GetID()) then
+							count = count + 1
+						end
 					end
-				end
-				local limit = ix.config.Get("barricadeLimit", 5)
-				if (count >= limit) then
-					client:NotifyLocalized("barricadeLimitReached", limit)
-					return
+					local limit = ix.config.Get("barricadeLimit", 5)
+					if (count >= limit) then
+						client:NotifyLocalized("barricadeLimitReached", limit)
+						return
+					end
 				end
 
 				frame:Remove()
@@ -547,18 +572,20 @@ if (CLIENT) then
 					return
 				end
 
-				local count = 0
-				for _, emplacement in ipairs(PLUGIN.EmplacementList) do
-					for _, ent in ipairs(ents.FindByClass(emplacement.class)) do
-						if (ent:GetNWBool("ixIsEmplacement") and ent:GetNWInt("ixOwnerCID") == char:GetID()) then
-							count = count + 1
+				if (!client:IsAdmin()) then
+					local count = 0
+					for _, emplacement in ipairs(PLUGIN.EmplacementList) do
+						for _, ent in ipairs(ents.FindByClass(emplacement.class)) do
+							if (ent:GetNWBool("ixIsEmplacement") and ent:GetNWInt("ixOwnerCID") == char:GetID()) then
+								count = count + 1
+							end
 						end
 					end
-				end
-				local limit = ix.config.Get("emplacementLimit", 1)
-				if (count >= limit) then
-					client:NotifyLocalized("emplacementLimitReached", limit)
-					return
+					local limit = ix.config.Get("emplacementLimit", 1)
+					if (count >= limit) then
+						client:NotifyLocalized("emplacementLimitReached", limit)
+						return
+					end
 				end
 
 				frame:Remove()
@@ -698,8 +725,10 @@ if (CLIENT) then
 			local x, y = w / 2, h - 100
 			local alpha = 80
 			
-			local ownerName = entity.GetOwnerName and entity:GetOwnerName() or entity:GetNWString("ixOwnerName", "Unknown")
-			draw.SimpleText(L("barricadeOwner", ownerName), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			if (!entity:GetNWBool("ixHideOwner", false)) then
+				local ownerName = entity.GetOwnerName and entity:GetOwnerName() or entity:GetNWString("ixOwnerName", "Unknown")
+				draw.SimpleText(L("barricadeOwner", ownerName), "ixSmallFont", x, y, Color(255, 255, 255, alpha), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+			end
 			
 			local barW, barH = 150, 4
 			local health
