@@ -245,10 +245,34 @@ end
 
 if (CLIENT) then
     local nextARC9Sync = 0
+    local cachedItemEntities = {}
+
+    hook.Add("OnEntityCreated", "ixARC9ItemEntityCache", function(entity)
+        if (entity:GetClass() == "ix_item") then
+            cachedItemEntities[entity] = true
+        end
+    end)
+
+    hook.Add("EntityRemoved", "ixARC9ItemEntityCache", function(entity)
+        cachedItemEntities[entity] = nil
+    end)
+
+    local function hasOpenInventoryPanel()
+        for i = 1, 100 do
+            local panel = ix.gui and ix.gui["inv" .. i]
+
+            if (IsValid(panel) and panel:IsVisible()) then
+                return true
+            end
+        end
+
+        return false
+    end
 
     local function updateDroppedItemOverrides()
-        for _, entity in ipairs(ents.FindByClass("ix_item")) do
+        for entity in pairs(cachedItemEntities) do
             if (not IsValid(entity)) then
+                cachedItemEntities[entity] = nil
                 continue
             end
 
@@ -266,8 +290,9 @@ if (CLIENT) then
             return
         end
 
-        for _, entity in ipairs(ents.FindByClass("ix_item")) do
+        for entity in pairs(cachedItemEntities) do
             if (not IsValid(entity)) then
+                cachedItemEntities[entity] = nil
                 continue
             end
 
@@ -287,7 +312,10 @@ if (CLIENT) then
         nextARC9Sync = CurTime() + 0.25
 
         updateDroppedItemOverrides()
-        refreshARC9Panels()
+
+        if (hasOpenInventoryPanel()) then
+            refreshARC9Panels()
+        end
 
         local client = LocalPlayer()
 

@@ -208,33 +208,39 @@ local function applyBodygroupSet(entity, bodygroups)
     end
 end
 
+local arc9ClassCache = {}
+
 function ix.arc9.IsARC9WeaponClass(className)
     if (not isstring(className) or className == "") then
         return false
     end
 
+    local cached = arc9ClassCache[className]
+
+    if (cached ~= nil) then
+        return cached
+    end
+
     local swep = weapons.GetStored(className)
     local loweredClass = string.lower(className)
+    local result
 
     if (string.StartWith(loweredClass, "arc9_")) then
-        return true
+        result = true
+    elseif (not swep) then
+        result = false
+    elseif (swep.ARC9) then
+        result = true
+    elseif (weapons.IsBasedOn and weapons.IsBasedOn(className, "arc9_base")) then
+        result = true
+    else
+        local base = swep.Base
+        result = isstring(base) and string.find(string.lower(base), "arc9", 1, true) ~= nil
     end
 
-    if (not swep) then
-        return false
-    end
+    arc9ClassCache[className] = result
 
-    if (swep.ARC9) then
-        return true
-    end
-
-    if (weapons.IsBasedOn and weapons.IsBasedOn(className, "arc9_base")) then
-        return true
-    end
-
-    local base = swep.Base
-
-    return isstring(base) and string.find(string.lower(base), "arc9", 1, true) ~= nil
+    return result
 end
 
 function ix.arc9.IsARC9Item(itemTable)
@@ -940,6 +946,10 @@ function ix.arc9.PatchWeaponItem(itemTable)
             if ((key == "preset" or key == "bodygroups")) then
                 ix.arc9.RefreshWeaponItem(self)
 
+                if (ix.arc9.runtimeCache) then
+                    ix.arc9.runtimeCache[self.id] = nil
+                end
+
                 if (ix.arc9 and ix.arc9.SafeRefreshItemIcon) then
                     ix.arc9.SafeRefreshItemIcon(self.id)
                 end
@@ -1002,6 +1012,7 @@ end
 
 if (CLIENT) then
     ix.arc9.renderModels = ix.arc9.renderModels or {}
+    ix.arc9.runtimeCache = ix.arc9.runtimeCache or {}
 
     function ix.arc9.OffsetTransform(pos, ang, offsetPos, offsetAng)
         local newPos = Vector(pos.x, pos.y, pos.z)
@@ -2264,11 +2275,28 @@ if (CLIENT) then
         ix.arc9.ApplyRenderBones(proxyEntity, runtime)
     end
 
+    function ix.arc9.InvalidateRuntimeCache(itemID)
+        if (itemID) then
+            ix.arc9.runtimeCache[itemID] = nil
+        else
+            ix.arc9.runtimeCache = {}
+        end
+    end
+
     function ix.arc9.DrawItemEntity(itemTable, entity, dataSource)
-        local runtime = ix.arc9.BuildRuntimeRenderData(itemTable, dataSource)
+        local itemID = itemTable.id
+        local runtime = itemID and ix.arc9.runtimeCache[itemID]
 
         if (not runtime) then
-            return false
+            runtime = ix.arc9.BuildRuntimeRenderData(itemTable, dataSource)
+
+            if (not runtime) then
+                return false
+            end
+
+            if (itemID) then
+                ix.arc9.runtimeCache[itemID] = runtime
+            end
         end
 
         local renderEntity = ix.arc9.GetRenderModel(runtime.visualModel)
