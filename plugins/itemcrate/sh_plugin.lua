@@ -1,0 +1,117 @@
+local PLUGIN = PLUGIN
+
+PLUGIN.name = "Item Crate Spawner"
+PLUGIN.author = "Frosty"
+PLUGIN.description = "Provides a command to spawn prepopulated item crates."
+
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
+
+ix.lang.AddTable("english", {
+	cmdItemCrateDesc = "Spawns an item crate containing the specified item or preset.",
+	invalidItemOrPreset = "Invalid item or preset.",
+	crateSpaceInsufficient = "Some items could not be added due to insufficient crate space.",
+	itemCrateSpawned = "Item crate spawned successfully."
+})
+
+ix.lang.AddTable("korean", {
+	cmdItemCrateDesc = "설정한 아이템이나 프리셋이 들어있는 물품 상자를 생성합니다.",
+	invalidItemOrPreset = "유효하지 않은 아이템이거나 프리셋입니다.",
+	crateSpaceInsufficient = "상자 공간이 부족하여 일부 아이템이 추가되지 못했습니다.",
+	itemCrateSpawned = "물품 상자를 성공적으로 생성했습니다."
+})
+
+-- Preset configurations
+PLUGIN.presets = {
+	["preset_ar2"] = {
+		["ar2"] = 1,
+		["ar2ammo"] = 3
+	},
+	["preset_smg1"] = {
+		["smg1"] = 1,
+		["smg1ammo"] = 2
+	},
+	["preset_pistol"] = {
+		["pistol"] = 1,
+		["pistolammo"] = 2
+	},
+	["preset_grenade"] = {
+		["grenade"] = 3
+	},
+	["preset_vial"] = {
+		["health_vial"] = 5
+	},
+	["preset_medkit"] = {
+		["bandage"] = 5,
+		["medkit"] = 3
+	},
+}
+
+ix.command.Add("ItemCrate", {
+	description = "@cmdItemCrateDesc",
+	adminOnly = true,
+	arguments = {
+		ix.type.string,
+		bit.bor(ix.type.number, ix.type.optional)
+	},
+	OnRun = function(self, client, itemOrPreset, amount)
+		amount = amount or 1
+		local itemsToSpawn = {}
+		
+		-- Check if the input is a preset or a single item
+		if (PLUGIN.presets[itemOrPreset]) then
+			itemsToSpawn = PLUGIN.presets[itemOrPreset]
+		else
+			local itemTable = ix.item.list[itemOrPreset]
+			if (!itemTable) then
+				return "@invalidItemOrPreset"
+			end
+			itemsToSpawn[itemOrPreset] = amount
+		end
+		
+		-- Create the crate at the administrator's eye trace position
+		local tr = client:GetEyeTraceNoCursor()
+		local pos = tr.HitPos + Vector(0, 0, 15)
+		local model = "models/items/item_item_crate.mdl"
+		
+		local container = ents.Create("ix_container")
+		container:SetPos(pos)
+		container:SetAngles(Angle(0, client:EyeAngles().y - 180, 0))
+		container:SetModel(model)
+		container:Spawn()
+
+		-- Create a unique inventory and add items
+		ix.inventory.New(0, "container:" .. model:lower(), function(inventory)
+			inventory.vars.isBag = true
+			inventory.vars.isContainer = true
+
+			if (IsValid(container)) then
+				container:SetInventory(inventory)
+				
+				for uniqueID, amt in pairs(itemsToSpawn) do
+					for i = 1, amt do
+						local bSuccess, err = inventory:Add(uniqueID)
+						if (!bSuccess) then
+							-- Items might not be added if the inventory is completely full
+							if (client) then
+								client:NotifyLocalized("crateSpaceInsufficient")
+							end
+							break
+						end
+					end
+				end
+				
+				-- Save to database and file system for persistence
+				if (ix.plugin.list["containers"]) then
+					ix.plugin.list["containers"]:SaveContainer()
+				end
+			end
+		end)
+		
+		return "@itemCrateSpawned"
+	end
+})
