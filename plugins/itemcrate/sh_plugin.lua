@@ -15,14 +15,16 @@ ix.lang.AddTable("english", {
 	cmdItemCrateDesc = "Spawns an item crate containing the specified item or preset.",
 	invalidItemOrPreset = "Invalid item or preset.",
 	crateSpaceInsufficient = "Some items could not be added due to insufficient crate space.",
-	itemCrateSpawned = "Item crate spawned successfully."
+	itemCrateSpawned = "Item crate spawned successfully.",
+	itemCratePresets = "Available presets: %s"
 })
 
 ix.lang.AddTable("korean", {
 	cmdItemCrateDesc = "설정한 아이템이나 프리셋이 들어있는 물품 상자를 생성합니다.",
 	invalidItemOrPreset = "유효하지 않은 아이템이거나 프리셋입니다.",
 	crateSpaceInsufficient = "상자 공간이 부족하여 일부 아이템이 추가되지 못했습니다.",
-	itemCrateSpawned = "물품 상자를 성공적으로 생성했습니다."
+	itemCrateSpawned = "물품 상자를 성공적으로 생성했습니다.",
+	itemCratePresets = "사용 가능한 프리셋: %s",
 })
 
 -- Preset configurations
@@ -68,6 +70,11 @@ ix.command.Add("ItemCrate", {
 		else
 			local itemTable = ix.item.list[itemOrPreset]
 			if (!itemTable) then
+				local presetList = {}
+				for k in pairs(PLUGIN.presets) do
+					presetList[#presetList + 1] = k
+				end
+				client:NotifyLocalized("itemCratePresets", table.concat(presetList, ", "))
 				return "@invalidItemOrPreset"
 			end
 			itemsToSpawn[itemOrPreset] = amount
