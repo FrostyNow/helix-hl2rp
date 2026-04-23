@@ -1,4 +1,4 @@
-ENT.Base = "nut_flare"
+ENT.Base = "ix_flare"
 ENT.PrintName = "Flare"
 ENT.Author = "Black Tea | Ported by Frosty"
 ENT.Spawnable = true

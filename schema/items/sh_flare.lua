@@ -22,29 +22,31 @@ ITEM.functions.Launch = {
 		flare:SetAngles(Angle(-85, eyeAngles.y, 0))
 		flare:Spawn()
 		flare:Activate()
+		flare:EmitSound("weapons/flaregun/fire.wav", 75, math.random(95, 105))
+		flare:SetGravity(flare:GetGravity() * 0.01)
 
 		-- Burn for 15 seconds then auto-remove, launch upward fast
 		flare:Fire("Start", "15", 0)
 		flare:Fire("Launch", "1500", 0)
 
 		-- At peak (~2.5s), manually drift it down slowly for the remaining 12.5s
-		timer.Simple(2.5, function()
-			if (not IsValid(flare)) then return end
+		-- timer.Simple(2.5, function()
+		-- 	if (not IsValid(flare)) then return end
 
-			local elapsed = 0
-			local timerName = "flare_descent_" .. flare:EntIndex()
+		-- 	local elapsed = 0
+		-- 	local timerName = "flare_descent_" .. flare:EntIndex()
 
-			timer.Create(timerName, 0.5, 25, function()
-				if (not IsValid(flare)) then
-					timer.Remove(timerName)
-					return
-				end
+		-- 	timer.Create(timerName, 0.5, 25, function()
+		-- 		if (not IsValid(flare)) then
+		-- 			timer.Remove(timerName)
+		-- 			return
+		-- 		end
 
-				elapsed = elapsed + 0.1
-				local drop = elapsed * elapsed * 8  -- gentle quadratic fall, ~125 units total
-				flare:SetPos(flare:GetPos() - Vector(0, 0, drop * 0.1))
-			end)
-		end)
+		-- 		elapsed = elapsed + 0.1
+		-- 		local drop = elapsed * elapsed * 8  -- gentle quadratic fall, ~125 units total
+		-- 		flare:SetPos(flare:GetPos() - Vector(0, 0, drop * 0.1))
+		-- 	end)
+		-- end)
 
 		-- Spawn spent casing on the ground at the player's feet
 		local trace = util.TraceLine({
@@ -55,7 +57,7 @@ ITEM.functions.Launch = {
 
 		local spent = ents.Create("prop_physics")
 		spent:SetModel(item.model)
-		spent:SetPos(trace.HitPos + Vector(0, 0, 2))
+		spent:SetPos(trace.HitPos + Vector(0, 0, 5))
 		spent:SetAngles(Angle(0, math.random(0, 360), 0))
 		spent:SetSkin(1)
 		spent:Spawn()

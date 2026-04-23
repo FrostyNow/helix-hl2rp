@@ -19,11 +19,13 @@ ITEM.functions.Throw = {
 		local grd = ents.Create( item.throwent )
 		grd:SetPos( client:EyePos() + client:GetAimVector() * 50 )
 		grd:Spawn()
-		grd:CPPISetOwner(client)
+		grd:Activate()
 
 		local phys = grd:GetPhysicsObject()
-		phys:SetVelocity( client:GetAimVector() * item.throwforce * math.Rand( .8, 1 ) )
-		phys:AddAngleVelocity( client:GetAimVector() * item.throwforce  )
+		if IsValid(phys) then
+			phys:SetVelocity( client:GetAimVector() * item.throwforce * math.Rand( .8, 1 ) )
+			phys:AddAngleVelocity( client:GetAimVector() * item.throwforce  )
+		end
 
 		if (item.entConfigure) then
 			item:entConfigure(grd)

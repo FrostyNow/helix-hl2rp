@@ -88,15 +88,16 @@ else
 				local dis = pos:Distance(lclient:GetPos())
 				local what = entity:GetDTInt(0)
 
-				local owner = entity:CPPIGetOwner()
-				if (!owner) then return end
+				local owner = entity.CPPIGetOwner and entity:CPPIGetOwner()
+				if (!owner) then continue end
 
 				local char = owner:GetCharacter()
 
 				if (char and myChar) then
-					local team = nut.class.list[myChar:getClass()].team
-					
-					if ((myChar == char) or (team and nut.class.list[char:getClass()].team == team)) then
+					local myClassData = ix.class.list[myChar:GetClass()]
+					local team = myClassData and myClassData.team
+
+					if ((myChar == char) or (team and ix.class.list[char:GetClass()] and ix.class.list[char:GetClass()].team == team)) then
 						local matrix = Matrix()
 						local scale = math.max(1, 1.5 - RealTime()*3%1.5)
 						matrix:Translate(Vector(math.Clamp(scr.x - 20*scale, w*.1, w*.9), math.Clamp(scr.y - 20*scale, h*.1, h*.9)))
@@ -104,8 +105,8 @@ else
 						matrix:Scale(Vector(scale, scale))
 
 						cam.PushModelMatrix(matrix)
-							local tx, ty = nut.util.drawText(icon[what], 0, 0, color_white, 3, 5, "nutIconsBig")
-							nut.util.drawText(math.Round(dis/10) .. " m", tx/2, 0 + ty*0.9, color_white, 1, 5, "nutSmallFont")
+							local tx, ty = ix.util.DrawText(icon[what], 0, 0, color_white, 3, 5, "ixIconsBig")
+							ix.util.DrawText(math.Round(dis/10) .. " m", tx/2, 0 + ty*0.9, color_white, 1, 5, "ixSmallFont")
 						cam.PopModelMatrix()
 					end
 				end
