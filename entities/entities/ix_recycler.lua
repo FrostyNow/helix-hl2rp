@@ -3,7 +3,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.PrintName = "Recycler"
-ENT.Author = "Black Tea"
+ENT.Author = "Black Tea | Ported by Frosty"
 ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.Category = "Helix"

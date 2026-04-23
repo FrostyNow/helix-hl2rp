@@ -1,6 +1,6 @@
 ENT.Type = "anim"
 ENT.PrintName = "Bonfire"
-ENT.Author = "Black Tea"
+ENT.Author = "Black Tea | Ported by Frosty"
 ENT.Spawnable = true
 ENT.AdminOnly = true
 ENT.Category = "Helix"

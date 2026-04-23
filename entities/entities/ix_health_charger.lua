@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.PrintName = "Health Charger"
-ENT.Author = "Black Tea"
+ENT.Author = "Black Tea | Ported by Frosty"
 ENT.Spawnable = true
 ENT.AdminOnly = false
 ENT.Category = "HL2 RP"

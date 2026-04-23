@@ -2,7 +2,7 @@ AddCSLuaFile()
 
 ENT.Type = "anim"
 ENT.PrintName = "Notepad"
-ENT.Author = "Black Tea";
+ENT.Author = "Black Tea | Ported by Frosty";
 ENT.Category = "Helix"
 ENT.Spawnable = false
 ENT.AdminOnly = false
