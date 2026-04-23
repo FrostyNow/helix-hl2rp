@@ -103,14 +103,11 @@ PLUGIN.harvestables = {
 		sound = DEFAULT_HARVEST_SOUND,
 		effect = "blood_advisor_puncture_withdraw",
 		decal = "Blood",
-		classes = {
-			["npc_pigeon"] = true,
-			["npc_seagull"] = true,
-			["npc_crow"] = true,
-			["zb_hl2_pigeon"] = true,
-			["zb_hl2_seagull"] = true,
-			["zb_hl2_crow"] = true,
-			["zb_hl2_rat"] = true
+		models = {
+			["models/crow.mdl"] = true,
+			["models/pigeon.mdl"] = true,
+			["models/seagull.mdl"] = true,
+			-- rat.mdl to do
 		}
 	}
 }
