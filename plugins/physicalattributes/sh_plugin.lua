@@ -399,7 +399,8 @@ if (CLIENT) then
 		["gmod_tool"] = true,
 		["gmod_physgun"] = true,
 		["weapon_physgun"] = true,
-		["weapon_physcannon"] = true
+		["weapon_physcannon"] = true,
+		["ix_cigarette"] = true,
 	}
 
 	function PLUGIN:CreateMove(cmd)

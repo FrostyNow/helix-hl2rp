@@ -44,7 +44,8 @@ function PLUGIN:Tick()
 								bChanged = true
 							elseif (#data[client] < 1 and self:CanFlagTargetForViolation(client)) then
 								local violations = {}
-								if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (walkSpeed * walkSpeed)) then
+								local runThreshold = walkSpeed * 1.15
+								if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (runThreshold * runThreshold)) then
 									violations[#violations + 1] = self.VIOLATION_RUNNING
 								end
 								

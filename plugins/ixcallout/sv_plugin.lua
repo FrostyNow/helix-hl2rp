@@ -38,7 +38,8 @@ local EXCLUDED_WEAPONS = {
 	["gmod_physgun"] = true,
 	["gmod_tool"] = true,
 	["ix_suitcase"] = true,
-	["swep_vortigaunt_sweep"] = true
+	["swep_vortigaunt_sweep"] = true,
+	["ix_cigarette"] = true,
 }
 
 local COMBINE_TEMPLATE_SETS = {

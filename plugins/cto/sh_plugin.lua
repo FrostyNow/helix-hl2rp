@@ -144,6 +144,7 @@ PLUGIN.raisedWeaponWhitelist = {
 	weapon_physgun = true,
 	gmod_tool = true,
 	ix_suitcase = true,
+	ix_cigarette = true
 }
 
 PLUGIN.weaponViolationFactionWhitelist = {
