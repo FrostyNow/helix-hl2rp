@@ -3,6 +3,184 @@ local PLUGIN = PLUGIN
 util.AddNetworkString("ixNpcSpawnerEdit")
 util.AddNetworkString("ixNpcSpawnerSync")
 
+local GUNSHIP_COMBAT_RADIUS = 3000
+local GUNSHIP_TRACK_PREFIX = "ix_gstrk_"
+
+local function GetFlightAltitude(pos)
+	local groundTr = util.TraceLine({
+		start = pos + Vector(0, 0, 50),
+		endpos = pos - Vector(0, 0, 16384),
+		mask = MASK_SOLID_BRUSHONLY
+	})
+	local groundZ = groundTr.Hit and groundTr.HitPos.z or (pos.z - 500)
+
+	local skyTr = util.TraceLine({
+		start = pos + Vector(0, 0, 50),
+		endpos = pos + Vector(0, 0, 16384),
+		mask = MASK_SOLID_BRUSHONLY
+	})
+	local skyZ = skyTr.Hit and skyTr.HitPos.z or (pos.z + 3000)
+
+	return groundZ + (skyZ - groundZ) * 0.4
+end
+
+local function CheckSegmentClear(a, b, mins, maxs)
+	local tr = util.TraceHull({
+		start = a,
+		endpos = b,
+		mins = mins,
+		maxs = maxs,
+		mask = MASK_SOLID_BRUSHONLY
+	})
+	return not tr.Hit
+end
+
+local function FindGunshipRoute(targetPos, flightZ, mins, maxs)
+	local hoverPos = targetPos + Vector(0, 0, 350)
+	local allPlayers = player.GetAll()
+	local bestRoute = nil
+
+	for i = 1, 8 do
+		local angle = math.rad((i - 1) * 45 + math.random(0, 44))
+		local dir = Vector(math.cos(angle), math.sin(angle), 0)
+
+		-- 비행 고도에서 맵 가장자리까지 trace
+		local traceOrigin = Vector(targetPos.x, targetPos.y, flightZ)
+		local edgeTr = util.TraceLine({
+			start = traceOrigin,
+			endpos = traceOrigin + dir * 32768,
+			mask = MASK_SOLID_BRUSHONLY
+		})
+
+		local spawnPos
+		if edgeTr.Hit then
+			spawnPos = edgeTr.HitPos - dir * 300
+		else
+			spawnPos = traceOrigin + dir * 8000
+		end
+		spawnPos.z = flightZ
+
+		-- 플레이어 시야 확인
+		local visible = false
+		for _, ply in ipairs(allPlayers) do
+			if (not ply:Alive() or not ply:GetCharacter()) then continue end
+			local visTr = util.TraceLine({
+				start = ply:EyePos(),
+				endpos = spawnPos,
+				filter = ply,
+				mask = MASK_VISIBLE
+			})
+			if (not visTr.Hit) then
+				visible = true
+				break
+			end
+		end
+
+		-- 중간 웨이포인트 2개 배치 후 건쉽 히트박스 기준 경로 검증
+		local wp1Base = LerpVector(0.33, spawnPos, hoverPos)
+		local wp2Base = LerpVector(0.66, spawnPos, hoverPos)
+
+		local routeWP1, routeWP2
+		local routeValid = false
+
+		for attempt = 0, 5 do
+			local zOffset = attempt * 200
+			local wp1 = Vector(wp1Base.x, wp1Base.y, flightZ + zOffset)
+			local wp2 = Vector(wp2Base.x, wp2Base.y, flightZ + zOffset)
+
+			if CheckSegmentClear(spawnPos, wp1, mins, maxs) and
+			   CheckSegmentClear(wp1, wp2, mins, maxs) and
+			   CheckSegmentClear(wp2, hoverPos, mins, maxs) then
+				routeWP1 = wp1
+				routeWP2 = wp2
+				routeValid = true
+				break
+			end
+		end
+
+		if routeValid then
+			local route = {
+				spawnPos = spawnPos,
+				waypoints = {routeWP1, routeWP2, hoverPos},
+				visible = visible,
+			}
+			if (not visible) then return route end
+			if (not bestRoute) then bestRoute = route end
+		end
+	end
+
+	return bestRoute
+end
+
+function PLUGIN:CallFlyBy(targetPos, class)
+	-- 실제 collision bounds 추출
+	local tempEnt = ents.Create(class)
+	tempEnt:SetPos(targetPos + Vector(0, 0, 8192))
+	tempEnt:Spawn()
+	local mins, maxs = tempEnt:GetCollisionBounds()
+	tempEnt:Remove()
+
+	local flightZ = GetFlightAltitude(targetPos)
+	local route = FindGunshipRoute(targetPos, flightZ, mins, maxs)
+	if (not route) then return false end
+
+	-- path_track 체인 생성
+	local uid = tostring(math.random(100000, 999999))
+	local trackEnts = {}
+
+	for idx, wp in ipairs(route.waypoints) do
+		local track = ents.Create("path_track")
+		track:SetPos(wp)
+		track:SetName(GUNSHIP_TRACK_PREFIX .. uid .. "_" .. idx)
+		local nextName = GUNSHIP_TRACK_PREFIX .. uid .. "_" .. (idx + 1)
+		if (idx < #route.waypoints) then
+			track:SetKeyValue("target", nextName)
+		end
+		track:Spawn()
+		track:Activate()
+		table.insert(trackEnts, track)
+	end
+
+	-- NPC 소환
+	local npc = ents.Create(class)
+	npc:SetPos(route.spawnPos)
+	npc:SetKeyValue("target", GUNSHIP_TRACK_PREFIX .. uid .. "_1")
+	npc:Spawn()
+	npc:Activate()
+	npc:Fire("OmniscientOff", "", 0)
+
+	npc.ixGunshipTargetPos = targetPos
+
+	local timerId = "ixFlyBy_" .. npc:EntIndex()
+	local function CleanupTracks()
+		for _, track in ipairs(trackEnts) do
+			if (IsValid(track)) then track:Remove() end
+		end
+	end
+
+	timer.Create(timerId, 0.5, 0, function()
+		if (not IsValid(npc)) then
+			CleanupTracks()
+			timer.Remove(timerId)
+			return
+		end
+
+		if (npc:GetPos():Distance(targetPos) <= GUNSHIP_COMBAT_RADIUS) then
+			npc.ixGunshipTargetPos = nil
+			CleanupTracks()
+			timer.Remove(timerId)
+		end
+	end)
+
+	return true
+end
+
+hook.Add("NPC_SeeEntity", "ixGunshipCombatSuppress", function(npc, entity)
+	if (npc.ixGunshipTargetPos and npc:GetPos():Distance(npc.ixGunshipTargetPos) > GUNSHIP_COMBAT_RADIUS) then
+		return false
+	end
+end)
+
 function PLUGIN:AddSpawner(id, pos, template)
 	if template then
 		self.spawners[id] = {
