@@ -12,6 +12,7 @@ ITEM.eqBodyGroups = {
 	["Right Upperarm Pad"] = 1,
 	["Left Forearm Pad"] = 1,
 	["Right Forearm Pad"] = 1,
+	["Cod"] = 1,
 }
 ITEM.noDeathDrop = true
 ITEM.factions = {FACTION_OTA}
