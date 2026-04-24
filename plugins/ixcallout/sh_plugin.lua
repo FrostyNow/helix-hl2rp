@@ -253,6 +253,7 @@ function PLUGIN:InitializedPlugins()
 		self.reactedGrenades = self.reactedGrenades or {}
 		self.playerCooldowns = self.playerCooldowns or {}
 		self.activePhysicsThreats = self.activePhysicsThreats or {}
+		self.reactedStaticDangers = self.reactedStaticDangers or {}
 		self.nextGrenadeScan = 0
 		self.nextDeathReaction = 0
 		self.nextCombatScan = 0

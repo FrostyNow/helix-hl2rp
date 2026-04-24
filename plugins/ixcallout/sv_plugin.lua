@@ -31,6 +31,14 @@ local DANGER_CLASSES = {
 	"prop_vehicle_airboat"
 }
 
+-- Static hazards that persist after placement — react only once per entity per player.
+local STATIC_DANGER_CLASSES = {
+	["npc_satchel"] = true,
+	["npc_tripmine"] = true,
+	["gmod_dynamite"] = true,
+	["combine_mine"] = true,
+}
+
 local EXCLUDED_WEAPONS = {
 	["ix_hands"] = true,
 	["ix_keys"] = true,
@@ -3937,7 +3945,20 @@ function PLUGIN:Think()
 								template = "grenade_danger"
 							end
 
-							if (self:CanUsePlayerCooldown(client, "danger", 3)) then
+							local canReact = false
+
+							if (STATIC_DANGER_CLASSES[class]) then
+								local entID = ent:EntIndex()
+								self.reactedStaticDangers[entID] = self.reactedStaticDangers[entID] or {}
+								if (!self.reactedStaticDangers[entID][client]) then
+									self.reactedStaticDangers[entID][client] = true
+									canReact = true
+								end
+							else
+								canReact = self:CanUsePlayerCooldown(client, "danger", 3)
+							end
+
+							if (canReact) then
 								local event = self:BuildTemplateEvent(client, template)
 
 								if (event) then
@@ -4711,6 +4732,10 @@ end
 function PLUGIN:EntityRemoved(entity)
 	if (self.reactedGrenades) then
 		self.reactedGrenades[entity] = nil
+	end
+
+	if (self.reactedStaticDangers) then
+		self.reactedStaticDangers[entity:EntIndex()] = nil
 	end
 
 	if (self.playerCooldowns and IsValid(entity) and entity:IsPlayer()) then
