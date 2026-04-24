@@ -1,6 +1,23 @@
+local bZBaseLoaded = (ZBaseInstalled == true)
+
+-- Maps ixhl2rp faction to the corresponding ZBase faction string
+local function GetZBaseFactionForClient(client)
+	if (client:IsCombine() or client:Team() == FACTION_ADMIN or client:Team() == FACTION_CONSCRIPT) then
+		return "combine"
+	elseif (client:Team() == FACTION_CITIZEN or client:Team() == FACTION_VORTIGAUNT) then
+		return "ally"
+	end
+
+	return "neutral"
+end
+
 -- Called when a player has spawned.
 function PLUGIN:PlayerSpawn(client)
-	self:UpdateRelations(client);
+	self:UpdateRelations(client)
+
+	if (bZBaseLoaded) then
+		ZBaseSetFaction(client, GetZBaseFactionForClient(client))
+	end
 end
 
 -- Called after a player has spawned an NPC.
@@ -18,10 +35,10 @@ function PLUGIN:OnEntityCreated(entity)
 	end
 
 	timer.Simple(0, function()
-		if (IsValid(entity) and IsValid(self)) then
-			for _, client in ipairs(player.GetAll()) do
-				self:HandleNPCRelations(entity, client)
-			end
+		if (!IsValid(entity) or !IsValid(self)) then return end
+
+		for _, client in ipairs(player.GetAll()) do
+			self:HandleNPCRelations(entity, client)
 		end
 	end)
 end
@@ -65,6 +82,10 @@ function PLUGIN:HandleNPCRelations(ent, client)
 
 		if (ent.SetRelationshipMemory) then
 			ent:SetRelationshipMemory(client, "override_disposition", disposition)
+		end
+
+		if (bZBaseLoaded and ent.IsZBaseNPC and ent.ZBASE_SetMutualRelationship) then
+			ent:ZBASE_SetMutualRelationship(client, disposition)
 		end
 
 		local scanner = client:GetNetVar("ixScn")

@@ -50,7 +50,32 @@ Schema.npcClassLists.combine = {
 	["npc_vj_c_officer3"] = true,
 	["npc_vj_c_officer"] = true,
 	["npc_vj_c_officer2"] = true,
-	["npc_vj_c_officer5"] = true
+	["npc_vj_c_officer5"] = true,
+
+	["zb_hl2_metropolice_2003"] = true,
+	["zb_metropolice_elite"] = true,
+	["zb_mortar_synth"] = true,
+	["zb_combine_medic"] = true,
+	["zb_hl2_advisor_monitor"] = true,
+	["zb_hl2_apc"] = true,
+	["zb_hl2_apc_beta"] = true,
+	["zb_crab_synth"] = true,
+	["zb_hl2_camera"] = true,
+	["zb_hl2_turret_ceiling"] = true,
+	["zb_hl2_city_scanner"] = true,
+	["zb_hl2_dropship"] = true,
+	["zb_hl2_dropship_beta"] = true,
+	["zb_hl2_rollermine_explosive"] = true,
+	["zb_hl2_turret_floor"] = true,
+	["zb_hl2_turret_floor_beta"] = true,
+	["zb_hl2_gunship"] = true,
+	["zb_hl2_hunter_chopper"] = true,
+	["zb_hl2_hunter_chopper_beta"] = true,
+	["zb_hl2_rollermine"] = true,
+	["zb_hl2_shield_scanner"] = true,
+	["zb_hl2_shield_scanner_beta"] = true,
+	["zb_hl2_combine_2002"] = true,
+	["zb_hl2_strider"] = true,
 }
 
 Schema.npcClassLists.rebel = {
@@ -67,6 +92,7 @@ Schema.npcClassLists.rebel = {
 	["npc_magnusson"] = true,
 	["npc_mossman"] = true,
 	["npc_dog"] = true,
+
 	["npc_sniper_rebel"] = true,
 	["npc_vj_hlr2_alyx"] = true,
 	["npc_vj_hlr2_barney"] = true,
@@ -76,7 +102,20 @@ Schema.npcClassLists.rebel = {
 	["npc_vj_hlr2_rebel"] = true,
 	["npc_vj_hlr2_rebel_engineer"] = true,
 	["npc_vj_hlr2_refugee"] = true,
-	["npc_vj_hlr2_res_sentry"] = true
+	["npc_vj_hlr2_res_sentry"] = true,
+
+	["zb_hl2_alyx"] = true,
+	["zb_hl2_alyx_beta"] = true,
+	["zb_hl2_alyx_ep2"] = true,
+	["zb_hl2_barney"] = true,
+	["zb_hl2_eli"] = true,
+	["zb_hl2_mossman"] = true,
+	["zb_hl2_fisherman"] = true,
+	["zb_hl2_rollermine_hacked"] = true,
+	["zb_hl2_lamarr"] = true,
+	["zb_hl2_odell"] = true,
+	["zb_friendly_hunter"] = true,
+	["zbase_bmx_uncontrolled_alien_slave"] = true,
 }
 
 Schema.npcClassLists.hostile = {
@@ -131,7 +170,7 @@ function Schema:IsCombineNPC(npc)
 		return false
 	end
 
-	if (class == "npc_turret_floor" and (npc:GetSkin() == 1 or npc:GetSkin() == 2)) then
+	if ((class == "npc_turret_floor" or class == "zb_hl2_turret_floor" or class == "zb_hl2_turret_floor_beta" or class == "zb_hl2_turret_floor_hacked") and (npc:GetSkin() == 1 or npc:GetSkin() == 2)) then
 		return false
 	end
 
