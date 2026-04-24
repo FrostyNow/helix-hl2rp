@@ -6,6 +6,13 @@ ITEM.price = 50
 ITEM.width = 1
 ITEM.height = 1
 ITEM.outfitCategory = "plate"
+ITEM.eqBodyGroups = {
+	["Back Vest Part"] = 1,
+	["Left Upperarm Pad"] = 1,
+	["Right Upperarm Pad"] = 1,
+	["Left Forearm Pad"] = 1,
+	["Right Forearm Pad"] = 1,
+}
 ITEM.noDeathDrop = true
 ITEM.factions = {FACTION_OTA}
 
