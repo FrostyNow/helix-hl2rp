@@ -160,6 +160,12 @@ ALWAYS_RAISED["weapon_portalgun"] = true
 ALWAYS_RAISED["weapon_bmxs_headcrabbed"] = true
 
 game.AddAmmoType({
+	name = "AR2",
+	dmgtype = DMG_BULLET,
+	tracer = TRACER_LINE_AND_WHIZ,
+	maxcarry = 225
+})
+game.AddAmmoType({
 	name = "5.56x45mm",
 	dmgtype = DMG_BULLET,
 	tracer = TRACER_LINE_AND_WHIZ,
