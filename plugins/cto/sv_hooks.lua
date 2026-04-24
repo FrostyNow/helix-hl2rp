@@ -95,6 +95,24 @@ function PLUGIN:Tick()
 										combineCamera:Fire("SetIdle")
 										combineCamera:Fire("SetAngry")
 
+										local violationNames = {
+											[self.VIOLATION_RUNNING] = "RUNNING",
+											[self.VIOLATION_JUMPING] = "JUMPING",
+											[self.VIOLATION_CROUCHING] = "CROUCHING",
+											[self.VIOLATION_FALLEN_OVER] = "FALLEN_OVER",
+											[self.VIOLATION_RAISED_WEAPON] = "RAISED_WEAPON",
+											[self.VIOLATION_MISSING_CID] = "MISSING_CID",
+											[self.VIOLATION_SUSPECTED_VIOLENCE] = "SUSPECTED_VIOLENCE",
+											[self.VIOLATION_SEARCHING_TRASH] = "SEARCHING_TRASH",
+											[self.VIOLATION_MULTIPLE_CIDS] = "MULTIPLE_CIDS",
+											[self.VIOLATION_UNAUTHORIZED_AREA] = "UNAUTHORIZED_AREA",
+										}
+										local vioStrings = {}
+										for _, v in ipairs(violations) do
+											vioStrings[#vioStrings + 1] = violationNames[v] or ("UNKNOWN(" .. v .. ")")
+										end
+										print("[CTO] C-i" .. combineCamera:EntIndex() .. " flagged " .. client:Name() .. " | " .. table.concat(vioStrings, ", "))
+
 										Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
 
 										if (ix.plugin.Get("scanner")) then

@@ -48,6 +48,8 @@ function PLUGIN:CombineCameraFoundPlayer(combineCamera, client)
 	if (self.cameraData[combineCamera] and client:GetMoveType() != MOVETYPE_NOCLIP) then
 		if (!self.cameraData[combineCamera][client]) then
 			self.cameraData[combineCamera][client] = {}
+			-- Override the native D_HT alert immediately; CTO manages SetAngry on violation.
+			combineCamera:Fire("SetIdle")
 		end
 	end
 end
