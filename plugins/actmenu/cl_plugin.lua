@@ -151,7 +151,7 @@ function PLUGIN:OpenActMenu()
 		if (classes[modelClass]) then
 			local data = classes[modelClass]
 			local variants = #data.sequence
-			
+
 			table.insert(availableActs, {
 				name = name,
 				variants = variants,
@@ -167,61 +167,211 @@ function PLUGIN:OpenActMenu()
 
 	table.SortByMember(availableActs, "name", true)
 
-	local width, height = 720, 600
+	local contentWidth = 720
+	local modelPanelWidth = 300
+	local width = contentWidth + modelPanelWidth
+	local height = 600
+
 	ix.gui.actMenu = vgui.Create("EditablePanel")
 	ix.gui.actMenu:SetSize(width, height)
 	ix.gui.actMenu:Center()
 	ix.gui.actMenu:MakePopup()
 	ix.gui.actMenu.Paint = function(self, w, h)
 		Derma_DrawBackgroundBlur(self, self.m_fCreateTime)
-		
+
 		surface.SetDrawColor(0, 0, 0, 220)
 		surface.DrawRect(0, 0, w, h)
-		
+
 		surface.SetDrawColor(ix.config.Get("color", color_white))
 		surface.DrawOutlinedRect(0, 0, w, h)
-		
+
 		surface.SetDrawColor(ix.config.Get("color", color_white))
-		surface.DrawRect(0, 0, w, 32)
-		
+		surface.DrawRect(0, 0, contentWidth, 32)
+
 		draw.SimpleText(L("actMenuDesc"):upper(), "ixMenuButtonFontSmall", 16, 16, color_black, TEXT_ALIGN_LEFT, TEXT_ALIGN_CENTER)
 	end
 
+	-- Model preview panel (right side)
+	local modelContainer = ix.gui.actMenu:Add("DPanel")
+	modelContainer:SetWide(modelPanelWidth)
+	modelContainer:Dock(RIGHT)
+	modelContainer.Paint = function(_, w, h)
+		surface.SetDrawColor(ix.config.Get("color", color_white))
+		surface.DrawLine(0, 0, 0, h)
+	end
+
+	local actModel = modelContainer:Add("ixModelPanel")
+	actModel:Dock(FILL)
+	actModel:DockMargin(4, 36, 4, 4)
+	actModel:SetFOV(30)
+
+	actModel.currentAngles = Angle(0, -15, 0)
+	actModel.isDragging = false
+	actModel.lastMouseX = 0
+	actModel.actSequenceID = -1
+
+	actModel.LayoutEntity = function(this, entity)
+		if (this.actSequenceID and this.actSequenceID >= 0) then
+			if (entity:GetSequence() != this.actSequenceID) then
+				entity:SetSequence(this.actSequenceID)
+				entity:SetCycle(0)
+			end
+			entity:FrameAdvance(FrameTime())
+		else
+			this:RunAnimation()
+		end
+
+		local head = entity:LookupBone("ValveBiped.Bip01_Head1")
+		if (head) then
+			local pos = entity:GetBonePosition(head)
+			entity:SetEyeTarget(pos + entity:GetForward() * 32)
+		end
+
+		entity:SetAngles(this.currentAngles)
+	end
+
+	actModel.Paint = function(this, w, h)
+		if (!IsValid(this.Entity)) then return end
+
+		local x, y = this:LocalToScreen(0, 0)
+
+		this:LayoutEntity(this.Entity)
+
+		cam.Start3D(this.vCamPos, (this.vLookatPos - this.vCamPos):Angle(), this.fFOV, x, y, w, h)
+			render.SuppressEngineLighting(true)
+			render.SetLightingOrigin(this.Entity:GetPos())
+			render.SetModelLighting(0, 1.5, 1.5, 1.5)
+			for i = 1, 4 do render.SetModelLighting(i, 0.4, 0.4, 0.4) end
+			render.SetModelLighting(5, 0.04, 0.04, 0.04)
+			this.Entity:DrawModel()
+			render.SuppressEngineLighting(false)
+		cam.End3D()
+	end
+
+	actModel.OnMousePressed = function(this, code)
+		if (code == MOUSE_LEFT) then
+			this.isDragging = true
+			this.lastMouseX = gui.MouseX()
+			this:SetCursor("sizewe")
+		end
+	end
+
+	actModel.OnMouseReleased = function(this, code)
+		if (code == MOUSE_LEFT) then
+			this.isDragging = false
+			this:SetCursor("none")
+		end
+	end
+
+	actModel.OnCursorMoved = function(this, x, y)
+		if (this.isDragging) then
+			local mouseX = gui.MouseX()
+			local delta = mouseX - this.lastMouseX
+			this.lastMouseX = mouseX
+			this.currentAngles.y = (this.currentAngles.y + delta * 0.5) % 360
+		end
+	end
+
+	actModel.OnCursorExited = function(this)
+		this.isDragging = false
+		this:SetCursor("none")
+	end
+
+	-- Initialize model from local player
+	local function SetupActModel()
+		if (!IsValid(actModel)) then return end
+
+		local model = client:GetModel()
+		local skin = client:GetSkin()
+
+		actModel:SetModel(model, skin)
+
+		if (IsValid(actModel.Entity)) then
+			for i = 0, client:GetNumBodyGroups() - 1 do
+				actModel.Entity:SetBodygroup(i, client:GetBodygroup(i))
+			end
+
+			local min, max = actModel.Entity:GetRenderBounds()
+			local height2 = max.z - min.z
+			local sz = math.max(height2, max.x - min.x, max.y - min.y)
+			local fov = actModel:GetFOV()
+			local dist = (sz * 0.3) / math.tan(math.rad(fov * 0.55))
+			local center = (min + max) * 0.65
+
+			actModel:SetCamPos(Vector(dist, 0, center.z + height2 * 0.1))
+			actModel:SetLookAt(Vector(center.x, center.y, actModel.vCamPos.z - dist * math.tan(math.rad(10))))
+		end
+	end
+
+	SetupActModel()
+
+	-- Left content area
+	local contentPanel = ix.gui.actMenu:Add("EditablePanel")
+	contentPanel:Dock(FILL)
+	contentPanel:DockMargin(1, 1, 0, 1)
+	contentPanel.Paint = nil
+
 	-- Search Bar
-	local search = ix.gui.actMenu:Add("ixIconTextEntry")
+	local search = contentPanel:Add("ixIconTextEntry")
 	search:Dock(TOP)
-	search:DockMargin(16, 40, 16, 8)
+	search:DockMargin(8, 36, 8, 6)
 	search:SetTall(32)
 	search:SetFont("ixMenuButtonFontSmall")
 	if (search.SetPlaceholderText) then
 		search:SetPlaceholderText(L("search").."...")
 	end
 
-	local scroll = ix.gui.actMenu:Add("DScrollPanel")
+	local scroll = contentPanel:Add("DScrollPanel")
 	scroll:Dock(FILL)
-	scroll:DockMargin(16, 0, 16, 16)
+	scroll:DockMargin(8, 0, 8, 8)
 
 	local layout = scroll:Add("DIconLayout")
 	layout:Dock(TOP)
 	layout:SetSpaceX(4)
 	layout:SetSpaceY(4)
 
+	local function PreviewAct(actData, variantIndex)
+		if (!IsValid(actModel) or !IsValid(actModel.Entity)) then return end
+
+		local sequence = actData.sequence[variantIndex]
+		if (istable(sequence)) then
+			sequence = sequence[1] or sequence.sequence
+		end
+
+		if (isstring(sequence)) then
+			local seqID = actModel.Entity:LookupSequence(sequence)
+			actModel.actSequenceID = (seqID >= 0) and seqID or -1
+		else
+			actModel.actSequenceID = -1
+		end
+	end
+
+	local function ClearPreview()
+		if (IsValid(actModel)) then
+			actModel.actSequenceID = -1
+		end
+	end
+
+	scroll.OnCursorExited = function()
+		ClearPreview()
+	end
+
 	local function RebuildActs(filter)
 		layout:Clear()
 		filter = (filter or ""):lower()
 
+		local btnW = contentWidth - 16 - 2
+
 		local currentAngle = client:GetNetVar("actEnterAngle")
 		if (currentAngle) then
 			local btn = layout:Add("DButton")
-			btn:SetSize(width - 32 - 16, 40)
+			btn:SetSize(btnW, 40)
 			btn:SetText(L("actExit"):upper())
 			btn:SetFont("ixMenuButtonFontSmall")
 			btn:SetTextColor(Color(255, 100, 100))
 			btn.Paint = function(self, w, h)
 				local alpha = 100
-				if (self:IsHovered()) then
-					alpha = 180
-				end
+				if (self:IsHovered()) then alpha = 180 end
 				surface.SetDrawColor(80, 20, 20, alpha)
 				surface.DrawRect(0, 0, w, h)
 				surface.SetDrawColor(255, 100, 100)
@@ -245,34 +395,35 @@ function PLUGIN:OpenActMenu()
 					label = label .. " (" .. i .. ")"
 				end
 
+				local capturedInfo = actInfo
+				local capturedVariant = i
+
 				local btn = layout:Add("DButton")
-				btn:SetSize((width - 32 - 16 - 8) / 3, 40)
+				btn:SetSize((btnW - 8) / 3, 40)
 				btn:SetText(label:upper())
 				btn:SetFont("ixMenuButtonFontSmall")
 				btn:SetTextColor(color_white)
 				btn.Paint = function(self, w, h)
-					local alpha = 100
 					if (self:IsHovered()) then
-						alpha = 200
 						surface.SetDrawColor(ix.config.Get("color", color_white))
-					else
-						surface.SetDrawColor(40, 40, 40, alpha)
-					end
-					
-					surface.DrawRect(0, 0, w, h)
-					
-					if (self:IsHovered()) then
+						surface.DrawRect(0, 0, w, h)
 						self:SetTextColor(color_black)
 					else
-						self:SetTextColor(color_white)
+						surface.SetDrawColor(40, 40, 40, 100)
+						surface.DrawRect(0, 0, w, h)
 						surface.SetDrawColor(ix.config.Get("color", color_white))
 						surface.DrawOutlinedRect(0, 0, w, h)
+						self:SetTextColor(color_white)
 					end
 				end
 
 				btn.DoClick = function()
-					ix.command.Send("act" .. actInfo.name:lower(), i)
+					ix.command.Send("act" .. capturedInfo.name:lower(), capturedVariant)
 					ix.gui.actMenu:Remove()
+				end
+
+				btn.OnCursorEntered = function()
+					PreviewAct(capturedInfo.data, capturedVariant)
 				end
 			end
 		end
@@ -287,7 +438,7 @@ function PLUGIN:OpenActMenu()
 	-- Close button
 	local close = ix.gui.actMenu:Add("DButton")
 	close:SetSize(32, 32)
-	close:SetPos(width - 32, 0)
+	close:SetPos(contentWidth - 32, 0)
 	close:SetText("✕")
 	close:SetFont("ixMenuButtonFontSmall")
 	close:SetTextColor(color_black)
@@ -295,7 +446,7 @@ function PLUGIN:OpenActMenu()
 	close.DoClick = function()
 		ix.gui.actMenu:Remove()
 	end
-	
+
 	ix.gui.actMenu:SetAlpha(0)
 	ix.gui.actMenu:AlphaTo(255, 0.2)
 end
