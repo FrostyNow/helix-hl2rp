@@ -42,13 +42,13 @@ function PLUGIN:Tick()
 							elseif (!self:CanCameraTrackTarget(client)) then
 								data[client] = nil
 								bChanged = true
-							elseif (#data[client] < 1 and self:CanFlagTargetForViolation(client)) then
+							elseif (self:CanFlagTargetForViolation(client)) then
 								local violations = {}
 								local runThreshold = walkSpeed * 1.15
 								if (client:KeyDown(IN_SPEED) and client:GetVelocity():LengthSqr() >= (runThreshold * runThreshold)) then
 									violations[#violations + 1] = self.VIOLATION_RUNNING
 								end
-								
+
 								if (!client:OnGround() and client:WaterLevel() <= 0) then
 									violations[#violations + 1] = self.VIOLATION_JUMPING
 								end
@@ -85,18 +85,26 @@ function PLUGIN:Tick()
 									end
 								end
 
+								local hadViolations = #data[client] > 0
+
 								if (#violations > 0) then
 									data[client] = violations
 									bChanged = true
 
-									combineCamera:Fire("SetIdle")
-									combineCamera:Fire("SetAngry")
+									if (!hadViolations) then
+										combineCamera:Fire("SetIdle")
+										combineCamera:Fire("SetAngry")
 
-									Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
+										Schema:AddCombineDisplayMessage("@MovementViolation", Color(255, 128, 0, 255), L(combineCamera:EntIndex(), client))
 
-									if (ix.plugin.Get("scanner")) then
-										self:RequestSurveillancePhoto(combineCamera)
+										if (ix.plugin.Get("scanner")) then
+											self:RequestSurveillancePhoto(combineCamera)
+										end
 									end
+								elseif (hadViolations) then
+									data[client] = {}
+									bChanged = true
+									combineCamera:Fire("SetIdle")
 								end
 							end
 						end

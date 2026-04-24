@@ -253,6 +253,21 @@ function Schema:SpawnRandomLoot(position, rareItem)
 end
 
 
+function PLUGIN:PlayerDeath(client)
+	if (client:GetNetVar("isSearchingLoot")) then
+		client:SetNetVar("isSearchingLoot", false)
+		client:SetAction(false)
+		self:StopLootSearchSound(client)
+	end
+end
+
+function PLUGIN:PlayerDisconnected(client)
+	if (client:GetNetVar("isSearchingLoot")) then
+		client:SetNetVar("isSearchingLoot", false)
+		self:StopLootSearchSound(client)
+	end
+end
+
 function PLUGIN:SaveData()
 	local data = {}
 
