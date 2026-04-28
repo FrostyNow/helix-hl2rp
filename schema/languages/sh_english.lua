@@ -128,6 +128,7 @@ LANGUAGE = {
 	oicwDesc = "One of a series of prototypes of a new type of assault rifle that fired 20 mm HE airbursting projectiles.\nIt fires 5.56×45mm NATO Rifle Rounds.",
 	panzerfaustDesc = "An non-guided anti-tank rocket launchar that fires high effective armor piercing rockets.",
 	slamDesc = "S.L.A.M, Selectable Lightweight Attack Munition is an explosive that can be attached to a wall or thrown. It can be triggered by a laser motion sensor or a detonator.",
+	makeshiftShotgunDesc = "A makeshift shotgun made by cutting and processing a pipe.",
 
 	smg1ammoDesc = "A Box that contains %s of SMG Ammo.",
 	ar2ammoDesc = "A Cartridge that contains %s of Pulse Plug.",

@@ -271,6 +271,8 @@ LANGUAGE = {
 	["Panzerfaust 3"] = "판처파우스트 3",
 	panzerfaustDesc = "관통력이 매우 뛰어난 장갑관통로켓을 발사하는 무유도 대전차 로켓 발사기입니다.",
 	slamDesc = "벽에 부착하거나 던져둘 수 있는 폭발물입니다. 레이저 동작 감지 센서나, 기폭 장치로 신호를 보낼 수 있습니다.",
+	["Makeshift Shotgun"] = "급조 산탄총",
+	makeshiftShotgunDesc = "파이브를 잘라 가공해 만든 급조 산탄총입니다.",
 	
 	ammoDesc = "%s 탄약 %s발이 들어있는 상자입니다.",
 	["Pulse-Rifle Energy"] = "펄스 소총 탄창",

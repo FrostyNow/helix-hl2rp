@@ -98,6 +98,9 @@ PLUGIN.customWeaponInfo = {
 	["weapon_rtbr_frag"] = {
 		purpose = "grenadeDesc"
 	},
+	["arc9_makeshift_tumbera"] = {
+		purpose = "makeshiftShotgunDesc"
+	}
 }
 
 if SERVER then
