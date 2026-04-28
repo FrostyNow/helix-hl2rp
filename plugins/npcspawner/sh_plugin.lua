@@ -47,6 +47,18 @@ ix.lang.AddTable("english", {
 	flyByCalled = "%s inbound.",
 	flyByNoRoute = "Could not find a valid flight route.",
 	flyByInvalidType = "Invalid type. Use 'gunship' or 'helicopter'.",
+	cmdDropshipDesc = "Summons a Combine dropship that deploys soldiers near your position. Usage: Dropship [1-6]",
+	dropshipCalled = "Dropship inbound with %d soldier(s).",
+	dropshipNoRoute = "Could not find a valid dropship route or landing zone.",
+	cmdFlyOutDesc = "Orders all nearby gunships and helicopters to fly out and leave the area.",
+	flyOutDone = "Ordered %d aircraft to fly out.",
+	flyOutNone = "No aircraft found nearby.",
+	cmdNPCSpawnerForceDesc = "Immediately spawns all NPCs from the specified spawner ID.",
+	spawnerForced = "Spawned %d NPC(s) from spawner '%s'.",
+	spawnerForceEmpty = "Spawner '%s' is already at max capacity or has no classes set.",
+	cmdNPCChargeDesc = "Orders all NPCs within 3000 units to charge at you.",
+	npcChargeOrdered = "Ordered %d NPC(s) to charge.",
+	npcChargeNone = "No NPCs found within range.",
 })
 
 ix.lang.AddTable("korean", {
@@ -87,6 +99,18 @@ ix.lang.AddTable("korean", {
 	flyByCalled = "%s 접근 중.",
 	flyByNoRoute = "유효한 비행 경로를 찾을 수 없습니다.",
 	flyByInvalidType = "올바르지 않은 유형입니다. 'gunship' 또는 'helicopter'를 입력하세요.",
+	cmdDropshipDesc = "관리자 위치 근처에 병사를 내리는 콤바인 드랍십을 소환합니다. 사용법: Dropship [1-6]",
+	dropshipCalled = "드랍쉽 %d명 병력 접근 중.",
+	dropshipNoRoute = "유효한 비행 경로 또는 착지 지점을 찾을 수 없습니다.",
+	cmdFlyOutDesc = "근처의 모든 건쉽 및 헬리콥터를 맵 밖으로 내보냅니다.",
+	flyOutDone = "%d대의 항공기를 철수시켰습니다.",
+	flyOutNone = "근처에 항공기가 없습니다.",
+	cmdNPCSpawnerForceDesc = "지정한 소환 지점 ID에서 NPC를 즉시 일제히 소환합니다.",
+	spawnerForced = "소환 지점 '%s'에서 NPC %d마리를 소환했습니다.",
+	spawnerForceEmpty = "소환 지점 '%s'이(가) 이미 최대 소환 수이거나 클래스가 설정되지 않았습니다.",
+	cmdNPCChargeDesc = "3000 유닛 내의 모든 NPC를 내 위치로 진격시킵니다.",
+	npcChargeOrdered = "NPC %d마리를 진격시켰습니다.",
+	npcChargeNone = "범위 내에 NPC가 없습니다.",
 })
 
 ix.config.Add("npcSpawnerGlobalLimit", 50, "npcSpawnerGlobalLimitDesc", nil, {
@@ -208,5 +232,69 @@ ix.command.Add("FlyBy", {
 			return "@flyByNoRoute"
 		end
 		return L("flyByCalled", client, flyByNames[typeArg:lower()])
+	end
+})
+
+ix.command.Add("FlyOut", {
+	description = "@cmdFlyOutDesc",
+	privilege = "Manage Admin Commands",
+	superAdminOnly = true,
+	OnRun = function(self, client)
+		local count = ix.plugin.list["npcspawner"]:FlyOut(client:GetPos())
+		if (count == 0) then
+			return "@flyOutNone"
+		end
+		return L("flyOutDone", client, count)
+	end
+})
+
+ix.command.Add("NPCCharge", {
+	description = "@cmdNPCChargeDesc",
+	privilege = "Manage Admin Commands",
+	superAdminOnly = true,
+	OnRun = function(self, client)
+		local count = ix.plugin.list["npcspawner"]:ChargeNPCsAtPlayer(client)
+		if (count == 0) then
+			return "@npcChargeNone"
+		end
+		return L("npcChargeOrdered", client, count)
+	end
+})
+
+ix.command.Add("NPCSpawnerForce", {
+	description = "@cmdNPCSpawnerForceDesc",
+	privilege = "Manage Admin Commands",
+	superAdminOnly = true,
+	arguments = {
+		ix.type.string
+	},
+	OnRun = function(self, client, id)
+		if (not ix.plugin.list["npcspawner"].spawners[id]) then
+			return "@spawnerNotFound"
+		end
+
+		local count = ix.plugin.list["npcspawner"]:ForceSpawnFromSpawner(id)
+		if (count == 0) then
+			return L("spawnerForceEmpty", client, id)
+		end
+		return L("spawnerForced", client, count, id)
+	end
+})
+
+ix.command.Add("Dropship", {
+	description = "@cmdDropshipDesc",
+	privilege = "Manage Admin Commands",
+	superAdminOnly = true,
+	arguments = {
+		bit.bor(ix.type.number, ix.type.optional),
+	},
+	OnRun = function(self, client, count)
+		count = math.Clamp(math.floor(count or 4), 1, 6)
+
+		local success = ix.plugin.list["npcspawner"]:CallDropship(client:GetPos(), count)
+		if (not success) then
+			return "@dropshipNoRoute"
+		end
+		return L("dropshipCalled", client, count)
 	end
 })

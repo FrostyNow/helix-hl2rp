@@ -6,6 +6,19 @@ util.AddNetworkString("ixNpcSpawnerSync")
 local GUNSHIP_COMBAT_RADIUS = 3000
 local GUNSHIP_TRACK_PREFIX = "ix_gstrk_"
 
+local DROPSHIP_TRACK_PREFIX   = "ix_dstrk_"
+local DROPSHIP_TEMPL_PREFIX   = "ix_dstempl_"
+local DROPSHIP_LAND_PREFIX    = "ix_dsland_"
+local DROPSHIP_FLAT_RADIUS    = 150
+local DROPSHIP_FLAT_TOLERANCE = 40
+local DROPSHIP_CLEARANCE      = 800
+local DROPSHIP_DEPLOY_RADIUS    = 50  -- 병사 하차 공간 확보 반경
+local DROPSHIP_DEPLOY_TOLERANCE = 70   -- 드랍쉽 착지 footprint는 완화
+-- 하차 공간 flatness는 DROPSHIP_FLAT_TOLERANCE(40) 그대로 사용 (엄격)
+local DROPSHIP_TEMPLATE_COUNT = 6
+local DROPSHIP_DEPLOY_STEP    = 0.8
+local DROPSHIP_MIN_GROUND_NORMAL_Z = 0.96
+
 local function GetFlightAltitude(pos)
 	local groundTr = util.TraceLine({
 		start = pos + Vector(0, 0, 50),
@@ -35,6 +48,25 @@ local function CheckSegmentClear(a, b, mins, maxs)
 	return not tr.Hit
 end
 
+local function FindEdgeFlightPoint(origin, dir, flightZ, inset)
+	local traceOrigin = Vector(origin.x, origin.y, flightZ)
+	local edgeTr = util.TraceLine({
+		start = traceOrigin,
+		endpos = traceOrigin + dir * 32768,
+		mask = MASK_SOLID_BRUSHONLY
+	})
+
+	local edgePos
+	if edgeTr.Hit then
+		edgePos = edgeTr.HitPos - dir * (inset or 300)
+	else
+		edgePos = traceOrigin + dir * 8000
+	end
+
+	edgePos.z = flightZ
+	return edgePos
+end
+
 local function FindGunshipRoute(targetPos, flightZ, mins, maxs)
 	local hoverPos = targetPos + Vector(0, 0, 350)
 	local allPlayers = player.GetAll()
@@ -45,20 +77,7 @@ local function FindGunshipRoute(targetPos, flightZ, mins, maxs)
 		local dir = Vector(math.cos(angle), math.sin(angle), 0)
 
 		-- 비행 고도에서 맵 가장자리까지 trace
-		local traceOrigin = Vector(targetPos.x, targetPos.y, flightZ)
-		local edgeTr = util.TraceLine({
-			start = traceOrigin,
-			endpos = traceOrigin + dir * 32768,
-			mask = MASK_SOLID_BRUSHONLY
-		})
-
-		local spawnPos
-		if edgeTr.Hit then
-			spawnPos = edgeTr.HitPos - dir * 300
-		else
-			spawnPos = traceOrigin + dir * 8000
-		end
-		spawnPos.z = flightZ
+		local spawnPos = FindEdgeFlightPoint(targetPos, dir, flightZ, 300)
 
 		-- 플레이어 시야 확인
 		local visible = false
@@ -112,6 +131,226 @@ local function FindGunshipRoute(targetPos, flightZ, mins, maxs)
 	return bestRoute
 end
 
+local function FindLandingZone(targetPos)
+	for i = 1, 16 do
+		local angle = math.rad((i - 1) * 22.5 + math.random(0, 22))
+		local dist = math.random(400, 2500)
+		local candidate = Vector(
+			targetPos.x + math.cos(angle) * dist,
+			targetPos.y + math.sin(angle) * dist,
+			targetPos.z
+		)
+
+		local groundTr = util.TraceLine({
+			start = candidate + Vector(0, 0, 500),
+			endpos = candidate - Vector(0, 0, 8192),
+			mask = MASK_SOLID_BRUSHONLY
+		})
+		if (not groundTr.Hit) then continue end
+		local groundPos = groundTr.HitPos
+
+		-- 물/강 위 착지 방지
+		if (bit.band(util.PointContents(groundPos + Vector(0, 0, 2)), CONTENTS_WATER) ~= 0) then continue end
+		if (groundTr.HitNormal.z < DROPSHIP_MIN_GROUND_NORMAL_Z) then continue end
+
+		-- 드랍쉽 footprint (4방향 × 150u) — 완화된 기준
+		local flat = true
+		for _, offset in ipairs({
+			Vector(DROPSHIP_FLAT_RADIUS, 0, 0),
+			Vector(-DROPSHIP_FLAT_RADIUS, 0, 0),
+			Vector(0, DROPSHIP_FLAT_RADIUS, 0),
+			Vector(0, -DROPSHIP_FLAT_RADIUS, 0),
+		}) do
+			local cornerTr = util.TraceLine({
+				start = groundPos + offset + Vector(0, 0, 200),
+				endpos = groundPos + offset - Vector(0, 0, 200),
+				mask = MASK_SOLID_BRUSHONLY
+			})
+			if (not cornerTr.Hit
+				or cornerTr.HitNormal.z < DROPSHIP_MIN_GROUND_NORMAL_Z
+				or math.abs(cornerTr.HitPos.z - groundPos.z) > DROPSHIP_DEPLOY_TOLERANCE) then
+				flat = false
+				break
+			end
+		end
+		if (not flat) then continue end
+
+		-- 병사 하차 공간 (8방향 × 350u) — 엄격한 기준 + 수직 정리
+		local deployFlat = true
+		for d = 0, 7 do
+			local a = math.rad(d * 45)
+			local offset = Vector(math.cos(a) * DROPSHIP_DEPLOY_RADIUS, math.sin(a) * DROPSHIP_DEPLOY_RADIUS, 0)
+			local deployTr = util.TraceLine({
+				start = groundPos + offset + Vector(0, 0, 200),
+				endpos = groundPos + offset - Vector(0, 0, 400),
+				mask = MASK_SOLID_BRUSHONLY
+			})
+			if (not deployTr.Hit
+				or deployTr.HitNormal.z < DROPSHIP_MIN_GROUND_NORMAL_Z
+				or math.abs(deployTr.HitPos.z - groundPos.z) > DROPSHIP_FLAT_TOLERANCE) then
+				deployFlat = false
+				break
+			end
+			local headTr = util.TraceLine({
+				start = deployTr.HitPos + Vector(0, 0, 4),
+				endpos = deployTr.HitPos + Vector(0, 0, 200),
+				mask = MASK_SOLID_BRUSHONLY
+			})
+			if (headTr.Hit) then
+				deployFlat = false
+				break
+			end
+		end
+		if (not deployFlat) then continue end
+
+		local clearTr = util.TraceLine({
+			start = groundPos + Vector(0, 0, 10),
+			endpos = groundPos + Vector(0, 0, DROPSHIP_CLEARANCE),
+			mask = MASK_SOLID_BRUSHONLY
+		})
+		if (clearTr.Hit) then continue end
+
+		return groundPos
+	end
+	return nil
+end
+
+function PLUGIN:GetDropshipTemplateName(index)
+	return DROPSHIP_TEMPL_PREFIX .. "global_" .. index
+end
+
+function PLUGIN:EnsureDropshipTemplates()
+	self.ixDropshipTemplates = self.ixDropshipTemplates or {}
+
+	local basePos = Vector(0, 0, -16300)
+
+	for i = 1, DROPSHIP_TEMPLATE_COUNT do
+		local templateName = self:GetDropshipTemplateName(i)
+		local existing = ents.FindByName(templateName)[1]
+
+		if (IsValid(existing)) then
+			existing.ixDropshipTemplate = true
+			self.ixDropshipTemplates[i] = existing
+			continue
+		end
+
+		local soldier = ents.Create("npc_combine_s")
+		if (not IsValid(soldier)) then
+			continue
+		end
+
+		soldier.ixDropshipTemplate = true
+		soldier:SetPos(basePos + Vector(i * 48, 0, 0))
+		soldier:SetAngles(Angle(0, 0, 0))
+		soldier:SetKeyValue("targetname", templateName)
+		soldier:SetKeyValue("spawnflags", "2049")
+		soldier:SetKeyValue("additionalequipment", "weapon_ar2")
+		soldier:Spawn()
+		soldier:Activate()
+		soldier:SetName(templateName)
+		soldier:SetNoDraw(true)
+		soldier:AddFlags(FL_NOTARGET)
+
+		local weapon = soldier:GetActiveWeapon()
+		if (IsValid(weapon)) then
+			weapon:SetNoDraw(true)
+		end
+
+		self.ixDropshipTemplates[i] = soldier
+	end
+end
+
+function PLUGIN:GetDropshipDeployAttachment(dropship)
+	for _, name in ipairs({
+		"deploy_landpoint",
+		"deploy_origin",
+		"cargo",
+		"body",
+		"muzzle",
+	}) do
+		local attachmentID = dropship:LookupAttachment(name)
+		if (attachmentID and attachmentID > 0) then
+			local attachment = dropship:GetAttachment(attachmentID)
+			if (attachment and attachment.Pos) then
+				return attachment
+			end
+		end
+	end
+end
+
+function PLUGIN:GetDropshipDeployPos(dropship, landPos, index, total)
+	local mins, maxs = dropship:OBBMins(), dropship:OBBMaxs()
+	local forward = dropship:GetForward()
+	local right = dropship:GetRight()
+
+	forward.z = 0
+	right.z = 0
+
+	if (forward:LengthSqr() == 0) then
+		forward = Vector(1, 0, 0)
+	else
+		forward:Normalize()
+	end
+
+	if (right:LengthSqr() == 0) then
+		right = Vector(0, 1, 0)
+	else
+		right:Normalize()
+	end
+
+	local laneOffset = (index - ((total + 1) * 0.5)) * 42
+	local basePos
+
+	basePos = dropship:LocalToWorld(Vector(maxs.x - 32, 0, mins.z + 18))
+	basePos = basePos + forward * 26
+
+	basePos.z = math.max(basePos.z, landPos.z + 8)
+
+	return basePos + right * laneOffset
+end
+
+function PLUGIN:GetDropshipDeployStartPos(dropship, landPos, index, total)
+	local mins, maxs = dropship:OBBMins(), dropship:OBBMaxs()
+	local right = dropship:GetRight()
+	local forward = dropship:GetForward()
+
+	right.z = 0
+	forward.z = 0
+
+	if (right:LengthSqr() == 0) then
+		right = Vector(0, 1, 0)
+	else
+		right:Normalize()
+	end
+
+	if (forward:LengthSqr() == 0) then
+		forward = Vector(1, 0, 0)
+	else
+		forward:Normalize()
+	end
+
+	local laneOffset = (index - ((total + 1) * 0.5)) * 42
+	local basePos
+
+	basePos = dropship:LocalToWorld(Vector(maxs.x - 92, 0, mins.z + 86))
+	basePos = basePos - forward * 8
+
+	basePos.z = math.max(basePos.z, landPos.z + 52)
+
+	return basePos + right * laneOffset
+end
+
+function PLUGIN:LookupDropshipDeploySequence(npc)
+	for _, sequenceName in ipairs(DROPSHIP_DEPLOY_ANIM_CANDIDATES) do
+		local sequenceID = npc:LookupSequence(sequenceName)
+		if (sequenceID and sequenceID >= 0) then
+			return sequenceID
+		end
+	end
+
+	return nil
+end
+
 function PLUGIN:CallFlyBy(targetPos, class)
 	-- 실제 collision bounds 추출
 	local tempEnt = ents.Create(class)
@@ -124,18 +363,52 @@ function PLUGIN:CallFlyBy(targetPos, class)
 	local route = FindGunshipRoute(targetPos, flightZ, mins, maxs)
 	if (not route) then return false end
 
-	-- path_track 체인 생성
+	local PATROL_RADIUS = 2000
+	local PATROL_COUNT  = 10
 	local uid = tostring(math.random(100000, 999999))
 	local trackEnts = {}
 
-	for idx, wp in ipairs(route.waypoints) do
+	-- 순찰 트랙을 먼저 생성 (체인 루프: p1→p2→...→p10→p1)
+	-- 시작 각도는 타겟에서 접근 방향 기준으로 맞춰 자연스럽게 진입
+	local approachDir = (targetPos - route.spawnPos)
+	approachDir.z = 0
+	approachDir:Normalize()
+	local startAngle = math.atan2(approachDir.y, approachDir.x)
+
+	local patrolTrackNames = {}
+	for i = 1, PATROL_COUNT do
+		patrolTrackNames[i] = GUNSHIP_TRACK_PREFIX .. uid .. "_p" .. i
+	end
+
+	for i = 1, PATROL_COUNT do
+		local angle = startAngle + math.rad((i - 1) * (360 / PATROL_COUNT))
+		local wp = Vector(
+			targetPos.x + math.cos(angle) * PATROL_RADIUS,
+			targetPos.y + math.sin(angle) * PATROL_RADIUS,
+			flightZ
+		)
 		local track = ents.Create("path_track")
 		track:SetPos(wp)
-		track:SetName(GUNSHIP_TRACK_PREFIX .. uid .. "_" .. idx)
-		local nextName = GUNSHIP_TRACK_PREFIX .. uid .. "_" .. (idx + 1)
-		if (idx < #route.waypoints) then
-			track:SetKeyValue("target", nextName)
-		end
+		track:SetName(patrolTrackNames[i])
+		track:SetKeyValue("target", patrolTrackNames[(i % PATROL_COUNT) + 1])
+		track:SetKeyValue("radius", "300")
+		track:Spawn()
+		track:Activate()
+		table.insert(trackEnts, track)
+	end
+
+	-- 접근 트랙: 마지막 WP → 첫 번째 순찰 트랙으로 자동 체인 연결
+	local approachTrackNames = {}
+	for idx, wp in ipairs(route.waypoints) do
+		local name = GUNSHIP_TRACK_PREFIX .. uid .. "_" .. idx
+		approachTrackNames[idx] = name
+		local nextName = (idx < #route.waypoints) and (GUNSHIP_TRACK_PREFIX .. uid .. "_" .. (idx + 1)) or patrolTrackNames[1]
+
+		local track = ents.Create("path_track")
+		track:SetPos(wp)
+		track:SetName(name)
+		track:SetKeyValue("target", nextName)
+		track:SetKeyValue("radius", "200")
 		track:Spawn()
 		track:Activate()
 		table.insert(trackEnts, track)
@@ -144,39 +417,709 @@ function PLUGIN:CallFlyBy(targetPos, class)
 	-- NPC 소환
 	local npc = ents.Create(class)
 	npc:SetPos(route.spawnPos)
-	npc:SetKeyValue("target", GUNSHIP_TRACK_PREFIX .. uid .. "_1")
 	npc:Spawn()
 	npc:Activate()
 	npc:Fire("OmniscientOff", "", 0)
 
 	npc.ixGunshipTargetPos = targetPos
 
+	-- 접근 트랙 체인 시작 → 자동으로 순찰 루프로 진입
+	npc:Fire("FlyToSpecificTrackViaPath", approachTrackNames[1], 0.1)
+
 	local timerId = "ixFlyBy_" .. npc:EntIndex()
-	local function CleanupTracks()
-		for _, track in ipairs(trackEnts) do
-			if (IsValid(track)) then track:Remove() end
-		end
-	end
+	local inPatrol = false
 
 	timer.Create(timerId, 0.5, 0, function()
 		if (not IsValid(npc)) then
-			CleanupTracks()
+			for _, track in ipairs(trackEnts) do
+				if (IsValid(track)) then track:Remove() end
+			end
 			timer.Remove(timerId)
 			return
 		end
 
-		if (npc:GetPos():Distance(targetPos) <= GUNSHIP_COMBAT_RADIUS) then
-			npc.ixGunshipTargetPos = nil
-			CleanupTracks()
-			timer.Remove(timerId)
+		if (not inPatrol) then
+			-- 접근 중: 전투 반경 진입 시 순찰 전환 확인
+			if (npc:GetPos():Distance(targetPos) <= GUNSHIP_COMBAT_RADIUS) then
+				npc.ixGunshipTargetPos = nil
+				inPatrol = true
+			end
 		end
 	end)
 
 	return true
 end
 
+function PLUGIN:FlyOut(originPos, radius)
+	local flyOutClasses = { npc_combinegunship = true, npc_helicopter = true }
+	local count = 0
+
+	for _, npc in ipairs(ents.FindInSphere(originPos, radius or 8192)) do
+		if (not IsValid(npc) or not flyOutClasses[npc:GetClass()]) then continue end
+
+		local npcPos  = npc:GetPos()
+		local exitDir = npc:GetForward()
+		exitDir.z = 0
+		if (exitDir:LengthSqr() < 0.01) then
+			exitDir = (npcPos - originPos)
+			exitDir.z = 0
+		end
+		if (exitDir:LengthSqr() < 0.01) then
+			exitDir = Vector(1, 0, 0)
+		else
+			exitDir:Normalize()
+		end
+
+		-- 맵 경계를 찾은 뒤 3000u 추가로 넘겨서 트랙을 맵 밖에 배치
+		local edgePos   = FindEdgeFlightPoint(npcPos, exitDir, npcPos.z, 0)
+		local exitPos   = edgePos + exitDir * 3000
+		local trackName = GUNSHIP_TRACK_PREFIX .. "flyout_" .. npc:EntIndex()
+
+		local track = ents.Create("path_track")
+		track:SetPos(exitPos)
+		track:SetName(trackName)
+		track:SetKeyValue("radius", "500")
+		track:Spawn()
+		track:Activate()
+
+		npc:Fire("FlyToSpecificTrackViaPath", trackName, 0)
+
+		local timerId  = "ixFlyOut_" .. npc:EntIndex()
+		local deadline = CurTime() + 35
+
+		timer.Create(timerId, 0.4, 0, function()
+			-- NPC가 이미 제거됐으면 트랙만 정리
+			if (not IsValid(npc)) then
+				if (IsValid(track)) then track:Remove() end
+				timer.Remove(timerId)
+				return
+			end
+
+			local pos = npc:GetPos()
+
+			-- 스카이박스/맵 밖 도달 감지: 아래로 트레이스가 월드에 안 닿으면 맵 밖
+			local worldTr = util.TraceLine({
+				start  = pos,
+				endpos = pos - Vector(0, 0, 4096),
+				mask   = MASK_SOLID_BRUSHONLY
+			})
+			local outOfWorld = not worldTr.Hit
+
+			-- 맵 밖이거나, exitPos 근접이거나, 타임아웃
+			if (outOfWorld
+				or pos:DistToSqr(exitPos) <= (800 * 800)
+				or CurTime() >= deadline) then
+				npc:Remove()
+				if (IsValid(track)) then track:Remove() end
+				timer.Remove(timerId)
+				return
+			end
+
+			-- 계속 재발화해서 경로 유지
+			npc:Fire("FlyToSpecificTrackViaPath", trackName, 0)
+		end)
+
+		count = count + 1
+	end
+
+	return count
+end
+
+function PLUGIN:CallDropship(targetPos, soldierCount)
+	local tempEnt = ents.Create("npc_combinedropship")
+	tempEnt:SetPos(targetPos + Vector(0, 0, 8192))
+	tempEnt:Spawn()
+	local mins, maxs = tempEnt:GetCollisionBounds()
+	tempEnt:Remove()
+
+	local landPos = FindLandingZone(targetPos)
+	if (not landPos) then return false end
+
+	local flightZ = GetFlightAltitude(landPos)
+	local route = FindGunshipRoute(landPos, flightZ, mins, maxs)
+	if (not route) then return false end
+
+	local uid = tostring(math.random(100000, 999999))
+	local allEnts = {}
+
+	local function CleanupSupportEnts()
+		if (IsValid(dropship) and dropship.ixDropshipDetectHook) then
+			hook.Remove("Think", dropship.ixDropshipDetectHook)
+		end
+		for _, e in ipairs(allEnts) do
+			if (IsValid(e)) then e:Remove() end
+		end
+	end
+
+	-- 착지 지점 info_target
+	local landTargetName = DROPSHIP_LAND_PREFIX .. uid
+	local landTarget = ents.Create("info_target")
+	landTarget:SetPos(landPos)
+	landTarget:SetKeyValue("targetname", landTargetName)
+	landTarget:Spawn()
+	landTarget:Activate()
+	table.insert(allEnts, landTarget)
+
+	-- 접근 path_track
+	local track1Name = DROPSHIP_TRACK_PREFIX .. uid .. "_1"
+	for idx, wp in ipairs(route.waypoints) do
+		local track = ents.Create("path_track")
+		track:SetPos(wp)
+		track:SetKeyValue("targetname", DROPSHIP_TRACK_PREFIX .. uid .. "_" .. idx)
+		track:SetKeyValue("radius", "100")
+		track:Spawn()
+		track:Activate()
+		table.insert(allEnts, track)
+	end
+
+	local dropship = ents.Create("npc_combinedropship")
+	if (not IsValid(dropship)) then
+		CleanupSupportEnts()
+		return false
+	end
+
+	dropship:SetPos(route.spawnPos)
+	dropship:SetKeyValue("CrateType", "1")
+	dropship:SetKeyValue("LandTarget", landTargetName)
+	dropship:SetKeyValue("spawnflags", tostring(bit.bor(32, 1024)))
+	dropship:Spawn()
+	dropship:Activate()
+	dropship:Fire("OmniscientOff", "", 0)
+
+	dropship.ixDropshipTargetPos       = landPos
+	dropship.ixDropshipState           = "approaching"
+	dropship.ixDropshipReturnTrackName = track1Name
+
+	-- dustoff 위치 테이블 (병사 스폰 시 사용)
+	local dustoffPositions = {}
+	for i = 1, soldierCount do
+		dustoffPositions[i] = nil
+	end
+
+	local function SpawnDropshipSoldier(index, container)
+		if (not IsValid(container)) then return end
+
+		local contForward = container:GetForward()
+		local contRight = container:GetRight()
+
+		contForward.z = 0
+		contRight.z = 0
+
+		if (contForward:LengthSqr() == 0) then
+			contForward = Vector(1, 0, 0)
+		else
+			contForward:Normalize()
+		end
+
+		if (contRight:LengthSqr() == 0) then
+			contRight = Vector(0, 1, 0)
+		else
+			contRight:Normalize()
+		end
+
+		local runForward = Vector(contForward.x, contForward.y, contForward.z)
+		local runRight = Vector(contRight.x, contRight.y, contRight.z)
+ 
+		local spawnPos = container:GetPos()
+			+ contForward * -42
+			+ Vector(0, 0, 0)
+
+		local soldierName = DROPSHIP_TEMPL_PREFIX .. uid .. "_s" .. index
+		local soldier     = ents.Create("npc_combine_s")
+		soldier:SetPos(spawnPos)
+		soldier:SetAngles(container:GetAngles())
+		soldier:SetKeyValue("spawnflags", "644")
+		soldier:SetKeyValue("additionalequipment", "weapon_ar2")
+		soldier:Spawn()
+		soldier:Activate()
+		soldier:SetName(soldierName)
+		soldier:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+		soldier.ixDropshipDeployedSoldier = true
+		soldier:SetCustomCollisionCheck(true)
+
+		local seq = ents.Create("scripted_sequence")
+		seq:SetName(soldierName .. "_seq")
+		seq:SetKeyValue("spawnflags", "624")
+		seq:SetKeyValue("m_iszEntity", soldierName)
+		seq:SetKeyValue("m_iszIdle", "idle1")
+		seq:SetKeyValue("m_fMoveTo", "4")
+		seq:SetKeyValue("m_iszPlay", "Dropship_Deploy")
+		seq:SetPos(spawnPos)
+		seq:SetAngles(container:GetAngles())
+		seq:Spawn()
+		seq:Activate()
+		seq:SetParent(soldier)
+		seq:Fire("BeginSequence", "", 0)
+
+		local dustPos = dustoffPositions[index]
+		timer.Simple(2.7, function()
+			if (IsValid(soldier)) then
+				soldier:ExitScriptedSequence()
+				if (IsValid(seq)) then seq:Remove() end
+
+				if (not dustPos) then
+					local bestDustPos
+					for _ = 1, 8 do
+						local forwardOffset = math.random(260, 420)
+						local lateralOffset = math.random(-150, 150)
+						local candidate = soldier:GetPos() + runForward * forwardOffset + runRight * lateralOffset
+						local dTr = util.TraceLine({
+							start = candidate + Vector(0, 0, 100),
+							endpos = candidate - Vector(0, 0, 500),
+							mask = MASK_SOLID_BRUSHONLY
+						})
+						if (dTr.Hit) then
+							bestDustPos = dTr.HitPos
+							break
+						end
+					end
+
+					if (not bestDustPos) then
+						local fallbackPos = soldier:GetPos() + runForward * 320
+						local fallbackTr = util.TraceLine({
+							start = fallbackPos + Vector(0, 0, 100),
+							endpos = fallbackPos - Vector(0, 0, 500),
+							mask = MASK_SOLID_BRUSHONLY
+						})
+						bestDustPos = fallbackTr.Hit and fallbackTr.HitPos or fallbackPos
+					end
+
+					dustPos = bestDustPos
+					dustoffPositions[index] = bestDustPos
+				end
+
+				if (dustPos) then
+					-- scripted_sequence로 강제 이동: SetSchedule은 ExitScriptedSequence 직후 NPC AI에 덮어씌워지기 때문에 신뢰할 수 없음
+					local moveSeq = ents.Create("scripted_sequence")
+					moveSeq:SetPos(dustPos)
+					moveSeq:SetKeyValue("m_iszEntity", soldierName)
+					moveSeq:SetKeyValue("m_fMoveTo", "1")
+					moveSeq:SetKeyValue("m_iszIdle", "idle1")
+					moveSeq:SetKeyValue("m_iszPlay", "idle1")
+					moveSeq:SetKeyValue("spawnflags", "512")
+					moveSeq:Spawn()
+					moveSeq:Activate()
+					moveSeq:Fire("BeginSequence", "", 0.05)
+
+					timer.Simple(12, function()
+						if (IsValid(soldier)) then
+							soldier:ExitScriptedSequence()
+							soldier:SetCollisionGroup(COLLISION_GROUP_NPC)
+						end
+						if (IsValid(moveSeq)) then moveSeq:Remove() end
+					end)
+				end
+			end
+			if (IsValid(seq)) then seq:Remove() end
+		end)
+	end
+
+	local landHoverPos = route.waypoints[#route.waypoints]
+	local currentWP    = 1
+	dropship:Fire("FlyToSpecificTrackViaPath", track1Name, 0.1)
+
+	local timerId = "ixDropship_" .. dropship:EntIndex()
+
+	local function BuildDepartureTrackName(index)
+		return DROPSHIP_TRACK_PREFIX .. uid .. "_depart_" .. index
+	end
+
+	local function CreateDepartureTracks()
+		if (not IsValid(dropship)) then return false end
+		if (dropship.ixDropshipDepartureTracksBuilt) then return true end
+
+		local departPos = dropship:GetPos()
+		local departDir = (route.spawnPos - departPos)
+		departDir.z = 0
+
+		if (departDir:LengthSqr() == 0) then
+			departDir = dropship:GetForward()
+			departDir.z = 0
+		end
+
+		if (departDir:LengthSqr() == 0) then
+			departDir = Vector(1, 0, 0)
+		else
+			departDir:Normalize()
+		end
+
+		local risePos = departPos + Vector(0, 0, 700)
+		local exitPos = FindEdgeFlightPoint(risePos, departDir, route.spawnPos.z, 200)
+
+		for idx, wp in ipairs({risePos, exitPos}) do
+			local track = ents.Create("path_track")
+			if (not IsValid(track)) then return false end
+
+			track:SetPos(wp)
+			track:SetKeyValue("targetname", BuildDepartureTrackName(idx))
+			track:SetKeyValue("radius", "100")
+			track:Spawn()
+			track:Activate()
+			table.insert(allEnts, track)
+		end
+
+		dropship.ixDropshipDepartureTracksBuilt = true
+		dropship.ixDropshipDepartureRiseTrackName = BuildDepartureTrackName(1)
+		dropship.ixDropshipDepartureExitTrackName = BuildDepartureTrackName(2)
+		dropship.ixDropshipDepartureExitPos = exitPos
+		dropship.ixDropshipDepartureRisePos = risePos
+		dropship.ixDropshipDepartureStart = CurTime()
+
+		return true
+	end
+
+	local function BeginDropshipDeparture()
+		if (not IsValid(dropship) or dropship.ixDropshipState == "departing") then return end
+		if (not dropship.ixDropshipAllowDeparture) then return end
+
+		CreateDepartureTracks()
+
+		dropship.ixDropshipState = "departing"
+		dropship.ixDropshipDeparturePhase = "rising"
+		dropship.ixDropshipTargetPos = nil
+
+		if (dropship.ixDropshipDepartureRiseTrackName) then
+			dropship:Fire("FlyToSpecificTrackViaPath", dropship.ixDropshipDepartureRiseTrackName, 0)
+		end
+	end
+
+	timer.Create(timerId, 0.5, 0, function()
+		if (not IsValid(dropship)) then
+			CleanupSupportEnts()
+			timer.Remove(timerId)
+			return
+		end
+
+		local pos   = dropship:GetPos()
+		local state = dropship.ixDropshipState
+
+		if (state == "approaching") then
+			if (currentWP < #route.waypoints and pos:Distance(route.waypoints[currentWP]) < 600) then
+				currentWP = currentWP + 1
+			end
+
+			if (pos:Distance(landHoverPos) <= 800) then
+				-- 실제 컨테이너를 찾아 숨기고, 가짜를 부모로 연결 (흔들림 자동 동기화)
+				local realCont = nil
+				for _, e in ipairs(ents.FindByClass("prop_dropship_container")) do
+					if (e:GetParent() == dropship) then
+						realCont = e
+						break
+					end
+				end
+
+				if (IsValid(realCont)) then
+					realCont:SetNoDraw(true)
+					dropship.ixDropshipRealContainer = realCont
+
+					local fakeCont = ents.Create("prop_dropship_container")
+					fakeCont:SetMoveType(MOVETYPE_NONE)
+					fakeCont:SetSolid(SOLID_NONE)
+					fakeCont:SetPos(realCont:GetPos())
+					fakeCont:SetAngles(realCont:GetAngles())
+					fakeCont:Spawn()
+					fakeCont:Activate()
+					fakeCont:SetParent(realCont)
+					fakeCont:SetLocalPos(Vector(0, 0, 0))
+					fakeCont:SetLocalAngles(Angle(0, 0, 0))
+
+					local phys = fakeCont:GetPhysicsObject()
+					if (IsValid(phys)) then
+						phys:EnableGravity(false)
+						phys:EnableMotion(false)
+					end
+
+					dropship.ixDropshipFakeContainer = fakeCont
+					table.insert(allEnts, fakeCont)
+				end
+
+				dropship:Fire("LandTakeCrate", tostring(soldierCount), 0)
+				dropship.ixDropshipState     = "landing"
+				dropship.ixDropshipTargetPos = nil
+				dropship.ixLandingStart      = CurTime()
+
+				-- 컨테이너 착지 감지: 완전히 착지 후 부모 끊어서 동결
+				local detectHookId = "ixDSLandDetect_" .. dropship:EntIndex()
+				dropship.ixDropshipDetectHook = detectHookId
+				hook.Add("Think", detectHookId, function()
+					if (not IsValid(dropship) or dropship.ixDropshipContainerDeployed) then
+						hook.Remove("Think", detectHookId)
+						return
+					end
+
+					local c = dropship.ixDropshipRealContainer
+					if (not IsValid(c)) then
+						hook.Remove("Think", detectHookId)
+						return
+					end
+
+					-- 컨테이너 현재 위치 기준으로 실제 지면을 다시 trace
+					local groundTr = util.TraceLine({
+						start = c:GetPos() + Vector(0, 0, 10),
+						endpos = c:GetPos() - Vector(0, 0, 500),
+						mask  = MASK_SOLID_BRUSHONLY,
+					})
+					local contPos = c:GetPos()
+					local contAng = c:GetAngles()
+					local contMins, contMaxs = c:OBBMins(), c:OBBMaxs()
+					local samplePoints = {
+						Vector(contMins.x, contMins.y, contMins.z),
+						Vector(contMins.x, contMaxs.y, contMins.z),
+						Vector(contMaxs.x, contMins.y, contMins.z),
+						Vector(contMaxs.x, contMaxs.y, contMins.z),
+						Vector(0, 0, contMins.z),
+					}
+					local groundedSamples = 0
+
+					for _, localPoint in ipairs(samplePoints) do
+						local worldPoint = LocalToWorld(localPoint, angle_zero, contPos, contAng)
+						local sampleTr = util.TraceLine({
+							start = worldPoint + Vector(0, 0, 12),
+							endpos = worldPoint - Vector(0, 0, 64),
+							mask = MASK_SOLID_BRUSHONLY,
+						})
+
+						if (sampleTr.Hit and math.abs(worldPoint.z - sampleTr.HitPos.z) <= 24) then
+							groundedSamples = groundedSamples + 1
+						end
+					end
+
+					if (groundedSamples >= 3
+						and CurTime() - dropship.ixLandingStart > 2) then
+
+						dropship.ixDropshipContainerDeployed = true
+						dropship.ixLockedYaw = dropship:GetAngles().y
+						hook.Remove("Think", detectHookId)
+
+						local fc = dropship.ixDropshipFakeContainer
+						local realContainer = dropship.ixDropshipRealContainer
+
+						-- 하차 중에는 드랍쉽/실제 컨테이너가 NPC 경로를 막지 않게 비충돌 처리.
+						dropship:SetNotSolid(true)
+						dropship:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+
+						if (IsValid(realContainer)) then
+							realContainer:SetNotSolid(true)
+							realContainer:SetCollisionGroup(COLLISION_GROUP_DEBRIS_TRIGGER)
+						end
+
+						if (IsValid(fc)) then
+							-- 월드에 분리해 AI 착륙 흐름은 유지하고, 드랍쉽 각도 변화만 약하게 반영해 흔들리게 한다.
+							local worldPos = fc:GetPos()
+							local worldAng = fc:GetAngles()
+							local refShipAng = dropship:GetAngles()
+							local swayHookId = "ixDSFakeSway_" .. fc:EntIndex()
+
+							fc:SetParent(nil)
+							fc:SetPos(worldPos)
+							fc:SetAngles(worldAng)
+
+							local phys2 = fc:GetPhysicsObject()
+							if (IsValid(phys2)) then
+								phys2:EnableGravity(false)
+								phys2:EnableMotion(false)
+							end
+
+							dropship.ixDropshipFakeSwayHook = swayHookId
+							hook.Add("Think", swayHookId, function()
+								if (not IsValid(fc) or not IsValid(dropship)) then
+									hook.Remove("Think", swayHookId)
+									return
+								end
+
+								local shipAng = dropship:GetAngles()
+								local deltaPitch = math.AngleDifference(shipAng.p, refShipAng.p)
+								local deltaRoll = math.AngleDifference(shipAng.r, refShipAng.r)
+								local deltaYaw = math.AngleDifference(shipAng.y, refShipAng.y)
+
+								local swayPos = worldPos
+									+ dropship:GetRight() * math.Clamp(deltaRoll * 0.7, -8, 8)
+									+ dropship:GetForward() * math.Clamp(deltaPitch * -0.45, -5, 5)
+
+								fc:SetPos(swayPos)
+								fc:SetAngles(Angle(
+									worldAng.p + math.Clamp(deltaPitch * 0.35, -8, 8),
+									worldAng.y + math.Clamp(deltaYaw * 0.1, -4, 4),
+									worldAng.r + math.Clamp(deltaRoll * 0.65, -14, 14)
+								))
+							end)
+
+							-- Open → Open Idle → 병사 스폰 → Close → Close Idle
+							timer.Simple(0.15, function()
+								if (not IsValid(fc)) then return end
+
+								local openSeq = fc:LookupSequence("open")
+								if (openSeq < 0) then return end
+
+								fc:ResetSequence(openSeq)
+								fc:SetCycle(0)
+								fc:SetPlaybackRate(1)
+
+								local openDur    = fc:SequenceDuration(openSeq)
+								local spawnStart = openDur + 0.1
+
+								-- Open이 끝나면 즉시 Open Idle
+								timer.Simple(openDur, function()
+									if (IsValid(fc)) then
+										local s = fc:LookupSequence("open_idle")
+										if (s >= 0) then fc:ResetSequence(s) ; fc:SetPlaybackRate(1) end
+									end
+								end)
+
+								-- Open Idle 시작 직후 병사 순차 스폰
+								for i = 1, soldierCount do
+									timer.Simple(spawnStart + (i - 1) * DROPSHIP_DEPLOY_STEP, function()
+										SpawnDropshipSoldier(i, fc)
+									end)
+								end
+
+								-- 마지막 병사 애니메이션 완료 후 Close
+								local closeTrigger = spawnStart + (soldierCount - 1) * DROPSHIP_DEPLOY_STEP + 2.7 + 1.2
+								timer.Simple(closeTrigger, function()
+									if (not IsValid(fc)) then return end
+									local closeSeq = fc:LookupSequence("close")
+									if (closeSeq < 0) then return end
+
+									fc:ResetSequence(closeSeq)
+									fc:SetCycle(0)
+									fc:SetPlaybackRate(1)
+
+									-- Close가 끝나면 Close Idle
+									timer.Simple(fc:SequenceDuration(closeSeq), function()
+										local realContainer = dropship.ixDropshipRealContainer
+
+										if (IsValid(realContainer)) then
+											realContainer:SetNoDraw(false)
+											realContainer:SetNotSolid(false)
+											realContainer:SetCollisionGroup(COLLISION_GROUP_NONE)
+										end
+
+										if (IsValid(dropship)) then
+											dropship:SetNotSolid(false)
+											dropship:SetCollisionGroup(COLLISION_GROUP_NONE)
+										end
+
+										if (dropship.ixDropshipFakeSwayHook) then
+											hook.Remove("Think", dropship.ixDropshipFakeSwayHook)
+											dropship.ixDropshipFakeSwayHook = nil
+										end
+
+										if (IsValid(fc)) then
+											fc:Remove()
+										end
+
+										dropship.ixDropshipFakeContainer = nil
+										dropship.ixDropshipAllowDeparture = true
+										BeginDropshipDeparture()
+									end)
+								end)
+							end)
+						end
+					end
+				end)
+			else
+				dropship:Fire("FlyToSpecificTrackViaPath", DROPSHIP_TRACK_PREFIX .. uid .. "_" .. currentWP, 0)
+			end
+
+		elseif (state == "landing") then
+			if (dropship.ixLockedYaw) then
+				local ang = dropship:GetAngles()
+				dropship:SetAngles(Angle(ang.p, dropship.ixLockedYaw, ang.r))
+			end
+
+			-- Think 훅이 컨테이너 착지 감지 및 병사 스폰 처리
+			-- 60초 안전 타임아웃
+			if (dropship.ixDropshipAllowDeparture and CurTime() - dropship.ixLandingStart > 60) then
+				BeginDropshipDeparture()
+			end
+
+		elseif (state == "departing") then
+			local risePos = dropship.ixDropshipDepartureRisePos
+			local exitPos = dropship.ixDropshipDepartureExitPos or route.spawnPos
+
+			if (dropship.ixDropshipDeparturePhase == "rising") then
+				if (risePos and pos:Distance(risePos) <= 500) then
+					dropship.ixDropshipDeparturePhase = "exiting"
+				end
+			end
+
+			if ((dropship.ixDropshipDeparturePhase == "exiting" and pos:Distance(exitPos) <= 700)
+				or (dropship.ixDropshipDepartureStart and CurTime() - dropship.ixDropshipDepartureStart >= 25 and pos:Distance(exitPos) <= 3000)) then
+				CleanupSupportEnts()
+				if (IsValid(dropship)) then dropship:Remove() end
+				timer.Remove(timerId)
+			else
+				if (dropship.ixDropshipDeparturePhase == "rising" and dropship.ixDropshipDepartureRiseTrackName) then
+					dropship:Fire("FlyToSpecificTrackViaPath", dropship.ixDropshipDepartureRiseTrackName, 0)
+				elseif (dropship.ixDropshipDepartureExitTrackName) then
+					dropship:Fire("FlyToSpecificTrackViaPath", dropship.ixDropshipDepartureExitTrackName, 0)
+				end
+			end
+		end
+	end)
+
+	return true
+end
+
+
+hook.Add("EntityFireOutput", "ixDropshipMonitor", function(ent, output)
+	if (not IsValid(ent)) then return end
+	if (output ~= "OnFinishedDropOff" and output ~= "OnFinishedDropoff") then return end
+	if (ent:GetClass() ~= "npc_combinedropship") then return end
+	if (ent.ixDropshipState ~= "landing") then return end
+	if (not ent.ixDropshipAllowDeparture) then return end
+
+	local fc = ent.ixDropshipFakeContainer
+	if (IsValid(fc)) then
+		return
+	end
+
+	ent.ixDropshipState = "departing"
+	ent.ixDropshipDeparturePhase = ent.ixDropshipDeparturePhase or "exiting"
+	ent.ixDropshipTargetPos = nil
+	if (ent.ixDropshipDeparturePhase == "rising" and ent.ixDropshipDepartureRiseTrackName) then
+		ent:Fire("FlyToSpecificTrackViaPath", ent.ixDropshipDepartureRiseTrackName, 0)
+	elseif (ent.ixDropshipDepartureExitTrackName) then
+		ent:Fire("FlyToSpecificTrackViaPath", ent.ixDropshipDepartureExitTrackName, 0)
+	elseif (ent.ixDropshipReturnTrackName) then
+		ent:Fire("FlyToSpecificTrackViaPath", ent.ixDropshipReturnTrackName, 0)
+	end
+end)
+
 hook.Add("NPC_SeeEntity", "ixGunshipCombatSuppress", function(npc, entity)
+	if (npc:GetClass() == "npc_combinedropship"
+		and IsValid(entity)
+		and entity.ixDropshipDeployedSoldier) then
+		return false
+	end
+
+	if (npc.ixDropshipDeployedSoldier
+		and IsValid(entity)
+		and (entity:GetClass() == "npc_combinedropship" or entity:GetClass() == "prop_dropship_container")) then
+		return false
+	end
+
 	if (npc.ixGunshipTargetPos and npc:GetPos():Distance(npc.ixGunshipTargetPos) > GUNSHIP_COMBAT_RADIUS) then
+		return false
+	end
+	if (npc.ixDropshipTargetPos and npc:GetPos():Distance(npc.ixDropshipTargetPos) > GUNSHIP_COMBAT_RADIUS) then
+		return false
+	end
+end)
+
+hook.Add("ShouldCollide", "ixDropshipSoldierNoCollide", function(ent1, ent2)
+	if (not IsValid(ent1) or not IsValid(ent2)) then return end
+
+	local ent1IsDropshipSoldier = ent1.ixDropshipDeployedSoldier
+	local ent2IsDropshipSoldier = ent2.ixDropshipDeployedSoldier
+	local ent1IsDropshipPart = ent1:GetClass() == "npc_combinedropship" or ent1:GetClass() == "prop_dropship_container"
+	local ent2IsDropshipPart = ent2:GetClass() == "npc_combinedropship" or ent2:GetClass() == "prop_dropship_container"
+
+	if (ent1IsDropshipSoldier and ent2IsDropshipSoldier) then
+		return false
+	end
+
+	if ((ent1IsDropshipSoldier and ent2IsDropshipPart) or (ent2IsDropshipSoldier and ent1IsDropshipPart)) then
 		return false
 	end
 end)
@@ -500,6 +1443,72 @@ function PLUGIN:FindValidSpawnPos(pos, class)
 	return nil
 end
 
+function PLUGIN:ForceSpawnFromSpawner(id)
+	local spawner = self.spawners[id]
+	if (not spawner) then return 0 end
+
+	local spawned = 0
+	local slots = spawner.maxSpawned
+
+	local activeNPCs = 0
+	for _, ent in ipairs(spawner.spawnedNPCs) do
+		if (IsValid(ent) and ent:IsNPC() and ent:Health() > 0) then
+			activeNPCs = activeNPCs + 1
+		end
+	end
+
+	for i = 1, (slots - activeNPCs) do
+		local class = self:SelectRandomClass(spawner.classes)
+		if (not class) then break end
+
+		local spawnPos = self:FindValidSpawnPos(spawner.pos, class)
+		if (not spawnPos) then continue end
+
+		local ent = ents.Create(class)
+		if (not IsValid(ent)) then continue end
+
+		local flags = 1
+		if (class == "npc_barnacle" and math.random(1, 100) <= 30) then
+			flags = flags + 131072
+		elseif (class == "npc_combine_s") then
+			flags = flags + 65536
+			local roll = math.random(1, 120)
+			local weapon = roll <= 80 and "weapon_smg1" or roll <= 110 and "weapon_ar2" or "weapon_shotgun"
+			ent:SetKeyValue("additionalequipment", weapon)
+		end
+		ent:SetKeyValue("spawnflags", flags)
+
+		ent:SetPos(spawnPos)
+		ent:Spawn()
+		ent:Activate()
+
+		table.insert(spawner.spawnedNPCs, ent)
+		spawner.lastSpawn = CurTime()
+		spawned = spawned + 1
+	end
+
+	return spawned
+end
+
+function PLUGIN:ChargeNPCsAtPlayer(client)
+	local count = 0
+
+	for _, npc in ipairs(ents.GetAll()) do
+		if (not IsValid(npc) or not npc:IsNPC()) then continue end
+		if (npc:Health() <= 0) then continue end
+		if (bit.band(npc:CapabilitiesGet(), CAP_MOVE_FLY) ~= 0) then continue end
+
+		npc:AddEntityRelationship(client, D_HT, 99)
+		npc:UpdateEnemyMemory(client, client:GetPos())
+		npc:SetEnemy(client)
+		npc:SetSchedule(SCHED_CHASE_ENEMY)
+
+		count = count + 1
+	end
+
+	return count
+end
+
 function PLUGIN:Think()
 	if ((self.nextSpawnCheck or 0) > CurTime()) then return end
 	self.nextSpawnCheck = CurTime() + 2
@@ -600,6 +1609,9 @@ function PLUGIN:Think()
 				flags = flags + 131072
 			elseif (class == "npc_combine_s") then
 				flags = flags + 65536
+				local roll = math.random(1, 120)
+				local weapon = roll <= 80 and "weapon_smg1" or roll <= 110 and "weapon_ar2" or "weapon_shotgun"
+				ent:SetKeyValue("additionalequipment", weapon)
 			end
 			ent:SetKeyValue("spawnflags", flags)
 
