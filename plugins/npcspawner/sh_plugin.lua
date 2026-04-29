@@ -47,8 +47,9 @@ ix.lang.AddTable("english", {
 	flyByCalled = "%s inbound.",
 	flyByNoRoute = "Could not find a valid flight route.",
 	flyByInvalidType = "Invalid type. Use 'gunship' or 'helicopter'.",
-	cmdDropshipDesc = "Summons a Combine dropship that deploys soldiers near your position. Usage: Dropship [1-6]",
+	cmdDropshipDesc = "Summons a Combine dropship that deploys soldiers near your position. Usage: Dropship [1-6] or Dropship apc",
 	dropshipCalled = "Dropship inbound with %d soldier(s).",
+	dropshipAPCCalled = "Dropship inbound with an APC.",
 	dropshipNoRoute = "Could not find a valid dropship route or landing zone.",
 	cmdFlyOutDesc = "Orders all nearby gunships and helicopters to fly out and leave the area.",
 	flyOutDone = "Ordered %d aircraft to fly out.",
@@ -59,6 +60,9 @@ ix.lang.AddTable("english", {
 	cmdNPCChargeDesc = "Orders all NPCs within 3000 units to charge at you.",
 	npcChargeOrdered = "Ordered %d NPC(s) to charge.",
 	npcChargeNone = "No NPCs found within range.",
+	cmdNPCForceRemoveDesc = "Removes all NPCs not in combat, not visible, and not near any player. Excludes cameras and turrets.",
+	npcForceRemoved = "Removed %d NPC(s).",
+	npcForceRemoveNone = "No eligible NPCs found.",
 })
 
 ix.lang.AddTable("korean", {
@@ -99,8 +103,9 @@ ix.lang.AddTable("korean", {
 	flyByCalled = "%s 접근 중.",
 	flyByNoRoute = "유효한 비행 경로를 찾을 수 없습니다.",
 	flyByInvalidType = "올바르지 않은 유형입니다. 'gunship' 또는 'helicopter'를 입력하세요.",
-	cmdDropshipDesc = "관리자 위치 근처에 병사를 내리는 콤바인 드랍십을 소환합니다. 사용법: Dropship [1-6]",
+	cmdDropshipDesc = "관리자 위치 근처에 병사를 내리는 콤바인 드랍십을 소환합니다. 사용법: Dropship [1-6] 또는 Dropship apc",
 	dropshipCalled = "드랍쉽 %d명 병력 접근 중.",
+	dropshipAPCCalled = "드랍쉽 APC 운반 중.",
 	dropshipNoRoute = "유효한 비행 경로 또는 착지 지점을 찾을 수 없습니다.",
 	cmdFlyOutDesc = "근처의 모든 건쉽 및 헬리콥터를 맵 밖으로 내보냅니다.",
 	flyOutDone = "%d대의 항공기를 철수시켰습니다.",
@@ -111,6 +116,9 @@ ix.lang.AddTable("korean", {
 	cmdNPCChargeDesc = "3000 유닛 내의 모든 NPC를 내 위치로 진격시킵니다.",
 	npcChargeOrdered = "NPC %d마리를 진격시켰습니다.",
 	npcChargeNone = "범위 내에 NPC가 없습니다.",
+	cmdNPCForceRemoveDesc = "전투 중이 아니고, 플레이어 시야 및 인근이 아닌 NPC를 전부 삭제합니다. 카메라·터렛 제외.",
+	npcForceRemoved = "NPC %d마리를 삭제했습니다.",
+	npcForceRemoveNone = "삭제 가능한 NPC가 없습니다.",
 })
 
 ix.config.Add("npcSpawnerGlobalLimit", 50, "npcSpawnerGlobalLimitDesc", nil, {
@@ -261,6 +269,19 @@ ix.command.Add("NPCCharge", {
 	end
 })
 
+ix.command.Add("NPCForceRemove", {
+	description = "@cmdNPCForceRemoveDesc",
+	privilege = "Manage Admin Commands",
+	superAdminOnly = true,
+	OnRun = function(self, client)
+		local count = ix.plugin.list["npcspawner"]:ForceRemoveIdleNPCs()
+		if (count == 0) then
+			return "@npcForceRemoveNone"
+		end
+		return L("npcForceRemoved", client, count)
+	end
+})
+
 ix.command.Add("NPCSpawnerForce", {
 	description = "@cmdNPCSpawnerForceDesc",
 	privilege = "Manage Admin Commands",
@@ -286,11 +307,18 @@ ix.command.Add("Dropship", {
 	privilege = "Manage Admin Commands",
 	superAdminOnly = true,
 	arguments = {
-		bit.bor(ix.type.number, ix.type.optional),
+		bit.bor(ix.type.string, ix.type.optional),
 	},
-	OnRun = function(self, client, count)
-		count = math.Clamp(math.floor(count or 4), 1, 6)
+	OnRun = function(self, client, arg)
+		if (arg == "apc") then
+			local success = ix.plugin.list["npcspawner"]:CallDropshipAPC(client:GetPos())
+			if (not success) then
+				return "@dropshipNoRoute"
+			end
+			return "@dropshipAPCCalled"
+		end
 
+		local count = math.Clamp(math.floor(tonumber(arg) or 4), 1, 6)
 		local success = ix.plugin.list["npcspawner"]:CallDropship(client:GetPos(), count)
 		if (not success) then
 			return "@dropshipNoRoute"
