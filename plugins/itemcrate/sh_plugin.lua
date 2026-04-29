@@ -63,7 +63,7 @@ ix.command.Add("ItemCrate", {
 	OnRun = function(self, client, itemOrPreset, amount)
 		amount = amount or 1
 		local itemsToSpawn = {}
-		
+
 		-- Check if the input is a preset or a single item
 		if (PLUGIN.presets[itemOrPreset]) then
 			itemsToSpawn = PLUGIN.presets[itemOrPreset]
@@ -79,12 +79,12 @@ ix.command.Add("ItemCrate", {
 			end
 			itemsToSpawn[itemOrPreset] = amount
 		end
-		
+
 		-- Create the crate at the administrator's eye trace position
 		local tr = client:GetEyeTraceNoCursor()
 		local pos = tr.HitPos + Vector(0, 0, 15)
 		local model = "models/items/item_item_crate.mdl"
-		
+
 		local container = ents.Create("ix_container")
 		container:SetPos(pos)
 		container:SetAngles(Angle(0, client:EyeAngles().y - 180, 0))
@@ -98,27 +98,37 @@ ix.command.Add("ItemCrate", {
 
 			if (IsValid(container)) then
 				container:SetInventory(inventory)
-				
+
+				local itemList = {}
 				for uniqueID, amt in pairs(itemsToSpawn) do
 					for i = 1, amt do
-						local bSuccess, err = inventory:Add(uniqueID)
-						if (!bSuccess) then
-							-- Items might not be added if the inventory is completely full
-							if (client) then
-								client:NotifyLocalized("crateSpaceInsufficient")
-							end
-							break
-						end
+						itemList[#itemList + 1] = uniqueID
 					end
 				end
-				
-				-- Save to database and file system for persistence
-				if (ix.plugin.list["containers"]) then
-					ix.plugin.list["containers"]:SaveContainer()
+
+				local index = 1
+				local function addNext()
+					if (index > #itemList) then
+						if (ix.plugin.list["containers"]) then
+							ix.plugin.list["containers"]:SaveContainer()
+						end
+						return
+					end
+
+					local bSuccess = inventory:Add(itemList[index])
+					if (!bSuccess) then
+						client:NotifyLocalized("crateSpaceInsufficient")
+						return
+					end
+
+					index = index + 1
+					addNext()
 				end
+
+				addNext()
 			end
 		end)
-		
+
 		return "@itemCrateSpawned"
 	end
 })
