@@ -117,7 +117,7 @@ function PANEL:SetSpawner(id, data)
 	self.maxNearby:SetValue(data.maxNearby or 10)
 	self.minDistance:SetValue(data.minDistance or 1000)
 	self.spawnDelay:SetValue(data.spawnDelay or 60)
-	self.activeRadius:SetValue(data.activeRadius or 3000)
+	self.activeRadius:SetValue(data.activeRadius or 4500)
 	self.useArea:SetValue(data.useArea or false)
 	self.visitCooldown:SetValue(data.visitCooldown or 0)
 	
@@ -132,7 +132,7 @@ function PANEL:Save()
 	data.maxNearby = tonumber(self.maxNearby:GetValue()) or 10
 	data.minDistance = tonumber(self.minDistance:GetValue()) or 1000
 	data.spawnDelay = tonumber(self.spawnDelay:GetValue()) or 60
-	data.activeRadius = tonumber(self.activeRadius:GetValue()) or 3000
+	data.activeRadius = tonumber(self.activeRadius:GetValue()) or 4500
 	data.useArea = self.useArea:GetChecked()
 	data.visitCooldown = tonumber(self.visitCooldown:GetValue()) or 0
 	

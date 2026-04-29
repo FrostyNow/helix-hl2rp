@@ -157,10 +157,11 @@ ix.command.Add("NPCSpawnerAdd", {
 				suffix = suffix + 1
 			end
 			newId = id .. "_" .. suffix
+			parentId = id
 		end
 
-		ix.plugin.list["npcspawner"]:AddSpawner(newId, pos, template)
-		
+		ix.plugin.list["npcspawner"]:AddSpawner(newId, pos, template, parentId)
+
 		return L("spawnerAdded", client, newId)
 	end
 })
@@ -199,14 +200,20 @@ ix.command.Add("NPCSpawnerEdit", {
 		ix.type.string
 	},
 	OnRun = function(self, client, id)
-		if (not ix.plugin.list["npcspawner"].spawners[id]) then
+		local spawners = ix.plugin.list["npcspawner"].spawners
+		if (not spawners[id]) then
 			return "@spawnerNotFound"
 		end
 
-		local spawner = ix.plugin.list["npcspawner"].spawners[id]
-		
+		-- If this spawner is a child, redirect to its parent
+		local targetId = spawners[id].parent or id
+		local spawner = spawners[targetId]
+		if (not spawner) then
+			return "@spawnerNotFound"
+		end
+
 		net.Start("ixNpcSpawnerEdit")
-		net.WriteString(id)
+		net.WriteString(targetId)
 		net.WriteTable(spawner)
 		net.Send(client)
 	end

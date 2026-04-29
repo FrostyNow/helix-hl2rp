@@ -1372,16 +1372,17 @@ hook.Add("ShouldCollide", "ixDropshipSoldierNoCollide", function(ent1, ent2)
 	end
 end)
 
-function PLUGIN:AddSpawner(id, pos, template)
+function PLUGIN:AddSpawner(id, pos, template, parentId)
 	if template then
 		self.spawners[id] = {
 			pos = pos,
+			parent = parentId,
 			classes = table.Copy(template.classes or {}),
 			maxSpawned = template.maxSpawned,
 			maxNearby = template.maxNearby,
 			spawnDelay = template.spawnDelay,
 			minDistance = template.minDistance,
-			activeRadius = template.activeRadius or 3000,
+			activeRadius = template.activeRadius or 4500,
 			useArea = template.useArea or false,
 			visitCooldown = template.visitCooldown or 0,
 			lastSpawn = 0,
@@ -1396,7 +1397,7 @@ function PLUGIN:AddSpawner(id, pos, template)
 			maxNearby = 10,
 			spawnDelay = 60,
 			minDistance = 1000,
-			activeRadius = 3000,
+			activeRadius = 4500,
 			useArea = false,
 			visitCooldown = 0,
 			lastSpawn = 0,
@@ -1411,6 +1412,14 @@ end
 
 function PLUGIN:RemoveSpawner(id)
 	self.spawners[id] = nil
+
+	-- Remove all children that reference this spawner as their parent
+	for childId, child in pairs(self.spawners) do
+		if (child.parent == id) then
+			self.spawners[childId] = nil
+		end
+	end
+
 	self:SaveSpawners()
 	self:SyncSpawners()
 end
@@ -1420,6 +1429,7 @@ function PLUGIN:SaveSpawners()
 	for id, spawner in pairs(self.spawners) do
 		data[id] = {
 			pos = spawner.pos,
+			parent = spawner.parent,
 			classes = spawner.classes,
 			maxSpawned = spawner.maxSpawned,
 			maxNearby = spawner.maxNearby,
@@ -1438,12 +1448,13 @@ function PLUGIN:LoadData()
 	for id, spawner in pairs(data) do
 		self.spawners[id] = {
 			pos = spawner.pos,
+			parent = spawner.parent,
 			classes = spawner.classes or {},
 			maxSpawned = spawner.maxSpawned or 5,
 			maxNearby = spawner.maxNearby or 10,
 			spawnDelay = spawner.spawnDelay or 60,
 			minDistance = spawner.minDistance or 1000,
-			activeRadius = spawner.activeRadius or 3000,
+			activeRadius = spawner.activeRadius or 4500,
 			useArea = spawner.useArea or false,
 			visitCooldown = spawner.visitCooldown or 0,
 			lastSpawn = 0,
@@ -1458,6 +1469,7 @@ function PLUGIN:SyncSpawners(client)
 	for id, spawner in pairs(self.spawners) do
 		data[id] = {
 			pos = spawner.pos,
+			parent = spawner.parent,
 			classes = spawner.classes,
 			maxSpawned = spawner.maxSpawned,
 			maxNearby = spawner.maxNearby,
@@ -1489,15 +1501,26 @@ net.Receive("ixNpcSpawnerEdit", function(len, client)
 	local data = net.ReadTable()
 
 	if (PLUGIN.spawners[id]) then
-		PLUGIN.spawners[id].classes = data.classes
-		PLUGIN.spawners[id].maxSpawned = data.maxSpawned
-		PLUGIN.spawners[id].maxNearby = data.maxNearby
-		PLUGIN.spawners[id].spawnDelay = data.spawnDelay
-		PLUGIN.spawners[id].minDistance = data.minDistance
-		PLUGIN.spawners[id].activeRadius = data.activeRadius
-		PLUGIN.spawners[id].useArea = data.useArea or false
-		PLUGIN.spawners[id].visitCooldown = data.visitCooldown or 0
-		
+		local function ApplySettings(spawner)
+			spawner.classes = table.Copy(data.classes)
+			spawner.maxSpawned = data.maxSpawned
+			spawner.maxNearby = data.maxNearby
+			spawner.spawnDelay = data.spawnDelay
+			spawner.minDistance = data.minDistance
+			spawner.activeRadius = data.activeRadius
+			spawner.useArea = data.useArea or false
+			spawner.visitCooldown = data.visitCooldown or 0
+		end
+
+		ApplySettings(PLUGIN.spawners[id])
+
+		-- Propagate to all children that reference this spawner as their parent
+		for _, child in pairs(PLUGIN.spawners) do
+			if (child.parent == id) then
+				ApplySettings(child)
+			end
+		end
+
 		PLUGIN:SaveSpawners()
 		PLUGIN:SyncSpawners()
 		client:NotifyLocalized("spawnerEditedMsg")
@@ -1819,7 +1842,7 @@ function PLUGIN:Think()
 				end
 			end
 		else
-			local activeRadius = spawner.activeRadius or 3000
+			local activeRadius = spawner.activeRadius or 4500
 			for _, ply in ipairs(player.GetAll()) do
 				if (not ply:Alive() or not ply:GetCharacter() or ply:GetMoveType() == MOVETYPE_NOCLIP) then continue end
 				if (ply:GetPos():Distance(spawner.pos) <= activeRadius) then

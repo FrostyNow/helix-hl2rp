@@ -38,7 +38,7 @@ hook.Add("PostDrawTranslucentRenderables", "ixNpcSpawnerActiveRadius", function(
 	if (not ix.option.Get("npcSpawnerESP", true)) then return end
 
 	local client = LocalPlayer()
-	if (not client:IsAdmin() or client:GetMoveType() ~= MOVETYPE_NOCLIP) then return end
+	if (not client:IsAdmin() or client:InVehicle() or client:GetMoveType() ~= MOVETYPE_NOCLIP) then return end
 
 	local eyePos = client:EyePos()
 	local aimVec = client:GetAimVector()
@@ -63,7 +63,7 @@ hook.Add("PostDrawTranslucentRenderables", "ixNpcSpawnerActiveRadius", function(
 	local center = bestSpawner.pos
 
 	if (not bestSpawner.useArea) then
-		DrawCircle(center, bestSpawner.activeRadius or 3000, CIRCLE_COLOR)
+		DrawCircle(center, bestSpawner.activeRadius or 4500, CIRCLE_COLOR)
 	end
 
 	local minDist = bestSpawner.minDistance or 0
