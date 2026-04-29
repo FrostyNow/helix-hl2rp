@@ -68,6 +68,16 @@ PLUGIN.replaceList = {
 	["weapon_stunstick"] = "stunstick",
 }
 
+PLUGIN.weaponAmmoMap = { -- to do: replace with cs:s magazines
+	["weapon_smg1"]   = "smg1ammo",
+	["weapon_pistol"] = "pistolammo",
+	["weapon_ar2"]    = "ar2ammo",
+	["weapon_shotgun"] = "shotgunammo",
+	["weapon_357"]    = "357ammo",
+	["weapon_crossbow"] = "crossbowammo",
+	["weapon_rpg"]    = "rocketammo",
+}
+
 PLUGIN.recentDeaths = PLUGIN.recentDeaths or {}
 
 ix.config.Add("removeUnlistedNPCDrops", false, "Wether to remove NPC drops that are not in the replace list.", nil, {
@@ -193,8 +203,18 @@ function PLUGIN:OnNPCKilled(entity)
 		local replacement = self.replaceList[weaponClass]
 
 		if (replacement and ix.item.list[replacement]) then
+			local maxClip = activeWeapon:GetMaxClip1()
+			local randomAmmo = maxClip > 0 and math.random(1, maxClip) or 0
 			activeWeapon:Remove()
-			ix.item.Spawn(replacement, position)
+			ix.item.Spawn(replacement, position, nil, nil, randomAmmo > 0 and {ammo = randomAmmo} or nil)
+
+			local ammoItem = self.weaponAmmoMap[weaponClass]
+			if (ammoItem and ix.item.list[ammoItem] and math.random(100) <= 60) then
+				local ammoCount = math.random(1, 2)
+				for i = 1, ammoCount do
+					ix.item.Spawn(ammoItem, position + Vector(math.random(-8, 8), math.random(-8, 8), 0))
+				end
+			end
 		elseif (ix.config.Get("removeUnlistedNPCDrops", false)) then
 			activeWeapon:Remove()
 		elseif (ix.config.Get("spawnCustomNPCDrops", true) and ix.plugin.list["customitem"] and ix.plugin.list["disallow_item_taking"]) then
@@ -322,6 +342,8 @@ function PLUGIN:OnEntityCreated(ent)
 				local ang = ent:GetAngles()
 
 				if (replacementItemID and ix.item.list[replacementItemID]) then
+					local maxClip = ent:IsWeapon() and ent:GetMaxClip1() or 0
+					local randomAmmo = maxClip > 0 and math.random(1, maxClip) or 0
 					ent:Remove()
 
 					ix.item.Spawn(replacementItemID, pos, function(item, itemEnt)
@@ -332,7 +354,15 @@ function PLUGIN:OnEntityCreated(ent)
 								phys:Wake()
 							end
 						end
-					end)
+					end, nil, randomAmmo > 0 and {ammo = randomAmmo} or nil)
+
+					local ammoItem = PLUGIN.weaponAmmoMap[className]
+					if (ammoItem and ix.item.list[ammoItem] and math.random(100) <= 60) then
+						local ammoCount = math.random(1, 2)
+						for i = 1, ammoCount do
+							ix.item.Spawn(ammoItem, pos + Vector(math.random(-8, 8), math.random(-8, 8), 0))
+						end
+					end
 				elseif (sourceData and sourceData.isCrate) then
 					return
 				elseif (ix.config.Get("removeUnlistedNPCDrops", false)) then

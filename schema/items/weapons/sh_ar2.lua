@@ -13,6 +13,8 @@ ITEM.iconCam = {
 	pos	= Vector(0, 200, 0)
 }
 
+ITEM.clip = "ar2ammo"
+
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)		
 		local data = tooltip:AddRow("data")

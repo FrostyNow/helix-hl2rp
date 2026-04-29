@@ -13,6 +13,8 @@ ITEM.iconCam = {
 	pos	= Vector(0, 200, 0)
 }
 
+ITEM.clip = "ar2ammo"
+
 function ITEM:OnInstanced()
 	if (!self:GetData("locked")) then
 		self:SetData("locked", true)
