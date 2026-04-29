@@ -1,8 +1,15 @@
 local PLUGIN = PLUGIN
 
 PLUGIN.name = "Viewmodel Lag"
-PLUGIN.author = "Valve | Ported by OpenAI"
-PLUGIN.description = "Adds optional HL2-style viewmodel lag while excluding ARC9 weapons, the toolgun, and the physgun."
+PLUGIN.author = "Frosty"
+PLUGIN.description = "Adds optional HL2-style viewmodel lag the toolgun, and the physgun."
+
+PLUGIN.license = [[
+Copyright © 2026 Frosty
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+]]
 
 ix.lang.AddTable("english", {
 	optViewmodelLagEnabled = "Enable viewmodel lag",
