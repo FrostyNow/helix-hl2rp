@@ -24,17 +24,3 @@
 # 아이디어
 - 작전 플러그인: 활성화 시, 캐릭터를 로드, 리스폰한 플레이어에게 화면 전체를 채우는 스크린 출력(스크린은 현재 상황에 대한 안내, 같은 세력 중에서 관리자가 아닌 플레이어를 관전하는 카메라, 없다면 mapscene 출력), 그동안 플레이어는 관리자가 사전에 명령어로 지정한 위치에 텔레포트. 작전을 투입시키면 스크린 출력 중지.
 - 인트로와 엔딩 크레딧
-
-[Universal Bullet Penetration] lua/autorun/universal_bullet_penetration.lua:145: Tried to use a NULL entity!
-  1. GetClass - [C]:-1
-   2. unknown - lua/autorun/universal_bullet_penetration.lua:145
-    3. unknown - lua/includes/modules/hook.lua:313
-     4. FireBullets - [C]:-1
-      5. runCallback - lua/autorun/universal_bullet_penetration.lua:97
-       6. unknown - lua/autorun/universal_bullet_penetration.lua:159
-        7. FireBullets - [C]:-1
-         8. PrimaryAttack - lua/glide/vsweps/combine_apc_turret.lua:62
-          9. PrimaryAttackInternal - lua/glide/vsweps/base.lua:147
-           10. InternalThink - lua/glide/vsweps/base.lua:189
-            11. WeaponThink - lua/entities/base_glide/sv_weapons.lua:159
-             12. unknown - lua/entities/base_glide/init.lua:673
