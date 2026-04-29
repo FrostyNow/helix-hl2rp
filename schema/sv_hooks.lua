@@ -90,16 +90,22 @@ function Schema:PostPlayerLoadout(client)
 
 	if (client:IsCombine()) then
 		local runSpeed = ix.config.Get("runSpeed")
+		local maxAttr = ix.config.Get("maxAttributes", 100)
 
 		if (client:Team() == FACTION_OTA) then
-			client:SetMaxHealth(50)
+			if (client:GetCharacter():GetClass() == CLASS_EOW) then
+				client:SetMaxHealth(70)
+				client:SetHealth(70)
+			else
+				client:SetMaxHealth(50)
+				client:SetHealth(50)
+			end
 			client:SetMaxArmor(255)
-			client:SetHealth(50)
 			client:SetArmor(255)
-			client:GetCharacter():SetAttrib("str", 10)
-			client:GetCharacter():SetAttrib("end", 10)
-			client:GetCharacter():SetAttrib("stm", 10)
-			client:GetCharacter():SetAttrib("int", 5)
+			client:GetCharacter():SetAttrib("str", maxAttr)
+			client:GetCharacter():SetAttrib("end", maxAttr)
+			client:GetCharacter():SetAttrib("stm", maxAttr)
+			client:GetCharacter():SetAttrib("int", math.floor(maxAttr / 2))
 		elseif (client:Team() == FACTION_MPF) then
 			client:SetMaxHealth(40)
 			client:SetHealth(40)
@@ -122,14 +128,16 @@ function Schema:PostPlayerLoadout(client)
 		local endurance = client:GetCharacter():GetAttribute("end", 0)
 		local stm = client:GetCharacter():GetAttribute("stm", 0)
 		local int = client:GetCharacter():GetAttribute("int", 0)
+		local maxAttr = ix.config.Get("maxAttributes", 100)
+		
 		client:SetMaxHealth(100)
 		client:SetHealth(100)
 		client:SetMaxArmor(0)
 		client:SetArmor(0)
-		client:GetCharacter():SetAttrib("str", math.Clamp(str + 3, 0, 10))
-		client:GetCharacter():SetAttrib("end", math.Clamp(endurance + 3, 0, 10))
-		client:GetCharacter():SetAttrib("stm", math.Clamp(stm + 3, 0, 10))
-		client:GetCharacter():SetAttrib("int", math.Clamp(int + 3, 0, 10))
+		client:GetCharacter():SetAttrib("str", math.Clamp(str + 3, 0, maxAttr))
+		client:GetCharacter():SetAttrib("end", math.Clamp(endurance + 3, 0, maxAttr))
+		client:GetCharacter():SetAttrib("stm", math.Clamp(stm + 3, 0, maxAttr))
+		client:GetCharacter():SetAttrib("int", math.Clamp(int + 3, 0, maxAttr))
 	else
 		client:SetMaxHealth(40)
 		client:SetHealth(40)
