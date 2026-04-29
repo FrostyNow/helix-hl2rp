@@ -370,7 +370,10 @@ function Schema:PlayerSpawn(client)
 end
 
 function Schema:DoPlayerDeath(client, attacker, damageinfo)
-	client.ixDeathAmmo = client:GetAmmo()
+	client.ixDeathAmmo = {}
+	for _, v in ipairs(client:GetAmmo()) do
+		client.ixDeathAmmo[v[1]] = v[2]
+	end
 	client.ixDeathWeapons = {}
 	client.ixDeathHunger = client.GetHunger and client:GetHunger() or nil
 	client.ixDeathThirst = client.GetThirst and client:GetThirst() or nil
