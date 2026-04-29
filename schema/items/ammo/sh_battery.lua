@@ -12,7 +12,7 @@ ITEM.ammoAmount = 30 -- amount of the ammo
 
 ITEM.classes = {CLASS_MPU, CLASS_EMP, CLASS_OWS, CLASS_EOW}
 
-ITEM.functions.Apply = {
+ITEM.functions.Charge = {
 	icon = "icon16/asterisk_orange.png",
 	OnRun = function(item)
 		local client = item.player

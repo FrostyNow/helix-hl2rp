@@ -220,6 +220,7 @@ LANGUAGE = {
 	sidearm = "보조무기",
 	Unlock = "잠금 해제하기",
 	Take = "가져가기",
+	Charge = "충전하기",
 
 	["Utility"] = "유틸리티",
 
