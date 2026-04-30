@@ -15,6 +15,8 @@ ITEM.iconCam = {
 }
 ITEM.factions = {FACTION_CONSCRIPT}
 
+ITEM.clip = "smg1mag"
+
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")

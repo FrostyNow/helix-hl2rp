@@ -14,6 +14,8 @@ ITEM.iconCam = {
 }
 ITEM.exRender = true
 
+ITEM.clip = "akmmag"
+
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)
 		local data = tooltip:AddRow("data")

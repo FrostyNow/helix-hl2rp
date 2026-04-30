@@ -306,6 +306,10 @@ LANGUAGE = {
 	item762x39AmmoDesc = "7.62 × 39 mm M43 소총탄 %s발이 든 탄약 상자입니다.",
 	["Flares"] = "조명탄",
 	flareammoDesc = "조명탄 권총용 조명탄 %s발이 든 상자입니다.",
+	akmMagazineDesc = "7.62 × 39 mm 소총탄 30발이 들어있는 강철 탄창입니다.",
+	pistolMagDesc = "9 × 19 mm 권총탄 18발이 들어있는 폴리머 탄창입니다.",
+	smg1MagDesc = "4.6 × 30 mm 탄약 45발이 들어있는 폴리머 탄창입니다.",
+	buckshotDesc = "산탄입니다.",
 
 	["Consumables Permit"] = "일용품 보급 허가증",
 	itemPermitConsumablesDesc = "일용품을 사고 팔 수 있도록 허가하는 증명서입니다.",

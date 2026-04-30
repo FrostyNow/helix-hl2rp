@@ -17,6 +17,8 @@ ITEM.iconCam = {
 }
 ITEM.exRender = true
 
+ITEM.clip = "pistolmag"
+
 ITEM.factions = {FACTION_MPF, FACTION_CONSCRIPT}
 
 if (CLIENT) then

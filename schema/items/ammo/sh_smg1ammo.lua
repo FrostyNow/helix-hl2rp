@@ -6,7 +6,7 @@ ITEM.ammoClip = 45
 ITEM.description = "smg1ammoDesc"
 ITEM.classes = {CLASS_EMP, CLASS_OWS, CLASS_MPU, CLASS_REBEL}
 ITEM.factions = {FACTION_CONSCRIPT}
-ITEM.price = 30
+ITEM.price = 150
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

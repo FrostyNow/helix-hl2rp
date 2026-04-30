@@ -146,6 +146,10 @@ LANGUAGE = {
 	item556AmmoDesc = "An Ammo Box that contains %s of 5.56×45mm NATO Rifle Rounds.",
 	item762x39AmmoDesc = "An Ammo Box that contains %s of 7.62×39mm M43 Rifle Rounds.",
 	flareammoDesc = "A box contains five flares for Flaregun.",
+	akmMagazineDesc = "A steel magazine that holds 30 rounds of 7.62×39mm ammunition.",
+	pistolMagDesc = "A polymer magazine that holds 18 rounds of 9×19mm Parabellum pistol ammunition.",
+	smg1MagDesc = "A polymer magazine that holds 45 rounds of 4.6×30mm ammunition.",
+	buckshotDesc = "A buckshot shell.",
 
 	itemPermitConsumablesDesc = "A permit allowing you to sell consumable goods.",
 	itemPermitAlcoholDesc = "A permit allowing you to sell alcohol drinks.",

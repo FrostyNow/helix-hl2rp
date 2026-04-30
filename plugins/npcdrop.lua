@@ -69,10 +69,10 @@ PLUGIN.replaceList = {
 }
 
 PLUGIN.weaponAmmoMap = { -- to do: replace with cs:s magazines
-	["weapon_smg1"]   = "smg1ammo",
-	["weapon_pistol"] = "pistolammo",
+	["weapon_smg1"]   = "smg1mag",
+	["weapon_pistol"] = "pistolmag",
 	["weapon_ar2"]    = "ar2ammo",
-	["weapon_shotgun"] = "shotgunammo",
+	["weapon_shotgun"] = "buckshot",
 	["weapon_357"]    = "357ammo",
 	["weapon_crossbow"] = "crossbowammo",
 	["weapon_rpg"]    = "rocketammo",
