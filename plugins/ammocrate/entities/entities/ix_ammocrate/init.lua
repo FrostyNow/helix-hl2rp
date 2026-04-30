@@ -17,12 +17,12 @@ function ENT:Initialize()
 	self.cooldowns = {}
 	self.bOpening = false
 
-	self:SetNextThink(CurTime())
+	self:NextThink(CurTime())
 end
 
 function ENT:Think()
 	self:FrameAdvance(FrameTime())
-	self:SetNextThink(CurTime())
+	self:NextThink(CurTime())
 	return true
 end
 
