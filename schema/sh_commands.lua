@@ -295,9 +295,26 @@ ix.command.Add("Revive", {
 		local pos = IsValid(ragdoll) and ragdoll:GetPos() or target:GetPos()
 		local angles = IsValid(ragdoll) and ragdoll:GetAngles() or target:GetAngles()
 
+		local savedAmmo = {}
+		for ammoType, count in pairs(target:GetAmmo()) do
+			savedAmmo[ammoType] = count
+		end
+
+		-- Prefer clips saved at death (PlayerHurt health<=0); fall back to reading now
+		-- in case the player is being revived from a non-death KO state.
+		local savedClips = target.ixDeathWeapons or {}
+		if (not next(savedClips)) then
+			for _, v in ipairs(target:GetWeapons()) do
+				savedClips[v:GetClass()] = {
+					clip1 = v:Clip1(),
+					clip2 = v:Clip2()
+				}
+			end
+		end
+
 		target:Spawn()
 
-		timer.Simple(0, function()
+		timer.Simple(0.15, function()
 			if (IsValid(target)) then
 				local revivePos = pos
 				local playerMins = target:OBBMins()
@@ -343,6 +360,10 @@ ix.command.Add("Revive", {
 				target:SetPos(revivePos)
 				target:SetEyeAngles(Angle(0, angles.y, 0))
 
+				for ammoID, amount in pairs(savedAmmo) do
+					target:SetAmmo(amount, ammoID)
+				end
+
 				if (target.ixDeathAmmo) then
 					for ammoID, amount in pairs(target.ixDeathAmmo) do
 						target:SetAmmo(amount, ammoID)
@@ -350,15 +371,27 @@ ix.command.Add("Revive", {
 					target.ixDeathAmmo = nil
 				end
 
-				if (target.ixDeathWeapons) then
-					for _, v in ipairs(target:GetWeapons()) do
-						local data = target.ixDeathWeapons[v:GetClass()]
-						
-						if (data) then
-							v:SetClip1(data.clip1 or -1)
-							v:SetClip2(data.clip2 or -1)
+				for _, v in ipairs(target:GetWeapons()) do
+					local data = savedClips[v:GetClass()]
+
+					if (data) then
+						local ammoType1 = v:GetPrimaryAmmoType()
+						if (ammoType1 and ammoType1 != -1 and (data.clip1 or 0) > 0) then
+							local maxAmmo = game.GetAmmoMax(ammoType1)
+							local current = target:GetAmmoCount(ammoType1)
+							target:SetAmmo(math.min(current + data.clip1, maxAmmo), ammoType1)
+						end
+
+						local ammoType2 = v:GetSecondaryAmmoType()
+						if (ammoType2 and ammoType2 != -1 and (data.clip2 or 0) > 0) then
+							local maxAmmo = game.GetAmmoMax(ammoType2)
+							local current = target:GetAmmoCount(ammoType2)
+							target:SetAmmo(math.min(current + data.clip2, maxAmmo), ammoType2)
 						end
 					end
+				end
+
+				if (target.ixDeathWeapons) then
 					target.ixDeathWeapons = nil
 				end
 

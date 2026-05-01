@@ -1,20 +1,21 @@
-ITEM.name = "XM29 OICW"
-ITEM.description = "oicwDesc"
-ITEM.class = "arc9_rtb_oicw"
+ITEM.name = "M4A1"
+ITEM.description = "m4a1Desc"
+ITEM.class = "ix_m16a2"
 ITEM.weaponCategory = "primary"
 ITEM.classes = {CLASS_EOW, CLASS_OWS, CLASS_EMP}
-ITEM.price = 1750
-ITEM.model = "models/rtbr/weapons/oicw/w_oicw.mdl"
-ITEM.width = 4
+ITEM.price = 500
+ITEM.model = "models/weapons/w_m16a2.mdl"
+ITEM.width = 3
 ITEM.height = 2
 ITEM.iconCam = {
-	pos = Vector(0, 200, 0),
-	ang = Angle(-0.01, 269.19, 0),
-	fov = 11.38
+	pos = Vector(8, 200, 1),
+	ang = Angle(0, 270, 0),
+	fov = 14,
 }
 ITEM.exRender = true
+ITEM.factions = {FACTION_CONSCRIPT}
 
-ITEM.clip = "stanagmag"
+ITEM.clip = "ar2ammo"
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

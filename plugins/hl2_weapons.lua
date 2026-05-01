@@ -46,13 +46,13 @@ if (SERVER) then
 
 		if (IsValid(attacker) and (attacker:IsPlayer() or attacker:IsNPC())) then
 			// Antlion
-			if (attacker:IsNPC() and attacker:GetClass() == "npc_antlion") then
-				local damage = dmgInfo:GetDamage()
-				damage = damage * 2
+			-- if (attacker:IsNPC() and attacker:GetClass() == "npc_antlion") then
+			-- 	local damage = dmgInfo:GetDamage()
+			-- 	damage = damage * 2
 
-				dmgInfo:SetBaseDamage(damage)
-				dmgInfo:SetDamage(damage)
-			end
+			-- 	dmgInfo:SetBaseDamage(damage)
+			-- 	dmgInfo:SetDamage(damage)
+			-- end
 
 			local weaponClass, weapon = GetDamageWeaponClass(attacker, inflictor)
 

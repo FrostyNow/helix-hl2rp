@@ -70,6 +70,7 @@ PLUGIN.presets = {
 		{url = "https://www.youtube.com/watch?v=c8pQmdTCjg4", title = "Klaxon Beat"},
 		{url = "https://www.youtube.com/watch?v=BLJZnJe7KgU", title = "Ending Triumph"},
 		{url = "https://www.youtube.com/watch?v=G9UH9kWQdXw", title = "Beats to spill oil on Cyberstan"},
+		{url = "https://www.youtube.com/watch?v=r2_IStKfRxQ", title = "Halo Reach - Engaged and Dead Ahead Mix"},
 	}
 }
 

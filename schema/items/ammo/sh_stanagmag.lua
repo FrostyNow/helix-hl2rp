@@ -1,12 +1,11 @@
-ITEM.name = "5.56mm Ammo Box"
-ITEM.model = "models/Items/BoxMRounds.mdl"
+ITEM.name = "STANAG Magazine"
+ITEM.model = "models/weapons/w_rif_m4a1_mag.mdl"
 ITEM.ammo = "5.56x45mm" -- type of the ammo
-ITEM.ammoAmount = 100 -- amount of the ammo
-ITEM.ammoClip = 30
-ITEM.description = "item556AmmoDesc"
+ITEM.ammoAmount = 30 -- amount of the ammo
+ITEM.description = "stanagDesc"
 ITEM.classes = {CLASS_EMP, CLASS_OWS, CLASS_MPU, CLASS_REBEL}
 ITEM.factions = {FACTION_CONSCRIPT}
-ITEM.price = 100
+ITEM.price = 30
 
 if (CLIENT) then
 	function ITEM:PopulateTooltip(tooltip)

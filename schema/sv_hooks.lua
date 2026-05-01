@@ -379,19 +379,11 @@ end
 
 function Schema:DoPlayerDeath(client, attacker, damageinfo)
 	client.ixDeathAmmo = {}
-	for _, v in ipairs(client:GetAmmo()) do
-		client.ixDeathAmmo[v[1]] = v[2]
+	for ammoType, count in pairs(client:GetAmmo()) do
+		client.ixDeathAmmo[ammoType] = count
 	end
-	client.ixDeathWeapons = {}
 	client.ixDeathHunger = client.GetHunger and client:GetHunger() or nil
 	client.ixDeathThirst = client.GetThirst and client:GetThirst() or nil
-
-	for _, v in ipairs(client:GetWeapons()) do
-		client.ixDeathWeapons[v:GetClass()] = {
-			clip1 = v:Clip1(),
-			clip2 = v:Clip2()
-		}
-	end
 end
 
 -- function Schema:PlayerNoClip(client)
@@ -422,6 +414,16 @@ local metrocopPainSounds
 local combinePainSounds
 
 function Schema:PlayerHurt(client, attacker, health, damage)
+	if (health <= 0) then
+		client.ixDeathWeapons = {}
+		for _, v in ipairs(client:GetWeapons()) do
+			client.ixDeathWeapons[v:GetClass()] = {
+				clip1 = v:Clip1(),
+				clip2 = v:Clip2()
+			}
+		end
+	end
+
 	if (health > 0) then
 		if (client:IsCombine() and (client.ixTraumaCooldown or 0) < CurTime()) then
 			local text = "cDamageExternal"
