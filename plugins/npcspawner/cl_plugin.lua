@@ -2,56 +2,77 @@ local PLUGIN = PLUGIN
 
 ix.util.Include("derma/cl_spawner.lua")
 
--- Dropship placement mode -------------------------------------------------------
+-- Dropship / APC placement mode ------------------------------------------------
 local dsPlacement = {
 	active    = false,
+	type      = "dropship",  -- "dropship" | "apc"
 	count     = 0,
 	landPos   = nil,
 	landYaw   = 0,
 }
 
-local CONTAINER_HALF_LEN = 150  -- visual footprint half-length
-local CONTAINER_HALF_WID = 80   -- visual footprint half-width
+local CONTAINER_HALF_LEN = 150
+local CONTAINER_HALF_WID = 80
+local APC_HALF_LEN       = 200
+local APC_HALF_WID       = 110
 local PLACEMENT_COLOR     = Color(100, 220, 255, 180)
+local PLACEMENT_APC_COLOR = Color(255, 160, 60, 180)
 local PLACEMENT_ARROW_COL = Color(255, 220, 60, 220)
 local PLACEMENT_FILL_COL  = Color(60, 140, 200, 40)
+local PLACEMENT_APC_FILL  = Color(200, 100, 40, 40)
 
 local function DrawPlacementGhost(pos, yaw)
 	local rad   = math.rad(yaw)
 	local fwd   = Vector(math.cos(rad), math.sin(rad), 0)
 	local right = Vector(-fwd.y, fwd.x, 0)
-	local up    = Vector(0, 0, 1)
 	local zOff  = Vector(0, 0, 2)
-
-	-- container footprint corners
-	local corners = {
-		pos + fwd * CONTAINER_HALF_LEN + right * CONTAINER_HALF_WID + zOff,
-		pos + fwd * CONTAINER_HALF_LEN - right * CONTAINER_HALF_WID + zOff,
-		pos - fwd * CONTAINER_HALF_LEN - right * CONTAINER_HALF_WID + zOff,
-		pos - fwd * CONTAINER_HALF_LEN + right * CONTAINER_HALF_WID + zOff,
-	}
 
 	render.SetColorMaterial()
 
-	-- filled quad (semi-transparent)
-	render.DrawQuad(corners[1], corners[2], corners[3], corners[4], PLACEMENT_FILL_COL)
-
-	-- outline
-	for i = 1, 4 do
-		render.DrawLine(corners[i], corners[i % 4 + 1], PLACEMENT_COLOR, false)
+	if (dsPlacement.type == "apc") then
+		-- APC footprint: larger rectangle, no directional arrow (landing yaw is engine-determined)
+		local corners = {
+			pos + fwd * APC_HALF_LEN + right * APC_HALF_WID + zOff,
+			pos + fwd * APC_HALF_LEN - right * APC_HALF_WID + zOff,
+			pos - fwd * APC_HALF_LEN - right * APC_HALF_WID + zOff,
+			pos - fwd * APC_HALF_LEN + right * APC_HALF_WID + zOff,
+		}
+		render.DrawQuad(corners[1], corners[2], corners[3], corners[4], PLACEMENT_APC_FILL)
+		for i = 1, 4 do
+			render.DrawLine(corners[i], corners[i % 4 + 1], PLACEMENT_APC_COLOR, false)
+		end
+		-- crosshair at center
+		render.DrawLine(pos + fwd * 60 + zOff, pos - fwd * 60 + zOff, PLACEMENT_APC_COLOR, false)
+		render.DrawLine(pos + right * 60 + zOff, pos - right * 60 + zOff, PLACEMENT_APC_COLOR, false)
+	else
+		-- dropship container footprint with door-direction arrow
+		local corners = {
+			pos + fwd * CONTAINER_HALF_LEN + right * CONTAINER_HALF_WID + zOff,
+			pos + fwd * CONTAINER_HALF_LEN - right * CONTAINER_HALF_WID + zOff,
+			pos - fwd * CONTAINER_HALF_LEN - right * CONTAINER_HALF_WID + zOff,
+			pos - fwd * CONTAINER_HALF_LEN + right * CONTAINER_HALF_WID + zOff,
+		}
+		render.DrawQuad(corners[1], corners[2], corners[3], corners[4], PLACEMENT_FILL_COL)
+		for i = 1, 4 do
+			render.DrawLine(corners[i], corners[i % 4 + 1], PLACEMENT_COLOR, false)
+		end
+		local arrowTip = pos + fwd * (CONTAINER_HALF_LEN + 60) + zOff
+		local arrowL   = arrowTip - fwd * 40 + right * 25 + zOff
+		local arrowR   = arrowTip - fwd * 40 - right * 25 + zOff
+		render.DrawLine(pos + zOff, arrowTip, PLACEMENT_ARROW_COL, false)
+		render.DrawLine(arrowTip, arrowL, PLACEMENT_ARROW_COL, false)
+		render.DrawLine(arrowTip, arrowR, PLACEMENT_ARROW_COL, false)
 	end
-
-	-- forward arrow (door direction = yaw, which is container front = -X of model = the door)
-	local arrowTip  = pos + fwd * (CONTAINER_HALF_LEN + 60) + zOff
-	local arrowL    = arrowTip - fwd * 40 + right * 25 + zOff
-	local arrowR    = arrowTip - fwd * 40 - right * 25 + zOff
-	render.DrawLine(pos + zOff, arrowTip, PLACEMENT_ARROW_COL, false)
-	render.DrawLine(arrowTip, arrowL, PLACEMENT_ARROW_COL, false)
-	render.DrawLine(arrowTip, arrowR, PLACEMENT_ARROW_COL, false)
 end
 
 net.Receive("ixDropshipPlacement", function()
 	dsPlacement.count  = net.ReadInt(4)
+	dsPlacement.type   = "dropship"
+	dsPlacement.active = true
+end)
+
+net.Receive("ixDropshipAPCPlacement", function()
+	dsPlacement.type   = "apc"
 	dsPlacement.active = true
 end)
 
@@ -80,11 +101,17 @@ end)
 
 local function ConfirmPlacement()
 	if (not dsPlacement.active or not dsPlacement.landPos) then return end
-	net.Start("ixDropshipPlacementResult")
-	net.WriteBool(true)
-	net.WriteInt(dsPlacement.count, 4)
-	net.WriteVector(dsPlacement.landPos)
-	net.WriteFloat(dsPlacement.landYaw)
+	if (dsPlacement.type == "apc") then
+		net.Start("ixDropshipAPCPlacementResult")
+		net.WriteBool(true)
+		net.WriteVector(dsPlacement.landPos)
+	else
+		net.Start("ixDropshipPlacementResult")
+		net.WriteBool(true)
+		net.WriteInt(dsPlacement.count, 4)
+		net.WriteVector(dsPlacement.landPos)
+		net.WriteFloat(dsPlacement.landYaw)
+	end
 	net.SendToServer()
 	dsPlacement.active  = false
 	dsPlacement.landPos = nil
@@ -92,9 +119,14 @@ end
 
 local function CancelPlacement()
 	if (not dsPlacement.active) then return end
-	net.Start("ixDropshipPlacementResult")
-	net.WriteBool(false)
-	net.WriteInt(dsPlacement.count, 4)
+	if (dsPlacement.type == "apc") then
+		net.Start("ixDropshipAPCPlacementResult")
+		net.WriteBool(false)
+	else
+		net.Start("ixDropshipPlacementResult")
+		net.WriteBool(false)
+		net.WriteInt(dsPlacement.count, 4)
+	end
 	net.SendToServer()
 	dsPlacement.active  = false
 	dsPlacement.landPos = nil
@@ -114,9 +146,9 @@ end)
 
 hook.Add("HUDPaint", "ixDropshipPlacementHint", function()
 	if (not dsPlacement.active) then return end
-	local text = L("dropshipPlacementMode")
-	draw.SimpleText(text, "DermaDefaultBold", ScrW() * 0.5, ScrH() * 0.1,
-		Color(100, 220, 255, 230), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
+	local key  = dsPlacement.type == "apc" and "dropshipAPCPlacementMode" or "dropshipPlacementMode"
+	local col  = dsPlacement.type == "apc" and Color(255, 160, 60, 230) or Color(100, 220, 255, 230)
+	draw.SimpleText(L(key), "DermaDefaultBold", ScrW() * 0.5, ScrH() * 0.1, col, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 end)
 --------------------------------------------------------------------------------
 

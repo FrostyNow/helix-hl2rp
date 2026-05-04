@@ -52,7 +52,9 @@ ix.lang.AddTable("english", {
 	dropshipAPCCalled = "Dropship inbound with an APC.",
 	dropshipNoRoute = "Could not find a valid dropship route or landing zone.",
 	dropshipPlacementMode = "[Dropship Placement] LEFT CLICK to confirm landing zone, RIGHT CLICK to cancel.",
+	dropshipAPCPlacementMode = "[APC Placement] LEFT CLICK to confirm landing zone, RIGHT CLICK to cancel.",
 	dropshipPlacementConfirmed = "Landing zone confirmed. Dropship inbound with %d soldier(s).",
+	dropshipAPCPlacementConfirmed = "Landing zone confirmed. APC dropship inbound.",
 	dropshipPlacementCancelled = "Dropship placement cancelled.",
 	cmdFlyOutDesc = "Orders all nearby gunships and helicopters to fly out and leave the area.",
 	flyOutDone = "Ordered %d aircraft to fly out.",
@@ -111,7 +113,9 @@ ix.lang.AddTable("korean", {
 	dropshipAPCCalled = "드랍쉽 APC 운반 중.",
 	dropshipNoRoute = "유효한 비행 경로 또는 착지 지점을 찾을 수 없습니다.",
 	dropshipPlacementMode = "[드랍쉽 배치] 좌클릭으로 착륙 지점 확정, 우클릭으로 취소.",
+	dropshipAPCPlacementMode = "[APC 배치] 좌클릭으로 착륙 지점 확정, 우클릭으로 취소.",
 	dropshipPlacementConfirmed = "착륙 지점 확정. 드랍쉽 %d명 병력 접근 중.",
+	dropshipAPCPlacementConfirmed = "착륙 지점 확정. APC 드랍쉽 접근 중.",
 	dropshipPlacementCancelled = "드랍쉽 배치가 취소되었습니다.",
 	cmdFlyOutDesc = "근처의 모든 건쉽 및 헬리콥터를 맵 밖으로 내보냅니다.",
 	flyOutDone = "%d대의 항공기를 철수시켰습니다.",
@@ -324,11 +328,11 @@ ix.command.Add("Dropship", {
 	},
 	OnRun = function(self, client, arg)
 		if (arg == "apc") then
-			local success = ix.plugin.list["npcspawner"]:CallDropshipAPC(client:GetPos())
-			if (not success) then
-				return "@dropshipNoRoute"
+			if (SERVER) then
+				net.Start("ixDropshipAPCPlacement")
+				net.Send(client)
 			end
-			return "@dropshipAPCCalled"
+			return
 		end
 
 		local count = math.Clamp(math.floor(tonumber(arg) or 4), 1, 6)
